@@ -1,4 +1,6 @@
 import { FeatureComparisonChart, MarketGrowthChart, PricingComparisonChart } from "@/components/Charts";
+import { ContactForm } from "@/components/ContactForm";
+import { CaseStudies } from "@/components/CaseStudies";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BarChart3, Sparkles, Check, Download, Zap, Share2 } from "lucide-react";
@@ -27,7 +29,7 @@ export default function Home() {
             </div>
           </div>
           <div className="hidden md:flex gap-8 font-medium text-sm">
-            {['Overview', 'Technology', 'Market', 'Pricing'].map((item) => (
+            {['Overview', 'Technology', 'Market', 'Pricing', 'Case Studies', 'Contact'].map((item) => (
               <button 
                 key={item}
                 onClick={() => scrollToSection(item.toLowerCase())}
@@ -264,6 +266,16 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Case Studies Section */}
+      <section id="case-studies">
+        <CaseStudies />
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact">
+        <ContactForm />
+      </section>
+
       {/* Footer */}
       <footer className="bg-foreground/5 border-t border-border/20 py-16">
         <div className="container mx-auto">
@@ -282,15 +294,15 @@ export default function Home() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="#" className="hover:text-primary transition">Features</a></li>
                 <li><a href="#" className="hover:text-primary transition">Pricing</a></li>
-                <li><a href="#" className="hover:text-primary transition">API Docs</a></li>
+                <li><a href="#" className="hover:text-primary transition">Case Studies</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition">About</a></li>
+                <li><a href="#overview" className="hover:text-primary transition">About</a></li>
                 <li><a href="#" className="hover:text-primary transition">Blog</a></li>
-                <li><a href="#" className="hover:text-primary transition">Contact</a></li>
+                <li><a href="#contact" className="hover:text-primary transition">Contact</a></li>
               </ul>
             </div>
             <div>
