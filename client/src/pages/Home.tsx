@@ -1,6 +1,8 @@
 import { FeatureComparisonChart, MarketGrowthChart, PricingComparisonChart } from "@/components/Charts";
 import { ContactForm } from "@/components/ContactForm";
 import { CaseStudies } from "@/components/CaseStudies";
+import { PricingTiers } from "@/components/PricingTiers";
+import { ROICalculator } from "@/components/ROICalculator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BarChart3, Sparkles, Check, Download, Zap, Share2 } from "lucide-react";
@@ -29,7 +31,7 @@ export default function Home() {
             </div>
           </div>
           <div className="hidden md:flex gap-8 font-medium text-sm">
-            {['Overview', 'Technology', 'Market', 'Pricing', 'Case Studies', 'Contact'].map((item) => (
+            {['Overview', 'Technology', 'Market', 'Pricing', 'ROI', 'Case Studies', 'Contact'].map((item) => (
               <button 
                 key={item}
                 onClick={() => scrollToSection(item.toLowerCase())}
@@ -228,7 +230,7 @@ export default function Home() {
           <div className="space-y-6">
             <h3 className="text-3xl font-bold">COST EFFICIENCY</h3>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              StyleSwap offers a significant price advantage over AR-based competitors. With a pay-as-you-go model starting at just $0.02 per credit, it enables high-margin resale opportunities.
+              StyleSwap offers a significant price advantage over AR-based competitors. With a pay-as-you-go model starting at just R0.035 per try-on, it enables high-margin resale opportunities for retailers.
             </p>
             <ul className="space-y-3">
               {[
@@ -266,6 +268,16 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pricing Tiers Section */}
+      <section id="pricing-tiers">
+        <PricingTiers />
+      </section>
+
+      {/* ROI Calculator Section */}
+      <section id="roi">
+        <ROICalculator />
+      </section>
+
       {/* Case Studies Section */}
       <section id="case-studies">
         <CaseStudies />
@@ -292,9 +304,9 @@ export default function Home() {
             <div>
               <h4 className="font-bold mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition">Features</a></li>
-                <li><a href="#" className="hover:text-primary transition">Pricing</a></li>
-                <li><a href="#" className="hover:text-primary transition">Case Studies</a></li>
+                <li><a href="#pricing-tiers" className="hover:text-primary transition">Pricing</a></li>
+                <li><a href="#roi" className="hover:text-primary transition">ROI Calculator</a></li>
+                <li><a href="#case-studies" className="hover:text-primary transition">Case Studies</a></li>
               </ul>
             </div>
             <div>
