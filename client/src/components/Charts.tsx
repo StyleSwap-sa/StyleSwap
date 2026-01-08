@@ -5,17 +5,17 @@ const COLORS = ['var(--color-chart-1)', 'var(--color-chart-2)', 'var(--color-cha
 
 export function MarketGrowthChart() {
   const data = [
-    { year: '2023', value: 5.9 },
-    { year: '2025', value: 9.2 },
-    { year: '2027', value: 14.5 },
-    { year: '2030', value: 25.8 },
-    { year: '2032', value: 35.7 },
+    { year: '2023', value: 104 },
+    { year: '2025', value: 162 },
+    { year: '2027', value: 256 },
+    { year: '2030', value: 455 },
+    { year: '2032', value: 630 },
   ];
 
   return (
     <Card className="neo-card h-full">
       <CardHeader>
-        <CardTitle>Market Growth Projection (USD Billions)</CardTitle>
+        <CardTitle>Market Growth Projection (ZAR Billions)</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px] w-full">

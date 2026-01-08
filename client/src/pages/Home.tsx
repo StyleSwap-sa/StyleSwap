@@ -197,7 +197,7 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-lg font-medium leading-relaxed text-muted-foreground">
-                    The virtual try-on market is projected to reach <span className="text-primary font-bold">$35.7B by 2032</span>. StyleSwap's low entry cost allows small retailers to capture this growth without enterprise-level investment.
+                    The virtual try-on market is projected to reach <span className="text-primary font-bold">R630 billion by 2032</span>. StyleSwap's low entry cost allows small retailers to capture this growth without enterprise-level investment.
                   </p>
                 </CardContent>
               </Card>
