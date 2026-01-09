@@ -98,7 +98,7 @@ export function PricingTiers() {
               {/* Cost Breakdown */}
               <div className="mb-6 space-y-3">
                 <div className="flex justify-between items-center pb-3 border-b border-border/20">
-                  <span className="text-muted-foreground">Fitroom AI Cost</span>
+                  <span className="text-muted-foreground">API Cost</span>
                   <span className="font-bold">R{tier.fitRoomCost.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center pb-3 border-b border-border/20">
@@ -154,7 +154,7 @@ export function PricingTiers() {
             <div>
               <h4 className="font-bold mb-2">1. Volume Pricing</h4>
               <p className="text-sm text-muted-foreground">
-                The more try-ons you process, the lower your per-unit cost from Fitroom AI due to volume discounts.
+                The more try-ons you process, the lower your per-unit cost due to volume discounts.
               </p>
             </div>
             <div>

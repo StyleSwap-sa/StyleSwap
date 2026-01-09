@@ -50,10 +50,10 @@ export function MarketGrowthChart() {
 
 export function PricingComparisonChart() {
   const data = [
-    { name: 'StyleSwap (Fitroom)', cost: 0.035, type: 'AI-Based' },
-    { name: 'Competitor A', cost: 0.14, type: 'AR-Based' },
-    { name: 'Competitor B', cost: 0.26, type: 'Enterprise' },
-    { name: 'Competitor C', cost: 0.088, type: 'Mixed' },
+    { name: 'StyleSwap', cost: 0.85, type: 'AI-Based' },
+    { name: 'Competitor A', cost: 2.50, type: 'AR-Based' },
+    { name: 'Competitor B', cost: 4.00, type: 'Enterprise' },
+    { name: 'Competitor C', cost: 1.75, type: 'Mixed' },
   ];
 
   return (
@@ -100,7 +100,7 @@ export function FeatureComparisonChart() {
   return (
     <Card className="neo-card h-full">
       <CardHeader>
-        <CardTitle>Fitroom AI Capability Focus</CardTitle>
+        <CardTitle>StyleSwap Capability Focus</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px] w-full">

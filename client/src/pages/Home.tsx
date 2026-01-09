@@ -1,7 +1,7 @@
 import { FeatureComparisonChart, MarketGrowthChart, PricingComparisonChart } from "@/components/Charts";
 import { ContactForm } from "@/components/ContactForm";
 import { CaseStudies } from "@/components/CaseStudies";
-import { PricingTiers } from "@/components/PricingTiers";
+import { SubscriptionPricing } from "@/components/SubscriptionPricing";
 import { ROICalculator } from "@/components/ROICalculator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -230,7 +230,7 @@ export default function Home() {
           <div className="space-y-6">
             <h3 className="text-3xl font-bold">COST EFFICIENCY</h3>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              StyleSwap offers a significant price advantage over AR-based competitors. With a pay-as-you-go model starting at just R0.035 per try-on, it enables high-margin resale opportunities for retailers.
+              StyleSwap offers a significant price advantage over AR-based competitors. With a pay-as-you-go model starting at just R0.85 per try-on, it enables high-margin resale opportunities for retailers.
             </p>
             <ul className="space-y-3">
               {[
@@ -268,9 +268,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing Tiers Section */}
+      {/* Subscription Pricing Section */}
       <section id="pricing-tiers">
-        <PricingTiers />
+        <SubscriptionPricing />
       </section>
 
       {/* ROI Calculator Section */}
