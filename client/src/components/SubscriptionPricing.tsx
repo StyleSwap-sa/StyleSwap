@@ -75,7 +75,7 @@ export function SubscriptionPricing() {
       <div className="mb-20">
         <h3 className="text-3xl font-bold mb-8 text-center">FOR INDIVIDUALS</h3>
         <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Try on clothes virtually without owning a business. Perfect for personal shopping and fashion discovery.
+          Try on clothes virtually without owning a business. Cancel anytime and keep your unused try-ons. Perfect for personal shopping and fashion discovery.
         </p>
         <div className="grid md:grid-cols-3 gap-6">
           {individualPlans.map((plan, index) => (
@@ -112,7 +112,13 @@ export function SubscriptionPricing() {
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary flex-shrink-0" />
                       <span className="text-sm text-muted-foreground">
-                        Valid for 30 days
+                        Cancel anytime
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">
+                        Unused try-ons roll over
                       </span>
                     </li>
                     <li className="flex items-center gap-3">
@@ -182,12 +188,6 @@ export function SubscriptionPricing() {
                     <Check className="w-5 h-5 text-primary flex-shrink-0" />
                     <span className="text-sm text-muted-foreground">
                       {plan.tryOns.toLocaleString()} virtual try-ons/month
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground">
-                      API access & integrations
                     </span>
                   </li>
                   <li className="flex items-center gap-3">
