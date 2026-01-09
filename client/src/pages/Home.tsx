@@ -3,6 +3,7 @@ import { ContactForm } from "@/components/ContactForm";
 import { CaseStudies } from "@/components/CaseStudies";
 import { SubscriptionPricing } from "@/components/SubscriptionPricing";
 import { ROICalculator } from "@/components/ROICalculator";
+import { ModelShowcase } from "@/components/ModelShowcase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BarChart3, Sparkles, Check, Download, Zap, Share2 } from "lucide-react";
@@ -105,6 +106,11 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* Model Showcase Section */}
+      <section id="showcase">
+        <ModelShowcase />
+      </section>
 
       {/* Technology Section */}
       <section id="technology" className="py-20 container mx-auto">
