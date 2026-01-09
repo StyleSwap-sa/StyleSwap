@@ -31,7 +31,7 @@ export default function Home() {
             </div>
           </div>
           <div className="hidden md:flex gap-8 font-medium text-sm">
-            {['Overview', 'Technology', 'Market', 'Pricing', 'ROI', 'Case Studies', 'Contact'].map((item) => (
+            {['Overview', 'Technology', 'Market', 'Pricing', 'ROI', 'Case Studies', 'Contact'].map((item, idx) => (
               <button 
                 key={item}
                 onClick={() => scrollToSection(item.toLowerCase())}

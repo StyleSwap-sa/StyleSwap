@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import { useState } from "react";
 
 export function SubscriptionPricing() {
   const plans = [
@@ -43,16 +44,106 @@ export function SubscriptionPricing() {
     },
   ];
 
+  const individualPlans = [
+    {
+      tryOns: 10,
+      price: 45,
+      costPerTryOn: 4.50,
+    },
+    {
+      tryOns: 20,
+      price: 80,
+      costPerTryOn: 4.00,
+    },
+    {
+      tryOns: 50,
+      price: 150,
+      costPerTryOn: 3.00,
+    },
+  ];
+
   return (
     <section className="py-20 container mx-auto">
       <div className="text-center mb-16">
         <h2 className="text-5xl md:text-6xl font-bold mb-6">SIMPLE PRICING</h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Flexible subscription plans based on your monthly try-on volume. All prices in South African Rands (ZAR).
+          Flexible subscription plans for both businesses and individuals. All prices in South African Rands (ZAR).
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      {/* Individual Consumer Plans */}
+      <div className="mb-20">
+        <h3 className="text-3xl font-bold mb-8 text-center">FOR INDIVIDUALS</h3>
+        <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Try on clothes virtually without owning a business. Perfect for personal shopping and fashion discovery.
+        </p>
+        <div className="grid md:grid-cols-3 gap-6">
+          {individualPlans.map((plan, index) => (
+            <Card 
+              key={index} 
+              className="premium-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col hover:shadow-xl"
+            >
+              <CardHeader>
+                <CardTitle className="text-3xl font-bold">
+                  {plan.tryOns}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">Try-ons</p>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col">
+                {/* Price */}
+                <div className="mb-6">
+                  <div className="text-5xl font-bold text-primary mb-1">
+                    R{plan.price.toLocaleString()}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    R{plan.costPerTryOn.toFixed(2)} per try-on
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div className="mb-6 flex-1">
+                  <ul className="space-y-3">
+                    <li className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">
+                        {plan.tryOns} virtual try-ons
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">
+                        Valid for 30 days
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">
+                        Save favorites
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+
+                <Button 
+                  className="w-full h-12 font-bold text-lg premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                >
+                  Buy Now
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Business Plans Divider */}
+      <div className="my-16 text-center">
+        <div className="inline-block bg-border/20 px-6 py-3 rounded-full">
+          <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">For Businesses</p>
+        </div>
+      </div>
+      <h3 className="text-3xl font-bold mb-8 text-center">BUSINESS SUBSCRIPTIONS</h3>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" id="business-plans">
         {plans.map((plan, index) => (
           <Card 
             key={index} 
@@ -131,14 +222,20 @@ export function SubscriptionPricing() {
       {/* Pricing Info */}
       <Card className="premium-card bg-secondary/5 rounded-2xl border-secondary/30">
         <CardHeader>
-          <CardTitle>Flexible Billing</CardTitle>
+          <CardTitle>Flexible Billing Options</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div>
+              <h4 className="font-bold mb-2">Individual Plans</h4>
+              <p className="text-sm text-muted-foreground">
+                Pay-as-you-go credits valid for 30 days. Perfect for casual users and fashion enthusiasts.
+              </p>
+            </div>
             <div>
               <h4 className="font-bold mb-2">Monthly Billing</h4>
               <p className="text-sm text-muted-foreground">
-                Pay monthly and cancel anytime. Perfect for testing and small-scale operations.
+                Business subscriptions billed monthly. Cancel anytime with no long-term commitment.
               </p>
             </div>
             <div>
