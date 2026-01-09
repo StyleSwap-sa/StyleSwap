@@ -220,28 +220,28 @@ export function SubscriptionPricing() {
       </div>
 
       {/* Pricing Info */}
-      <Card className="premium-card bg-secondary/5 rounded-2xl border-secondary/30">
+      <Card className="premium-card bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30 rounded-2xl">
         <CardHeader>
-          <CardTitle>Flexible Billing Options</CardTitle>
+          <CardTitle className="text-2xl">Flexible Billing & No Lock-In</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div>
-              <h4 className="font-bold mb-2">Individual Plans</h4>
-              <p className="text-sm text-muted-foreground">
-                Pay-as-you-go credits valid for 30 days. Perfect for casual users and fashion enthusiasts.
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <h4 className="font-bold text-lg flex items-center gap-2">
+                <span className="text-primary text-2xl">✓</span>
+                Cancel Anytime
+              </h4>
+              <p className="text-muted-foreground leading-relaxed">
+                No long-term contracts or hidden fees. Cancel your subscription whenever you want, instantly.
               </p>
             </div>
-            <div>
-              <h4 className="font-bold mb-2">Monthly Billing</h4>
-              <p className="text-sm text-muted-foreground">
-                Business subscriptions billed monthly. Cancel anytime with no long-term commitment.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-bold mb-2">Annual Discounts</h4>
-              <p className="text-sm text-muted-foreground">
-                Contact us for annual billing options and volume discounts for enterprise customers.
+            <div className="space-y-4">
+              <h4 className="font-bold text-lg flex items-center gap-2">
+                <span className="text-primary text-2xl">✓</span>
+                Unused Try-Ons Roll Over
+              </h4>
+              <p className="text-muted-foreground leading-relaxed">
+                Your unused try-ons carry forward to the next month as long as your subscription is active. Never lose your credits.
               </p>
             </div>
           </div>
