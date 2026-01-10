@@ -198,6 +198,12 @@ export function SubscriptionPricing() {
                   <li className="flex items-center gap-3">
                     <Check className="w-5 h-5 text-primary flex-shrink-0" />
                     <span className="text-sm text-muted-foreground">
+                      Try-ons valid for 30 days
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Check className="w-5 h-5 text-primary flex-shrink-0" />
+                    <span className="text-sm text-muted-foreground">
                       Analytics dashboard
                     </span>
                   </li>
