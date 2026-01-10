@@ -4,6 +4,7 @@ import { CaseStudies } from "@/components/CaseStudies";
 import { SubscriptionPricing } from "@/components/SubscriptionPricing";
 import { ROICalculator } from "@/components/ROICalculator";
 import { ModelShowcase } from "@/components/ModelShowcase";
+import { InteractiveCarousel } from "@/components/InteractiveCarousel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BarChart3, Sparkles, Check, Download, Zap, Share2 } from "lucide-react";
@@ -110,6 +111,11 @@ export default function Home() {
       {/* Model Showcase Section */}
       <section id="showcase">
         <ModelShowcase />
+      </section>
+
+      {/* Interactive Carousel Section */}
+      <section id="demo">
+        <InteractiveCarousel />
       </section>
 
       {/* Technology Section */}

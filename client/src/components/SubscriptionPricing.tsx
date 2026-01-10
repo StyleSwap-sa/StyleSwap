@@ -73,7 +73,12 @@ export function SubscriptionPricing() {
 
       {/* Individual Consumer Plans */}
       <div className="mb-20">
-        <h3 className="text-3xl font-bold mb-8 text-center">FOR INDIVIDUALS</h3>
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <h3 className="text-3xl font-bold text-center">FOR INDIVIDUALS</h3>
+          <span className="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-full border border-primary/30">
+            Valid for 30 Days
+          </span>
+        </div>
         <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
           Try on clothes virtually without owning a business. Cancel anytime and keep your unused try-ons. Perfect for personal shopping and fashion discovery.
         </p>
