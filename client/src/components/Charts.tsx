@@ -50,7 +50,7 @@ export function MarketGrowthChart() {
 
 export function PricingComparisonChart() {
   const data = [
-    { name: 'StyleSwap', cost: 0.85, type: 'AI-Based' },
+    { name: 'StyleSwap', cost: 0.93, type: 'AI-Based' },
     { name: 'Competitor A', cost: 2.50, type: 'AR-Based' },
     { name: 'Competitor B', cost: 4.00, type: 'Enterprise' },
     { name: 'Competitor C', cost: 1.75, type: 'Mixed' },

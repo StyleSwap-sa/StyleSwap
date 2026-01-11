@@ -38,9 +38,9 @@ export function SubscriptionPricing() {
     },
     {
       tryOns: 20000,
-      price: 17000,
+      price: 18600,
       period: "monthly",
-      costPerTryOn: 0.85,
+      costPerTryOn: 0.93,
     },
   ];
 
@@ -120,12 +120,7 @@ export function SubscriptionPricing() {
                         Cancel anytime
                       </span>
                     </li>
-                    <li className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                      <span className="text-sm text-muted-foreground">
-                        Unused try-ons roll over
-                      </span>
-                    </li>
+
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-primary flex-shrink-0" />
                       <span className="text-sm text-muted-foreground">
@@ -249,10 +244,10 @@ export function SubscriptionPricing() {
             <div className="space-y-4">
               <h4 className="font-bold text-lg flex items-center gap-2">
                 <span className="text-primary text-2xl">✓</span>
-                Unused Try-Ons Roll Over
+                Valid for 30 Days
               </h4>
               <p className="text-muted-foreground leading-relaxed">
-                Your unused try-ons carry forward to the next month as long as your subscription is active. Never lose your credits.
+                All try-ons are valid for 30 days from purchase. Use them within the validity period to maximize your subscription value.
               </p>
             </div>
           </div>
