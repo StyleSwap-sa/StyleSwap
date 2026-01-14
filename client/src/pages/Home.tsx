@@ -1,4 +1,6 @@
 import { FeatureComparisonChart, MarketGrowthChart, PricingComparisonChart } from "@/components/Charts";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 import { ContactForm } from "@/components/ContactForm";
 import { CaseStudies } from "@/components/CaseStudies";
 import { SubscriptionPricing } from "@/components/SubscriptionPricing";
@@ -11,6 +13,10 @@ import { ArrowRight, BarChart3, Sparkles, Check, Download, Zap, Share2 } from "l
 import { useState } from "react";
 
 export default function Home() {
+  // The userAuth hooks provides authentication state
+  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
+  let { user, loading, error, isAuthenticated, logout } = useAuth();
+
   const [activeSection, setActiveSection] = useState('overview');
 
   const scrollToSection = (id: string) => {
