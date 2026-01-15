@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, garments, tryOnResults, InsertTryOnResult } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -87,6 +87,46 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+// Garment queries
+export async function getActiveGarments() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(garments).where(eq(garments.isActive, 1));
+}
+
+export async function getGarmentById(garmentId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(garments).where(eq(garments.id, garmentId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// Try-on results queries
+export async function createTryOnResult(data: InsertTryOnResult) {
+  const db = await getDb();
+  if (!db) return undefined;
+  return db.insert(tryOnResults).values(data);
+}
+
+export async function getUserTryOnResults(userId: number, limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(tryOnResults).where(eq(tryOnResults.userId, userId)).orderBy(desc(tryOnResults.createdAt)).limit(limit);
+}
+
+export async function getTryOnResultByShareToken(shareToken: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(tryOnResults).where(eq(tryOnResults.shareToken, shareToken)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function incrementShareCount(tryOnResultId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(tryOnResults).set({ shareCount: sql`${tryOnResults.shareCount} + 1` }).where(eq(tryOnResults.id, tryOnResultId));
 }
 
 // TODO: add feature queries here as your schema grows.

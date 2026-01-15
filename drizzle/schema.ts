@@ -62,3 +62,41 @@ export const transactions = mysqlTable("transactions", {
 
 export type Transaction = typeof transactions.$inferSelect;
 export type InsertTransaction = typeof transactions.$inferInsert;
+
+/**
+ * Garments catalog table - stores available garments for try-ons
+ */
+export const garments = mysqlTable("garments", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 100 }).notNull(), // dress, shirt, pants, etc.
+  imageUrl: varchar("imageUrl", { length: 500 }).notNull(),
+  price: varchar("price", { length: 20 }),
+  currency: varchar("currency", { length: 3 }).default("ZAR"),
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Garment = typeof garments.$inferSelect;
+export type InsertGarment = typeof garments.$inferInsert;
+
+/**
+ * Try-on results table - stores generated virtual try-on images
+ */
+export const tryOnResults = mysqlTable("tryOnResults", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  garmentId: int("garmentId").notNull(),
+  userPhotoUrl: varchar("userPhotoUrl", { length: 500 }).notNull(),
+  resultImageUrl: varchar("resultImageUrl", { length: 500 }).notNull(),
+  shareToken: varchar("shareToken", { length: 255 }).unique(),
+  shareCount: int("shareCount").default(0),
+  isPublic: int("isPublic").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TryOnResult = typeof tryOnResults.$inferSelect;
+export type InsertTryOnResult = typeof tryOnResults.$inferInsert;

@@ -15,6 +15,13 @@
       "when": 1768391177315,
       "tag": "0001_dark_jean_grey",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1768404969763,
+      "tag": "0002_superb_brood",
+      "breakpoints": true
     }
   ]
 }
