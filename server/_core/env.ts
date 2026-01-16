@@ -8,4 +8,7 @@ export const ENV = {
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   fitroomApiKey: process.env.FITROOM_API_KEY ?? "",
+  yokoSecretKey: process.env.YOKO_SECRET_KEY ?? "",
+  yokoPublicKey: process.env.YOKO_PUBLIC_KEY ?? "",
+  yokoApiBaseUrl: process.env.YOKO_API_BASE_URL ?? "",
 };
