@@ -1,6 +1,6 @@
-import { FeatureComparisonChart, MarketGrowthChart, PricingComparisonChart } from "@/components/Charts";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
+import { useLocation } from "wouter";
 import { ContactForm } from "@/components/ContactForm";
 import { CaseStudies } from "@/components/CaseStudies";
 import { SubscriptionPricing } from "@/components/SubscriptionPricing";
@@ -9,14 +9,12 @@ import { ModelShowcase } from "@/components/ModelShowcase";
 import { InteractiveCarousel } from "@/components/InteractiveCarousel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, BarChart3, Sparkles, Check, Download, Zap, Share2 } from "lucide-react";
+import { ArrowRight, BarChart3, Sparkles, Check, Download, Zap, Share2, LogOut } from "lucide-react";
 import { useState } from "react";
 
 export default function Home() {
-  // The userAuth hooks provides authentication state
-  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
-
+  const { user, loading, isAuthenticated, logout } = useAuth();
+  const [, setLocation] = useLocation();
   const [activeSection, setActiveSection] = useState('overview');
 
   const scrollToSection = (id: string) => {
@@ -24,6 +22,30 @@ export default function Home() {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
       setActiveSection(id);
+    }
+  };
+
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      setLocation('/dashboard');
+    } else {
+      window.location.href = getLoginUrl();
+    }
+  };
+
+  const handleTryOn = () => {
+    if (isAuthenticated) {
+      setLocation('/dashboard?tab=try-on');
+    } else {
+      window.location.href = getLoginUrl();
+    }
+  };
+
+  const handleViewDemo = () => {
+    if (isAuthenticated) {
+      setLocation('/dashboard?tab=catalog');
+    } else {
+      window.location.href = getLoginUrl();
     }
   };
 
@@ -39,7 +61,7 @@ export default function Home() {
             </div>
           </div>
           <div className="hidden md:flex gap-8 font-medium text-sm">
-            {['Overview', 'Technology', 'Market', 'Pricing', 'ROI', 'Case Studies', 'Contact'].map((item, idx) => (
+            {['Overview', 'Technology', 'Market', 'Pricing', 'ROI', 'Case Studies', 'Contact'].map((item) => (
               <button 
                 key={item}
                 onClick={() => scrollToSection(item.toLowerCase())}
@@ -49,9 +71,35 @@ export default function Home() {
               </button>
             ))}
           </div>
-          <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 font-bold">
-            Get Started <Download className="ml-2 w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-3">
+            {isAuthenticated ? (
+              <>
+                <span className="text-sm font-medium text-muted-foreground">
+                  {user?.name}
+                </span>
+                <Button
+                  onClick={() => {
+                    logout();
+                    setLocation('/');
+                  }}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={handleGetStarted}
+                  className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                >
+                  Get Started <Download className="ml-2 w-4 h-4" />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -76,7 +124,11 @@ export default function Home() {
               >
                 Explore Technology <ArrowRight className="ml-2" />
               </Button>
-              <Button variant="outline" className="premium-button h-14 px-8 text-lg">
+              <Button 
+                onClick={handleViewDemo}
+                variant="outline" 
+                className="premium-button h-14 px-8 text-lg"
+              >
                 View Demo
               </Button>
             </div>
@@ -208,9 +260,15 @@ export default function Home() {
           <h2 className="text-5xl md:text-6xl font-bold mb-16 text-center">MARKET INTELLIGENCE</h2>
           
           <div className="grid lg:grid-cols-2 gap-8 mb-12">
-            <MarketGrowthChart />
+            <Card className="premium-card">
+              <CardHeader>
+                <CardTitle>Market Growth</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">The virtual try-on market is experiencing exponential growth with a projected CAGR of 36.9% through 2032.</p>
+              </CardContent>
+            </Card>
             <div className="grid gap-8">
-              <FeatureComparisonChart />
               <Card className="premium-card bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
                 <CardHeader>
                   <CardTitle className="text-2xl">KEY OPPORTUNITY</CardTitle>
@@ -266,7 +324,14 @@ export default function Home() {
               ))}
             </ul>
           </div>
-          <PricingComparisonChart />
+          <Card className="premium-card">
+            <CardHeader>
+              <CardTitle>Pricing Comparison</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">StyleSwap's pricing is significantly more competitive than traditional AR solutions.</p>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="premium-card bg-gradient-to-r from-primary/5 to-secondary/5 p-12 rounded-2xl border-primary/30">
@@ -278,7 +343,10 @@ export default function Home() {
               </p>
             </div>
             <div className="flex gap-4">
-              <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-8 text-lg">
+              <Button 
+                onClick={handleGetStarted}
+                className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-8 text-lg"
+              >
                 Get Started Now
               </Button>
             </div>
@@ -322,17 +390,17 @@ export default function Home() {
             <div>
               <h4 className="font-bold mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#pricing-tiers" className="hover:text-primary transition">Pricing</a></li>
-                <li><a href="#roi" className="hover:text-primary transition">ROI Calculator</a></li>
-                <li><a href="#case-studies" className="hover:text-primary transition">Case Studies</a></li>
+                <li><button onClick={() => scrollToSection('pricing-tiers')} className="hover:text-primary transition">Pricing</button></li>
+                <li><button onClick={() => scrollToSection('roi')} className="hover:text-primary transition">ROI Calculator</button></li>
+                <li><button onClick={() => scrollToSection('case-studies')} className="hover:text-primary transition">Case Studies</button></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#overview" className="hover:text-primary transition">About</a></li>
+                <li><button onClick={() => scrollToSection('overview')} className="hover:text-primary transition">About</button></li>
                 <li><a href="#" className="hover:text-primary transition">Blog</a></li>
-                <li><a href="#contact" className="hover:text-primary transition">Contact</a></li>
+                <li><button onClick={() => scrollToSection('contact')} className="hover:text-primary transition">Contact</button></li>
               </ul>
             </div>
             <div>

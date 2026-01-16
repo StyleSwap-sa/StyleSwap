@@ -22,3 +22,13 @@
 - [x] Test virtual try-on flow end-to-end
 - [x] Test social sharing functionality
 - [x] Save checkpoint
+
+
+## Phase 5: Bug Fixes & Feature Integration
+- [x] Add login/signup buttons to Home page
+- [x] Create working Pricing page with subscription plans
+- [x] Make "Get Started", "View Demo", "Try It On" buttons functional
+- [x] Integrate Virtual Try-On Upload into accessible route
+- [x] Integrate Social Sharing into accessible route
+- [x] Fix navigation to Dashboard for authenticated users
+- [x] Test all buttons and links end-to-end

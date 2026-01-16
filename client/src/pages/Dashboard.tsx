@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Zap, History, Shirt, ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { VirtualTryOnUpload } from "@/components/VirtualTryOnUpload";
 import { GarmentCatalog } from "@/components/GarmentCatalog";
@@ -12,8 +12,17 @@ type DashboardTab = "overview" | "try-on" | "catalog" | "history";
 
 export default function Dashboard() {
   const { user, isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
-  const [, setLocation] = useLocation();
+  const [location] = useLocation();
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
+
+  // Handle tab query parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab') as DashboardTab | null;
+    if (tab && ['overview', 'try-on', 'catalog', 'history'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [location]);
 
   // Fetch user credits
   const { data: credits, isLoading: creditsLoading, refetch: refetchCredits } = 
@@ -181,12 +190,12 @@ export default function Dashboard() {
                     >
                       Start Try-On
                     </Button>
-                    <Button
-                      onClick={() => setLocation("/pricing")}
-                      variant="outline"
-                    >
-                      Buy More Credits
-                    </Button>
+                  <Button
+                    onClick={() => window.location.href = '/pricing'}
+                    variant="outline"
+                  >
+                    Buy More Credits
+                  </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -277,7 +286,7 @@ export default function Dashboard() {
               You're running low on credits! Get more to continue enjoying StyleSwap.
             </p>
             <Button
-              onClick={() => setLocation("/pricing")}
+              onClick={() => window.location.href = '/pricing'}
               className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Buy More Credits
