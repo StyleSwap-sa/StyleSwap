@@ -9,22 +9,37 @@ export function SubscriptionPricing() {
   const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
 
-  const handleBuyNow = (tryOns: number, price: number) => {
-    if (!isAuthenticated) {
-      window.location.href = getLoginUrl();
-      return;
+  const getPackageId = (tryOns: number): string => {
+    switch (tryOns) {
+      case 50:
+        return "pkg_50_credits";
+      case 100:
+        return "pkg_100_credits";
+      case 200:
+        return "pkg_200_credits";
+      case 500:
+        return "pkg_500_credits";
+      default:
+        return "pkg_50_credits";
     }
-    // Navigate to dashboard with checkout parameters
-    setLocation(`/dashboard?tab=overview&checkout=pkg_${tryOns}&price=${price}`);
   };
 
-  const handleSubscribe = (tryOns: number, price: number) => {
+  const handleBuyNow = (tryOns: number) => {
     if (!isAuthenticated) {
       window.location.href = getLoginUrl();
       return;
     }
-    // Navigate to dashboard with checkout parameters
-    setLocation(`/dashboard?tab=overview&checkout=pkg_${tryOns}&price=${price}`);
+    const packageId = getPackageId(tryOns);
+    setLocation(`/checkout?package=${packageId}`);
+  };
+
+  const handleSubscribe = (tryOns: number) => {
+    if (!isAuthenticated) {
+      window.location.href = getLoginUrl();
+      return;
+    }
+    const packageId = getPackageId(tryOns);
+    setLocation(`/checkout?package=${packageId}`);
   };
 
   const plans = [
@@ -154,7 +169,7 @@ export function SubscriptionPricing() {
                 </div>
 
                 <Button 
-                  onClick={() => handleBuyNow(plan.tryOns, plan.price)}
+                  onClick={() => handleBuyNow(plan.tryOns)}
                   className="w-full h-12 font-bold text-lg premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90"
                 >
                   Buy Now
@@ -236,7 +251,7 @@ export function SubscriptionPricing() {
               </div>
 
               <Button 
-                onClick={() => handleSubscribe(plan.tryOns, plan.price)}
+                onClick={() => handleSubscribe(plan.tryOns)}
                 className={`w-full h-12 font-bold text-lg ${
                   plan.highlighted
                     ? 'premium-button bg-primary text-primary-foreground hover:bg-primary/90'

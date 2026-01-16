@@ -69,14 +69,18 @@ export const paymentRouter = router({
           cancelUrl: input.cancelUrl,
         });
 
+        // Generate checkout URL from payment intent
+        const checkoutUrl = paymentIntent.checkoutUrl || `https://checkout.yoko.com/${paymentIntent.id}`;
+        
         return {
           id: paymentIntent.id,
           clientSecret: paymentIntent.clientSecret,
           status: paymentIntent.status,
-          amount: paymentIntent.amount / 100, // Convert to ZAR
+          amount: paymentIntent.amount / 100,
           currency: paymentIntent.currency,
           packageId: input.packageId,
           credits: pkg.credits,
+          checkoutUrl: checkoutUrl,
         };
       } catch (error) {
         console.error("[Payment Router] Error creating checkout:", error);

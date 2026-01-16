@@ -62,6 +62,7 @@ export interface PaymentIntentResponse {
   status: string;
   amount: number;
   currency: string;
+  checkoutUrl?: string;
   metadata: {
     userId: string;
     packageId: string;
@@ -123,6 +124,7 @@ export async function createPaymentIntent(
       status: data.status,
       amount: data.amount,
       currency: data.currency,
+      checkoutUrl: data.checkout_url || data.url,
       metadata: data.metadata,
     };
   } catch (error) {
