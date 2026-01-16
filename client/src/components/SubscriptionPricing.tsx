@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, Zap } from "lucide-react";
 import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
 
 export function SubscriptionPricing() {
   const { isAuthenticated } = useAuth();
@@ -33,70 +33,106 @@ export function SubscriptionPricing() {
     setLocation(`/checkout?package=${packageId}`);
   };
 
-  const handleSubscribe = (tryOns: number) => {
-    if (!isAuthenticated) {
-      window.location.href = getLoginUrl();
-      return;
-    }
-    const packageId = getPackageId(tryOns);
-    setLocation(`/checkout?package=${packageId}`);
-  };
-
-  const plans = [
+  // Individual Plans - Pay-as-you-go model
+  const individualPlans = [
     {
+      name: "Starter",
+      tryOns: 50,
+      price: 150,
+      costPerTryOn: 3.00,
+      description: "Perfect for trying out StyleSwap",
+      features: [
+        "50 virtual try-ons",
+        "Access to garment catalog",
+        "Basic sharing features",
+        "Email support",
+        "7-day validity",
+      ],
+    },
+    {
+      name: "Professional",
       tryOns: 100,
-      price: 385,
-      period: "monthly",
-      costPerTryOn: 3.85,
+      price: 300,
+      costPerTryOn: 3.00,
+      description: "Best for regular users",
+      features: [
+        "100 virtual try-ons",
+        "Priority access to new garments",
+        "Advanced sharing analytics",
+        "Priority email support",
+        "14-day validity",
+      ],
+      highlighted: true,
     },
     {
+      name: "Power User",
       tryOns: 200,
-      price: 750,
-      period: "monthly",
-      costPerTryOn: 3.75,
+      price: 550,
+      costPerTryOn: 2.75,
+      description: "For fashion enthusiasts",
+      features: [
+        "200 virtual try-ons",
+        "Early access to exclusive garments",
+        "Advanced sharing analytics",
+        "Priority support",
+        "30-day validity",
+      ],
     },
+  ];
+
+  // Business Plans - Subscription model
+  const businessPlans = [
     {
+      name: "Business Starter",
       tryOns: 500,
       price: 1350,
       period: "monthly",
       costPerTryOn: 2.70,
+      description: "For small fashion retailers",
+      features: [
+        "500 virtual try-ons/month",
+        "API access for integration",
+        "Custom garment uploads",
+        "Email support",
+        "30-day validity",
+        "Monthly billing",
+      ],
     },
     {
+      name: "Business Professional",
       tryOns: 1000,
       price: 2200,
       period: "monthly",
       costPerTryOn: 2.20,
+      description: "For growing fashion brands",
+      features: [
+        "1000 virtual try-ons/month",
+        "API access for integration",
+        "Custom garment uploads",
+        "Priority support",
+        "60-day validity",
+        "Monthly billing",
+        "Advanced analytics dashboard",
+      ],
       highlighted: true,
     },
     {
+      name: "Enterprise",
       tryOns: 5000,
       price: 6250,
       period: "monthly",
       costPerTryOn: 1.25,
-    },
-    {
-      tryOns: 20000,
-      price: 18600,
-      period: "monthly",
-      costPerTryOn: 0.93,
-    },
-  ];
-
-  const individualPlans = [
-    {
-      tryOns: 10,
-      price: 45,
-      costPerTryOn: 4.50,
-    },
-    {
-      tryOns: 20,
-      price: 80,
-      costPerTryOn: 4.00,
-    },
-    {
-      tryOns: 50,
-      price: 150,
-      costPerTryOn: 3.00,
+      description: "For large fashion retailers",
+      features: [
+        "5000 virtual try-ons/month",
+        "API access for integration",
+        "Custom garment uploads",
+        "24/7 priority support",
+        "90-day validity",
+        "Monthly billing",
+        "Advanced analytics dashboard",
+        "Dedicated account manager",
+      ],
     },
   ];
 
@@ -105,72 +141,61 @@ export function SubscriptionPricing() {
       <div className="text-center mb-16">
         <h2 className="text-5xl md:text-6xl font-bold mb-6">SIMPLE PRICING</h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Flexible subscription plans for both businesses and individuals. All prices in South African Rands (ZAR).
+          Flexible pricing for individuals and businesses. All prices in South African Rands (ZAR).
         </p>
       </div>
 
-      {/* Individual Consumer Plans */}
-      <div className="mb-20">
-        <div className="flex items-center justify-center gap-3 mb-8">
+      {/* Individual Plans Section */}
+      <div className="mb-24">
+        <div className="flex items-center justify-center gap-3 mb-12">
+          <Zap className="w-6 h-6 text-primary" />
           <h3 className="text-3xl font-bold text-center">FOR INDIVIDUALS</h3>
-          <span className="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-bold rounded-full border border-primary/30">
-            Valid for 30 Days
-          </span>
+          <p className="text-muted-foreground ml-4">Pay-as-you-go • No subscription required</p>
         </div>
-        <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Try on clothes virtually without owning a business. Cancel anytime and keep your unused try-ons. Perfect for personal shopping and fashion discovery.
-        </p>
-        <div className="grid md:grid-cols-3 gap-6">
-          {individualPlans.map((plan, index) => (
-            <Card 
-              key={index} 
-              className="premium-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col hover:shadow-xl"
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {individualPlans.map((plan, idx) => (
+            <Card
+              key={idx}
+              className={`premium-card rounded-2xl overflow-hidden transition-all duration-300 ${
+                plan.highlighted
+                  ? "ring-2 ring-primary shadow-2xl scale-105 md:scale-100"
+                  : ""
+              }`}
             >
+              {plan.highlighted && (
+                <div className="bg-primary text-primary-foreground py-2 text-center font-bold text-sm">
+                  MOST POPULAR
+                </div>
+              )}
               <CardHeader>
-                <CardTitle className="text-3xl font-bold">
-                  {plan.tryOns}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground mt-2">Try-ons</p>
+                <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
-                {/* Price */}
-                <div className="mb-6">
-                  <div className="text-5xl font-bold text-primary mb-1">
-                    R{plan.price.toLocaleString()}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    R{plan.costPerTryOn.toFixed(2)} per try-on
+              <CardContent className="space-y-6">
+                <div>
+                  <div className="text-5xl font-bold text-primary">R{plan.price}</div>
+                  <div className="text-sm text-muted-foreground mt-2">
+                    {plan.tryOns} try-ons • R{plan.costPerTryOn}/try-on
                   </div>
                 </div>
 
-                {/* Features */}
-                <div className="mb-6 flex-1">
-                  <ul className="space-y-3">
-                    <li className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                      <span className="text-sm text-muted-foreground">
-                        {plan.tryOns} virtual try-ons
-                      </span>
+                <ul className="space-y-3">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <span className="text-muted-foreground">{feature}</span>
                     </li>
-                    <li className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                      <span className="text-sm text-muted-foreground">
-                        Cancel anytime
-                      </span>
-                    </li>
+                  ))}
+                </ul>
 
-                    <li className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                      <span className="text-sm text-muted-foreground">
-                        Save favorites
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-
-                <Button 
+                <Button
                   onClick={() => handleBuyNow(plan.tryOns)}
-                  className="w-full h-12 font-bold text-lg premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                  className={`w-full h-12 font-bold text-lg premium-button ${
+                    plan.highlighted
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                  }`}
                 >
                   Buy Now
                 </Button>
@@ -180,119 +205,90 @@ export function SubscriptionPricing() {
         </div>
       </div>
 
-      {/* Business Plans Divider */}
-      <div className="my-16 text-center">
-        <div className="inline-block bg-border/20 px-6 py-3 rounded-full">
-          <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">For Businesses</p>
+      {/* Business Plans Section */}
+      <div className="mb-20">
+        <div className="flex items-center justify-center gap-3 mb-12">
+          <Zap className="w-6 h-6 text-secondary" />
+          <h3 className="text-3xl font-bold text-center">FOR BUSINESSES</h3>
+          <p className="text-muted-foreground ml-4">Monthly subscription • API access included</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {businessPlans.map((plan, idx) => (
+            <Card
+              key={idx}
+              className={`premium-card rounded-2xl overflow-hidden transition-all duration-300 ${
+                plan.highlighted
+                  ? "ring-2 ring-secondary shadow-2xl scale-105 md:scale-100"
+                  : ""
+              }`}
+            >
+              {plan.highlighted && (
+                <div className="bg-secondary text-secondary-foreground py-2 text-center font-bold text-sm">
+                  RECOMMENDED FOR BUSINESSES
+                </div>
+              )}
+              <CardHeader>
+                <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <div className="text-5xl font-bold text-secondary">R{plan.price}</div>
+                  <div className="text-sm text-muted-foreground mt-2">
+                    {plan.tryOns} try-ons/{plan.period} • R{plan.costPerTryOn}/try-on
+                  </div>
+                </div>
+
+                <ul className="space-y-3">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
+                      <span className="text-muted-foreground">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button
+                  onClick={() => handleBuyNow(plan.tryOns)}
+                  className={`w-full h-12 font-bold text-lg premium-button ${
+                    plan.highlighted
+                      ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                      : "bg-foreground/10 text-foreground hover:bg-foreground/20"
+                  }`}
+                >
+                  Subscribe Now
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
-      <h3 className="text-3xl font-bold mb-8 text-center">BUSINESS SUBSCRIPTIONS</h3>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" id="business-plans">
-        {plans.map((plan, index) => (
-          <Card 
-            key={index} 
-            className={`premium-card rounded-2xl overflow-hidden transition-all duration-300 flex flex-col ${
-              plan.highlighted 
-                ? 'ring-2 ring-primary shadow-2xl' 
-                : 'hover:shadow-xl'
-            }`}
-          >
-            {plan.highlighted && (
-              <div className="bg-primary text-primary-foreground py-2 text-center font-bold uppercase text-sm tracking-wider">
-                Most Popular
-              </div>
-            )}
-            <CardHeader>
-              <CardTitle className="text-3xl font-bold">
-                {plan.tryOns.toLocaleString()}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-2">Try-ons per month</p>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col">
-              {/* Price */}
-              <div className="mb-6">
-                <div className="text-5xl font-bold text-primary mb-1">
-                  R{plan.price.toLocaleString()}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  R{plan.costPerTryOn.toFixed(2)} per try-on
-                </div>
-              </div>
-
-              {/* Features */}
-              <div className="mb-6 flex-1">
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground">
-                      {plan.tryOns.toLocaleString()} virtual try-ons/month
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground">
-                      Try-ons valid for 30 days
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground">
-                      Analytics dashboard
-                    </span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground">
-                      Email support
-                    </span>
-                  </li>
-                </ul>
-              </div>
-
-              <Button 
-                onClick={() => handleSubscribe(plan.tryOns)}
-                className={`w-full h-12 font-bold text-lg ${
-                  plan.highlighted
-                    ? 'premium-button bg-primary text-primary-foreground hover:bg-primary/90'
-                    : 'premium-button bg-foreground/10 text-foreground hover:bg-foreground/20'
-                }`}
-              >
-                Subscribe Now
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Pricing Info */}
-      <Card className="premium-card bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30 rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-2xl">Flexible Billing & No Lock-In</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <h4 className="font-bold text-lg flex items-center gap-2">
-                <span className="text-primary text-2xl">✓</span>
-                Cancel Anytime
-              </h4>
-              <p className="text-muted-foreground leading-relaxed">
-                No long-term contracts or hidden fees. Cancel your subscription whenever you want, instantly.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <h4 className="font-bold text-lg flex items-center gap-2">
-                <span className="text-primary text-2xl">✓</span>
-                Valid for 30 Days
-              </h4>
-              <p className="text-muted-foreground leading-relaxed">
-                All try-ons are valid for 30 days from purchase. Use them within the validity period to maximize your subscription value.
-              </p>
-            </div>
+      {/* FAQ Section */}
+      <div className="mt-20 max-w-3xl mx-auto">
+        <h3 className="text-3xl font-bold text-center mb-12">FREQUENTLY ASKED QUESTIONS</h3>
+        <div className="space-y-6">
+          <div className="premium-card p-6 rounded-lg">
+            <h4 className="font-bold text-lg mb-2">Can I switch between plans?</h4>
+            <p className="text-muted-foreground">
+              Yes! Individual plans are one-time purchases. Business plans can be upgraded or downgraded anytime.
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="premium-card p-6 rounded-lg">
+            <h4 className="font-bold text-lg mb-2">What happens when my credits expire?</h4>
+            <p className="text-muted-foreground">
+              Individual plan credits expire after the validity period. Business plans renew monthly with fresh credits.
+            </p>
+          </div>
+          <div className="premium-card p-6 rounded-lg">
+            <h4 className="font-bold text-lg mb-2">Do you offer custom enterprise plans?</h4>
+            <p className="text-muted-foreground">
+              Yes! Contact our sales team at info@styleswap.co.za for custom enterprise solutions.
+            </p>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

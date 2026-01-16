@@ -75,3 +75,19 @@
 - [x] Fix Yoko checkout session creation
 - [x] Ensure payment redirect opens actual Yoko payment page
 - [x] Test payment flow end-to-end
+
+
+## Phase 11: SMS Payment Confirmation
+- [ ] Request and configure Twilio SMS credentials
+- [ ] Create SMS notification service
+- [ ] Integrate SMS into payment webhook
+- [ ] Add phone number field to user profile
+- [ ] Test SMS notifications
+
+
+## Phase 12: Pricing Restructure
+- [x] Remove conflicting pricing tiers (Starter, Professional, Enterprise)
+- [x] Create Individual pricing tier with pay-as-you-go model
+- [x] Create Business pricing tier with subscription model
+- [x] Ensure pricing aligns with business model
+- [x] Test pricing page
