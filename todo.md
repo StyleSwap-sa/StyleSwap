@@ -39,3 +39,15 @@
 - [x] Fix login section visibility and authentication flow
 - [x] Fix "Buy Now" and "Subscribe" button functionality
 - [x] Test all buttons and verify login works
+
+
+## Phase 7: Email Notifications & User Profile
+- [x] Set up email notification database schema
+- [x] Create email notification service
+- [x] Build User Profile Dashboard page
+- [x] Add Account Settings section
+- [x] Add Payment History section
+- [x] Add Favorites Management section
+- [x] Integrate notifications into purchase flow
+- [x] Integrate notifications into try-on flow
+- [x] Test all features

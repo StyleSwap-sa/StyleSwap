@@ -22,6 +22,13 @@
       "when": 1768404969763,
       "tag": "0002_superb_brood",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1768552488386,
+      "tag": "0003_premium_maverick",
+      "breakpoints": true
     }
   ]
 }

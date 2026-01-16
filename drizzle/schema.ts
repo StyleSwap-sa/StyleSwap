@@ -100,3 +100,35 @@ export const tryOnResults = mysqlTable("tryOnResults", {
 
 export type TryOnResult = typeof tryOnResults.$inferSelect;
 export type InsertTryOnResult = typeof tryOnResults.$inferInsert;
+
+/**
+ * Email notifications table - stores notification history
+ */
+export const emailNotifications = mysqlTable("emailNotifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  type: mysqlEnum("type", ["purchase_confirmation", "try_on_complete", "credits_expiring", "promotional"]).notNull(),
+  subject: varchar("subject", { length: 255 }).notNull(),
+  recipientEmail: varchar("recipientEmail", { length: 320 }).notNull(),
+  status: mysqlEnum("status", ["pending", "sent", "failed", "bounced"]).default("pending").notNull(),
+  sentAt: timestamp("sentAt"),
+  failureReason: text("failureReason"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EmailNotification = typeof emailNotifications.$inferSelect;
+export type InsertEmailNotification = typeof emailNotifications.$inferInsert;
+
+/**
+ * Favorites table - tracks user favorite garments
+ */
+export const favorites = mysqlTable("favorites", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  garmentId: int("garmentId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Favorite = typeof favorites.$inferSelect;
+export type InsertFavorite = typeof favorites.$inferInsert;

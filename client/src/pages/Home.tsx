@@ -78,6 +78,13 @@ export default function Home() {
                   {user?.name}
                 </span>
                 <Button
+                  onClick={() => setLocation('/profile')}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  Profile
+                </Button>
+                <Button
                   onClick={() => {
                     logout();
                     setLocation('/');
