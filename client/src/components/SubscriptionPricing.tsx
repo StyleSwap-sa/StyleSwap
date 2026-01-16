@@ -1,9 +1,29 @@
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { useState } from "react";
 
 export function SubscriptionPricing() {
+  const { isAuthenticated } = useAuth();
+  
+  const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      window.location.href = getLoginUrl();
+    } else {
+      alert('Redirecting to payment...');
+    }
+  };
+
+  const handleSubscribe = () => {
+    if (!isAuthenticated) {
+      window.location.href = getLoginUrl();
+    } else {
+      alert('Redirecting to payment...');
+    }
+  };
+
   const plans = [
     {
       tryOns: 100,
@@ -131,6 +151,7 @@ export function SubscriptionPricing() {
                 </div>
 
                 <Button 
+                  onClick={handleBuyNow}
                   className="w-full h-12 font-bold text-lg premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90"
                 >
                   Buy Now
@@ -212,6 +233,7 @@ export function SubscriptionPricing() {
               </div>
 
               <Button 
+                onClick={handleSubscribe}
                 className={`w-full h-12 font-bold text-lg ${
                   plan.highlighted
                     ? 'premium-button bg-primary text-primary-foreground hover:bg-primary/90'

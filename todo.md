@@ -32,3 +32,10 @@
 - [x] Integrate Social Sharing into accessible route
 - [x] Fix navigation to Dashboard for authenticated users
 - [x] Test all buttons and links end-to-end
+
+
+## Phase 6: Contact & Auth Fixes
+- [x] Update Contact Form with StyleSwap contact details
+- [x] Fix login section visibility and authentication flow
+- [x] Fix "Buy Now" and "Subscribe" button functionality
+- [x] Test all buttons and verify login works

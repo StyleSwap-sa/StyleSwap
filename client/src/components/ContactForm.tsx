@@ -68,7 +68,7 @@ export function ContactForm() {
               </div>
               <div>
                 <h3 className="font-bold text-lg mb-1">Email</h3>
-                <p className="text-muted-foreground">hello@styleswap.co.za</p>
+                <p className="text-muted-foreground">info@styleswap.co.za</p>
               </div>
             </div>
 
@@ -78,7 +78,7 @@ export function ContactForm() {
               </div>
               <div>
                 <h3 className="font-bold text-lg mb-1">Phone</h3>
-                <p className="text-muted-foreground">+27 (0) 10 123 4567</p>
+                <p className="text-muted-foreground">060 855 5621</p>
               </div>
             </div>
 
@@ -88,7 +88,7 @@ export function ContactForm() {
               </div>
               <div>
                 <h3 className="font-bold text-lg mb-1">Location</h3>
-                <p className="text-muted-foreground">Cape Town, South Africa</p>
+                <p className="text-muted-foreground">Johannesburg, South Africa</p>
               </div>
             </div>
           </div>
