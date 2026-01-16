@@ -3,25 +3,28 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
-import { useState } from "react";
+import { useLocation } from "wouter";
 
 export function SubscriptionPricing() {
   const { isAuthenticated } = useAuth();
-  
-  const handleBuyNow = () => {
+  const [, setLocation] = useLocation();
+
+  const handleBuyNow = (tryOns: number, price: number) => {
     if (!isAuthenticated) {
       window.location.href = getLoginUrl();
-    } else {
-      alert('Redirecting to payment...');
+      return;
     }
+    // Navigate to dashboard with checkout parameters
+    setLocation(`/dashboard?tab=overview&checkout=pkg_${tryOns}&price=${price}`);
   };
 
-  const handleSubscribe = () => {
+  const handleSubscribe = (tryOns: number, price: number) => {
     if (!isAuthenticated) {
       window.location.href = getLoginUrl();
-    } else {
-      alert('Redirecting to payment...');
+      return;
     }
+    // Navigate to dashboard with checkout parameters
+    setLocation(`/dashboard?tab=overview&checkout=pkg_${tryOns}&price=${price}`);
   };
 
   const plans = [
@@ -151,7 +154,7 @@ export function SubscriptionPricing() {
                 </div>
 
                 <Button 
-                  onClick={handleBuyNow}
+                  onClick={() => handleBuyNow(plan.tryOns, plan.price)}
                   className="w-full h-12 font-bold text-lg premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90"
                 >
                   Buy Now
@@ -233,7 +236,7 @@ export function SubscriptionPricing() {
               </div>
 
               <Button 
-                onClick={handleSubscribe}
+                onClick={() => handleSubscribe(plan.tryOns, plan.price)}
                 className={`w-full h-12 font-bold text-lg ${
                   plan.highlighted
                     ? 'premium-button bg-primary text-primary-foreground hover:bg-primary/90'

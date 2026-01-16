@@ -435,3 +435,83 @@ export default function Home() {
     </div>
   );
 }
+
+
+      {/* Free Demo CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-primary/10 to-secondary/10 border-y border-primary/20">
+        <div className="container mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="inline-block bg-primary/20 border border-primary/40 px-4 py-2 rounded-lg font-bold text-sm uppercase tracking-wider text-primary">
+                Try It Free
+              </div>
+              <h2 className="text-5xl md:text-6xl font-bold leading-tight">
+                See StyleSwap in Action
+              </h2>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Upload your photo and try on any garment from our catalog instantly. No credit card required. Get 2 free virtual try-ons to experience the technology.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  onClick={() => window.location.href = '/demo'}
+                  className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-8 text-lg gap-2"
+                >
+                  Try Free Demo <ArrowRight className="w-5 h-5" />
+                </Button>
+                <Button
+                  onClick={() => {
+                    const element = document.getElementById('pricing');
+                    if (element) element.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  variant="outline"
+                  className="premium-button h-14 px-8 text-lg"
+                >
+                  View Pricing
+                </Button>
+              </div>
+              <div className="flex items-center gap-6 pt-4">
+                <div>
+                  <p className="font-bold text-2xl text-primary">2</p>
+                  <p className="text-sm text-muted-foreground">Free Try-Ons</p>
+                </div>
+                <div>
+                  <p className="font-bold text-2xl text-primary">0</p>
+                  <p className="text-sm text-muted-foreground">Credit Card</p>
+                </div>
+                <div>
+                  <p className="font-bold text-2xl text-primary">30s</p>
+                  <p className="text-sm text-muted-foreground">Results</p>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute -inset-6 bg-secondary/10 rounded-2xl blur-3xl"></div>
+              <Card className="premium-card rounded-2xl relative z-10 overflow-hidden">
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg p-6 text-center">
+                      <Sparkles className="w-12 h-12 mx-auto text-primary mb-3" />
+                      <p className="font-bold text-lg">Upload Your Photo</p>
+                      <p className="text-sm text-muted-foreground mt-1">Choose any garment from our catalog</p>
+                    </div>
+                    <div className="border-t border-border/20 pt-4">
+                      <p className="text-sm font-bold mb-3 flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        AI-Powered Generation
+                      </p>
+                      <p className="text-sm font-bold mb-3 flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        Instant Results
+                      </p>
+                      <p className="text-sm font-bold flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        Share with Friends
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
