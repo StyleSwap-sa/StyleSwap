@@ -13,6 +13,23 @@ export interface PaymentPackage {
 }
 
 export const PAYMENT_PACKAGES: PaymentPackage[] = [
+  // Individual Plans
+  {
+    id: "pkg_10_credits",
+    name: "10 Try-Ons",
+    credits: 10,
+    price: 4500, // R45
+    currency: "ZAR",
+    description: "10 virtual try-on credits valid for 30 days",
+  },
+  {
+    id: "pkg_20_credits",
+    name: "20 Try-Ons",
+    credits: 20,
+    price: 8000, // R80
+    currency: "ZAR",
+    description: "20 virtual try-on credits valid for 30 days",
+  },
   {
     id: "pkg_50_credits",
     name: "50 Try-Ons",
@@ -21,6 +38,7 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     currency: "ZAR",
     description: "50 virtual try-on credits valid for 30 days",
   },
+  // Business Plans
   {
     id: "pkg_100_credits",
     name: "100 Try-Ons",
@@ -41,9 +59,33 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     id: "pkg_500_credits",
     name: "500 Try-Ons",
     credits: 500,
-    price: 165000, // R1650
+    price: 135000, // R1350
     currency: "ZAR",
     description: "500 virtual try-on credits valid for 30 days",
+  },
+  {
+    id: "pkg_1000_credits",
+    name: "1000 Try-Ons",
+    credits: 1000,
+    price: 220000, // R2200
+    currency: "ZAR",
+    description: "1000 virtual try-on credits valid for 30 days",
+  },
+  {
+    id: "pkg_5000_credits",
+    name: "5000 Try-Ons",
+    credits: 5000,
+    price: 625000, // R6250
+    currency: "ZAR",
+    description: "5000 virtual try-on credits valid for 30 days",
+  },
+  {
+    id: "pkg_20000_credits",
+    name: "20000 Try-Ons",
+    credits: 20000,
+    price: 1860000, // R18600
+    currency: "ZAR",
+    description: "20000 virtual try-on credits valid for 30 days",
   },
 ];
 

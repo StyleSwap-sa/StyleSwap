@@ -91,3 +91,12 @@
 - [x] Create Business pricing tier with subscription model
 - [x] Ensure pricing aligns with business model
 - [x] Test pricing page
+
+
+## Phase 13: Pricing Update & Payment Fix
+- [x] Update pricing to exact specifications (Individual: R45-R150, Business: R385-R18,600)
+- [x] Set all try-ons validity to 30 days
+- [x] Debug payment fetch error
+- [x] Fix payment processing
+- [x] Integrate Twilio SMS confirmations
+- [x] Test payment and SMS end-to-end

@@ -11,4 +11,7 @@ export const ENV = {
   yokoSecretKey: process.env.YOKO_SECRET_KEY ?? "",
   yokoPublicKey: process.env.YOKO_PUBLIC_KEY ?? "",
   yokoApiBaseUrl: process.env.YOKO_API_BASE_URL ?? "",
+  twilioAccountSid: process.env.TWILIO_ACCOUNT_SID ?? "",
+  twilioAuthToken: process.env.TWILIO_AUTH_TOKEN ?? "",
+  twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER ?? "",
 };

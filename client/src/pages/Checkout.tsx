@@ -10,6 +10,7 @@ export default function Checkout() {
   const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
   const [isProcessing, setIsProcessing] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const createCheckoutMutation = trpc.payment.createCheckout.useMutation({
     onSuccess: (data) => {

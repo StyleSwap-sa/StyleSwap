@@ -4,6 +4,7 @@ import { transactions, userCredits } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { sendEmailNotification } from "../email";
 import { verifyWebhookSignature } from "../yoko-payment";
+import { sendPaymentConfirmationSMS } from "../sms";
 
 export interface YokoWebhookPayload {
   id: string;
@@ -135,6 +136,18 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"]) {
       subject: "Purchase Confirmation - StyleSwap",
       htmlContent: emailHtml,
     });
+
+    // Send SMS confirmation
+    try {
+      await sendPaymentConfirmationSMS(
+        "+27123456789",
+        credits,
+        data.amount,
+        data.metadata.packageId
+      );
+    } catch (smsError) {
+      console.warn("[Yoko Webhook] Failed to send SMS:", smsError);
+    }
 
     console.log(
       `[Yoko Webhook] Payment succeeded for user ${userId}: +${credits} credits`

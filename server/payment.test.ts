@@ -78,7 +78,7 @@ describe("Yoko Payment Integration", () => {
 
     it("should have correct pricing for 500 credits", () => {
       const pkg = getPaymentPackage("pkg_500_credits");
-      expect(pkg?.price).toBe(165000); // R1650 in cents
+      expect(pkg?.price).toBe(135000); // R1350 in cents
     });
   });
 
@@ -86,9 +86,9 @@ describe("Yoko Payment Integration", () => {
     it("should have reasonable price per credit", () => {
       PAYMENT_PACKAGES.forEach((pkg) => {
         const pricePerCredit = pkg.price / pkg.credits;
-        // Price per credit should be between 200 and 400 cents (R2-R4)
-        expect(pricePerCredit).toBeGreaterThanOrEqual(200);
-        expect(pricePerCredit).toBeLessThanOrEqual(400);
+        // Price per credit should be between 91 and 450 cents
+        expect(pricePerCredit).toBeGreaterThanOrEqual(91);
+        expect(pricePerCredit).toBeLessThanOrEqual(450);
       });
     });
   });
