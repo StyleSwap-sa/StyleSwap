@@ -1,10 +1,10 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Zap, History, Shirt, ShoppingBag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { VirtualTryOnUpload } from "@/components/VirtualTryOnUpload";
 import { GarmentCatalog } from "@/components/GarmentCatalog";
 
@@ -12,7 +12,7 @@ type DashboardTab = "overview" | "try-on" | "catalog" | "history";
 
 export default function Dashboard() {
   const { user, isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
 
   // Handle tab query parameter
@@ -192,7 +192,7 @@ export default function Dashboard() {
                     </Button>
                   <Button
                     onClick={() => window.location.href = '/pricing'}
-                    variant="outline"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     Buy More Credits
                   </Button>
@@ -287,7 +287,7 @@ export default function Dashboard() {
             </p>
             <Button
               onClick={() => window.location.href = '/pricing'}
-              className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Buy More Credits
             </Button>

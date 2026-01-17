@@ -110,3 +110,11 @@
 - [x] Add customer acquisition metrics
 - [x] Add popular packages analytics
 - [x] Test phone collection and analytics
+
+
+## Phase 15: Pricing Format Standardization
+- [ ] Update SubscriptionPricing with simplified format (R45 10 try-ons R4.50/try-on)
+- [ ] Update Pricing page with same format
+- [ ] Update Dashboard pricing display
+- [ ] Ensure consistent format across all sections
+- [ ] Test all pricing displays
