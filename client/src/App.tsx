@@ -11,12 +11,26 @@ import Profile from "./pages/Profile";
 import DemoTryOn from "./pages/DemoTryOn";
 import Checkout from "./pages/Checkout";
 import Analytics from "./pages/Analytics";
+import Overview from "./pages/Overview";
+import Technology from "./pages/Technology";
+import Market from "./pages/Market";
+import PricingPage from "./pages/PricingPage";
+import ROI from "./pages/ROI";
+import CaseStudiesPage from "./pages/CaseStudiesPage";
+import ContactPage from "./pages/ContactPage";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/overview"} component={Overview} />
+      <Route path={"/technology"} component={Technology} />
+      <Route path={"/market"} component={Market} />
+      <Route path={"/pricing-page"} component={PricingPage} />
+      <Route path={"/roi"} component={ROI} />
+      <Route path={"/case-studies"} component={CaseStudiesPage} />
+      <Route path={"/contact"} component={ContactPage} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/pricing"} component={Pricing} />
       <Route path={"/profile"} component={Profile} />
