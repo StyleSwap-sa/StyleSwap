@@ -7,6 +7,9 @@ import {
   handlePaymentSuccess,
 } from "../yoko-payment";
 import { TRPCError } from "@trpc/server";
+import { getDb } from "../db";
+import { users } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 
 export const paymentRouter = router({
   /**
@@ -41,6 +44,7 @@ export const paymentRouter = router({
         packageId: z.string(),
         successUrl: z.string().url(),
         cancelUrl: z.string().url(),
+        phoneNumber: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -58,6 +62,17 @@ export const paymentRouter = router({
             code: "NOT_FOUND",
             message: "Payment package not found",
           });
+        }
+
+        // Store phone number if provided
+        if (input.phoneNumber) {
+          const db = await getDb();
+          if (db) {
+            await db
+              .update(users)
+              .set({ phone: input.phoneNumber })
+              .where(eq(users.id, ctx.user.id));
+          }
         }
 
         const paymentIntent = await createPaymentIntent({

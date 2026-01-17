@@ -10,6 +10,7 @@ import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import DemoTryOn from "./pages/DemoTryOn";
 import Checkout from "./pages/Checkout";
+import Analytics from "./pages/Analytics";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -21,6 +22,7 @@ function Router() {
       <Route path={"/profile"} component={Profile} />
       <Route path={"/demo"} component={DemoTryOn} />
       <Route path={"/checkout"} component={Checkout} />
+      <Route path={"/analytics"} component={Analytics} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

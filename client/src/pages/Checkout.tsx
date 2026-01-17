@@ -1,16 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Checkout() {
-  const { isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
+  const { isAuthenticated, user } = useAuth({ redirectOnUnauthenticated: true });
   const [, setLocation] = useLocation();
-  const [isProcessing, setIsProcessing] = useState(true);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [packageId, setPackageId] = useState<string | null>(null);
 
   const createCheckoutMutation = trpc.payment.createCheckout.useMutation({
     onSuccess: (data) => {
@@ -26,7 +30,6 @@ export default function Checkout() {
       console.error("[Checkout] Error:", error);
       toast.error(error.message || "Failed to create checkout session");
       setIsProcessing(false);
-      setTimeout(() => setLocation("/dashboard?tab=overview"), 2000);
     },
   });
 
@@ -34,23 +37,52 @@ export default function Checkout() {
     if (!isAuthenticated) return;
 
     const params = new URLSearchParams(window.location.search);
-    const packageId = params.get("package");
-    const successUrl = `${window.location.origin}/dashboard?tab=overview&payment=success`;
-    const cancelUrl = `${window.location.origin}/dashboard?tab=overview&payment=cancelled`;
+    const pkg = params.get("package");
 
-    if (!packageId) {
+    if (!pkg) {
       toast.error("Invalid checkout session");
       setLocation("/dashboard?tab=overview");
       return;
     }
 
-    // Create checkout session
-    createCheckoutMutation.mutate({
-      packageId,
-      successUrl,
-      cancelUrl,
-    });
+    setPackageId(pkg);
   }, [isAuthenticated]);
+
+  const handlePhoneSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate phone number
+    if (!phoneNumber.trim()) {
+      setError("Phone number is required");
+      return;
+    }
+
+    // Basic phone validation (South African format)
+    const phoneRegex = /^(\+27|0)[0-9]{9}$/;
+    if (!phoneRegex.test(phoneNumber.replace(/\s/g, ""))) {
+      setError("Please enter a valid South African phone number");
+      return;
+    }
+
+    setError(null);
+    setIsProcessing(true);
+
+    try {
+      const successUrl = `${window.location.origin}/dashboard?tab=overview&payment=success`;
+      const cancelUrl = `${window.location.origin}/dashboard?tab=overview&payment=cancelled`;
+
+      // Create checkout session with phone number
+      createCheckoutMutation.mutate({
+        packageId: packageId!,
+        successUrl,
+        cancelUrl,
+        phoneNumber: phoneNumber.replace(/\s/g, ""),
+      });
+    } catch (err) {
+      setError("Failed to process checkout");
+      setIsProcessing(false);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -61,16 +93,58 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="premium-card rounded-2xl max-w-md w-full mx-4">
-        <CardContent className="pt-8 text-center space-y-4">
-          <Loader2 className="w-12 h-12 animate-spin mx-auto text-primary" />
-          <h2 className="text-2xl font-bold">Processing Payment</h2>
-          <p className="text-muted-foreground">
-            {isProcessing
-              ? "Redirecting to payment gateway..."
-              : "Payment session created. Redirecting..."}
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/10 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Phone className="w-5 h-5 text-primary" />
+            Confirm Your Phone Number
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePhoneSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Phone Number</label>
+              <Input
+                type="tel"
+                placeholder="+27 123 456 789"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                disabled={isProcessing}
+                className="text-base"
+              />
+              <p className="text-xs text-muted-foreground">
+                We'll send your payment confirmation via SMS
+              </p>
+            </div>
+
+            {error && <div className="text-sm text-destructive">{error}</div>}
+
+            <Button
+              type="submit"
+              disabled={isProcessing || !phoneNumber}
+              className="w-full"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Continue to Payment"
+              )}
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isProcessing}
+              onClick={() => setLocation("/dashboard?tab=overview")}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
