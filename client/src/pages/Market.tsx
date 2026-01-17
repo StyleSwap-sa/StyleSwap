@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MarketGrowthChart, FeatureComparisonChart } from "@/components/Charts";
+import Navigation from "@/components/Navigation";
 
 export default function Market() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Navigation />
       <section className="py-20 bg-secondary/5 border-y border-secondary/20">
         <div className="container mx-auto">
           <h2 className="text-5xl md:text-6xl font-bold mb-16 text-center">MARKET INTELLIGENCE</h2>

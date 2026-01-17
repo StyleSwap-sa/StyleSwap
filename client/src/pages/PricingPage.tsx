@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { getLoginUrl } from "@/const";
+import Navigation from "@/components/Navigation";
 
 const PRICING_TIERS = [
   // Individual Plans
@@ -117,6 +118,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Navigation />
       <section className="py-20 container mx-auto">
         <h2 className="text-5xl md:text-6xl font-bold mb-16 text-center">PRICING PLANS</h2>
 

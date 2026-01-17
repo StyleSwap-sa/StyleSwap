@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles, Zap, BarChart3 } from "lucide-react";
+import Navigation from "@/components/Navigation";
 
 export default function Technology() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Navigation />
       <section className="py-20 container mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
           <div>

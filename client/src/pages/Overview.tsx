@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Zap } from "lucide-react";
 import { getLoginUrl } from "@/const";
+import Navigation from "@/components/Navigation";
 
 export default function Overview() {
   const { isAuthenticated } = useAuth();
@@ -27,6 +28,7 @@ export default function Overview() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Navigation />
       {/* Hero Section */}
       <section className="pt-32 pb-20 container mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
