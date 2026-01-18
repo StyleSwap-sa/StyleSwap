@@ -146,5 +146,5 @@
 - [x] Register webhook endpoint in Express server
 - [x] Fix hardcoded phone number in SMS handler
 - [x] Manually allocate credits to user account
-- [ ] Configure Yoco dashboard webhook (user action)
+- [x] Configure Yoco dashboard webhook (automated registration)
 - [ ] Test future payments with webhook
