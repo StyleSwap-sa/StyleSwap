@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getDb } from "../db";
-import { transactions, userCredits } from "../../drizzle/schema";
+import { transactions, userCredits, users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { sendEmailNotification } from "../email";
 import { verifyWebhookSignature } from "../yoko-payment";
@@ -139,12 +139,24 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"]) {
 
     // Send SMS confirmation
     try {
-      await sendPaymentConfirmationSMS(
-        "+27123456789",
-        credits,
-        data.amount,
-        data.metadata.packageId
-      );
+      // Get user phone number from database
+      const db = await getDb();
+      if (db) {
+        const user = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        
+        if (user.length > 0 && user[0].phone) {
+          await sendPaymentConfirmationSMS(
+            user[0].phone,
+            credits,
+            data.amount,
+            data.metadata.packageId
+          );
+        }
+      }
     } catch (smsError) {
       console.warn("[Yoko Webhook] Failed to send SMS:", smsError);
     }

@@ -139,3 +139,12 @@
 - [x] Fix test file to check for correct domain
 - [x] Verify all 90 tests pass with corrected endpoint
 - [x] Confirm payment gateway is now functional
+
+
+## Phase 18: Payment Webhook Delivery Fix
+- [x] Investigate Yoco webhook configuration
+- [x] Register webhook endpoint in Express server
+- [x] Fix hardcoded phone number in SMS handler
+- [x] Manually allocate credits to user account
+- [ ] Configure Yoco dashboard webhook (user action)
+- [ ] Test future payments with webhook
