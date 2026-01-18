@@ -7,7 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { handleYokoWebhook } from "../webhooks/yoko";
+import { handleYokoWebhook } from "../webhooks/yoco";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -36,8 +36,8 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
-  // Yoko webhook endpoint
-  app.post("/api/webhooks/yoko", handleYokoWebhook);
+  // Yoco webhook endpoint
+  app.post("/api/webhooks/yoco", handleYokoWebhook);
   // tRPC API
   app.use(
     "/api/trpc",

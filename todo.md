@@ -147,4 +147,11 @@
 - [x] Fix hardcoded phone number in SMS handler
 - [x] Manually allocate credits to user account
 - [x] Configure Yoco dashboard webhook (automated registration)
-- [ ] Test future payments with webhook
+- [x] Correct webhook endpoint from /yoko to /yoco
+
+## Phase 19: Webhook Endpoint Correction
+- [x] Rename webhook file from yoko.ts to yoco.ts
+- [x] Update server imports to use yoco endpoint
+- [x] Update webhook registration script
+- [x] Re-register webhook with correct /yoco endpoint
+- [x] Verify all 90 tests still passing
