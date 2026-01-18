@@ -128,7 +128,7 @@ export async function createPaymentIntent(
   }
 
   try {
-    const response = await fetch(`${ENV.yokoApiBaseUrl}/payment_intents`, {
+    const response = await fetch(`${ENV.yokoApiBaseUrl}/api/checkouts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -136,8 +136,9 @@ export async function createPaymentIntent(
       },
       body: JSON.stringify({
         amount: pkg.price,
-        currency: pkg.currency.toLowerCase(),
-        description: pkg.description,
+        currency: pkg.currency,
+        successUrl: request.successUrl,
+        cancelUrl: request.cancelUrl,
         metadata: {
           userId: request.userId.toString(),
           packageId: request.packageId,
@@ -145,12 +146,7 @@ export async function createPaymentIntent(
           userName: request.userName,
           userEmail: request.userEmail,
         },
-        customer: {
-          email: request.userEmail,
-          name: request.userName,
-        },
-        success_url: request.successUrl,
-        cancel_url: request.cancelUrl,
+        clientReferenceId: `${request.userId}-${request.packageId}-${Date.now()}`,
       }),
     });
 
@@ -162,11 +158,11 @@ export async function createPaymentIntent(
     const data = await response.json();
     return {
       id: data.id,
-      clientSecret: data.client_secret,
+      clientSecret: "", // Yoco doesn't use client secrets
       status: data.status,
       amount: data.amount,
       currency: data.currency,
-      checkoutUrl: data.checkout_url || data.url,
+      checkoutUrl: data.redirectUrl, // Yoco returns redirectUrl
       metadata: data.metadata,
     };
   } catch (error) {

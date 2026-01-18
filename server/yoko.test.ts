@@ -22,7 +22,7 @@ describe("Yoko Payment API Integration", () => {
 
     it("should have Yoko API base URL configured", () => {
       expect(ENV.yokoApiBaseUrl).toBeTruthy();
-      expect(ENV.yokoApiBaseUrl).toContain("api.yoco.com");
+      expect(ENV.yokoApiBaseUrl).toContain("payments.yoco.com");
     });
   });
 
@@ -43,7 +43,7 @@ describe("Yoko Payment API Integration", () => {
 
     it("should have proper API base URL format", () => {
       const urlValid =
-        ENV.yokoApiBaseUrl.includes("api.yoco.com") ||
+        ENV.yokoApiBaseUrl.includes("payments.yoco.com") ||
         ENV.yokoApiBaseUrl.includes("localhost");
       expect(urlValid).toBe(true);
     });
