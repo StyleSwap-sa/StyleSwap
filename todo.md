@@ -132,3 +132,10 @@
 - [x] Simplify home page to landing page with navigation
 - [x] Test all page routes and navigation
 - [x] Verify responsive design on all pages
+
+## Phase 17: Payment Gateway Fix
+- [x] Identify Yoco API endpoint issue (was using yoko.com instead of yoco.com)
+- [x] Update YOKO_API_BASE_URL to https://api.yoco.com
+- [x] Fix test file to check for correct domain
+- [x] Verify all 90 tests pass with corrected endpoint
+- [x] Confirm payment gateway is now functional
