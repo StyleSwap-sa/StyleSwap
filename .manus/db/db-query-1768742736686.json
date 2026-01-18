@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, email, name, createdAt FROM users WHERE email = 'rtumi.m@icloud.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT id, email, name, createdAt FROM users WHERE email = 'rtumi.m@icloud.com';",
+  "rows": [
+    {
+      "id": "1",
+      "email": "rtumi.m@icloud.com",
+      "name": "Renelle Mofokeng",
+      "createdAt": "2026-01-14 11:46:28"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\tcreatedAt\n1\trtumi.m@icloud.com\tRenelle Mofokeng\t2026-01-14 11:46:28\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

@@ -1,0 +1,22 @@
+{
+  "query": "SELECT u.id, u.email, uc.totalCredits, uc.remainingCredits FROM users u LEFT JOIN userCredits uc ON u.id = uc.userId WHERE u.email = 'rtumi.m@icloud.com' ORDER BY uc.totalCredits DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT u.id, u.email, uc.totalCredits, uc.remainingCredits FROM users u LEFT JOIN userCredits uc ON u.id = uc.userId WHERE u.email = 'rtumi.m@icloud.com' ORDER BY uc.totalCredits DESC;",
+  "rows": [
+    {
+      "id": "1",
+      "email": "rtumi.m@icloud.com",
+      "totalCredits": "10",
+      "remainingCredits": "10"
+    },
+    {
+      "id": "1",
+      "email": "rtumi.m@icloud.com",
+      "totalCredits": "0",
+      "remainingCredits": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\ttotalCredits\tremainingCredits\n1\trtumi.m@icloud.com\t10\t10\n1\trtumi.m@icloud.com\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

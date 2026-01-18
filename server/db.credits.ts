@@ -27,16 +27,18 @@ export async function getUserCredits(userId: number) {
     remainingCredits: 0,
   });
 
-  return {
-    id: 0,
-    userId,
-    totalCredits: 0,
-    usedCredits: 0,
-    remainingCredits: 0,
-    expiresAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  // Fetch and return the newly created record
+  const newRecord = await db
+    .select()
+    .from(userCredits)
+    .where(eq(userCredits.userId, userId))
+    .limit(1);
+
+  if (newRecord.length > 0) {
+    return newRecord[0];
+  }
+
+  throw new Error("Failed to create user credits record");
 }
 
 /**
