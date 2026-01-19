@@ -140,6 +140,7 @@ class FitroomClient {
   /**
    * Check model image suitability before try-on
    * Validates if the model image is suitable for virtual try-on
+   * Uses official Fitroom API endpoint: /api/tryon/input_check/v1/model
    * 
    * @param modelImagePath - Path to model image
    * @returns Validation result
@@ -151,9 +152,9 @@ class FitroomClient {
       }
 
       const formData = new FormData();
-      formData.append("model_image", fs.createReadStream(modelImagePath));
+      formData.append("input_image", fs.createReadStream(modelImagePath));
 
-      const response = await this.client.post("/api/tryon/v2/model/validate", formData, {
+      const response = await this.client.post("/api/tryon/input_check/v1/model", formData, {
         headers: formData.getHeaders(),
       });
 
@@ -173,6 +174,7 @@ class FitroomClient {
   /**
    * Check clothing image suitability before try-on
    * Validates if the clothing image is suitable for virtual try-on
+   * Uses official Fitroom API endpoint: /api/tryon/input_check/v1/clothes
    * 
    * @param clothImagePath - Path to clothing image
    * @returns Validation result
@@ -184,9 +186,9 @@ class FitroomClient {
       }
 
       const formData = new FormData();
-      formData.append("cloth_image", fs.createReadStream(clothImagePath));
+      formData.append("input_image", fs.createReadStream(clothImagePath));
 
-      const response = await this.client.post("/api/tryon/v2/cloth/validate", formData, {
+      const response = await this.client.post("/api/tryon/input_check/v1/clothes", formData, {
         headers: formData.getHeaders(),
       });
 

@@ -201,3 +201,17 @@
 - [x] Add Fitroom image guidelines to upload form
 - [x] Add refund mutation to frontend
 - [x] Verify all 90 tests still passing
+
+
+## Phase 24: Fitroom API Implementation Fixes
+- [x] Add image validation BEFORE credit deduction (critical)
+- [x] Validate model image using /api/tryon/input_check/v1/model
+- [x] Validate clothing image using /api/tryon/input_check/v1/clothes
+- [x] Only deduct credit if both validations pass
+- [x] Fixed validation endpoints to match official Fitroom API docs
+- [x] Updated createTryOn to validate before deducting credits
+- [x] Added helpful error messages for validation failures
+- [x] All 90 tests passing
+- [ ] Add specific error code mapping (400s, 410s) - TODO
+- [ ] Handle rate limiting (429) with exponential backoff - TODO
+- [ ] Add retry logic for failed requests (max 3 retries) - TODO

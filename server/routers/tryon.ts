@@ -37,8 +37,8 @@ export const tryonRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      let tempDir: string | null = null;
       try {
-        // Check user has credits
         const credits = await getUserCredits(ctx.user.id);
         if (credits.remainingCredits < 1) {
           throw new TRPCError({
@@ -47,8 +47,7 @@ export const tryonRouter = router({
           });
         }
 
-        // Convert base64 to temporary files
-        const tempDir = path.join("/tmp", `fitroom-${ctx.user.id}-${Date.now()}`);
+        tempDir = path.join("/tmp", `fitroom-${ctx.user.id}-${Date.now()}`);
         if (!fs.existsSync(tempDir)) {
           fs.mkdirSync(tempDir, { recursive: true });
         }
@@ -56,28 +55,39 @@ export const tryonRouter = router({
         const modelImagePath = path.join(tempDir, "model.jpg");
         const clothImagePath = path.join(tempDir, "cloth.jpg");
 
-        // Decode base64 and write to temp files
         const modelBuffer = Buffer.from(input.modelImageBase64, "base64");
         const clothBuffer = Buffer.from(input.clothImageBase64, "base64");
 
         fs.writeFileSync(modelImagePath, modelBuffer);
         fs.writeFileSync(clothImagePath, clothBuffer);
 
-        // Call Fitroom API to create task
         const fitroomClient = getFitroomClient();
+        
+        console.log("[Try-On] Validating model image...");
+        const modelValidation = await fitroomClient.validateModelImage(modelImagePath);
+        if (!modelValidation.valid) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Body photo validation failed: ${modelValidation.error || "Image does not meet requirements. Ensure full body is visible, standing straight, facing forward, with simple background."}`,
+          });
+        }
+
+        console.log("[Try-On] Validating clothing image...");
+        const clothValidation = await fitroomClient.validateClothImage(clothImagePath);
+        if (!clothValidation.valid) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Clothing image validation failed: ${clothValidation.error || "Image does not meet requirements. Ensure clothing is clearly visible, well-lit, on solid background."}`,
+          });
+        }
+
+        console.log("[Try-On] Creating try-on task...");
         const taskResult = await fitroomClient.createTryOn({
           modelImagePath,
           clothImagePath,
           clothType: input.clothType as "upper" | "lower" | "full_set",
           hdMode: input.hdMode,
         });
-
-        // Clean up temp files
-        try {
-          fs.rmSync(tempDir, { recursive: true, force: true });
-        } catch (err) {
-          console.warn("[Cleanup] Failed to remove temp files:", err);
-        }
 
         if (!taskResult.success) {
           throw new TRPCError({
@@ -86,7 +96,7 @@ export const tryonRouter = router({
           });
         }
 
-        // Deduct credit from user account (deduct immediately when task is created)
+        console.log("[Try-On] Deducting credit...");
         const updatedCredits = await deductCredits(ctx.user.id, 1);
 
         return {
@@ -103,6 +113,14 @@ export const tryonRouter = router({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create virtual try-on task",
         });
+      } finally {
+        if (tempDir) {
+          try {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+          } catch (err) {
+            console.warn("[Cleanup] Failed to remove temp files:", err);
+          }
+        }
       }
     }),
 
