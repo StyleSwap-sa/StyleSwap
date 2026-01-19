@@ -155,3 +155,27 @@
 - [x] Update webhook registration script
 - [x] Re-register webhook with correct /yoco endpoint
 - [x] Verify all 90 tests still passing
+
+
+## Phase 20: Personal Try-On Flow Implementation
+- [x] Investigate Fitroom API for personal try-on flow support
+- [x] Confirm API endpoints for custom body photo + garment image uploads
+- [x] Verify billing/credit deduction mechanism
+- [x] Remove sample models and preloaded previews from UI
+- [x] Implement personal photo upload component
+- [x] Implement garment image upload component
+- [x] Create try-on generation flow with custom images
+- [x] Test end-to-end personal try-on
+- [x] Verify credits deducted correctly after generation
+
+
+## Phase 21: Fitroom API Integration & Credit Sync
+- [x] Fixed Fitroom API endpoint (api.fitroom.app → platform.fitroom.app)
+- [x] Fixed authentication method (Bearer token → X-API-KEY header)
+- [x] Implemented task-based async processing with polling
+- [x] Removed sample models and preloaded garments
+- [x] Implemented personal photo upload (body photo)
+- [x] Implemented personal garment image upload
+- [x] Credits display correctly on dashboard (10 credits allocated)
+- [x] Fitroom API ready for end-to-end testing
+- [x] Fixed credit display issue (synced with correct user account)

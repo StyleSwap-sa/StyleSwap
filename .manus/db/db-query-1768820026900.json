@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, email, name, openId FROM users WHERE name LIKE '%Renelle%' OR email LIKE '%renelle%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT id, email, name, openId FROM users WHERE name LIKE '%Renelle%' OR email LIKE '%renelle%';",
+  "rows": [
+    {
+      "id": "1",
+      "email": "rtumi.m@icloud.com",
+      "name": "Renelle Mofokeng",
+      "openId": "hfNUb24FZfzWLXcWkweTTM"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\topenId\n1\trtumi.m@icloud.com\tRenelle Mofokeng\thfNUb24FZfzWLXcWkweTTM\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

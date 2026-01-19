@@ -1,0 +1,28 @@
+{
+  "query": "SELECT uc.id, uc.userId, u.email, uc.totalCredits, uc.usedCredits, uc.remainingCredits, uc.expiresAt FROM userCredits uc JOIN users u ON uc.userId = u.id WHERE u.email = 'rtumi.m@icloud.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT uc.id, uc.userId, u.email, uc.totalCredits, uc.usedCredits, uc.remainingCredits, uc.expiresAt FROM userCredits uc JOIN users u ON uc.userId = u.id WHERE u.email = 'rtumi.m@icloud.com';",
+  "rows": [
+    {
+      "id": "1",
+      "userId": "1",
+      "email": "rtumi.m@icloud.com",
+      "totalCredits": "0",
+      "usedCredits": "0",
+      "remainingCredits": "0",
+      "expiresAt": "NULL"
+    },
+    {
+      "id": "30001",
+      "userId": "1",
+      "email": "rtumi.m@icloud.com",
+      "totalCredits": "10",
+      "usedCredits": "0",
+      "remainingCredits": "10",
+      "expiresAt": "2026-02-17 12:55:23"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\temail\ttotalCredits\tusedCredits\tremainingCredits\texpiresAt\n1\t1\trtumi.m@icloud.com\t0\t0\t0\tNULL\n30001\t1\trtumi.m@icloud.com\t10\t0\t10\t2026-02-17 12:55:23\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

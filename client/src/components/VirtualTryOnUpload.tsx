@@ -1,129 +1,190 @@
-import { useState, useRef } from "react";
+"use client";
+
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Loader2, Check, AlertCircle } from "lucide-react";
+import { Upload, Loader2, Check, AlertCircle, Download, Share2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 interface TryOnResult {
-  id: number;
+  taskId: string;
   resultImageUrl: string;
-  garmentName: string;
   createdAt: Date;
 }
 
 export function VirtualTryOnUpload() {
-  const [userPhoto, setUserPhoto] = useState<File | null>(null);
-  const [userPhotoPreview, setUserPhotoPreview] = useState<string>("");
-  const [selectedGarmentId, setSelectedGarmentId] = useState<number | null>(null);
+  // State for uploads
+  const [modelPhoto, setModelPhoto] = useState<File | null>(null);
+  const [modelPhotoPreview, setModelPhotoPreview] = useState<string>("");
+  const [clothImage, setClothImage] = useState<File | null>(null);
+  const [clothImagePreview, setClothImagePreview] = useState<string>("");
+  
+  // State for processing
   const [isLoading, setIsLoading] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
+  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  
+  // State for results
   const [result, setResult] = useState<TryOnResult | null>(null);
   const [error, setError] = useState<string>("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Fetch garments
-  const { data: garments = [] } = trpc.garments.getAll.useQuery();
+  
+  // Refs
+  const modelPhotoInputRef = useRef<HTMLInputElement>(null);
+  const clothImageInputRef = useRef<HTMLInputElement>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch user credits
-  const { data: credits } = trpc.tryon.getCredits.useQuery();
+  const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery();
 
   // Create try-on mutation
   const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
+  
+  // Get try-on status query
+  const getTryOnStatusQuery = trpc.tryon.getTryOnStatus.useQuery(
+    { taskId: currentTaskId || "" },
+    { enabled: !!currentTaskId && isPolling, refetchInterval: 2000 }
+  );
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle model photo upload
+  const handleModelPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError("File size must be less than 10MB");
+    if (file.size > 50 * 1024 * 1024) {
+      setError("Model photo must be less than 50MB");
       return;
     }
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       setError("Please upload an image file");
       return;
     }
 
-    setUserPhoto(file);
+    setModelPhoto(file);
     setError("");
 
-    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
-      setUserPhotoPreview(e.target?.result as string);
+      setModelPhotoPreview(e.target?.result as string);
     };
     reader.readAsDataURL(file);
   };
 
+  // Handle clothing image upload
+  const handleClothImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      setError("Clothing image must be less than 50MB");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please upload an image file");
+      return;
+    }
+
+    setClothImage(file);
+    setError("");
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setClothImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle try-on creation
   const handleCreateTryOn = async () => {
-    if (!userPhoto || !selectedGarmentId) {
-      setError("Please select both a photo and a garment");
+    if (!modelPhoto || !clothImage) {
+      setError("Please upload both a body photo and a clothing image");
       return;
     }
 
     if (!credits || credits.remainingCredits < 1) {
-      setError("Insufficient credits. Please purchase more credits.");
+      setError("Insufficient credits. Please purchase more try-ons.");
       return;
     }
 
     setIsLoading(true);
     setError("");
+    setProcessingProgress(0);
 
     try {
-      const selectedGarment = garments.find(g => g.id === selectedGarmentId);
-      if (!selectedGarment) {
-        setError("Selected garment not found");
-        setIsLoading(false);
-        return;
-      }
-
-      // Convert user photo to base64
-      const userPhotoBase64 = await new Promise<string>((resolve, reject) => {
+      // Convert images to base64
+      const modelPhotoBase64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onload = (e) => resolve((e.target?.result as string).split(",")[1]);
         reader.onerror = reject;
-        reader.readAsDataURL(userPhoto);
+        reader.readAsDataURL(modelPhoto);
       });
 
-      // Fetch garment image and convert to base64
-      const garmentResponse = await fetch(selectedGarment.imageUrl);
-      const garmentBlob = await garmentResponse.blob();
-      const garmentBase64 = await new Promise<string>((resolve, reject) => {
+      const clothImageBase64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onload = (e) => resolve((e.target?.result as string).split(",")[1]);
         reader.onerror = reject;
-        reader.readAsDataURL(garmentBlob);
+        reader.readAsDataURL(clothImage);
       });
 
-      // Call the create try-on mutation
+      // Create try-on task
       const response = await createTryOnMutation.mutateAsync({
-        userImage: userPhotoBase64,
-        garmentImage: garmentBase64,
-        garmentDescription: selectedGarment.description || undefined,
+        modelImageBase64: modelPhotoBase64,
+        clothImageBase64: clothImageBase64,
+        clothType: "full_set",
+        hdMode: false, // Use normal mode for faster processing
       });
 
-      if (response.success && response.resultImage) {
-        setResult({
-          id: Math.floor(Math.random() * 10000),
-          resultImageUrl: response.resultImage,
-          garmentName: selectedGarment.name,
-          createdAt: new Date(),
-        });
-        setUserPhoto(null);
-        setUserPhotoPreview("");
-        setSelectedGarmentId(null);
-      } else if (!response.success) {
-        setError("Failed to create try-on");
+      if (response.success && response.taskId) {
+        setCurrentTaskId(response.taskId);
+        setIsPolling(true);
+        setProcessingProgress(10);
+        setIsLoading(false);
+        
+        // Refetch credits to show updated balance
+        refetchCredits();
       } else {
-        setError("No result image returned");
+        setError("Failed to create try-on task");
+        setIsLoading(false);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
       setIsLoading(false);
     }
   };
+
+  // Monitor polling status
+  useEffect(() => {
+    if (!isPolling || !getTryOnStatusQuery.data) return;
+
+    const status = getTryOnStatusQuery.data.status;
+    
+    if (status === "PROCESSING") {
+      setProcessingProgress(50);
+    } else if (status === "COMPLETED") {
+      if (getTryOnStatusQuery.data.resultImage) {
+        setResult({
+          taskId: currentTaskId || "",
+          resultImageUrl: getTryOnStatusQuery.data.resultImage,
+          createdAt: new Date(),
+        });
+        setIsPolling(false);
+        setProcessingProgress(100);
+        setModelPhoto(null);
+        setModelPhotoPreview("");
+        setClothImage(null);
+        setClothImagePreview("");
+        setCurrentTaskId(null);
+      }
+    } else if (status === "FAILED") {
+      setError("Try-on generation failed. Please try again.");
+      setIsPolling(false);
+      setCurrentTaskId(null);
+    }
+  }, [getTryOnStatusQuery.data, isPolling, currentTaskId]);
+
+  const isReadyToGenerate = modelPhoto && clothImage && credits && credits.remainingCredits >= 1;
 
   return (
     <div className="space-y-6">
@@ -132,67 +193,90 @@ export function VirtualTryOnUpload() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="w-5 h-5 text-primary" />
-            Upload Your Photo
+            Personal Virtual Try-On
           </CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Upload your body photo and clothing image to see how the garment looks on you
+          </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Photo Upload Area */}
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-border/40 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoUpload}
-              className="hidden"
-            />
-            {userPhotoPreview ? (
-              <div className="space-y-4">
-                <img
-                  src={userPhotoPreview}
-                  alt="User photo preview"
-                  className="w-full max-h-64 object-cover rounded-lg"
-                />
-                <p className="text-sm text-muted-foreground">
-                  Click to change photo
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Upload className="w-12 h-12 text-muted-foreground mx-auto" />
-                <p className="font-medium">Click to upload or drag and drop</p>
-                <p className="text-sm text-muted-foreground">
-                  PNG, JPG or GIF (max 10MB)
-                </p>
-              </div>
-            )}
+        <CardContent className="space-y-6">
+          {/* Model Photo Upload */}
+          <div className="space-y-3">
+            <label className="block font-medium">1. Upload Your Body Photo</label>
+            <p className="text-sm text-muted-foreground">
+              Full-body photo, front view (recommended: 2048px height)
+            </p>
+            <div
+              onClick={() => modelPhotoInputRef.current?.click()}
+              className="border-2 border-dashed border-border/40 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+            >
+              <input
+                ref={modelPhotoInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleModelPhotoUpload}
+                className="hidden"
+              />
+              {modelPhotoPreview ? (
+                <div className="space-y-4">
+                  <img
+                    src={modelPhotoPreview}
+                    alt="Body photo preview"
+                    className="w-full max-h-64 object-cover rounded-lg"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Click to change photo
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Upload className="w-12 h-12 text-muted-foreground mx-auto" />
+                  <p className="font-medium">Click to upload or drag and drop</p>
+                  <p className="text-sm text-muted-foreground">
+                    PNG, JPG or GIF (max 50MB)
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Garment Selection */}
+          {/* Clothing Image Upload */}
           <div className="space-y-3">
-            <label className="block font-medium">Select a Garment</label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
-              {garments.map((garment) => (
-                <button
-                  key={garment.id}
-                  onClick={() => setSelectedGarmentId(garment.id)}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    selectedGarmentId === garment.id
-                      ? "border-primary bg-primary/10"
-                      : "border-border/40 hover:border-primary/50"
-                  }`}
-                >
+            <label className="block font-medium">2. Upload Clothing Image</label>
+            <p className="text-sm text-muted-foreground">
+              Front view of the garment (recommended: 1024px width)
+            </p>
+            <div
+              onClick={() => clothImageInputRef.current?.click()}
+              className="border-2 border-dashed border-border/40 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+            >
+              <input
+                ref={clothImageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleClothImageUpload}
+                className="hidden"
+              />
+              {clothImagePreview ? (
+                <div className="space-y-4">
                   <img
-                    src={garment.imageUrl}
-                    alt={garment.name}
-                    className="w-full h-24 object-cover rounded mb-2"
+                    src={clothImagePreview}
+                    alt="Clothing preview"
+                    className="w-full max-h-64 object-cover rounded-lg"
                   />
-                  <p className="text-xs font-medium truncate">{garment.name}</p>
-                  <p className="text-xs text-muted-foreground">{garment.price}</p>
-                </button>
-              ))}
+                  <p className="text-sm text-muted-foreground">
+                    Click to change image
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Upload className="w-12 h-12 text-muted-foreground mx-auto" />
+                  <p className="font-medium">Click to upload or drag and drop</p>
+                  <p className="text-sm text-muted-foreground">
+                    PNG, JPG or GIF (max 50MB)
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -202,7 +286,7 @@ export function VirtualTryOnUpload() {
               Credits Available: <span className="text-primary font-bold">{credits?.remainingCredits || 0}</span>
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Each try-on uses 1 credit
+              Each try-on uses 1 credit (valid for 30 days)
             </p>
           </div>
 
@@ -214,21 +298,44 @@ export function VirtualTryOnUpload() {
             </div>
           )}
 
+          {/* Processing Progress */}
+          {(isLoading || isPolling) && (
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">
+                    {isLoading ? "Creating try-on task..." : "Generating your try-on..."}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {isPolling ? "This usually takes 9-30 seconds" : "Uploading images..."}
+                  </p>
+                </div>
+              </div>
+              <div className="w-full bg-primary/20 rounded-full h-2">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${processingProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Create Button */}
           <Button
             onClick={handleCreateTryOn}
-            disabled={!userPhoto || !selectedGarmentId || isLoading}
+            disabled={!isReadyToGenerate || isLoading || isPolling}
             className="w-full h-12 premium-button bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            {isLoading ? (
+            {isLoading || isPolling ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Creating Try-On...
+                {isLoading ? "Creating Task..." : "Generating..."}
               </>
             ) : (
               <>
                 <Check className="w-4 h-4 mr-2" />
-                Create Virtual Try-On
+                Generate Virtual Try-On
               </>
             )}
           </Button>
@@ -247,7 +354,7 @@ export function VirtualTryOnUpload() {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground mb-2">
-                You tried on: <span className="font-bold text-foreground">{result.garmentName}</span>
+                Generated: {result.createdAt.toLocaleString()}
               </p>
               <img
                 src={result.resultImageUrl}
@@ -255,27 +362,54 @@ export function VirtualTryOnUpload() {
                 className="w-full rounded-lg shadow-lg"
               />
             </div>
-            <div className="flex gap-3">
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3">
               <Button
-                onClick={() => {
-                  setResult(null);
-                  setUserPhotoPreview("");
-                }}
                 variant="outline"
-                className="flex-1"
+                className="premium-button"
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = result.resultImageUrl;
+                  link.download = `styleswap-tryon-${Date.now()}.jpg`;
+                  link.click();
+                }}
               >
-                Try Another
+                <Download className="w-4 h-4 mr-2" />
+                Download
               </Button>
               <Button
+                variant="outline"
+                className="premium-button"
                 onClick={() => {
-                  // Navigate to share page
-                  window.location.href = `/share/${result.id}`;
+                  if (navigator.share) {
+                    navigator.share({
+                      title: "StyleSwap Virtual Try-On",
+                      text: "Check out my virtual try-on!",
+                      url: window.location.href,
+                    });
+                  }
                 }}
-                className="flex-1 premium-button bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                Share Result
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
               </Button>
             </div>
+
+            {/* Try Another Button */}
+            <Button
+              onClick={() => {
+                setResult(null);
+                setModelPhoto(null);
+                setModelPhotoPreview("");
+                setClothImage(null);
+                setClothImagePreview("");
+                setError("");
+              }}
+              className="w-full premium-button bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Try Another Outfit
+            </Button>
           </CardContent>
         </Card>
       )}
