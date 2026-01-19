@@ -179,3 +179,13 @@
 - [x] Credits display correctly on dashboard (10 credits allocated)
 - [x] Fitroom API ready for end-to-end testing
 - [x] Fixed credit display issue (synced with correct user account)
+
+
+## Phase 22: Catalogue Removal & Personal Try-On Only
+- [x] Remove "Garment Catalog" tab from Dashboard
+- [x] Remove GarmentCatalog component import
+- [x] Keep only "Virtual Try-On" tab for personal uploads
+- [x] Verify form shows only 2 upload fields (body photo + clothing)
+- [x] Verify no catalogue products are displayed
+- [x] Confirm all 90 tests still passing
+- [x] Test virtual try-on upload flow
