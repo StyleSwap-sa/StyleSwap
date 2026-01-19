@@ -189,3 +189,15 @@
 - [x] Verify no catalogue products are displayed
 - [x] Confirm all 90 tests still passing
 - [x] Test virtual try-on upload flow
+
+
+## Phase 23: Fitroom API Polling Timeout Fix
+- [x] Debug Fitroom API polling mechanism - stuck at 3+ minutes
+- [x] Check task status endpoint response format
+- [x] Verify polling interval and timeout settings
+- [x] Fix task completion detection logic
+- [x] Add timeout handler to prevent infinite polling (60 second max)
+- [x] Add credit refund mechanism for failed/timeout try-ons
+- [x] Add Fitroom image guidelines to upload form
+- [x] Add refund mutation to frontend
+- [x] Verify all 90 tests still passing

@@ -122,6 +122,41 @@ export async function deductCredits(userId: number, amount: number = 1) {
 }
 
 /**
+ * Refund credits to user account (for failed/timeout try-ons)
+ */
+export async function refundCredits(userId: number, amount: number = 1) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const credits = await getUserCredits(userId);
+
+  const newRemaining = credits.remainingCredits + amount;
+  const newUsed = Math.max(0, credits.usedCredits - amount);
+
+  // Update credits
+  await db
+    .update(userCredits)
+    .set({
+      usedCredits: newUsed,
+      remainingCredits: newRemaining,
+      updatedAt: new Date(),
+    })
+    .where(eq(userCredits.userId, userId));
+
+  // Log transaction
+  await db.insert(transactions).values({
+    userId,
+    type: "refund",
+    amount,
+    currency: "ZAR",
+    description: `Refunded ${amount} try-on credit(s) due to generation failure`,
+    status: "completed",
+  });
+
+  return { remainingCredits: newRemaining, usedCredits: newUsed };
+}
+
+/**
  * Get user transaction history
  */
 export async function getUserTransactions(userId: number, limit: number = 50) {

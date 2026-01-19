@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getFitroomClient } from "../_core/fitroom";
-import { deductCredits, getUserCredits } from "../db.credits";
+import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
 import { TRPCError } from "@trpc/server";
 import { storagePut, storageGet } from "../storage";
 import fs from "fs";
@@ -233,6 +233,34 @@ export const tryonRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to validate clothing image",
+        });
+      }
+    }),
+
+  /**
+   * Refund credits for failed/timeout try-ons
+   */
+  refundTryOn: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string().describe("Task ID to refund"),
+        reason: z.string().optional().describe("Reason for refund"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Refund 1 credit
+        const result = await refundCredits(ctx.user.id, 1);
+        return {
+          success: true,
+          message: "Credit refunded successfully",
+          remainingCredits: result.remainingCredits,
+        };
+      } catch (error) {
+        console.error("[Refund Error]", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to refund credit",
         });
       }
     }),

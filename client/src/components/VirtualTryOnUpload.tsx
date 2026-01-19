@@ -33,12 +33,17 @@ export function VirtualTryOnUpload() {
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
   const clothImageInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingStartTimeRef = useRef<number | null>(null);
+  const POLLING_TIMEOUT_MS = 60000; // 60 seconds max
 
   // Fetch user credits
   const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery();
 
   // Create try-on mutation
   const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
+  
+  // Refund try-on mutation
+  const refundTryOnMutation = trpc.tryon.refundTryOn.useMutation();
   
   // Get try-on status query
   const getTryOnStatusQuery = trpc.tryon.getTryOnStatus.useQuery(
@@ -154,14 +159,34 @@ export function VirtualTryOnUpload() {
     }
   };
 
-  // Monitor polling status
+  // Monitor polling status with timeout protection
   useEffect(() => {
     if (!isPolling || !getTryOnStatusQuery.data) return;
+
+    // Initialize polling start time on first poll
+    if (!pollingStartTimeRef.current) {
+      pollingStartTimeRef.current = Date.now();
+    }
+
+    // Check if polling has exceeded timeout
+    const elapsedTime = Date.now() - (pollingStartTimeRef.current || Date.now());
+    if (elapsedTime > POLLING_TIMEOUT_MS) {
+      setError("Try-on generation timed out (exceeded 60 seconds). Your credit has been refunded. Please try again with a different image.");
+      setIsPolling(false);
+      if (currentTaskId) {
+        refundTryOnMutation.mutate({ taskId: currentTaskId, reason: "timeout" });
+      }
+      setCurrentTaskId(null);
+      pollingStartTimeRef.current = null;
+      refetchCredits(); // Refetch to show refunded credits
+      return;
+    }
 
     const status = getTryOnStatusQuery.data.status;
     
     if (status === "PROCESSING") {
-      setProcessingProgress(50);
+      const progress = Math.min(50 + (elapsedTime / POLLING_TIMEOUT_MS) * 40, 90);
+      setProcessingProgress(progress);
     } else if (status === "COMPLETED") {
       if (getTryOnStatusQuery.data.resultImage) {
         setResult({
@@ -176,11 +201,17 @@ export function VirtualTryOnUpload() {
         setClothImage(null);
         setClothImagePreview("");
         setCurrentTaskId(null);
+        pollingStartTimeRef.current = null;
       }
     } else if (status === "FAILED") {
-      setError("Try-on generation failed. Please try again.");
+      setError("Try-on generation failed. Your credit has been refunded. Please try again with a different image.");
       setIsPolling(false);
+      if (currentTaskId) {
+        refundTryOnMutation.mutate({ taskId: currentTaskId, reason: "api_failure" });
+      }
       setCurrentTaskId(null);
+      pollingStartTimeRef.current = null;
+      refetchCredits(); // Refetch to show refunded credits
     }
   }, [getTryOnStatusQuery.data, isPolling, currentTaskId]);
 
@@ -198,6 +229,14 @@ export function VirtualTryOnUpload() {
           <p className="text-sm text-muted-foreground mt-2">
             Upload your body photo and clothing image to see how the garment looks on you
           </p>
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-xs font-semibold text-blue-900 mb-2">📸 Image Guidelines for Best Results:</p>
+            <ul className="text-xs text-blue-800 space-y-1">
+              <li><strong>Body Photo:</strong> Full-body shot, standing straight, facing forward, simple background</li>
+              <li><strong>Clothing:</strong> Clear front view on white/solid background, well-lit, entire item visible</li>
+              <li><strong>Recommended sizes:</strong> Body 2048px, Clothing 1024px (will auto-resize if larger)</li>
+            </ul>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Model Photo Upload */}
