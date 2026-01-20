@@ -52,12 +52,27 @@ export const tryonRouter = router({
           fs.mkdirSync(tempDir, { recursive: true });
         }
 
-        const modelImagePath = path.join(tempDir, "model.jpg");
-        const clothImagePath = path.join(tempDir, "cloth.jpg");
+        // Detect image format from base64 header
+        const detectImageFormat = (base64: string): string => {
+          // Check magic bytes in base64
+          if (base64.startsWith("/9j/")) return "jpg"; // JPEG
+          if (base64.startsWith("iVBORw0KGgo")) return "png"; // PNG
+          if (base64.startsWith("Qk0")) return "bmp"; // BMP
+          if (base64.startsWith("R0lGODlh")) return "gif"; // GIF
+          if (base64.startsWith("UklGR")) return "webp"; // WebP
+          return "jpg"; // Default to JPG
+        };
+
+        const modelFormat = detectImageFormat(input.modelImageBase64);
+        const clothFormat = detectImageFormat(input.clothImageBase64);
+
+        const modelImagePath = path.join(tempDir, `model.${modelFormat}`);
+        const clothImagePath = path.join(tempDir, `cloth.${clothFormat}`);
 
         const modelBuffer = Buffer.from(input.modelImageBase64, "base64");
         const clothBuffer = Buffer.from(input.clothImageBase64, "base64");
 
+        console.log(`[Try-On] Saving model image as ${modelFormat}, cloth image as ${clothFormat}`);
         fs.writeFileSync(modelImagePath, modelBuffer);
         fs.writeFileSync(clothImagePath, clothBuffer);
 
@@ -82,12 +97,17 @@ export const tryonRouter = router({
         }
 
         console.log("[Try-On] Creating try-on task...");
+        console.log(`[Try-On] Model image: ${modelImagePath} (${fs.statSync(modelImagePath).size} bytes)`);
+        console.log(`[Try-On] Cloth image: ${clothImagePath} (${fs.statSync(clothImagePath).size} bytes)`);
+        
         const taskResult = await fitroomClient.createTryOn({
           modelImagePath,
           clothImagePath,
           clothType: input.clothType as "upper" | "lower" | "full_set",
           hdMode: input.hdMode,
         });
+        
+        console.log(`[Try-On] Task result:`, taskResult);
 
         if (!taskResult.success) {
           throw new TRPCError({

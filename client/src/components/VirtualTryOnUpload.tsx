@@ -34,7 +34,7 @@ export function VirtualTryOnUpload() {
   const clothImageInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
-  const POLLING_TIMEOUT_MS = 60000; // 60 seconds max
+  const POLLING_TIMEOUT_MS = 180000; // 3 minutes max (Fitroom can take up to 2+ minutes)
 
   // Fetch user credits
   const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery();
@@ -185,7 +185,7 @@ export function VirtualTryOnUpload() {
     const status = getTryOnStatusQuery.data.status;
     
     if (status === "PROCESSING") {
-      const progress = Math.min(50 + (elapsedTime / POLLING_TIMEOUT_MS) * 40, 90);
+      const progress = Math.min(10 + (elapsedTime / POLLING_TIMEOUT_MS) * 80, 90);
       setProcessingProgress(progress);
     } else if (status === "COMPLETED") {
       if (getTryOnStatusQuery.data.resultImage) {

@@ -98,16 +98,34 @@ class FitroomClient {
         headers: formData.getHeaders(),
       });
 
+      console.log("[Fitroom] Create task response:", JSON.stringify(response.data));
+
+      const taskId = response.data.task_id || response.data.taskId || response.data.id;
+      const status = response.data.status || "CREATED";
+
+      if (!taskId) {
+        console.error("[Fitroom] No task ID in response:", response.data);
+        return {
+          success: false,
+          error: "No task ID returned from Fitroom API",
+        };
+      }
+
       return {
         success: true,
-        taskId: response.data.task_id,
-        status: response.data.status,
+        taskId,
+        status,
       };
-    } catch (error) {
-      console.error("[Fitroom API Error - Create Try-On]", error);
+    } catch (error: any) {
+      const errorDetails = {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      };
+      console.error("[Fitroom API Error - Create Try-On]", errorDetails);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error.response?.data?.error || error.response?.data?.message || error.message || "Unknown error",
       };
     }
   }

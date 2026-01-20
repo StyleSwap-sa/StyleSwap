@@ -215,3 +215,12 @@
 - [ ] Add specific error code mapping (400s, 410s) - TODO
 - [ ] Handle rate limiting (429) with exponential backoff - TODO
 - [ ] Add retry logic for failed requests (max 3 retries) - TODO
+
+
+## Phase 25: Fix Image Upload & Fitroom API Integration
+- [x] Preserve original image file format (detect from base64)
+- [x] Increase polling timeout from 60s to 180s (3 minutes)
+- [x] Add detailed logging for Fitroom API responses
+- [x] Handle multiple task ID response formats
+- [x] Improve error handling and error message extraction
+- [x] All 90 tests passing
