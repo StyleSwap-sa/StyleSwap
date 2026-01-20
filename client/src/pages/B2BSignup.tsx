@@ -92,20 +92,25 @@ export default function B2BSignup() {
         let finalSlug = baseSlug;
         
         try {
-          const response = await fetch('/api/trpc/boutiques.checkSlugAvailability?input=' + encodeURIComponent(JSON.stringify({ slug: baseSlug })), {
-            credentials: 'include'
-          });
+          const inputStr = JSON.stringify({ slug: baseSlug });
+          const encodedInput = encodeURIComponent(inputStr);
+          const url = '/api/trpc/boutiques.checkSlugAvailability?input=' + encodedInput;
+          console.log('Checking slug:', baseSlug, 'URL:', url);
+          
+          const response = await fetch(url, { credentials: 'include' });
           const result = await response.json();
+          console.log('Slug check result:', result);
+          
           if (result.result && result.result.data) {
             const slugCheckResult = result.result.data;
             if (!slugCheckResult.available && slugCheckResult.suggestion) {
               finalSlug = slugCheckResult.suggestion;
               setSuggestedSlug(finalSlug);
-              console.log('Slug collision detected, using suggested slug:', finalSlug);
+              console.log('Using suggested slug:', finalSlug);
             }
           }
         } catch (slugErr) {
-          console.warn('Could not check slug availability, using base slug', slugErr);
+          console.warn('Slug check error:', slugErr);
         }
         
         await createBoutiqueMutation.mutateAsync({

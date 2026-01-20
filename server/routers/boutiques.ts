@@ -119,19 +119,31 @@ export const boutiquesRouter = router({
       if (websiteUrl && !websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
         websiteUrl = 'https://' + websiteUrl;
       }
-      // Check if slug already exists
-      const existing = await getBoutiqueBySlug(input.slug);
+      // Check if slug already exists and auto-generate alternative if needed
+      let finalSlug = input.slug;
+      let existing = await getBoutiqueBySlug(finalSlug);
+      
       if (existing) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Boutique slug already exists",
-        });
+        let counter = 1;
+        while (counter <= 10) {
+          finalSlug = input.slug + "-" + counter;
+          existing = await getBoutiqueBySlug(finalSlug);
+          if (!existing) break;
+          counter++;
+        }
+        
+        if (existing) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Could not generate unique slug",
+          });
+        }
       }
 
       // Create boutique
       const result = await createBoutique({
         name: input.name,
-        slug: input.slug,
+        slug: finalSlug,
         ownerId: ctx.user.id,
         description: input.description,
         logoUrl: input.logoUrl,
@@ -169,7 +181,7 @@ export const boutiquesRouter = router({
         role: "owner",
       });
 
-      return { id: boutiqueId, name: input.name, slug: input.slug, description: input.description, logoUrl: input.logoUrl, websiteUrl: input.websiteUrl };
+      return { id: boutiqueId, name: input.name, slug: finalSlug, description: input.description, logoUrl: input.logoUrl, websiteUrl: input.websiteUrl };
     }),
 
   /**
