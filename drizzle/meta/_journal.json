@@ -15,6 +15,20 @@
       "when": 1768927669289,
       "tag": "0001_mute_madelyne_pryor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1768931314148,
+      "tag": "0002_watery_tattoo",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1768931328822,
+      "tag": "0003_omniscient_rockslide",
+      "breakpoints": true
     }
   ]
 }

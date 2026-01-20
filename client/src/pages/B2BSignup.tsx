@@ -196,11 +196,11 @@ export default function B2BSignup() {
             {step === 1 && (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="businessName">Business Name *</Label>
+                  <Label htmlFor="businessName">Company Name *</Label>
                   <Input
                     id="businessName"
                     name="businessName"
-                    placeholder="e.g., MirrorMe SA"
+                    placeholder="e.g., Your Company Name"
                     value={formData.businessName}
                     onChange={handleInputChange}
                     className="mt-2"

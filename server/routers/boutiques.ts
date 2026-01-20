@@ -147,8 +147,11 @@ export const boutiquesRouter = router({
       // Create default settings
       await createBoutiqueSettings({
         boutiqueId,
+        brandingColor: "#FF6B35",
+        customDomain: "",
         enableSharing: 1,
         enableAnalytics: 1,
+        webhookUrl: "",
       });
 
       // Create default credits (0 credits, must purchase)

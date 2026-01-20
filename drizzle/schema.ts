@@ -80,11 +80,11 @@ export type InsertBoutiqueUser = typeof boutiqueUsers.$inferInsert;
 export const boutiqueSettings = mysqlTable("boutiqueSettings", {
   id: int("id").autoincrement().primaryKey(),
   boutiqueId: int("boutiqueId").notNull().unique(),
-  brandingColor: varchar("brandingColor", { length: 7 }),
-  customDomain: varchar("customDomain", { length: 255 }),
+  brandingColor: varchar("brandingColor", { length: 7 }).default("#FF6B35"),
+  customDomain: varchar("customDomain", { length: 255 }).default(""),
   enableSharing: int("enableSharing").default(1).notNull(),
   enableAnalytics: int("enableAnalytics").default(1).notNull(),
-  webhookUrl: varchar("webhookUrl", { length: 500 }),
+  webhookUrl: varchar("webhookUrl", { length: 500 }).default(""),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => [
