@@ -20,6 +20,7 @@ import CaseStudiesPage from "./pages/CaseStudiesPage";
 import ContactPage from "./pages/ContactPage";
 import B2BLanding from "./pages/B2BLanding";
 import B2BSignup from "./pages/B2BSignup";
+import BoutiqueDashboard from "./pages/BoutiqueDashboard";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -41,6 +42,7 @@ function Router() {
       <Route path={"/analytics"} component={Analytics} />
       <Route path={"/b2b"} component={B2BLanding} />
       <Route path={"/b2b-signup"} component={B2BSignup} />
+      <Route path={"/boutique-dashboard"} component={BoutiqueDashboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

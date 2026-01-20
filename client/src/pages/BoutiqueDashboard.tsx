@@ -1,17 +1,9 @@
 import { useEffect, useState } from "react";
-import { DashboardLayout } from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  Zap,
-  Plus,
-  Settings,
-  Download,
-} from "lucide-react";
+import { TrendingUp, Zap, Plus, Settings, Download } from "lucide-react";
 import { Link } from "wouter";
 import { Loader2 } from "lucide-react";
 
@@ -22,24 +14,10 @@ export default function BoutiqueDashboard() {
   const { data: boutiques, isLoading: boutiquesLoading } =
     trpc.boutiques.myBoutiques.useQuery();
 
-  // Fetch dashboard overview
-  const { data: overview, isLoading: overviewLoading } =
-    trpc.boutiqueDashboard.getOverview.useQuery(
+  // Fetch billing summary
+  const { data: billingSummary, isLoading: billingSummaryLoading } =
+    trpc.billing.getBillingSummary.useQuery(
       { boutiqueId: selectedBoutique || 0 },
-      { enabled: !!selectedBoutique }
-    );
-
-  // Fetch recent try-ons
-  const { data: recentTryOns, isLoading: tryOnsLoading } =
-    trpc.boutiqueDashboard.getRecentTryOns.useQuery(
-      { boutiqueId: selectedBoutique || 0, limit: 5 },
-      { enabled: !!selectedBoutique }
-    );
-
-  // Fetch product performance
-  const { data: productPerformance, isLoading: performanceLoading } =
-    trpc.boutiqueDashboard.getProductPerformance.useQuery(
-      { boutiqueId: selectedBoutique || 0, limit: 5 },
       { enabled: !!selectedBoutique }
     );
 
@@ -99,7 +77,7 @@ export default function BoutiqueDashboard() {
   }
 
   const currentBoutique = boutiques.find((b) => b.id === selectedBoutique);
-  const isLoading = overviewLoading || tryOnsLoading || performanceLoading;
+  const isLoading = billingSummaryLoading;
 
   return (
     <DashboardLayout>
@@ -107,9 +85,9 @@ export default function BoutiqueDashboard() {
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-4xl font-bold">Dashboard</h1>
+            <h1 className="text-4xl font-bold">Boutique Dashboard</h1>
             <p className="text-muted-foreground mt-2">
-              {currentBoutique?.name}
+              Welcome back! Manage your products and credits below.
             </p>
           </div>
           <div className="flex gap-2">
@@ -130,14 +108,14 @@ export default function BoutiqueDashboard() {
         {boutiques.length > 1 && (
           <div>
             <label className="text-sm font-medium">Select Boutique</label>
-          <select
-            value={selectedBoutique || ""}
-            onChange={(e) => setSelectedBoutique(parseInt(e.target.value))}
+            <select
+              value={selectedBoutique || ""}
+              onChange={(e) => setSelectedBoutique(parseInt(e.target.value))}
               className="w-full mt-2 px-3 py-2 border border-input rounded-md bg-background"
             >
               {boutiques.map((boutique) => (
                 <option key={boutique.id} value={boutique.id}>
-                  {boutique.name}
+                  Boutique #{boutique.id}
                 </option>
               ))}
             </select>
@@ -151,39 +129,7 @@ export default function BoutiqueDashboard() {
         ) : (
           <>
             {/* Key Metrics */}
-            <div className="grid md:grid-cols-4 gap-6">
-              <Card className="premium-card">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Credits Available
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">
-                    {overview?.credits?.remaining || 0}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {overview?.credits?.isExpired ? 'Expired' : 'Active'}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="premium-card">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Try-Ons This Month
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">
-                    {overview?.credits?.used || 0}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    of {overview?.credits?.total || 0} total
-                  </p>
-                </CardContent>
-              </Card>
-
+            <div className="grid md:grid-cols-3 gap-6">
               <Card className="premium-card">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -192,10 +138,10 @@ export default function BoutiqueDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">
-                    R{(overview?.billing?.totalSpending || 0).toFixed(2)}
+                    R{(billingSummary?.totalSpending || 0).toFixed(2)}
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Total spent
+                    All time
                   </p>
                 </CardContent>
               </Card>
@@ -203,12 +149,28 @@ export default function BoutiqueDashboard() {
               <Card className="premium-card">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Products
+                    Average Cost
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">
+                    R{billingSummary?.averageCostPerCredit || 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Per try-on
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="premium-card">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Status
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold capitalize">
-                    {overview?.boutique?.status || 'Active'}
+                    Active
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
                     Boutique status
@@ -216,73 +178,6 @@ export default function BoutiqueDashboard() {
                 </CardContent>
               </Card>
             </div>
-
-            {/* Recent Try-Ons */}
-            <Card className="premium-card">
-              <CardHeader>
-                <CardTitle>Recent Try-Ons</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {recentTryOns && recentTryOns.length > 0 ? (
-                  <div className="space-y-4">
-                    {recentTryOns.map((tryOn: any) => (
-                      <div
-                        key={tryOn.id}
-                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition"
-                      >
-                        <div className="flex-1">
-                          <div className="font-medium">Try-On #{tryOn.id}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {new Date(tryOn.createdAt).toLocaleDateString()}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-semibold">-1 Credit</div>
-                          <div className="text-sm text-muted-foreground">
-                            {tryOn.status}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No try-ons yet. Add products and start getting customers!
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Top Products */}
-            <Card className="premium-card">
-              <CardHeader>
-                <CardTitle>Top Performing Products</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {productPerformance && productPerformance.length > 0 ? (
-                  <div className="space-y-4">
-                    {productPerformance.map((product: any) => (
-                      <div
-                        key={product.id}
-                        className="flex items-center justify-between p-4 border border-border rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <div className="font-medium">Product #{product.id}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {product.id} try-ons
-                          </div>
-                        </div>
-                        <TrendingUp className="w-5 h-5 text-primary" />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No data yet
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
             {/* Quick Actions */}
             <div className="grid md:grid-cols-3 gap-6">
@@ -322,6 +217,48 @@ export default function BoutiqueDashboard() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Getting Started */}
+            <Card className="premium-card bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">
+              <CardHeader>
+                <CardTitle>Getting Started</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                    1
+                  </div>
+                  <div>
+                    <h4 className="font-bold">Upload Your Products</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Add your clothing items to the catalog
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="font-bold">Purchase Credits</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Buy credits for your customers to use
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="font-bold">Embed the Widget</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Add StyleSwap to your website
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </>
         )}
       </div>

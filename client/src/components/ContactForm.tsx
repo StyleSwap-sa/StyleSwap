@@ -74,16 +74,6 @@ export function ContactForm() {
 
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 text-primary mt-1">
-                <Phone className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg mb-1">Phone</h3>
-                <p className="text-muted-foreground">060 855 5621</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 text-primary mt-1">
                 <MapPin className="w-6 h-6" />
               </div>
               <div>
