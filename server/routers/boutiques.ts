@@ -125,7 +125,7 @@ export const boutiquesRouter = router({
       
       if (existing) {
         let counter = 1;
-        while (counter <= 10) {
+        while (counter <= 100) {
           finalSlug = input.slug + "-" + counter;
           existing = await getBoutiqueBySlug(finalSlug);
           if (!existing) break;
