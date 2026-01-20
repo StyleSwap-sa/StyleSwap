@@ -14,6 +14,10 @@ export async function createBoutique(data: {
   description?: string;
   logoUrl?: string;
   websiteUrl?: string;
+  instagramHandle?: string;
+  tiktokHandle?: string;
+  facebookUrl?: string;
+  whatsappNumber?: string;
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -94,7 +98,13 @@ export async function getBoutiqueUsers(boutiqueId: number) {
 export async function getUserBoutiques(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(boutiqueUsers).where(eq(boutiqueUsers.userId, userId));
+  // Get boutique IDs for the user
+  const userBoutiqueIds = await db.select({ boutiqueId: boutiqueUsers.boutiqueId }).from(boutiqueUsers).where(eq(boutiqueUsers.userId, userId));
+  if (userBoutiqueIds.length === 0) return [];
+  // Get the actual boutique data
+  const boutiqueIds = userBoutiqueIds.map(u => u.boutiqueId);
+  const { inArray } = require('drizzle-orm');
+  return await db.select().from(boutiques).where(inArray(boutiques.id, boutiqueIds));
 }
 
 export async function getBoutiqueUserRole(boutiqueId: number, userId: number) {

@@ -82,6 +82,10 @@ export const boutiquesRouter = router({
         description: z.string().optional(),
         logoUrl: z.string().url().optional(),
         websiteUrl: z.string().optional(),
+        instagramHandle: z.string().optional(),
+        tiktokHandle: z.string().optional(),
+        facebookUrl: z.string().optional(),
+        whatsappNumber: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -107,6 +111,10 @@ export const boutiquesRouter = router({
         description: input.description,
         logoUrl: input.logoUrl,
         websiteUrl: websiteUrl,
+        instagramHandle: input.instagramHandle,
+        tiktokHandle: input.tiktokHandle,
+        facebookUrl: input.facebookUrl,
+        whatsappNumber: input.whatsappNumber,
       });
 
       const boutiqueId = (result as any).insertId;

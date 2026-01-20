@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { TrendingUp, Zap, Plus, Settings, Download } from "lucide-react";
+import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle } from "lucide-react";
 import { Link } from "wouter";
-import { Loader2 } from "lucide-react";
 
 export default function BoutiqueDashboard() {
   const [selectedBoutique, setSelectedBoutique] = useState<number | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState(false);
   
   // Fetch user's boutiques
   const { data: boutiques, isLoading: boutiquesLoading } =
@@ -217,6 +217,82 @@ export default function BoutiqueDashboard() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Landing Page & Social Media */}
+            {currentBoutique && (
+              <Card className="premium-card border-primary/30">
+                <CardHeader>
+                  <CardTitle>Your Online Presence</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Free Landing Page */}
+                  <div className="border-b pb-6">
+                    <h4 className="font-bold mb-3">🎁 Free Landing Page</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {currentBoutique.websiteUrl 
+                        ? "You have a website. You can also use this free landing page to share on social media:"
+                        : "Since you don't have a website, we've created a free landing page for you!"}
+                    </p>
+                    <div className="flex items-center gap-2 bg-muted/50 p-3 rounded border border-border">
+                      <code className="text-xs flex-1 overflow-x-auto">
+                        styleswap.co.za/boutique/{currentBoutique.slug}
+                      </code>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`https://styleswap.co.za/boutique/${currentBoutique.slug}`);
+                          setCopiedUrl(true);
+                          setTimeout(() => setCopiedUrl(false), 2000);
+                        }}
+                      >
+                        {copiedUrl ? (
+                          <Check className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Share this link on your social media to let customers discover your boutique and try on your products!
+                    </p>
+                  </div>
+
+                  {/* Social Media Links */}
+                  {(currentBoutique.instagramHandle || currentBoutique.tiktokHandle || currentBoutique.facebookUrl || currentBoutique.whatsappNumber) && (
+                    <div>
+                      <h4 className="font-bold mb-3">📱 Connected Social Media</h4>
+                      <div className="space-y-2">
+                        {currentBoutique.instagramHandle && (
+                          <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                            <Instagram className="w-4 h-4 text-pink-600" />
+                            <span className="text-sm">{currentBoutique.instagramHandle}</span>
+                          </div>
+                        )}
+                        {currentBoutique.tiktokHandle && (
+                          <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                            <Music className="w-4 h-4" />
+                            <span className="text-sm">{currentBoutique.tiktokHandle}</span>
+                          </div>
+                        )}
+                        {currentBoutique.facebookUrl && (
+                          <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                            <Facebook className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm">Facebook</span>
+                          </div>
+                        )}
+                        {currentBoutique.whatsappNumber && (
+                          <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                            <MessageCircle className="w-4 h-4 text-green-600" />
+                            <span className="text-sm">{currentBoutique.whatsappNumber}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Getting Started */}
             <Card className="premium-card bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">

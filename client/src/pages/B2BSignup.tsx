@@ -8,7 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
-import { Loader2, Check, ArrowRight } from "lucide-react";
+import { Loader2, Check, ArrowRight, Instagram, Music, Facebook, MessageCircle } from "lucide-react";
 
 export default function B2BSignup() {
   const [step, setStep] = useState(1);
@@ -19,6 +19,10 @@ export default function B2BSignup() {
     businessName: "",
     businessType: "boutique",
     website: "",
+    instagramHandle: "",
+    tiktokHandle: "",
+    facebookUrl: "",
+    whatsappNumber: "",
     description: "",
     address: "",
     city: "",
@@ -72,8 +76,10 @@ export default function B2BSignup() {
       setStep(2);
       setError("");
     } else if (step === 2) {
-      if (!formData.website || !formData.address || !formData.city) {
-        setError("Please fill in all required fields");
+      // Check if at least website OR social media is provided
+      const hasSocialMedia = formData.website || formData.instagramHandle || formData.tiktokHandle || formData.facebookUrl;
+      if (!hasSocialMedia || !formData.address || !formData.city) {
+        setError("Please provide at least a website or social media link, and your address");
         return;
       }
       setStep(3);
@@ -85,7 +91,11 @@ export default function B2BSignup() {
           name: formData.businessName,
           slug: formData.businessName.toLowerCase().replace(/\s+/g, '-'),
           description: formData.description,
-          websiteUrl: formData.website,
+          websiteUrl: formData.website || undefined,
+          instagramHandle: formData.instagramHandle || undefined,
+          tiktokHandle: formData.tiktokHandle || undefined,
+          facebookUrl: formData.facebookUrl || undefined,
+          whatsappNumber: formData.whatsappNumber || undefined,
         });
         setSuccess(true);
         setTimeout(() => {
@@ -152,12 +162,12 @@ export default function B2BSignup() {
           ))}
         </div>
 
-        <Card className="premium-card">
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle>
-              {step === 1 && "Business Information"}
-              {step === 2 && "Location & Website"}
-              {step === 3 && "Review & Confirm"}
+              {step === 1 && "Step 1: Business Information"}
+              {step === 2 && "Step 2: Online Presence"}
+              {step === 3 && "Step 3: Review & Confirm"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -169,7 +179,7 @@ export default function B2BSignup() {
                   <Input
                     id="businessName"
                     name="businessName"
-                    placeholder="Your boutique name"
+                    placeholder="e.g., MirrorMe SA"
                     value={formData.businessName}
                     onChange={handleInputChange}
                     className="mt-2"
@@ -185,22 +195,10 @@ export default function B2BSignup() {
                     className="w-full mt-2 px-3 py-2 border border-input rounded-md bg-background"
                   >
                     <option value="boutique">Boutique</option>
-                    <option value="retail_store">Retail Store</option>
-                    <option value="ecommerce">E-commerce</option>
-                    <option value="fashion_brand">Fashion Brand</option>
-                    <option value="other">Other</option>
+                    <option value="retail">Retail Store</option>
+                    <option value="online">Online Store</option>
+                    <option value="social">Social Media Shop</option>
                   </select>
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    placeholder="+27 (0) 123 456 7890"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="mt-2"
-                  />
                 </div>
                 <div>
                   <Label htmlFor="description">Business Description</Label>
@@ -217,52 +215,123 @@ export default function B2BSignup() {
               </div>
             )}
 
-            {/* Step 2: Location & Website */}
+            {/* Step 2: Online Presence */}
             {step === 2 && (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="website">Website URL *</Label>
-                  <Input
-                    id="website"
-                    name="website"
-                    placeholder="https://www.yourboutique.com"
-                    value={formData.website}
-                    onChange={handleInputChange}
-                    className="mt-2"
-                  />
+              <div className="space-y-6">
+                <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Note:</strong> You can provide a website OR social media links (or both). At least one is required.
+                  </p>
                 </div>
-                <div>
-                  <Label htmlFor="address">Street Address *</Label>
-                  <Input
-                    id="address"
-                    name="address"
-                    placeholder="123 Main Street"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    className="mt-2"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold">Website (Optional)</h3>
                   <div>
-                    <Label htmlFor="city">City *</Label>
+                    <Label htmlFor="website">Website URL</Label>
                     <Input
-                      id="city"
-                      name="city"
-                      placeholder="Cape Town"
-                      value={formData.city}
+                      id="website"
+                      name="website"
+                      placeholder="www.yourboutique.com or yourboutique.com"
+                      value={formData.website}
                       onChange={handleInputChange}
                       className="mt-2"
                     />
                   </div>
+                </div>
+
+                <div className="border-t pt-6">
+                  <h3 className="font-semibold mb-4">Social Media (Optional)</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="instagramHandle" className="flex items-center gap-2">
+                        <Instagram className="w-4 h-4" /> Instagram Handle
+                      </Label>
+                      <Input
+                        id="instagramHandle"
+                        name="instagramHandle"
+                        placeholder="@yourboutique"
+                        value={formData.instagramHandle}
+                        onChange={handleInputChange}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tiktokHandle" className="flex items-center gap-2">
+                        <Music className="w-4 h-4" /> TikTok Handle
+                      </Label>
+                      <Input
+                        id="tiktokHandle"
+                        name="tiktokHandle"
+                        placeholder="@yourboutique"
+                        value={formData.tiktokHandle}
+                        onChange={handleInputChange}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="facebookUrl" className="flex items-center gap-2">
+                        <Facebook className="w-4 h-4" /> Facebook Page URL
+                      </Label>
+                      <Input
+                        id="facebookUrl"
+                        name="facebookUrl"
+                        placeholder="facebook.com/yourboutique"
+                        value={formData.facebookUrl}
+                        onChange={handleInputChange}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="whatsappNumber" className="flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4" /> WhatsApp Number
+                      </Label>
+                      <Input
+                        id="whatsappNumber"
+                        name="whatsappNumber"
+                        placeholder="+27 123 456 7890"
+                        value={formData.whatsappNumber}
+                        onChange={handleInputChange}
+                        className="mt-2"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6 space-y-4">
+                  <h3 className="font-semibold">Location</h3>
                   <div>
-                    <Label htmlFor="country">Country *</Label>
+                    <Label htmlFor="address">Street Address *</Label>
                     <Input
-                      id="country"
-                      name="country"
-                      value={formData.country}
-                      disabled
-                      className="mt-2 bg-muted"
+                      id="address"
+                      name="address"
+                      placeholder="123 Main Street"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      className="mt-2"
                     />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="city">City *</Label>
+                      <Input
+                        id="city"
+                        name="city"
+                        placeholder="Cape Town"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="country">Country *</Label>
+                      <Input
+                        id="country"
+                        name="country"
+                        value={formData.country}
+                        disabled
+                        className="mt-2 bg-muted"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -279,36 +348,70 @@ export default function B2BSignup() {
                     <div className="font-semibold">{formData.businessName}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Type</div>
-                    <div className="font-semibold capitalize">
-                      {formData.businessType.replace("_", " ")}
+                    <div className="text-sm text-muted-foreground">
+                      Business Type
                     </div>
+                    <div className="font-semibold capitalize">{formData.businessType}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Website</div>
-                    <div className="font-semibold">{formData.website}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Description
+                    </div>
+                    <div className="font-semibold">{formData.description || "Not provided"}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Location</div>
-                    <div className="font-semibold">
-                      {formData.city}, {formData.country}
+                    <div className="text-sm text-muted-foreground">
+                      Location
                     </div>
+                    <div className="font-semibold">{formData.city}, {formData.country}</div>
                   </div>
+                  {formData.website && (
+                    <div>
+                      <div className="text-sm text-muted-foreground">
+                        Website
+                      </div>
+                      <div className="font-semibold">{formData.website}</div>
+                    </div>
+                  )}
+                  {(formData.instagramHandle || formData.tiktokHandle || formData.facebookUrl) && (
+                    <div>
+                      <div className="text-sm text-muted-foreground">
+                        Social Media
+                      </div>
+                      <div className="space-y-1">
+                        {formData.instagramHandle && <div className="text-sm">Instagram: {formData.instagramHandle}</div>}
+                        {formData.tiktokHandle && <div className="text-sm">TikTok: {formData.tiktokHandle}</div>}
+                        {formData.facebookUrl && <div className="text-sm">Facebook: {formData.facebookUrl}</div>}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="bg-primary/10 border border-primary/30 p-4 rounded-lg">
+                <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-4 rounded-lg">
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    ✓ After registration, you'll get access to your boutique dashboard and can start uploading products immediately.
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 rounded-lg">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    💡 <strong>Free Landing Page:</strong> If you don't have a website, we'll create a free landing page for your boutique that you can share on social media!
+                  </p>
+                </div>
+
+                <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg">
                   <p className="text-sm text-muted-foreground">
-                    By clicking "Create Boutique", you agree to our Terms of
-                    Service and Privacy Policy. You'll receive a welcome email
-                    with next steps.
+                    By clicking "Create Boutique", you agree to our Terms of Service and Privacy Policy.
+                    You'll receive a welcome email with next steps.
                   </p>
                 </div>
               </div>
             )}
 
+            {/* Error Message */}
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg text-red-600">
-                {error}
+              <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 p-4 rounded-lg">
+                <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
               </div>
             )}
 
@@ -318,50 +421,40 @@ export default function B2BSignup() {
                 <Button
                   variant="outline"
                   onClick={() => setStep(step - 1)}
-                  className="cursor-pointer"
+                  className="flex-1"
                 >
                   Back
                 </Button>
               )}
-              <Button
-                onClick={handleSubmit}
-                disabled={createBoutiqueMutation.isPending}
-                className="flex-1 cursor-pointer"
-              >
-                {createBoutiqueMutation.isPending && (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                )}
-                {step === 3
-                  ? createBoutiqueMutation.isPending
-                    ? "Creating..."
-                    : "Create Boutique"
-                  : "Continue"}
-                {step < 3 && <ArrowRight className="w-4 h-4 ml-2" />}
-              </Button>
+              {step < 3 ? (
+                <Button
+                  onClick={handleSubmit}
+                  className="flex-1 gap-2"
+                  disabled={createBoutiqueMutation.isPending}
+                >
+                  Next <ArrowRight className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  className="flex-1 gap-2"
+                  disabled={createBoutiqueMutation.isPending}
+                >
+                  {createBoutiqueMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      Create Boutique <Check className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
-
-        {/* Benefits */}
-        <div className="mt-12 grid md:grid-cols-2 gap-6">
-          {[
-            {
-              title: "Easy Setup",
-              desc: "Add the widget to your site in minutes with our simple embed code",
-            },
-            {
-              title: "24/7 Support",
-              desc: "Get help whenever you need it from our dedicated support team",
-            },
-          ].map((benefit, i) => (
-            <Card key={i} className="premium-card text-center">
-              <CardContent className="pt-6">
-                <h3 className="font-bold mb-2">{benefit.title}</h3>
-                <p className="text-sm text-muted-foreground">{benefit.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
       </div>
     </div>
   );

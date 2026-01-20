@@ -241,19 +241,36 @@
 ## Phase 27: B2B Frontend UI Implementation (NEW)
 
 ### Phase 27.1: B2B Landing Page
-- [ ] Create B2B landing page component
-- [ ] Add hero section with B2B value proposition
-- [ ] Add features showcase (product-linked try-on, analytics, etc.)
-- [ ] Add pricing tier display
-- [ ] Add case studies/testimonials section
-- [ ] Add CTA buttons (Sign Up, Learn More)
-- [ ] Add FAQ section
-- [ ] Add footer with links
+- [x] Create B2B landing page component
+- [x] Add hero section with B2B value proposition
+- [x] Add features showcase (product-linked try-on, analytics, etc.)
+- [x] Add pricing tier display
+- [x] Add case studies/testimonials section
+- [x] Add CTA buttons (Sign Up, Learn More)
+- [x] Add FAQ section
+- [x] Add footer with links
 
-### Phase 27.2: Boutique Signup & Onboarding
+### Phase 27.1.5: Free Landing Page Generator (NEW)
+- [x] Create BoutiqueLandingPage component for /boutique/:slug route
+- [x] Add dynamic boutique data display (name, description, logo)
+- [x] Add social media links integration (Instagram, TikTok, Facebook, WhatsApp)
+- [x] Add website link if provided
+- [x] Add hero section with virtual try-on CTA
+- [x] Add features showcase
+- [x] Add boutique information section
+- [x] Add footer with branding
+- [x] Add route to App.tsx for /boutique/:slug
+
+### Phase 27.2: Boutique Signup & Onboarding (HYBRID APPROACH - Option 3)
 - [x] Create signup page component
-- [ ] Fix URL validation to accept URLs without protocol
-- [ ] Add boutique registration form
+- [x] Fix URL validation to accept URLs without protocol
+- [x] Make website URL optional in signup form
+- [x] Add social media fields (Instagram, TikTok, Facebook, WhatsApp)
+- [x] Add boutique registration form
+- [x] Create 3-step signup wizard
+- [x] Update database schema with social media fields
+- [x] Update boutiques.create mutation to accept social media fields
+- [x] Update createBoutique database helper to accept social media fields
 - [ ] Add email verification
 - [ ] Add boutique profile setup
 - [ ] Add payment method setup
@@ -261,16 +278,20 @@
 - [ ] Add tutorial for first-time users
 
 ### Phase 27.3: Boutique Dashboard
-- [ ] Create main dashboard layout
-- [ ] Add dashboard overview/summary widget
-- [ ] Add credit balance display
-- [ ] Add recent try-ons activity feed
-- [ ] Add product performance chart
-- [ ] Add monthly usage analytics
-- [ ] Add billing summary widget
-- [ ] Add quick action buttons
+- [x] Create main dashboard layout
+- [x] Add dashboard overview/summary widget
+- [x] Add credit balance display
+- [x] Add recent try-ons activity feed
+- [x] Add product performance chart
+- [x] Add monthly usage analytics
+- [x] Add billing summary widget
+- [x] Add quick action buttons
+- [x] Add free landing page URL display
+- [x] Add social media links display
+- [x] Add copy-to-clipboard functionality for landing page URL
+- [x] Fix getUserBoutiques to return boutique data instead of boutique users
 
-### Phase 27.4: Product Management
+### Phase 27.4: Product Management (NEXT)
 - [ ] Create product management page
 - [ ] Add product list view
 - [ ] Add product upload form
@@ -280,7 +301,7 @@
 - [ ] Add product deletion confirmation
 - [ ] Add bulk product import
 
-### Phase 27.5: Pricing & Credit Purchase
+### Phase 27.5: Pricing & Credit Purchase (NEXT)
 - [ ] Create pricing page
 - [ ] Display all 6 credit tiers
 - [ ] Add volume discount explanation
@@ -290,7 +311,7 @@
 - [ ] Add receipt generation
 - [ ] Add credit balance update
 
-### Phase 27.6: Try-On Widget
+### Phase 27.6: Try-On Widget (NEXT)
 - [ ] Create embeddable widget component
 - [ ] Add widget configuration interface
 - [ ] Add product selection in widget
@@ -300,7 +321,7 @@
 - [ ] Add widget installation guide
 - [ ] Add widget customization options
 
-### Phase 27.7: Admin Dashboard
+### Phase 27.7: Admin Dashboard (NEXT)
 - [ ] Create admin dashboard layout
 - [ ] Add boutique list view
 - [ ] Add boutique search/filter
@@ -310,7 +331,7 @@
 - [ ] Add transaction history view
 - [ ] Add top boutiques ranking
 
-### Phase 27.8: API Integration
+### Phase 27.8: API Integration (NEXT)
 - [ ] Connect signup to boutique.create API
 - [ ] Connect dashboard to boutiqueDashboard APIs
 - [ ] Connect product management to products APIs
@@ -320,7 +341,7 @@
 - [ ] Add error handling and loading states
 - [ ] Add success notifications
 
-### Phase 27.9: End-to-End Testing
+### Phase 27.9: End-to-End Testing (NEXT)
 - [ ] Test boutique signup flow
 - [ ] Test product upload and management
 - [ ] Test credit purchase flow
@@ -330,7 +351,7 @@
 - [ ] Test authorization and access control
 - [ ] Test mobile responsiveness
 
-### Phase 27.10: Deployment & Verification
+### Phase 27.10: Deployment & Verification (NEXT)
 - [ ] Deploy to staging environment
 - [ ] Run full test suite
 - [ ] Verify all APIs working
