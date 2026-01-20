@@ -171,7 +171,14 @@ export async function createBoutiqueSettings(data: {
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  return await db.insert(boutiqueSettings).values(data);
+  return await db.insert(boutiqueSettings).values({
+    boutiqueId: data.boutiqueId,
+    brandingColor: data.brandingColor || "#FF6B35",
+    customDomain: data.customDomain || "",
+    enableSharing: data.enableSharing !== undefined ? data.enableSharing : 1,
+    enableAnalytics: data.enableAnalytics !== undefined ? data.enableAnalytics : 1,
+    webhookUrl: data.webhookUrl || "",
+  });
 }
 
 export async function updateBoutiqueSettings(

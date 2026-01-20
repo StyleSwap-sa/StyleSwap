@@ -1,0 +1,82 @@
+{
+  "query": "DESCRIBE boutiqueSettings;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute DESCRIBE boutiqueSettings;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "boutiqueId",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "brandingColor",
+      "Type": "varchar(7)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "#FF6B35",
+      "Extra": ""
+    },
+    {
+      "Field": "customDomain",
+      "Type": "varchar(255)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "",
+      "Extra": ""
+    },
+    {
+      "Field": "enableSharing",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "1",
+      "Extra": ""
+    },
+    {
+      "Field": "enableAnalytics",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "1",
+      "Extra": ""
+    },
+    {
+      "Field": "webhookUrl",
+      "Type": "varchar(500)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nboutiqueId\tint(11)\tNO\tUNI\tNULL\t\nbrandingColor\tvarchar(7)\tNO\t\t#FF6B35\t\ncustomDomain\tvarchar(255)\tNO\t\t\t\nenableSharing\tint(11)\tNO\t\t1\t\nenableAnalytics\tint(11)\tNO\t\t1\t\nwebhookUrl\tvarchar(500)\tNO\t\t\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\n",
+  "stderr": "",
+  "execution_time_ms": 104
+}
