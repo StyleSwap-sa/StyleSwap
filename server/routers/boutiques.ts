@@ -72,6 +72,31 @@ export const boutiquesRouter = router({
     }),
 
   /**
+   * Check if slug is available and suggest alternatives
+   */
+  checkSlugAvailability: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ input }) => {
+      const existing = await getBoutiqueBySlug(input.slug);
+      if (!existing) {
+        return { available: true, slug: input.slug };
+      }
+
+      let counter = 1;
+      let suggestedSlug = input.slug;
+      while (counter <= 10) {
+        suggestedSlug = input.slug + "-" + counter;
+        const existingAlt = await getBoutiqueBySlug(suggestedSlug);
+        if (!existingAlt) {
+          return { available: false, slug: input.slug, suggestion: suggestedSlug };
+        }
+        counter++;
+      }
+
+      return { available: false, slug: input.slug, suggestion: null };
+    }),
+
+  /**
    * Create a new boutique (self-service registration)
    */
   create: protectedProcedure

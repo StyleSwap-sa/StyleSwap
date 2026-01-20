@@ -364,3 +364,14 @@
 - [ ] Create deployment documentation
 - [ ] Deploy to production
 - [ ] Monitor for issues
+
+
+## Phase 28: Bug Fixes & Improvements
+
+### Boutique Slug Collision Fix
+- [x] Fix "Boutique slug already exists" error on signup
+- [x] Add slug uniqueness validation before creation
+- [x] Implement slug auto-generation with collision handling (velura -> velura-1, velura-2, etc.)
+- [x] Add checkSlugAvailability endpoint to backend
+- [x] Integrate slug check in signup form
+- [x] Auto-suggest alternative slugs if collision occurs

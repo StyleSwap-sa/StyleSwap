@@ -34,6 +34,7 @@ export default function B2BSignup() {
   const createBoutiqueMutation = trpc.boutiques.create.useMutation();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [suggestedSlug, setSuggestedSlug] = useState<string | null>(null);
 
   if (!isAuthenticated) {
     return (
@@ -87,9 +88,25 @@ export default function B2BSignup() {
     } else if (step === 3) {
       try {
         setError("");
+        const baseSlug = formData.businessName.toLowerCase().replace(/\s+/g, '-');
+        let finalSlug = baseSlug;
+        
+        try {
+          const slugCheck = await fetch('/api/trpc/boutiques.checkSlugAvailability?input=' + JSON.stringify({ slug: baseSlug }));
+          if (slugCheck.ok) {
+            const data = await slugCheck.json();
+            if (data.result && data.result.data && !data.result.data.available && data.result.data.suggestion) {
+              finalSlug = data.result.data.suggestion;
+              setSuggestedSlug(finalSlug);
+            }
+          }
+        } catch (slugErr) {
+          console.warn('Could not check slug availability, using base slug');
+        }
+        
         await createBoutiqueMutation.mutateAsync({
           name: formData.businessName,
-          slug: formData.businessName.toLowerCase().replace(/\s+/g, '-'),
+          slug: finalSlug,
           description: formData.description,
           websiteUrl: formData.website || undefined,
           instagramHandle: formData.instagramHandle || undefined,
