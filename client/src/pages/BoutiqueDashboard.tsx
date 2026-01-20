@@ -181,17 +181,19 @@ export default function BoutiqueDashboard() {
 
             {/* Quick Actions */}
             <div className="grid md:grid-cols-3 gap-6">
-              <Card className="premium-card cursor-pointer hover:shadow-lg transition">
-                <CardContent className="pt-6">
-                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
-                    <Plus className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold mb-2">Add Products</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Upload your clothing catalog
-                  </p>
-                </CardContent>
-              </Card>
+              <Link href="/products">
+                <Card className="premium-card cursor-pointer hover:shadow-lg transition">
+                  <CardContent className="pt-6">
+                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
+                      <Plus className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-bold mb-2">Add Products</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Upload your clothing catalog
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
 
               <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                 <CardContent className="pt-6">
