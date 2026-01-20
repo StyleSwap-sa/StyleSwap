@@ -343,19 +343,15 @@ export default function B2BSignup() {
         </Card>
 
         {/* Benefits */}
-        <div className="mt-12 grid md:grid-cols-3 gap-6">
+        <div className="mt-12 grid md:grid-cols-2 gap-6">
           {[
             {
-              title: "Free Trial",
-              desc: "Get 100 free try-ons to test the platform",
-            },
-            {
               title: "Easy Setup",
-              desc: "Add the widget to your site in minutes",
+              desc: "Add the widget to your site in minutes with our simple embed code",
             },
             {
               title: "24/7 Support",
-              desc: "Get help whenever you need it",
+              desc: "Get help whenever you need it from our dedicated support team",
             },
           ].map((benefit, i) => (
             <Card key={i} className="premium-card text-center">

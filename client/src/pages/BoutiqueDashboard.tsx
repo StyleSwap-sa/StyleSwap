@@ -250,10 +250,16 @@ export default function BoutiqueDashboard() {
                   <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold flex-shrink-0">
                     3
                   </div>
-                  <div>
-                    <h4 className="font-bold">Embed the Widget</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Add StyleSwap to your website
+                  <div className="flex-1">
+                    <h4 className="font-bold">Embed the Widget on Your Website</h4>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Copy and paste this code into your website HTML:
+                    </p>
+                    <div className="bg-background/50 border border-border rounded p-3 font-mono text-xs overflow-x-auto mb-3 max-w-full">
+                      <code>&lt;script src="https://widget.styleswap.co.za/embed.js"&gt;&lt;/script&gt;</code>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Add this script to your website header. The widget will appear on product pages, letting customers try on clothes before buying.
                     </p>
                   </div>
                 </div>
