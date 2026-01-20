@@ -26,6 +26,11 @@ export default function Home() {
     { label: 'Contact', path: '/contact' },
   ];
 
+  const authenticatedNavItems = [
+    { label: 'Dashboard', path: '/boutique-dashboard' },
+    { label: 'Profile', path: '/profile' },
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Navigation */}
@@ -47,6 +52,20 @@ export default function Home() {
                 {item.label}
               </button>
             ))}
+            {isAuthenticated && (
+              <>
+                <div className="w-px bg-border/30"></div>
+                {authenticatedNavItems.map((item) => (
+                  <button
+                    key={item.path}
+                    onClick={() => setLocation(item.path)}
+                    className="hover:text-primary transition-colors uppercase tracking-wide text-primary font-bold"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
@@ -237,7 +256,6 @@ export default function Home() {
               <h4 className="font-bold mb-4">Contact</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>info@styleswap.co.za</li>
-                <li>060 855 5621</li>
                 <li>Johannesburg, South Africa</li>
               </ul>
             </div>
