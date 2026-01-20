@@ -224,3 +224,13 @@
 - [x] Handle multiple task ID response formats
 - [x] Improve error handling and error message extraction
 - [x] All 90 tests passing
+
+
+## Phase 26: Debug Image Upload Corruption Issue
+- [ ] Add detailed logging for image file sizes and formats
+- [ ] Log base64 encoding/decoding process
+- [ ] Compare image properties between Fitroom app and our website
+- [ ] Test direct file upload vs base64 conversion
+- [ ] Check if browser is re-compressing images
+- [ ] Verify MIME types and file extensions
+- [ ] Fix image corruption in upload pipeline

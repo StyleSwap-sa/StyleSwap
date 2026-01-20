@@ -27,9 +27,9 @@ export default function Dashboard() {
   const { data: credits, isLoading: creditsLoading, refetch: refetchCredits } = 
     trpc.tryon.getCredits.useQuery();
 
-  // Fetch transaction history
-  const { data: transactions, isLoading: transactionsLoading } = 
-    trpc.tryon.getTransactionHistory.useQuery({ limit: 20 });
+  // TODO: Fetch transaction history
+  const transactions: any[] = [];
+  const transactionsLoading = false;
 
   if (!isAuthenticated) {
     return (

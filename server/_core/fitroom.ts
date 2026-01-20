@@ -13,7 +13,7 @@ import { ENV } from "./env";
 interface FitroomTryOnRequest {
   modelImagePath: string; // Path to customer's body photo
   clothImagePath: string; // Path to garment image
-  clothType: "upper" | "lower" | "full_set" | "combo"; // Type of clothing
+  clothType: "single" | "combo"; // Type of clothing ("single" for one garment, "combo" for top+bottom)
   lowerClothImagePath?: string; // For combo try-ons
   hdMode?: boolean; // Optional: true for HD quality (~30s), false for normal (~9s)
 }
@@ -99,6 +99,8 @@ class FitroomClient {
       });
 
       console.log("[Fitroom] Create task response:", JSON.stringify(response.data));
+      console.log("[Fitroom] Response status:", response.status);
+      console.log("[Fitroom] Response headers:", response.headers);
 
       const taskId = response.data.task_id || response.data.taskId || response.data.id;
       const status = response.data.status || "CREATED";
@@ -121,11 +123,17 @@ class FitroomClient {
         status: error.response?.status,
         data: error.response?.data,
         message: error.message,
+        headers: error.response?.headers,
       };
-      console.error("[Fitroom API Error - Create Try-On]", errorDetails);
+      console.error("[Fitroom API Error - Create Try-On]", JSON.stringify(errorDetails, null, 2));
+      // Return detailed error info for debugging
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Unknown error";
+      const statusCode = error.response?.status || "unknown";
+      const detailedError = `[${statusCode}] ${errorMessage}`;
+      console.log(`[Fitroom] Detailed error: ${detailedError}`);
       return {
         success: false,
-        error: error.response?.data?.error || error.response?.data?.message || error.message || "Unknown error",
+        error: detailedError,
       };
     }
   }

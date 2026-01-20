@@ -43,10 +43,10 @@ export function VirtualTryOnUpload() {
   const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
   
   // Refund try-on mutation
-  const refundTryOnMutation = trpc.tryon.refundTryOn.useMutation();
+  const refundTryOnMutation = trpc.tryon.refundTryOnCredits.useMutation();
   
   // Get try-on status query
-  const getTryOnStatusQuery = trpc.tryon.getTryOnStatus.useQuery(
+  const getTryOnStatusQuery = trpc.tryon.pollTryOnStatus.useQuery(
     { taskId: currentTaskId || "" },
     { enabled: !!currentTaskId && isPolling, refetchInterval: 2000 }
   );
@@ -118,31 +118,28 @@ export function VirtualTryOnUpload() {
     setProcessingProgress(0);
 
     try {
-      // Convert images to base64
-      const modelPhotoBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve((e.target?.result as string).split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(modelPhoto);
+      // Send files directly using FormData (no base64 encoding)
+      const formData = new FormData();
+      formData.append("modelImage", modelPhoto);
+      formData.append("clothImage", clothImage);
+      formData.append("clothType", "single");
+
+      // Call the dedicated file upload endpoint
+      const response = await fetch("/api/tryon/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "include", // Include session cookie
       });
 
-      const clothImageBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve((e.target?.result as string).split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(clothImage);
-      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
 
-      // Create try-on task
-      const response = await createTryOnMutation.mutateAsync({
-        modelImageBase64: modelPhotoBase64,
-        clothImageBase64: clothImageBase64,
-        clothType: "full_set",
-        hdMode: false, // Use normal mode for faster processing
-      });
+      const data = await response.json();
 
-      if (response.success && response.taskId) {
-        setCurrentTaskId(response.taskId);
+      if (data.success && data.taskId) {
+        setCurrentTaskId(data.taskId);
         setIsPolling(true);
         setProcessingProgress(10);
         setIsLoading(false);
@@ -150,7 +147,7 @@ export function VirtualTryOnUpload() {
         // Refetch credits to show updated balance
         refetchCredits();
       } else {
-        setError("Failed to create try-on task");
+        setError(data.error || "Failed to create try-on task");
         setIsLoading(false);
       }
     } catch (err) {
@@ -174,7 +171,7 @@ export function VirtualTryOnUpload() {
       setError("Try-on generation timed out (exceeded 60 seconds). Your credit has been refunded. Please try again with a different image.");
       setIsPolling(false);
       if (currentTaskId) {
-        refundTryOnMutation.mutate({ taskId: currentTaskId, reason: "timeout" });
+        refundTryOnMutation.mutate({ taskId: currentTaskId });
       }
       setCurrentTaskId(null);
       pollingStartTimeRef.current = null;
@@ -207,7 +204,7 @@ export function VirtualTryOnUpload() {
       setError("Try-on generation failed. Your credit has been refunded. Please try again with a different image.");
       setIsPolling(false);
       if (currentTaskId) {
-        refundTryOnMutation.mutate({ taskId: currentTaskId, reason: "api_failure" });
+        refundTryOnMutation.mutate({ taskId: currentTaskId });
       }
       setCurrentTaskId(null);
       pollingStartTimeRef.current = null;

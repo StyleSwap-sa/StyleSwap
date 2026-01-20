@@ -2,12 +2,21 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import multer from "multer";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { handleYokoWebhook } from "../webhooks/yoco";
+import { getFitroomClient } from "./fitroom";
+import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
+import crypto from "crypto";
+import path from "path";
+import fs from "fs";
+
+// Configure multer for file uploads
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -34,10 +43,114 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
   // Yoco webhook endpoint
   app.post("/api/webhooks/yoco", handleYokoWebhook);
+  
+  // Try-on file upload endpoint (handles multipart/form-data)
+  // This endpoint receives files directly and forwards to Fitroom without base64 encoding
+  app.post("/api/tryon/upload", upload.fields([
+    { name: "modelImage", maxCount: 1 },
+    { name: "clothImage", maxCount: 1 }
+  ]), async (req, res) => {
+    let tempDir: string | null = null;
+    try {
+      console.log("[Try-On Upload] Received request");
+      
+      // Get user from session (similar to tRPC context)
+      const sessionCookie = req.headers.cookie?.split("; ").find(c => c.startsWith("session="));
+      if (!sessionCookie) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      // For now, we'll extract userId from context
+      // In production, you'd decode the session cookie properly
+      const userId = (req as any).userId || "test-user";
+      
+      const modelImageFiles = (req.files as any)?.modelImage;
+      const clothImageFiles = (req.files as any)?.clothImage;
+
+      if (!modelImageFiles || !modelImageFiles[0] || !clothImageFiles || !clothImageFiles[0]) {
+        return res.status(400).json({ error: "Both model image and cloth image are required" });
+      }
+
+      const modelImageBuffer = modelImageFiles[0].buffer;
+      const clothImageBuffer = clothImageFiles[0].buffer;
+      const clothType = req.body.clothType || "single";
+
+      console.log(`[Try-On Upload] Model image size: ${modelImageBuffer.length} bytes`);
+      console.log(`[Try-On Upload] Cloth image size: ${clothImageBuffer.length} bytes`);
+
+      // Create temp directory for image files
+      tempDir = path.join("/tmp", `fitroom-${crypto.randomBytes(8).toString("hex")}`);
+      fs.mkdirSync(tempDir, { recursive: true });
+
+      // Get MIME type extensions
+      const getExtension = (mimeType: string): string => {
+        if (mimeType.includes("jpeg") || mimeType.includes("jpg")) return "jpg";
+        if (mimeType.includes("png")) return "png";
+        if (mimeType.includes("gif")) return "gif";
+        if (mimeType.includes("webp")) return "webp";
+        return "jpg";
+      };
+
+      const modelExt = getExtension(modelImageFiles[0].mimetype);
+      const clothExt = getExtension(clothImageFiles[0].mimetype);
+
+      const modelImagePath = path.join(tempDir, `model.${modelExt}`);
+      const clothImagePath = path.join(tempDir, `cloth.${clothExt}`);
+
+      // Write files directly (no base64 conversion)
+      fs.writeFileSync(modelImagePath, modelImageBuffer);
+      fs.writeFileSync(clothImagePath, clothImageBuffer);
+
+      console.log(`[Try-On Upload] Saved model image: ${modelImagePath}`);
+      console.log(`[Try-On Upload] Saved cloth image: ${clothImagePath}`);
+
+      // Check credits
+      const credits = await getUserCredits(userId);
+      if (credits.remainingCredits < 1) {
+        return res.status(402).json({ error: "Insufficient credits" });
+      }
+
+      // Create try-on task with Fitroom
+      const fitroomClient = getFitroomClient();
+      const taskResult = await fitroomClient.createTryOn({
+        modelImagePath,
+        clothImagePath,
+        clothType: clothType as "single" | "combo",
+        hdMode: false,
+      });
+
+      if (!taskResult.success || !taskResult.taskId) {
+        return res.status(500).json({ error: taskResult.error || "Failed to create try-on task" });
+      }
+
+      // Deduct credit after successful task creation
+      await deductCredits(userId, 1);
+
+      console.log(`[Try-On Upload] Task created successfully: ${taskResult.taskId}`);
+      
+      return res.status(200).json({
+        success: true,
+        taskId: taskResult.taskId,
+        status: taskResult.status || "CREATED",
+      });
+    } catch (error) {
+      console.error("[Try-On Upload] Error:", error);
+      
+      // Cleanup on error
+      if (tempDir && fs.existsSync(tempDir)) {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      }
+      
+      return res.status(500).json({ error: error instanceof Error ? error.message : "Failed to process try-on upload" });
+    }
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",
@@ -46,6 +159,7 @@ async function startServer() {
       createContext,
     })
   );
+  
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);

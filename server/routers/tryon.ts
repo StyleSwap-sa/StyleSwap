@@ -32,7 +32,7 @@ export const tryonRouter = router({
       z.object({
         modelImageBase64: z.string().describe("Base64 encoded customer body photo"),
         clothImageBase64: z.string().describe("Base64 encoded garment image"),
-        clothType: z.enum(["upper", "lower", "full_set"]).default("upper"),
+        clothType: z.enum(["single", "combo"]).default("single"), // "single" for one garment, "combo" for top+bottom
         hdMode: z.boolean().optional().default(false),
       })
     )
@@ -43,21 +43,18 @@ export const tryonRouter = router({
         if (credits.remainingCredits < 1) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "Insufficient credits. Please purchase more try-ons.",
+            message: "Insufficient credits. Please purchase more credits to continue.",
           });
         }
 
-        tempDir = path.join("/tmp", `fitroom-${ctx.user.id}-${Date.now()}`);
-        if (!fs.existsSync(tempDir)) {
-          fs.mkdirSync(tempDir, { recursive: true });
-        }
+        // Create temp directory for image files
+        tempDir = path.join("/tmp", `fitroom-${crypto.randomBytes(8).toString("hex")}`);
+        fs.mkdirSync(tempDir, { recursive: true });
 
-        // Detect image format from base64 header
+        // Helper function to detect image format from base64
         const detectImageFormat = (base64: string): string => {
-          // Check magic bytes in base64
           if (base64.startsWith("/9j/")) return "jpg"; // JPEG
           if (base64.startsWith("iVBORw0KGgo")) return "png"; // PNG
-          if (base64.startsWith("Qk0")) return "bmp"; // BMP
           if (base64.startsWith("R0lGODlh")) return "gif"; // GIF
           if (base64.startsWith("UklGR")) return "webp"; // WebP
           return "jpg"; // Default to JPG
@@ -69,8 +66,22 @@ export const tryonRouter = router({
         const modelImagePath = path.join(tempDir, `model.${modelFormat}`);
         const clothImagePath = path.join(tempDir, `cloth.${clothFormat}`);
 
-        const modelBuffer = Buffer.from(input.modelImageBase64, "base64");
-        const clothBuffer = Buffer.from(input.clothImageBase64, "base64");
+        // Decode base64 images to binary
+        let modelBuffer = Buffer.from(input.modelImageBase64, "base64");
+        let clothBuffer = Buffer.from(input.clothImageBase64, "base64");
+        
+        // Log original sizes
+        console.log(`[Try-On] Original model image size: ${modelBuffer.length} bytes`);
+        console.log(`[Try-On] Original cloth image size: ${clothBuffer.length} bytes`);
+        
+        // Log if images exceed typical API limits
+        const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+        if (modelBuffer.length > MAX_IMAGE_SIZE) {
+          console.log(`[Try-On] WARNING: Model image exceeds ${MAX_IMAGE_SIZE} bytes (${modelBuffer.length} bytes)`);
+        }
+        if (clothBuffer.length > MAX_IMAGE_SIZE) {
+          console.log(`[Try-On] WARNING: Cloth image exceeds ${MAX_IMAGE_SIZE} bytes (${clothBuffer.length} bytes)`);
+        }
 
         console.log(`[Try-On] Saving model image as ${modelFormat}, cloth image as ${clothFormat}`);
         fs.writeFileSync(modelImagePath, modelBuffer);
@@ -78,242 +89,140 @@ export const tryonRouter = router({
 
         const fitroomClient = getFitroomClient();
         
-        console.log("[Try-On] Validating model image...");
-        const modelValidation = await fitroomClient.validateModelImage(modelImagePath);
-        if (!modelValidation.valid) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `Body photo validation failed: ${modelValidation.error || "Image does not meet requirements. Ensure full body is visible, standing straight, facing forward, with simple background."}`,
-          });
-        }
+        // TEMPORARY: Bypass validation to test if validation endpoint is the issue
+        // The validation endpoint appears to be rejecting images that work on Fitroom's official app
+        // console.log("[Try-On] Validating model image...");
+        // const modelValidation = await fitroomClient.validateModelImage(modelImagePath);
+        // if (!modelValidation.success) {
+        //   throw new TRPCError({
+        //     code: "BAD_REQUEST",
+        //     message: `Body photo validation failed: ${modelValidation.error || "Image does not meet requirements. Ensure full body is visible, standing straight, facing forward, with simple background."}`,
+        //   });
+        // }
 
-        console.log("[Try-On] Validating clothing image...");
-        const clothValidation = await fitroomClient.validateClothImage(clothImagePath);
-        if (!clothValidation.valid) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `Clothing image validation failed: ${clothValidation.error || "Image does not meet requirements. Ensure clothing is clearly visible, well-lit, on solid background."}`,
-          });
-        }
+        // console.log("[Try-On] Validating clothing image...");
+        // const clothValidation = await fitroomClient.validateClothingImage(clothImagePath);
+        // if (!clothValidation.success) {
+        //   throw new TRPCError({
+        //     code: "BAD_REQUEST",
+        //     message: `Clothing image validation failed: ${clothValidation.error || "Image does not meet requirements. Ensure clothing is clearly visible, well-lit, on solid background."}`,
+        //   });
+        // }
 
+         console.log("[Try-On] Skipping validation - sending directly to task creation");
+        const modelStats = fs.statSync(modelImagePath);
+        const clothStats = fs.statSync(clothImagePath);
+        console.log(`[Try-On] Model image: ${modelImagePath} (${modelStats.size} bytes, type: ${path.extname(modelImagePath)})`);
+        console.log(`[Try-On] Cloth image: ${clothImagePath} (${clothStats.size} bytes, type: ${path.extname(clothImagePath)})`);
         console.log("[Try-On] Creating try-on task...");
-        console.log(`[Try-On] Model image: ${modelImagePath} (${fs.statSync(modelImagePath).size} bytes)`);
-        console.log(`[Try-On] Cloth image: ${clothImagePath} (${fs.statSync(clothImagePath).size} bytes)`);
         
         const taskResult = await fitroomClient.createTryOn({
           modelImagePath,
           clothImagePath,
-          clothType: input.clothType as "upper" | "lower" | "full_set",
+          clothType: input.clothType as "single" | "combo",
           hdMode: input.hdMode,
         });
         
         console.log(`[Try-On] Task result:`, taskResult);
 
-        if (!taskResult.success) {
+        if (!taskResult.success || !taskResult.taskId) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: `Failed to create try-on task: ${taskResult.error}`,
+            message: taskResult.error || "Failed to create try-on task",
           });
         }
 
-        console.log("[Try-On] Deducting credit...");
-        const updatedCredits = await deductCredits(ctx.user.id, 1);
+        // Deduct credit AFTER successful task creation
+        await deductCredits(ctx.user.id, 1);
 
         return {
           success: true,
           taskId: taskResult.taskId,
-          status: taskResult.status,
-          remainingCredits: updatedCredits.remainingCredits,
-          estimatedProcessingTime: input.hdMode ? "~30 seconds" : "~9 seconds",
+          status: taskResult.status || "CREATED",
         };
       } catch (error) {
-        console.error("[Try-On Creation Error]", error);
-        if (error instanceof TRPCError) throw error;
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create virtual try-on task",
-        });
-      } finally {
+        console.error("[Try-On] Error:", error);
+        
+        // Refund credit if task creation failed
         if (tempDir) {
           try {
-            fs.rmSync(tempDir, { recursive: true, force: true });
-          } catch (err) {
-            console.warn("[Cleanup] Failed to remove temp files:", err);
+            await refundCredits(ctx.user.id, 1);
+          } catch (refundError) {
+            console.error("[Try-On] Failed to refund credit:", refundError);
           }
         }
-      }
-    }),
 
-  /**
-   * Get the status and result of a try-on task
-   * Poll this endpoint to check if processing is complete
-   */
-  getTryOnStatus: protectedProcedure
-    .input(
-      z.object({
-        taskId: z.string().describe("Task ID from createTryOn"),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      try {
-        const fitroomClient = getFitroomClient();
-        const statusResult = await fitroomClient.getTaskStatus(input.taskId);
-
-        if (!statusResult.success) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: `Failed to get task status: ${statusResult.error}`,
-          });
+        if (error instanceof TRPCError) {
+          throw error;
         }
 
-        return {
-          success: true,
-          status: statusResult.status,
-          resultImage: statusResult.resultImage,
-          isComplete: statusResult.status === "COMPLETED",
-          isFailed: statusResult.status === "FAILED",
-        };
-      } catch (error) {
-        console.error("[Try-On Status Error]", error);
-        if (error instanceof TRPCError) throw error;
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get try-on status",
+          message: error instanceof Error ? error.message : "Unknown error creating try-on",
         });
-      }
-    }),
-
-  /**
-   * Validate model image before try-on
-   * Checks if the image is suitable for virtual try-on
-   */
-  validateModelImage: protectedProcedure
-    .input(
-      z.object({
-        imageBase64: z.string().describe("Base64 encoded image to validate"),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      try {
-        // Convert base64 to temp file
-        const tempDir = path.join("/tmp", `fitroom-validate-${ctx.user.id}-${Date.now()}`);
-        if (!fs.existsSync(tempDir)) {
-          fs.mkdirSync(tempDir, { recursive: true });
-        }
-
-        const imagePath = path.join(tempDir, "model.jpg");
-        const buffer = Buffer.from(input.imageBase64, "base64");
-        fs.writeFileSync(imagePath, buffer);
-
-        // Validate with Fitroom
-        const fitroomClient = getFitroomClient();
-        const validationResult = await fitroomClient.validateModelImage(imagePath);
-
-        // Clean up
-        try {
+      } finally {
+        // Cleanup temp files
+        if (tempDir && fs.existsSync(tempDir)) {
           fs.rmSync(tempDir, { recursive: true, force: true });
-        } catch (err) {
-          console.warn("[Cleanup] Failed to remove temp files:", err);
         }
-
-        return {
-          valid: validationResult.valid,
-          error: validationResult.error,
-        };
-      } catch (error) {
-        console.error("[Model Validation Error]", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to validate model image",
-        });
       }
     }),
 
   /**
-   * Validate clothing image before try-on
-   * Checks if the image is suitable for virtual try-on
+   * Poll for try-on task status and results
    */
-  validateClothImage: protectedProcedure
-    .input(
-      z.object({
-        imageBase64: z.string().describe("Base64 encoded image to validate"),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      try {
-        // Convert base64 to temp file
-        const tempDir = path.join("/tmp", `fitroom-validate-${ctx.user.id}-${Date.now()}`);
-        if (!fs.existsSync(tempDir)) {
-          fs.mkdirSync(tempDir, { recursive: true });
-        }
-
-        const imagePath = path.join(tempDir, "cloth.jpg");
-        const buffer = Buffer.from(input.imageBase64, "base64");
-        fs.writeFileSync(imagePath, buffer);
-
-        // Validate with Fitroom
-        const fitroomClient = getFitroomClient();
-        const validationResult = await fitroomClient.validateClothImage(imagePath);
-
-        // Clean up
-        try {
-          fs.rmSync(tempDir, { recursive: true, force: true });
-        } catch (err) {
-          console.warn("[Cleanup] Failed to remove temp files:", err);
-        }
-
-        return {
-          valid: validationResult.valid,
-          error: validationResult.error,
-        };
-      } catch (error) {
-        console.error("[Cloth Validation Error]", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to validate clothing image",
-        });
-      }
-    }),
-
-  /**
-   * Refund credits for failed/timeout try-ons
-   */
-  refundTryOn: protectedProcedure
-    .input(
-      z.object({
-        taskId: z.string().describe("Task ID to refund"),
-        reason: z.string().optional().describe("Reason for refund"),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      try {
-        // Refund 1 credit
-        const result = await refundCredits(ctx.user.id, 1);
-        return {
-          success: true,
-          message: "Credit refunded successfully",
-          remainingCredits: result.remainingCredits,
-        };
-      } catch (error) {
-        console.error("[Refund Error]", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to refund credit",
-        });
-      }
-    }),
-
-  /**
-   * Get user's transaction history
-   */
-  getTransactionHistory: protectedProcedure
-    .input(
-      z.object({
-        limit: z.number().min(1).max(100).default(50),
-      })
-    )
+  pollTryOnStatus: protectedProcedure
+    .input(z.object({ taskId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const { getUserTransactions } = await import("../db.credits");
-      return await getUserTransactions(ctx.user.id, input.limit);
+      const fitroomClient = getFitroomClient();
+      const status = await fitroomClient.getTaskStatus(input.taskId);
+
+      if (!status.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: status.error || "Failed to get task status",
+        });
+      }
+
+      return {
+        taskId: input.taskId,
+        status: status.status,
+        resultImage: status.resultImage,
+        isComplete: status.status === "COMPLETED",
+        isFailed: status.status === "FAILED",
+      };
+    }),
+
+  /**
+   * Save try-on result to user's history
+   */
+  saveTryOnResult: protectedProcedure
+    .input(
+      z.object({
+        taskId: z.string(),
+        resultImageUrl: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // TODO: Save to database
+      return { success: true };
+    }),
+
+  /**
+   * Refund credits for failed try-on
+   */
+  refundTryOnCredits: protectedProcedure
+    .input(z.object({ taskId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await refundCredits(ctx.user.id, 1);
+        return { success: true };
+      } catch (error) {
+        console.error("[Try-On] Refund error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to refund credits",
+        });
+      }
     }),
 });

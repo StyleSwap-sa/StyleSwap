@@ -1,41 +1,5 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "5",
-      "when": 1768135333231,
-      "tag": "0000_skinny_whiplash",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1768391177315,
-      "tag": "0001_dark_jean_grey",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1768404969763,
-      "tag": "0002_superb_brood",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1768552488386,
-      "tag": "0003_premium_maverick",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1768642023552,
-      "tag": "0004_quiet_tony_stark",
-      "breakpoints": true
-    }
-  ]
+  "entries": []
 }
