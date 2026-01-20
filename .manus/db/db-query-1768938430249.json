@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE boutiqueSettings MODIFY COLUMN brandingColor VARCHAR(7) NULL DEFAULT '#FF6B35';\nALTER TABLE boutiqueSettings MODIFY COLUMN customDomain VARCHAR(255) NULL DEFAULT '';\nALTER TABLE boutiqueSettings MODIFY COLUMN enableSharing INT NULL DEFAULT 1;\nALTER TABLE boutiqueSettings MODIFY COLUMN enableAnalytics INT NULL DEFAULT 1;\nALTER TABLE boutiqueSettings MODIFY COLUMN webhookUrl VARCHAR(500) NULL DEFAULT '';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute ALTER TABLE boutiqueSettings MODIFY COLUMN brandingColor VARCHAR(7) NULL DEFAULT '#FF6B35';\nALTER TABLE boutiqueSettings MODIFY COLUMN customDomain VARCHAR(255) NULL DEFAULT '';\nALTER TABLE boutiqueSettings MODIFY COLUMN enableSharing INT NULL DEFAULT 1;\nALTER TABLE boutiqueSettings MODIFY COLUMN enableAnalytics INT NULL DEFAULT 1;\nALTER TABLE boutiqueSettings MODIFY COLUMN webhookUrl VARCHAR(500) NULL DEFAULT '';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 837
+}

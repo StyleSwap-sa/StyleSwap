@@ -161,23 +161,12 @@ export async function getBoutiqueSettings(boutiqueId: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function createBoutiqueSettings(data: {
-  boutiqueId: number;
-  brandingColor?: string;
-  customDomain?: string;
-  enableSharing?: number;
-  enableAnalytics?: number;
-  webhookUrl?: string;
-}) {
+export async function createBoutiqueSettings(boutiqueId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  // Only insert boutiqueId, let database defaults handle the rest
   return await db.insert(boutiqueSettings).values({
-    boutiqueId: data.boutiqueId,
-    brandingColor: data.brandingColor || "#FF6B35",
-    customDomain: data.customDomain || "",
-    enableSharing: data.enableSharing !== undefined ? data.enableSharing : 1,
-    enableAnalytics: data.enableAnalytics !== undefined ? data.enableAnalytics : 1,
-    webhookUrl: data.webhookUrl || "",
+    boutiqueId,
   });
 }
 
