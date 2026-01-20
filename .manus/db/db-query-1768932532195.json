@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `boutiqueSettings` MODIFY `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL, MODIFY `updatedAt` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute ALTER TABLE `boutiqueSettings` MODIFY `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL, MODIFY `updatedAt` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 297
+}
