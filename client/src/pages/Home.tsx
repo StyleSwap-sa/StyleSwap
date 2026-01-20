@@ -74,6 +74,12 @@ export default function Home() {
                   {user?.name}
                 </span>
                 <Button
+                  onClick={() => setLocation('/boutique-dashboard')}
+                  className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                >
+                  Dashboard
+                </Button>
+                <Button
                   onClick={() => setLocation('/profile')}
                   variant="outline"
                   className="gap-2"
