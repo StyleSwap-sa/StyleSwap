@@ -81,10 +81,15 @@ export const boutiquesRouter = router({
         slug: z.string().min(1).max(255).regex(/^[a-z0-9-]+$/),
         description: z.string().optional(),
         logoUrl: z.string().url().optional(),
-        websiteUrl: z.string().url().optional(),
+        websiteUrl: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Add https:// protocol if missing from website URL
+      let websiteUrl = input.websiteUrl;
+      if (websiteUrl && !websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
+        websiteUrl = 'https://' + websiteUrl;
+      }
       // Check if slug already exists
       const existing = await getBoutiqueBySlug(input.slug);
       if (existing) {
@@ -101,7 +106,7 @@ export const boutiquesRouter = router({
         ownerId: ctx.user.id,
         description: input.description,
         logoUrl: input.logoUrl,
-        websiteUrl: input.websiteUrl,
+        websiteUrl: websiteUrl,
       });
 
       const boutiqueId = (result as any).insertId;

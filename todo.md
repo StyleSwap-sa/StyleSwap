@@ -251,7 +251,8 @@
 - [ ] Add footer with links
 
 ### Phase 27.2: Boutique Signup & Onboarding
-- [ ] Create signup page component
+- [x] Create signup page component
+- [ ] Fix URL validation to accept URLs without protocol
 - [ ] Add boutique registration form
 - [ ] Add email verification
 - [ ] Add boutique profile setup
