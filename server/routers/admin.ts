@@ -9,7 +9,7 @@ import {
 } from "../db.boutiques";
 import { getBillingHistory, getTotalSpending, getTotalCreditsUsed } from "../db.billing";
 import { getBoutiqueTryOnResults, getBoutiqueUsageStats } from "../db.tryons";
-import { getDb } from "../db";
+import { getDb, getPlatformMetrics, getBoutiquesList, getMonthlyCreditsUsage, getTopBoutiques } from "../db";
 import { boutiqueTransactions, tryOnResults } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 
@@ -332,5 +332,82 @@ export const adminRouter = router({
         transactionCount: transactions.length,
         tryOnCount: tryOns.length,
       };
+    }),
+
+  /**
+   * Get platform-wide metrics (admin dashboard)
+   */
+  getPlatformMetricsData: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Only admins can view platform metrics",
+      });
+    }
+
+    const metrics = await getPlatformMetrics();
+    if (!metrics) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch platform metrics",
+      });
+    }
+
+    return metrics;
+  }),
+
+  /**
+   * Get boutiques list with pagination
+   */
+  getBoutiquesListPaginated: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().optional().default(20),
+        offset: z.number().optional().default(0),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can view boutiques list",
+        });
+      }
+
+      return await getBoutiquesList(input.limit, input.offset);
+    }),
+
+  /**
+   * Get monthly credits usage analytics
+   */
+  getCreditsUsageAnalytics: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Only admins can view analytics",
+      });
+    }
+
+    return await getMonthlyCreditsUsage();
+  }),
+
+  /**
+   * Get top performing boutiques
+   */
+  getTopPerformingBoutiques: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().optional().default(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can view top boutiques",
+        });
+      }
+
+      return await getTopBoutiques(input.limit);
     }),
 });

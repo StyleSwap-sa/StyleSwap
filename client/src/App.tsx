@@ -25,6 +25,7 @@ import BoutiqueLandingPage from "./pages/BoutiqueLandingPage";
 import ProductManagement from "./pages/ProductManagement";
 import BoutiqueCredits from "./pages/BoutiqueCredits";
 import BoutiqueSettings from "./pages/BoutiqueSettings";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -51,7 +52,8 @@ function Router() {
       <Route path={"/boutique-products/:boutiqueId"} component={ProductManagement} />
       <Route path={"/boutique-credits/:boutiqueId"} component={BoutiqueCredits} />
       <Route path={"/boutique-settings/:boutiqueId"} component={BoutiqueSettings} />
-      <Route path={"/products"} component={ProductManagement} />
+      <Route path={"products"} component={ProductManagement} />
+      <Route path={"/admin"} component={AdminDashboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
