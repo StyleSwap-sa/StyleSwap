@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `boutiques` ADD COLUMN `isVerified` int NOT NULL DEFAULT 0 AFTER `status`;\nALTER TABLE `boutiques` ADD COLUMN `verificationToken` varchar(255) AFTER `isVerified`;\nALTER TABLE `boutiques` ADD COLUMN `verificationTokenExpiry` timestamp AFTER `verificationToken`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute ALTER TABLE `boutiques` ADD COLUMN `isVerified` int NOT NULL DEFAULT 0 AFTER `status`;\nALTER TABLE `boutiques` ADD COLUMN `verificationToken` varchar(255) AFTER `isVerified`;\nALTER TABLE `boutiques` ADD COLUMN `verificationTokenExpiry` timestamp AFTER `verificationToken`;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1270
+}

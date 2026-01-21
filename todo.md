@@ -516,3 +516,27 @@
 - Hook updates og:title, og:description, og:image, og:url dynamically
 - Integrated into BoutiqueLandingPage to use boutique data
 - WhatsApp link preview now shows boutique name instead of website title
+
+
+## Phase 34: Email Verification, Yoco Payment & Product Image Upload (TODAY)
+
+### Email Verification
+- [ ] Create email verification token generation and storage
+- [ ] Add verification email sending on boutique signup
+- [ ] Create email verification page/endpoint
+- [ ] Update boutique status to verified after email confirmation
+- [ ] Add resend verification email functionality
+
+### Yoco Payment Processing
+- [ ] Add Yoco API integration for credit purchases
+- [ ] Create payment endpoint for credit tier selection
+- [ ] Update boutique credits after successful payment
+- [ ] Create payment success/failure handling
+- [ ] Add payment history tracking
+
+### Product Image Upload
+- [ ] Create product image upload form
+- [ ] Integrate S3 upload functionality
+- [ ] Update product schema to store image URLs
+- [ ] Display product images in product catalogue
+- [ ] Add image preview before upload

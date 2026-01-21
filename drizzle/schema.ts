@@ -44,6 +44,9 @@ export const boutiques = mysqlTable("boutiques", {
   whatsappNumber: varchar("whatsappNumber", { length: 20 }),
   ownerId: int("ownerId").notNull(),
   status: mysqlEnum("status", ["active", "suspended", "inactive"]).default("active").notNull(),
+  isVerified: int("isVerified").default(0).notNull(),
+  verificationToken: varchar("verificationToken", { length: 255 }),
+  verificationTokenExpiry: timestamp("verificationTokenExpiry"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => [
