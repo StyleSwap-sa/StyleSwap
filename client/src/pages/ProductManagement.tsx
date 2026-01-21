@@ -82,6 +82,7 @@ export default function ProductManagement() {
   const createProductMutation = trpc.products.create.useMutation();
   const updateProductMutation = trpc.products.update.useMutation();
   const deleteProductMutation = trpc.products.deactivate.useMutation();
+  const uploadImageMutation = trpc.products.uploadImage.useMutation();
 
   const categories = ["clothing", "accessories", "footwear", "outerwear", "activewear"];
 
@@ -128,7 +129,44 @@ export default function ProductManagement() {
       setError("");
       setSuccess("");
 
-      // For now, create product without image (image upload will be phase 6)
+      let imageUrl = "https://via.placeholder.com/400x400?text=" + encodeURIComponent(formData.name);
+
+      // Upload image if provided
+      if (formData.image) {
+        setUploadProgress(25);
+        try {
+          // Convert file to base64
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onload = () => {
+              const result = reader.result as string;
+              resolve(result.split(',')[1]); // Get base64 part
+            };
+            reader.onerror = reject;
+            if (formData.image) reader.readAsDataURL(formData.image);
+          });
+          
+          const base64Data = await base64Promise;
+          setUploadProgress(50);
+
+          const uploadResponse = await uploadImageMutation.mutateAsync({
+            boutiqueId: selectedBoutiqueId,
+            productName: formData.name,
+            filename: formData.image.name,
+            mimeType: formData.image.type,
+            fileBase64: base64Data,
+          });
+          setUploadProgress(75);
+          if (uploadResponse.url) {
+            imageUrl = uploadResponse.url;
+          }
+        } catch (uploadErr) {
+          console.error("Image upload failed:", uploadErr);
+          // Continue with placeholder if upload fails
+        }
+      }
+
+      // Create or update product
       if (editingProduct) {
         await updateProductMutation.mutateAsync({
           id: editingProduct.id,
@@ -137,6 +175,7 @@ export default function ProductManagement() {
           description: formData.description || undefined,
           category: formData.category,
           price: formData.price ? parseFloat(formData.price) : undefined,
+          imageUrl: imageUrl,
         });
         setSuccess("Product updated successfully!");
       } else {
@@ -145,11 +184,13 @@ export default function ProductManagement() {
           name: formData.name,
           description: formData.description || undefined,
           category: formData.category,
-          imageUrl: "https://via.placeholder.com/400x400?text=" + encodeURIComponent(formData.name),
+          imageUrl: imageUrl,
           price: formData.price ? parseFloat(formData.price) : undefined,
         });
         setSuccess("Product created successfully!");
       }
+      setUploadProgress(100);
+      setTimeout(() => setUploadProgress(0), 1000);
 
       // Reset form
       setFormData({
@@ -163,6 +204,7 @@ export default function ProductManagement() {
       });
       setEditingProduct(null);
       setShowUploadForm(false);
+      setUploadProgress(0);
 
       // Refetch products
       await refetch();

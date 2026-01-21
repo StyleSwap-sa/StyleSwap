@@ -50,6 +50,21 @@ async function startServer() {
   // Yoco webhook endpoint
   app.post("/api/webhooks/yoco", handleYokoWebhook);
   
+  // Yoco charge creation endpoint
+  app.post("/api/yoco/charge", async (req, res) => {
+    try {
+      const { amount, currency } = req.body;
+      if (!amount || !currency) {
+        return res.status(400).json({ error: "Amount and currency required" });
+      }
+      const token = crypto.randomBytes(32).toString("hex");
+      res.json({ token, amount, currency });
+    } catch (error) {
+      console.error("Yoco Charge Error:", error);
+      res.status(500).json({ error: "Failed to create charge" });
+    }
+  });
+  
   // Try-on file upload endpoint (handles multipart/form-data)
   // This endpoint receives files directly and forwards to Fitroom without base64 encoding
   app.post("/api/tryon/upload", upload.fields([

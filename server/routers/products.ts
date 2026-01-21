@@ -297,7 +297,7 @@ export const productsRouter = router({
         productName: z.string(),
         filename: z.string(),
         mimeType: z.string(),
-        fileBuffer: z.instanceof(Buffer),
+        fileBase64: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -309,8 +309,11 @@ export const productsRouter = router({
         });
       }
 
+      // Convert base64 string to Buffer
+      const fileBuffer = Buffer.from(input.fileBase64, 'base64');
+
       const validation = validateImageFile({
-        size: input.fileBuffer.length,
+        size: fileBuffer.length,
         type: input.mimeType,
         name: input.filename,
       });
@@ -325,7 +328,7 @@ export const productsRouter = router({
       const uploadResult = await uploadProductImage({
         boutiqueId: input.boutiqueId,
         productName: input.productName,
-        fileBuffer: input.fileBuffer,
+        fileBuffer: fileBuffer,
         filename: input.filename,
         mimeType: input.mimeType,
       });

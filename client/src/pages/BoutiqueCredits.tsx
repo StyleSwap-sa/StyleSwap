@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { Loader2, ArrowLeft, Zap, Check } from "lucide-react";
+import { Loader2, ArrowLeft, Zap, Check, AlertCircle } from "lucide-react";
 
 interface CreditTier {
   id: string;
@@ -28,12 +28,56 @@ export default function BoutiqueCredits() {
   const [, setLocation] = useLocation();
   const boutiqueId = params?.boutiqueId ? parseInt(params.boutiqueId) : null;
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Fetch current credits
-  const { data: credits, isLoading: creditsLoading } = trpc.boutiques.getCredits.useQuery(
+  const { data: credits, isLoading: creditsLoading, refetch: refetchCredits } = trpc.boutiques.getCredits.useQuery(
     { boutiqueId: boutiqueId || 0 },
     { enabled: !!boutiqueId }
   );
+
+  // Purchase credits mutation
+  const purchaseMutation = trpc.boutiques.purchaseCredits.useMutation({
+    onSuccess: () => {
+      setSelectedTier(null);
+      setError(null);
+      setSuccessMessage("Credits purchased successfully!");
+      refetchCredits();
+      setTimeout(() => setSuccessMessage(null), 3000);
+    },
+    onError: (error) => {
+      setError(error.message || "Payment failed. Please try again.");
+    },
+  });
+
+  const handlePayment = async () => {
+    if (!selectedTier || !boutiqueId) return;
+
+    const tier = CREDIT_TIERS.find((t) => t.id === selectedTier);
+    if (!tier) return;
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      // For now, we'll use a test token
+      // In production, this would integrate with Yoco payment form
+      const testToken = "test_token_" + Math.random().toString(36).substring(7);
+
+      await purchaseMutation.mutateAsync({
+        boutiqueId,
+        credits: tier.credits,
+        amount: tier.price,
+        token: testToken,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Payment error occurred");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   if (!boutiqueId || creditsLoading) {
     return (
@@ -93,6 +137,32 @@ export default function BoutiqueCredits() {
           </CardContent>
         </Card>
 
+        {/* Success Message */}
+        {successMessage && (
+          <Card className="border-green-500 bg-green-50">
+            <CardContent className="pt-6 flex items-start gap-3">
+              <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-green-900">Success</p>
+                <p className="text-sm text-green-800">{successMessage}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <Card className="border-red-500 bg-red-50">
+            <CardContent className="pt-6 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-red-900">Payment Error</p>
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Credit Tiers */}
         <div>
           <h2 className="text-2xl font-bold mb-6">Choose Your Package</h2>
@@ -105,7 +175,10 @@ export default function BoutiqueCredits() {
                     ? "ring-2 ring-primary border-primary"
                     : "hover:shadow-lg"
                 } ${tier.popular ? "md:scale-105" : ""}`}
-                onClick={() => setSelectedTier(tier.id)}
+                onClick={() => {
+                  setSelectedTier(tier.id);
+                  setError(null);
+                }}
               >
                 {tier.popular && (
                   <div className="bg-primary text-primary-foreground px-4 py-2 text-center text-sm font-bold">
@@ -124,20 +197,24 @@ export default function BoutiqueCredits() {
                     <p className="text-sm text-muted-foreground">Price per credit</p>
                     <p className="font-bold">R{tier.pricePerCredit.toFixed(2)}</p>
                   </div>
-              <Button
-                className="w-full cursor-pointer"
-                variant={selectedTier === tier.id ? "default" : "outline"}
-                onClick={() => setSelectedTier(tier.id)}
-              >
-                {selectedTier === tier.id ? (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    Selected
-                  </>
-                ) : (
-                  "Select"
-                )}
-              </Button>
+                  <Button
+                    className="w-full cursor-pointer"
+                    variant={selectedTier === tier.id ? "default" : "outline"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedTier(tier.id);
+                      setError(null);
+                    }}
+                  >
+                    {selectedTier === tier.id ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Selected
+                      </>
+                    ) : (
+                      "Select"
+                    )}
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -165,11 +242,24 @@ export default function BoutiqueCredits() {
                   R{CREDIT_TIERS.find((t) => t.id === selectedTier)?.price.toFixed(2)}
                 </span>
               </div>
-              <Button className="w-full cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg">
-                Proceed to Payment
+
+              <Button
+                className="w-full cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg"
+                onClick={handlePayment}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing Payment...
+                  </>
+                ) : (
+                  "Proceed to Payment"
+                )}
               </Button>
+
               <p className="text-xs text-muted-foreground text-center">
-                Secure payment powered by Stripe
+                Secure payment powered by Yoco
               </p>
             </CardContent>
           </Card>
