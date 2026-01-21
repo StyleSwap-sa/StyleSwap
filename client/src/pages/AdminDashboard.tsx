@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, TrendingUp, Users, Zap, DollarSign } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { CreditAlertsCard } from "@/components/CreditAlertsCard";
 
 export default function AdminDashboard() {
   const [selectedBoutiqueId, setSelectedBoutiqueId] = useState<number | null>(null);
@@ -146,6 +147,9 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Credit Alerts Card */}
+        <CreditAlertsCard />
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

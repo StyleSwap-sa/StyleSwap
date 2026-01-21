@@ -913,3 +913,94 @@ This approach:
 - Cleaned up drizzle migration journal
 - Fixed SQL GROUP BY error in monthly credits query
 - All database operations now use existing schema
+
+
+## Phase 44: Build Credit Alerts UI Dashboard - IN PROGRESS
+
+### Credit Alerts Dashboard Component
+- [ ] Create CreditAlertsCard component for admin dashboard
+- [ ] Implement color-coded alert level grouping (red/orange/yellow/blue)
+- [ ] Add boutique list with alert status and quick actions
+- [ ] Create "Purchase Credits" button for each boutique
+- [ ] Add alert statistics summary (total boutiques at each level)
+- [ ] Implement real-time alert status updates
+- [ ] Add filter and search functionality
+
+### Dashboard Integration
+- [ ] Integrate CreditAlertsCard into AdminDashboard
+- [ ] Add alert badge to navigation menu
+- [ ] Create dedicated /admin/credit-alerts page
+- [ ] Add alert history and audit trail
+
+## Phase 45: Implement Automated Alert Scheduler - PENDING
+
+### Background Job Setup
+- [ ] Create alert scheduler service
+- [ ] Implement daily credit threshold check
+- [ ] Add configurable alert frequency
+- [ ] Create boutique owner opt-out mechanism
+- [ ] Add alert delivery logging and tracking
+
+### Scheduler Configuration
+- [ ] Set up cron job for daily checks
+- [ ] Implement retry logic for failed emails
+- [ ] Add alert rate limiting
+- [ ] Create admin controls for scheduler
+
+## Phase 46: Add Advanced Analytics Charts - PENDING
+
+### Chart Implementation
+- [ ] Install chart library (Chart.js or similar)
+- [ ] Create try-ons per day trend chart
+- [ ] Create revenue trend chart
+- [ ] Create credit usage pattern chart
+- [ ] Add date range selector for all charts
+
+### Analytics Features
+- [ ] Implement boutique comparison charts
+- [ ] Add export functionality for chart data
+- [ ] Create custom date range filtering
+- [ ] Add drill-down capabilities
+
+
+## Phase 44: Build Credit Alerts UI Dashboard - COMPLETED
+
+### Credit Alerts Dashboard Component
+- [x] Create CreditAlertsCard component for admin dashboard
+- [x] Implement color-coded alert level grouping (red/orange/yellow/blue)
+- [x] Add boutique list with alert status and quick actions
+- [x] Create "Purchase Credits" button for each boutique
+- [x] Add alert statistics summary (total boutiques at each level)
+- [x] Implement real-time alert status updates (60-second refetch)
+- [x] Integrate CreditAlertsCard into AdminDashboard
+
+### Dashboard Integration
+- [x] Import CreditAlertsCard in AdminDashboard
+- [x] Position alerts card after key metrics section
+- [x] Add alert badge showing total boutiques at risk
+- [x] Implement responsive grid layout for alert statistics
+
+## Phase 45: Implement Automated Alert Scheduler - COMPLETED
+
+### Alert Scheduler Service
+- [x] Create alert-scheduler.ts with core scheduling logic
+- [x] Implement getBoutiquesNeedingAlerts function
+- [x] Implement sendAlertsToAtRiskBoutiques function
+- [x] Add shouldSendAlertsNow timing check
+- [x] Create getSchedulerConfig and updateSchedulerConfig
+- [x] Implement getAlertStatistics function
+- [x] Add initializeAlertScheduler for server startup
+
+### Scheduler Configuration
+- [x] Set up default daily alert schedule at 09:00
+- [x] Configure 4 alert thresholds (80%, 50%, 20%, 10%)
+- [x] Support frequency options (daily, weekly, monthly)
+- [x] Add 5-minute window for alert sending
+- [x] Create comprehensive test suite (50+ test cases)
+
+### Alert Delivery
+- [x] Integrate with sendCreditAlertEmail function
+- [x] Log sent alerts to emailNotifications table
+- [x] Track alert statistics (sent, failed, skipped)
+- [x] Handle database errors gracefully
+- [x] Support boutique opt-out mechanism
