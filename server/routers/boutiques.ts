@@ -24,6 +24,8 @@ import {
   addBoutiqueCredit,
 } from "../db.boutiques";
 import { TRPCError } from "@trpc/server";
+import { createVerificationToken, sendVerificationEmail } from "../email.verification";
+import { createYocoCharge, processCreditPurchase, getYocoPublicKey } from "../yoco.payment";
 
 /**
  * Boutique Management Router
@@ -174,7 +176,20 @@ export const boutiquesRouter = router({
         role: "owner",
       });
 
-      return { id: boutiqueId, name: input.name, slug: finalSlug, description: input.description, logoUrl: input.logoUrl, websiteUrl: input.websiteUrl };
+      // Generate and send verification email
+      try {
+        const verificationToken = await createVerificationToken(boutiqueId);
+        await sendVerificationEmail(
+          input.name,
+          ctx.user.email || '',
+          verificationToken,
+          finalSlug
+        );
+      } catch (error) {
+        console.error('Error sending verification email:', error);
+      }
+
+      return { id: boutiqueId, name: input.name, slug: finalSlug, description: input.description, logoUrl: input.logoUrl, websiteUrl: input.websiteUrl, isVerified: false };
     }),
 
   /**
@@ -452,5 +467,70 @@ export const boutiquesRouter = router({
       await addBoutiqueCredit(input.boutiqueId, input.amount);
 
       return { success: true };
+    }),
+
+  /**
+   * Get Yoco public key for payment form
+   */
+  getYocoPublicKey: publicProcedure.query(() => {
+    return { publicKey: getYocoPublicKey() };
+  }),
+
+  /**
+   * Purchase credits with Yoco payment
+   */
+  purchaseCredits: protectedProcedure
+    .input(
+      z.object({
+        boutiqueId: z.number(),
+        credits: z.number().positive(),
+        amount: z.number().positive(),
+        token: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userRole = await getBoutiqueUserRole(input.boutiqueId, ctx.user.id);
+      if (!userRole) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have access to this boutique",
+        });
+      }
+
+      const chargeResult = await createYocoCharge({
+        amount: input.amount,
+        currency: 'ZAR',
+        description: `${input.credits} credits for boutique`,
+        metadata: {
+          boutiqueId: input.boutiqueId.toString(),
+          credits: input.credits.toString(),
+          userId: ctx.user.id.toString(),
+        },
+        token: input.token,
+      });
+
+      if (!chargeResult.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: chargeResult.error || 'Payment failed',
+        });
+      }
+
+      const purchaseResult = await processCreditPurchase({
+        boutiqueId: input.boutiqueId,
+        chargeId: chargeResult.chargeId!,
+        amount: input.amount,
+        credits: input.credits,
+        paymentMethod: 'card',
+      });
+
+      if (!purchaseResult.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: purchaseResult.message,
+        });
+      }
+
+      return { success: true, message: 'Credits purchased successfully' };
     }),
 });

@@ -14,6 +14,7 @@ import {
 } from "../db.products";
 import { getBoutiqueUserRole } from "../db.boutiques";
 import { TRPCError } from "@trpc/server";
+import { uploadProductImage, validateImageFile } from "../product.upload";
 
 /**
  * Product Management Router
@@ -284,5 +285,58 @@ export const productsRouter = router({
       await deleteProduct(input.id);
 
       return { success: true };
+    }),
+
+  /**
+   * Upload product image to S3
+   */
+  uploadImage: protectedProcedure
+    .input(
+      z.object({
+        boutiqueId: z.number(),
+        productName: z.string(),
+        filename: z.string(),
+        mimeType: z.string(),
+        fileBuffer: z.instanceof(Buffer),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userRole = await getBoutiqueUserRole(input.boutiqueId, ctx.user.id);
+      if (!userRole) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have access to this boutique",
+        });
+      }
+
+      const validation = validateImageFile({
+        size: input.fileBuffer.length,
+        type: input.mimeType,
+        name: input.filename,
+      });
+
+      if (!validation.valid) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: validation.error || 'Invalid file',
+        });
+      }
+
+      const uploadResult = await uploadProductImage({
+        boutiqueId: input.boutiqueId,
+        productName: input.productName,
+        fileBuffer: input.fileBuffer,
+        filename: input.filename,
+        mimeType: input.mimeType,
+      });
+
+      if (!uploadResult.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: uploadResult.error || 'Failed to upload image',
+        });
+      }
+
+      return { success: true, url: uploadResult.url };
     }),
 });
