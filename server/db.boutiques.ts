@@ -1,6 +1,6 @@
 import { getDb } from "./db";
 import { boutiques, boutiqueUsers, boutiqueSettings, boutiqueCredits, users } from "../drizzle/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 
 /**
  * Boutique Database Helpers
@@ -97,9 +97,20 @@ export async function addBoutiqueUser(data: {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // For now, skip the actual database insertion and just return a success response
-  console.log("[DB] Skipping boutiqueUsers creation for boutiqueId:", data.boutiqueId, "userId:", data.userId);
-  return { success: true, boutiqueId: data.boutiqueId, userId: data.userId };
+  try {
+    // Insert the boutique user relationship
+    const result = await db.insert(boutiqueUsers).values({
+      boutiqueId: data.boutiqueId,
+      userId: data.userId,
+      role: data.role,
+    });
+    
+    console.log("[DB] Successfully created boutiqueUser for boutiqueId:", data.boutiqueId, "userId:", data.userId);
+    return result;
+  } catch (error) {
+    console.error("[DB] Error creating boutiqueUser:", error);
+    throw error;
+  }
 }
 
 export async function getBoutiqueUsers(boutiqueId: number) {
@@ -116,7 +127,6 @@ export async function getUserBoutiques(userId: number) {
   if (userBoutiqueIds.length === 0) return [];
   // Get the actual boutique data
   const boutiqueIds = userBoutiqueIds.map(u => u.boutiqueId);
-  const { inArray } = require('drizzle-orm');
   return await db.select().from(boutiques).where(inArray(boutiques.id, boutiqueIds));
 }
 
@@ -179,12 +189,15 @@ export async function createBoutiqueSettings(boutiqueId: number) {
   if (!db) throw new Error("Database not available");
   
   try {
-    // For now, skip the actual database insertion and just return a success response
-    // The database defaults will be applied when the settings are first queried
-    console.log("[DB] Skipping boutiqueSettings creation for boutiqueId:", boutiqueId);
-    return { success: true, boutiqueId };
+    // Insert only the required boutiqueId column, let database defaults handle the rest
+    const result = await db.insert(boutiqueSettings).values({
+      boutiqueId: boutiqueId,
+    });
+    
+    console.log("[DB] Successfully created boutiqueSettings for boutiqueId:", boutiqueId);
+    return result;
   } catch (error) {
-    console.error("[DB] Error in createBoutiqueSettings:", error);
+    console.error("[DB] Error creating boutiqueSettings:", error);
     throw error;
   }
 }
@@ -223,14 +236,25 @@ export async function createBoutiqueCredits(data: {
   totalCredits: number;
   usedCredits?: number;
   remainingCredits?: number;
-  expiresAt?: Date;
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // For now, skip the actual database insertion and just return a success response
-  console.log("[DB] Skipping boutiqueCredits creation for boutiqueId:", data.boutiqueId);
-  return { success: true, boutiqueId: data.boutiqueId };
+  try {
+    // Insert boutique credits with provided values
+    const result = await db.insert(boutiqueCredits).values({
+      boutiqueId: data.boutiqueId,
+      totalCredits: data.totalCredits || 0,
+      usedCredits: data.usedCredits || 0,
+      remainingCredits: data.remainingCredits || 0,
+    });
+    
+    console.log("[DB] Successfully created boutiqueCredits for boutiqueId:", data.boutiqueId);
+    return result;
+  } catch (error) {
+    console.error("[DB] Error creating boutiqueCredits:", error);
+    throw error;
+  }
 }
 
 export async function updateBoutiqueCredits(
