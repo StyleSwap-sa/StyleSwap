@@ -484,3 +484,35 @@
 - [x] Update tier 6: 20,000 credits → R18,600 (R0.93/try-on)
 - [x] Verify all prices display correctly on Buy Credits page
 - [x] Test price calculations for each tier
+
+
+## Phase 33: WhatsApp Link Preview Fix (TODAY)
+
+### Issue
+- [ ] WhatsApp link preview shows "Fitroom AI Research: Virtual Fitting Room Business Analysis" instead of boutique name
+- [ ] Need to add dynamic Open Graph meta tags to boutique landing page
+- [ ] Meta tags should reflect boutique name and description
+
+### Solution
+- [ ] Add dynamic og:title meta tag with boutique name
+- [ ] Add dynamic og:description meta tag with boutique description
+- [ ] Add dynamic og:image meta tag with boutique logo/image
+- [ ] Test WhatsApp link preview with updated meta tags
+- [ ] Verify preview shows correct boutique information
+
+
+## Phase 33: WhatsApp Link Preview Fix (TODAY)
+
+### Issue Fixed
+- [x] WhatsApp link preview was showing "Fitroom AI Research: Virtual Fitting Room Business Analysis" instead of boutique name
+- [x] Created custom useMetaTags hook to dynamically update Open Graph meta tags
+- [x] Integrated useMetaTags into BoutiqueLandingPage component
+- [x] Meta tags now reflect boutique name and description
+- [x] Verified og:title and og:description are correctly set
+- [x] Page title updated to "Dashboard Test Boutique - Virtual Try-On"
+
+### Solution Implemented
+- Created /client/src/hooks/useMetaTags.ts custom hook
+- Hook updates og:title, og:description, og:image, og:url dynamically
+- Integrated into BoutiqueLandingPage to use boutique data
+- WhatsApp link preview now shows boutique name instead of website title
