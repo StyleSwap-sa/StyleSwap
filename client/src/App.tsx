@@ -46,6 +46,7 @@ function Router() {
       <Route path={"/b2b-signup"} component={B2BSignup} />
       <Route path={"/boutique-dashboard"} component={BoutiqueDashboard} />
       <Route path={"/boutique/:slug"} component={(props: any) => <BoutiqueLandingPage slug={props.params.slug} />} />
+      <Route path={"/boutique-products/:boutiqueId"} component={ProductManagement} />
       <Route path={"/products"} component={ProductManagement} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

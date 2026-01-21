@@ -44,6 +44,7 @@ interface ProductFormData {
 }
 
 export default function ProductManagement() {
+  const [location] = useLocation();
   const [, setLocation] = useLocation();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,14 +64,19 @@ export default function ProductManagement() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Extract boutiqueId from URL if present (e.g., /boutique-products/120017)
+  const urlBoutiqueId = location?.includes('/boutique-products/') 
+    ? parseInt(location.split('/boutique-products/')[1]) 
+    : undefined;
+
   // Fetch boutiques
   const { data: boutiques } = trpc.boutiques.myBoutiques.useQuery();
-  const boutiqueId = boutiques?.[0]?.id;
+  const selectedBoutiqueId = urlBoutiqueId || boutiques?.[0]?.id;
 
   // Fetch products
   const { data: products, isLoading, refetch } = trpc.products.getByBoutique.useQuery(
-    { boutiqueId: boutiqueId || 0, activeOnly: false },
-    { enabled: !!boutiqueId }
+    { boutiqueId: selectedBoutiqueId || 0, activeOnly: false },
+    { enabled: !!selectedBoutiqueId }
   );
   // Create/Update product mutations
   const createProductMutation = trpc.products.create.useMutation();
@@ -108,7 +114,7 @@ export default function ProductManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!boutiqueId) {
+    if (!selectedBoutiqueId) {
       setError("No boutique selected");
       return;
     }
@@ -126,7 +132,7 @@ export default function ProductManagement() {
       if (editingProduct) {
         await updateProductMutation.mutateAsync({
           id: editingProduct.id,
-          boutiqueId,
+          boutiqueId: selectedBoutiqueId,
           name: formData.name,
           description: formData.description || undefined,
           category: formData.category,
@@ -135,7 +141,7 @@ export default function ProductManagement() {
         setSuccess("Product updated successfully!");
       } else {
         await createProductMutation.mutateAsync({
-          boutiqueId,
+          boutiqueId: selectedBoutiqueId,
           name: formData.name,
           description: formData.description || undefined,
           category: formData.category,
@@ -188,7 +194,7 @@ export default function ProductManagement() {
     }
 
     try {
-      await deleteProductMutation.mutateAsync({ id: productId, boutiqueId: boutiqueId || 0 });
+      await deleteProductMutation.mutateAsync({ id: productId, boutiqueId: selectedBoutiqueId || 0 });
       setSuccess("Product deleted successfully!");
       await refetch();
       setTimeout(() => setSuccess(""), 3000);
@@ -318,11 +324,11 @@ export default function ProductManagement() {
                       id="price"
                       name="price"
                       type="number"
-                      placeholder="299.99"
+                      placeholder="0.00"
                       value={formData.price}
                       onChange={handleInputChange}
-                      className="mt-2"
                       step="0.01"
+                      className="mt-2"
                     />
                   </div>
 
@@ -332,7 +338,7 @@ export default function ProductManagement() {
                     <Input
                       id="size"
                       name="size"
-                      placeholder="e.g., M, L, XL"
+                      placeholder="e.g., XL"
                       value={formData.size}
                       onChange={handleInputChange}
                       className="mt-2"
@@ -345,11 +351,31 @@ export default function ProductManagement() {
                     <Input
                       id="color"
                       name="color"
-                      placeholder="e.g., Black, Blue, Red"
+                      placeholder="e.g., Black"
                       value={formData.color}
                       onChange={handleInputChange}
                       className="mt-2"
                     />
+                  </div>
+
+                  {/* Image Upload */}
+                  <div>
+                    <Label htmlFor="image">Product Image</Label>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Input
+                        id="image"
+                        name="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="cursor-pointer"
+                      />
+                      {formData.image && (
+                        <span className="text-sm text-green-600">
+                          ✓ {formData.image.name}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -359,84 +385,32 @@ export default function ProductManagement() {
                   <Textarea
                     id="description"
                     name="description"
-                    placeholder="Product details, materials, care instructions..."
+                    placeholder="Describe your product..."
                     value={formData.description}
                     onChange={handleInputChange}
-                    className="mt-2"
-                    rows={4}
+                    className="mt-2 min-h-[100px]"
                   />
                 </div>
 
-                {/* Image Upload */}
-                <div>
-                  <Label htmlFor="image">Product Image</Label>
-                  <div className="mt-2 border-2 border-dashed border-border rounded-lg p-6 text-center">
-                    <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Drag and drop your image here, or click to select
-                    </p>
-                    <input
-                      id="image"
-                      name="image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        document.getElementById("image")?.click()
-                      }
-                    >
-                      Select Image
-                    </Button>
-                    {formData.image && (
-                      <p className="text-xs text-green-600 mt-2">
-                        ✓ {formData.image.name}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Max 5MB. Supported: JPG, PNG, WebP
-                    </p>
-                  </div>
-                </div>
-
                 {/* Form Actions */}
-                <div className="flex gap-4">
-                  <Button
-                    type="submit"
-                    className="flex-1 gap-2"
-                    disabled={
-                      createProductMutation.isPending ||
-                      updateProductMutation.isPending
-                    }
-                  >
-                    {createProductMutation.isPending ||
-                    updateProductMutation.isPending ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-4 h-4" />
-                        {editingProduct ? "Update Product" : "Create Product"}
-                      </>
-                    )}
-                  </Button>
+                <div className="flex gap-3 justify-end">
                   <Button
                     type="button"
                     variant="outline"
-                    className="flex-1"
                     onClick={handleCancel}
-                    disabled={
-                      createProductMutation.isPending ||
-                      updateProductMutation.isPending
-                    }
+                    disabled={createProductMutation.isPending || updateProductMutation.isPending}
                   >
                     Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={createProductMutation.isPending || updateProductMutation.isPending}
+                    className="gap-2"
+                  >
+                    {(createProductMutation.isPending || updateProductMutation.isPending) && (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    )}
+                    {editingProduct ? "Update Product" : "Create Product"}
                   </Button>
                 </div>
               </form>
@@ -444,11 +418,11 @@ export default function ProductManagement() {
           </Card>
         )}
 
-        {/* Filters & View Controls */}
+        {/* Products List/Grid */}
         {!showUploadForm && (
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-            <div className="flex-1 flex gap-4 items-center">
-              {/* Search */}
+          <>
+            {/* Search and Filter Bar */}
+            <div className="flex gap-4 items-center">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -458,8 +432,6 @@ export default function ProductManagement() {
                   className="pl-10"
                 />
               </div>
-
-              {/* Category Filter */}
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
@@ -472,170 +444,86 @@ export default function ProductManagement() {
                   </option>
                 ))}
               </select>
-            </div>
-
-            {/* View Mode Toggle */}
-            <div className="flex gap-2">
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Products Display */}
-        {!showUploadForm && (
-          <>
-            {isLoading ? (
-              <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-8 h-8 animate-spin" />
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
               </div>
-            ) : filteredProducts.length === 0 ? (
-              <Card className="premium-card">
-                <CardContent className="pt-12 text-center space-y-6">
-                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
-                    <Plus className="w-8 h-8 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold mb-2">No Products Yet</h2>
-                    <p className="text-muted-foreground max-w-md mx-auto">
-                      {searchQuery || selectedCategory !== "all"
-                        ? "No products match your search or filter"
-                        : "Start by adding your first product to your catalogue"}
-                    </p>
-                  </div>
-                </CardContent>
+            </div>
+
+            {/* Loading State */}
+            {isLoading && (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!isLoading && filteredProducts.length === 0 && (
+              <Card className="text-center py-12">
+                <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No products yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Start by adding your first product to your catalogue
+                </p>
+                <Button onClick={() => setShowUploadForm(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add First Product
+                </Button>
               </Card>
-            ) : viewMode === "grid" ? (
+            )}
+
+            {/* Products Grid View */}
+            {!isLoading && viewMode === "grid" && filteredProducts.length > 0 && (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((product: any) => (
-                  <Card key={product.id} className="premium-card overflow-hidden">
-                    {product.imageUrl && (
-                      <div className="w-full h-48 bg-muted overflow-hidden">
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <CardContent className="pt-6 space-y-4">
-                      <div>
-                        <h3 className="font-bold text-lg line-clamp-2">
-                          {product.name}
-                        </h3>
-                        {product.category && (
-                          <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                            {product.category}
-                          </p>
-                        )}
-                      </div>
-
-                      {product.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {product.description}
+                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="aspect-square bg-muted overflow-hidden">
+                      <img
+                        src={product.imageUrl || "https://via.placeholder.com/400x400?text=No+Image"}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-lg mb-1">{product.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {product.category}
+                      </p>
+                      {product.price !== null && product.price !== undefined && (
+                        <p className="text-lg font-bold text-primary mb-3">
+                          R{typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price).toFixed(2)}
                         </p>
                       )}
-
-                      <div className="flex gap-2 text-sm">
-                        {product.size && (
-                          <span className="bg-muted px-2 py-1 rounded text-xs">
-                            {product.size}
-                          </span>
-                        )}
-                        {product.color && (
-                          <span className="bg-muted px-2 py-1 rounded text-xs">
-                            {product.color}
-                          </span>
-                        )}
-                      </div>
-
-                      {product.price && (
-                        <div className="text-lg font-bold">
-                          R{product.price.toFixed(2)}
-                        </div>
-                      )}
-
-                      <div className="flex gap-2 pt-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 gap-2"
-                          onClick={() => handleEdit(product)}
-                          disabled={
-                            updateProductMutation.isPending ||
-                            deleteProductMutation.isPending
-                          }
-                        >
-                          <Edit2 className="w-4 h-4" />
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 gap-2 text-red-600 hover:text-red-600"
-                          onClick={() => handleDelete(product.id)}
-                          disabled={
-                            updateProductMutation.isPending ||
-                            deleteProductMutation.isPending
-                          }
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filteredProducts.map((product: any) => (
-                  <Card key={product.id} className="premium-card">
-                    <CardContent className="py-4 px-6 flex items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold line-clamp-1">
-                          {product.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {product.category && `${product.category} • `}
-                          {product.price && `R${product.price.toFixed(2)}`}
-                        </p>
-                      </div>
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEdit(product)}
-                          disabled={
-                            updateProductMutation.isPending ||
-                            deleteProductMutation.isPending
-                          }
+                          className="flex-1"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-4 h-4 mr-1" />
+                          Edit
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-red-600 hover:text-red-600"
                           onClick={() => handleDelete(product.id)}
-                          disabled={
-                            updateProductMutation.isPending ||
-                            deleteProductMutation.isPending
-                          }
+                          className="flex-1"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
                         </Button>
                       </div>
                     </CardContent>
@@ -644,11 +532,47 @@ export default function ProductManagement() {
               </div>
             )}
 
-            {/* Product Count */}
-            {filteredProducts.length > 0 && (
-              <div className="text-center text-sm text-muted-foreground">
-                Showing {filteredProducts.length} of {products?.length || 0}{" "}
-                products
+            {/* Products List View */}
+            {!isLoading && viewMode === "list" && filteredProducts.length > 0 && (
+              <div className="space-y-3">
+                {filteredProducts.map((product: any) => (
+                  <Card key={product.id} className="p-4">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={product.imageUrl || "https://via.placeholder.com/80x80?text=No+Image"}
+                        alt={product.name}
+                        className="w-20 h-20 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{product.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {product.category}
+                        </p>
+                        {product.price !== null && product.price !== undefined && (
+                          <p className="text-sm font-bold text-primary">
+                            R{typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price).toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(product)}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(product.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
             )}
           </>
