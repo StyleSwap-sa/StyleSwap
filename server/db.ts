@@ -253,16 +253,17 @@ export async function getMonthlyCreditsUsage() {
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     
+    const dateColumn = sql<string>`DATE(${boutiqueTransactions.createdAt})`;
     const usage = await db
       .select({
-        date: sql<string>`DATE(${boutiqueTransactions.createdAt})`,
+        date: dateColumn,
         creditsUsed: sql<number>`SUM(CASE WHEN ${boutiqueTransactions.type} = 'usage' THEN ${boutiqueTransactions.amount} ELSE 0 END)`,
         creditsPurchased: sql<number>`SUM(CASE WHEN ${boutiqueTransactions.type} = 'purchase' THEN ${boutiqueTransactions.amount} ELSE 0 END)`,
       })
       .from(boutiqueTransactions)
       .where(gte(boutiqueTransactions.createdAt, thirtyDaysAgo))
-      .groupBy(sql`DATE(${boutiqueTransactions.createdAt})`)
-      .orderBy(sql`DATE(${boutiqueTransactions.createdAt})`);
+      .groupBy(dateColumn)
+      .orderBy(dateColumn);
 
     return usage;
   } catch (error) {

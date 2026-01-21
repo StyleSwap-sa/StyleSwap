@@ -694,8 +694,21 @@ The /api/tryon/upload endpoint was not properly authenticating the user. It was 
 
 
 ## Phase 38: Add Admin Dashboard Navigation (TODAY) - COMPLETED
-- [x] Add admin dashboard link to main navigation (visible to owner only) - Added "Platform Analytics" button to Dashboard
+- [x] Add admin dashboard link to main navigation (visible to owner only) - Added "Analytics" button to Home page header
 - [x] Add admin dashboard link to profile/settings menu - Added to Profile page
+- [x] Add admin dashboard link to Dashboard tabs - Added "Platform Analytics" button to Dashboard
 - [x] Test navigation links work correctly - Links navigate to /admin route
-- [x] Verify admin dashboard is accessible from navigation - Accessible from Dashboard and Profile pages
-- [x] Ensure non-admin users don't see admin links - Conditional rendering based on user.role === 'admin'
+- [x] Verify admin dashboard is accessible from navigation - Accessible from Home, Dashboard, and Profile pages
+- [x] Ensure non-admin users don't see admin links - Conditional rendering based on user.role === 'admin' OR user.userType === 'admin'
+- [x] Updated role checking logic to support both role and userType fields
+
+
+## Phase 39: Separate Owner Dashboard from Boutique Dashboard (TODAY) - COMPLETED
+- [x] Update routing logic to identify user type (owner, boutique owner, customer)
+- [x] Redirect StyleSwap owner to /admin dashboard instead of /boutique-dashboard
+- [x] Ensure boutique owners still see /boutique-dashboard
+- [x] Ensure customers see /dashboard (personal try-on dashboard)
+- [x] Update Home page navigation to show correct dashboard button based on user type
+- [x] Update Dashboard page to show owner analytics instead of personal try-on
+- [x] Fixed SQL error in getMonthlyCreditsUsage function for admin dashboard
+- [x] Test all three user types have correct dashboard experience

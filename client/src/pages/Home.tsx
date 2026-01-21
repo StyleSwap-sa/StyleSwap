@@ -10,9 +10,36 @@ export default function Home() {
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
-      setLocation('/dashboard');
+      // Redirect based on user type
+      if (user?.userType === 'admin' || user?.role === 'admin') {
+        setLocation('/admin');
+      } else if (user?.userType === 'merchant') {
+        setLocation('/boutique-dashboard');
+      } else {
+        setLocation('/dashboard');
+      }
     } else {
       window.location.href = getLoginUrl();
+    }
+  };
+
+  const getDashboardPath = () => {
+    if (user?.userType === 'admin' || user?.role === 'admin') {
+      return '/admin';
+    } else if (user?.userType === 'merchant') {
+      return '/boutique-dashboard';
+    } else {
+      return '/dashboard';
+    }
+  };
+
+  const getDashboardLabel = () => {
+    if (user?.userType === 'admin' || user?.role === 'admin') {
+      return 'Platform Analytics';
+    } else if (user?.userType === 'merchant') {
+      return 'Boutique Dashboard';
+    } else {
+      return 'My Dashboard';
     }
   };
 
@@ -74,10 +101,10 @@ export default function Home() {
                   {user?.name}
                 </span>
                 <Button
-                  onClick={() => setLocation('/boutique-dashboard')}
+                  onClick={() => setLocation(getDashboardPath())}
                   className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
                 >
-                  Dashboard
+                  {getDashboardLabel()}
                 </Button>
                 <Button
                   onClick={() => setLocation('/profile')}
