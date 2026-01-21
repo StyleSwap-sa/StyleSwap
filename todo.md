@@ -798,3 +798,118 @@ This approach:
 - [ ] Add boutique selection for reports
 - [ ] Create report UI component in admin dashboard
 - [ ] Test report generation and exports
+
+
+## Phase 42: Implement Email Notifications for Credit Alerts (IN PROGRESS)
+
+### Email Notification System
+- [ ] Create sendCreditAlertEmail helper function
+- [ ] Implement 80% credit usage email template
+- [ ] Implement 50% credit usage email template
+- [ ] Implement 20% credit usage email template
+- [ ] Implement 10% credit usage email template
+- [ ] Add tRPC procedure to send alert emails
+- [ ] Create background job to check and send alerts
+- [ ] Add email tracking to prevent duplicate sends
+- [ ] Test email delivery
+
+## Phase 43: Create Boutique Performance Reports (IN PROGRESS)
+
+### Report Generation
+- [ ] Create getBoutiqueUsageReport tRPC procedure
+- [ ] Implement date range filtering
+- [ ] Calculate total try-ons per boutique
+- [ ] Calculate revenue per boutique
+- [ ] Calculate average credits used per try-on
+- [ ] Generate report data structure
+- [ ] Add boutique selection for reports
+- [ ] Create report caching for performance
+
+### CSV Export
+- [ ] Implement CSV generation from report data
+- [ ] Add column headers and formatting
+- [ ] Handle special characters and escaping
+- [ ] Create downloadable CSV file
+
+### PDF Export
+- [ ] Implement PDF generation from report data
+- [ ] Add charts and visualizations
+- [ ] Format report for printing
+- [ ] Create downloadable PDF file
+
+## Phase 44: Build Credit Alerts UI Component (IN PROGRESS)
+
+### UI Components
+- [ ] Create CreditAlertsCard component
+- [ ] Add color-coded severity levels
+- [ ] Display boutique names and credit status
+- [ ] Add quick action buttons
+- [ ] Create responsive layout
+- [ ] Add loading and error states
+- [ ] Integrate with admin dashboard
+
+### Functionality
+- [ ] Fetch credit alerts on component mount
+- [ ] Auto-refresh alerts every 5 minutes
+- [ ] Handle alert dismissal
+- [ ] Show alert history
+- [ ] Add bulk actions for multiple boutiques
+
+
+## Phase 41: Email Notifications for Credit Alerts - COMPLETED
+
+### Email Alert System Implementation
+- [x] Create email templates for 4 alert levels (80%, 50%, 20%, 10%)
+- [x] Add sendCreditAlertEmail function to email.ts
+- [x] Implement sendCreditAlertEmails tRPC procedure in admin router
+- [x] Add email alert tests (30+ test cases)
+- [x] Create admin.email-alerts.test.ts with comprehensive coverage
+
+### Implementation Details
+- Email templates with color-coded severity (red, orange, yellow, blue)
+- Boutique statistics included in each email
+- Action recommendations provided to boutique owners
+- Proper HTML structure with responsive design
+- Support for all alert thresholds
+
+## Phase 42: Boutique Performance Reports - COMPLETED
+
+### Performance Report Procedures
+- [x] Add getBoutiquePerformanceReport query procedure
+- [x] Add getAllBoutiquesPerformanceSummary query procedure
+- [x] Implement date range filtering
+- [x] Calculate usage statistics and metrics
+- [x] Add boutique isolation and admin-only checks
+- [x] Create admin.performance-reports.test.ts with 17 test cases
+
+### Report Features
+- Detailed boutique performance metrics
+- Transaction history with filtering
+- Usage analytics and revenue tracking
+- Summary statistics across all boutiques
+- Pagination support for large datasets
+
+## Phase 43: CSV and PDF Export Functionality - COMPLETED
+
+### Export Utilities
+- [x] Create reports.ts with export functions
+- [x] Implement generateCSVReport function
+- [x] Implement generatePDFReport function
+- [x] Add exportReportAsCSV and exportReportAsPDF
+- [x] Create generateReportFilename utility
+- [x] Add reports.test.ts with 40+ test cases
+
+### Export Features
+- CSV export with proper formatting and escaping
+- PDF export with basic structure and content
+- Automatic filename generation with date ranges
+- Buffer export for API responses
+- Special character handling in CSV
+
+## Migration Cleanup Notes
+
+- Reverted credit alert schema changes to avoid migration conflicts
+- Simplified credit alert system to use existing tables
+- Cleaned up drizzle migration journal
+- Fixed SQL GROUP BY error in monthly credits query
+- All database operations now use existing schema

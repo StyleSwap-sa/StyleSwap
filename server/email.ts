@@ -254,3 +254,146 @@ export async function sendCreditsExpiringEmail(
     htmlContent,
   });
 }
+
+
+/**
+ * Generate credit alert email for boutique owners
+ */
+export function generateCreditAlertEmail(
+  boutiqueOwnerName: string,
+  boutiqueName: string,
+  usagePercentage: number,
+  remainingCredits: number,
+  totalCredits: number,
+  alertLevel: "10" | "20" | "50" | "80"
+): string {
+  const alertMessages = {
+    "80": {
+      title: "🚨 CRITICAL: Your Credits are Almost Depleted",
+      color: "#dc3545",
+      message: "Your boutique is using 80% of its allocated credits. Immediate action required!"
+    },
+    "50": {
+      title: "⚠️ WARNING: High Credit Usage",
+      color: "#ff9800",
+      message: "Your boutique is using 50% of its allocated credits. Consider purchasing more soon."
+    },
+    "20": {
+      title: "📊 NOTICE: Moderate Credit Usage",
+      color: "#ffc107",
+      message: "Your boutique is using 20% of its allocated credits. Monitor your usage."
+    },
+    "10": {
+      title: "ℹ️ INFO: Low Credit Usage",
+      color: "#17a2b8",
+      message: "Your boutique is using 10% of its allocated credits. Everything is running smoothly."
+    }
+  };
+
+  const alert = alertMessages[alertLevel];
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: ${alert.color}; color: white; padding: 20px; text-align: center; border-radius: 8px; }
+          .content { padding: 20px; background-color: #f9f9f9; margin-top: 20px; border-radius: 8px; }
+          .stats { background-color: white; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid ${alert.color}; }
+          .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+          .stat-row:last-child { border-bottom: none; }
+          .stat-label { font-weight: bold; }
+          .stat-value { color: ${alert.color}; font-weight: bold; }
+          .button { display: inline-block; background-color: ${alert.color}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; color: #999; font-size: 12px; margin-top: 20px; }
+          .progress-bar { background-color: #e0e0e0; height: 20px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+          .progress-fill { background-color: ${alert.color}; height: 100%; width: ${usagePercentage}%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>${alert.title}</h1>
+          </div>
+          <div class="content">
+            <p>Hi <strong>${boutiqueOwnerName}</strong>,</p>
+            <p>${alert.message}</p>
+            
+            <div class="stats">
+              <h3 style="margin-top: 0; color: ${alert.color};">Boutique: ${boutiqueName}</h3>
+              <div class="progress-bar">
+                <div class="progress-fill">${usagePercentage}%</div>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Credits Used:</span>
+                <span class="stat-value">${totalCredits - remainingCredits} / ${totalCredits}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Credits Remaining:</span>
+                <span class="stat-value">${remainingCredits}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Usage Percentage:</span>
+                <span class="stat-value">${usagePercentage}%</span>
+              </div>
+            </div>
+
+            <p><strong>What should you do?</strong></p>
+            <ul>
+              <li>Monitor your credit usage closely</li>
+              <li>Consider purchasing additional credits to avoid service interruption</li>
+              <li>Review your try-on volume and optimize if needed</li>
+            </ul>
+
+            <a href="https://styleswap.co.za/dashboard/credits" class="button">Purchase Credits Now</a>
+
+            <p style="margin-top: 20px; color: #666;">If you have any questions or need assistance, please contact our support team at support@styleswap.co.za</p>
+          </div>
+          <div class="footer">
+            <p>&copy; 2026 StyleSwap. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+/**
+ * Send credit alert email to boutique owner
+ */
+export async function sendCreditAlertEmail(
+  boutiqueOwnerId: number,
+  boutiqueOwnerName: string,
+  boutiqueOwnerEmail: string,
+  boutiqueName: string,
+  usagePercentage: number,
+  remainingCredits: number,
+  totalCredits: number,
+  alertLevel: "10" | "20" | "50" | "80"
+): Promise<boolean> {
+  const htmlContent = generateCreditAlertEmail(
+    boutiqueOwnerName,
+    boutiqueName,
+    usagePercentage,
+    remainingCredits,
+    totalCredits,
+    alertLevel
+  );
+
+  const alertTitles = {
+    "80": "CRITICAL",
+    "50": "WARNING",
+    "20": "NOTICE",
+    "10": "INFO"
+  };
+
+  return sendEmailNotification({
+    userId: boutiqueOwnerId,
+    type: "promotional", // Using promotional as a generic type for alerts
+    recipientEmail: boutiqueOwnerEmail,
+    subject: `[${alertTitles[alertLevel]}] Credit Usage Alert - ${boutiqueName} (${usagePercentage}%)`,
+    htmlContent,
+  });
+}

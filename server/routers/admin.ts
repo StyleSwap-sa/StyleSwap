@@ -523,4 +523,285 @@ export const adminRouter = router({
         return null;
       }
     }),
+
+  /**
+   * Send credit alert emails to boutiques at specified threshold
+   */
+  sendCreditAlertEmails: protectedProcedure
+    .input(
+      z.object({
+        alertLevel: z.enum(["80", "50", "20", "10"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can send alert emails",
+        });
+      }
+
+      const db = await getDb();
+      if (!db) return { sent: 0, failed: 0, errors: [] };
+
+      try {
+        const { sendCreditAlertEmail } = await import("../email");
+        const { users } = await import("../../drizzle/schema");
+        
+        // Get boutiques at the specified alert level
+        const boutiquesWithCredits = await db
+          .select({
+            id: boutiques.id,
+            name: boutiques.name,
+            ownerId: boutiques.ownerId,
+            totalCredits: boutiqueCredits.totalCredits,
+            usedCredits: boutiqueCredits.usedCredits,
+            remainingCredits: boutiqueCredits.remainingCredits,
+          })
+          .from(boutiques)
+          .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
+          .where(eq(boutiques.status, "active"));
+
+        let sent = 0;
+        let failed = 0;
+        const errors: string[] = [];
+
+        for (const boutique of boutiquesWithCredits) {
+          if (!boutique.totalCredits || boutique.totalCredits === 0) continue;
+          
+          const usagePercentage = (boutique.usedCredits || 0) / boutique.totalCredits * 100;
+          const thresholds = { "80": 80, "50": 50, "20": 20, "10": 10 };
+          const threshold = thresholds[input.alertLevel];
+          
+          // Check if boutique matches the alert level
+          if (usagePercentage < threshold) continue;
+          if (usagePercentage >= (threshold === 80 ? 100 : threshold + 30)) continue;
+
+          // Get boutique owner info
+          const owner = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, boutique.ownerId))
+            .limit(1);
+
+          if (owner.length === 0) {
+            errors.push(`Boutique ${boutique.name}: Owner not found`);
+            failed++;
+            continue;
+          }
+
+          const ownerEmail = owner[0].email;
+          if (!ownerEmail) {
+            errors.push(`Boutique ${boutique.name}: Owner email not found`);
+            failed++;
+            continue;
+          }
+
+          // Send email
+          const emailSent = await sendCreditAlertEmail(
+            boutique.ownerId,
+            owner[0].name || "Boutique Owner",
+            ownerEmail,
+            boutique.name,
+            Math.round(usagePercentage),
+            boutique.remainingCredits || 0,
+            boutique.totalCredits,
+            input.alertLevel as "10" | "20" | "50" | "80"
+          );
+
+          if (emailSent) {
+            sent++;
+          } else {
+            failed++;
+            errors.push(`Boutique ${boutique.name}: Email send failed`);
+          }
+        }
+
+        return { sent, failed, errors };
+      } catch (error) {
+        console.error('[Admin] Failed to send credit alert emails:', error);
+        return { sent: 0, failed: 0, errors: [(error as Error).message] };
+      }
+    }),
+
+  /**
+   * Get boutique performance report with usage analytics
+   */
+  getBoutiquePerformanceReport: protectedProcedure
+    .input(
+      z.object({
+        boutiqueId: z.number().int().positive(),
+        startDate: z.date(),
+        endDate: z.date(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can view performance reports",
+        });
+      }
+
+      const db = await getDb();
+      if (!db) return null;
+
+      try {
+        const { boutiqueTransactions } = await import("../../drizzle/schema");
+        const { eq, and, gte, lte } = await import("drizzle-orm");
+
+        // Get boutique info
+        const boutique = await db
+          .select()
+          .from(boutiques)
+          .where(eq(boutiques.id, input.boutiqueId))
+          .limit(1);
+
+        if (boutique.length === 0) return null;
+
+        // Get transactions in date range
+        const transactions = await db
+          .select()
+          .from(boutiqueTransactions)
+          .where(
+            and(
+              eq(boutiqueTransactions.boutiqueId, input.boutiqueId),
+              gte(boutiqueTransactions.createdAt, input.startDate),
+              lte(boutiqueTransactions.createdAt, input.endDate)
+            )
+          );
+
+        // Calculate statistics
+        const stats = {
+          totalTryOns: transactions.filter((t) => t.type === "usage").length,
+          totalCreditsUsed: transactions
+            .filter((t) => t.type === "usage")
+            .reduce((sum, t) => sum + (t.amount || 0), 0),
+          totalCreditsAdded: transactions
+            .filter((t) => t.type === "purchase")
+            .reduce((sum, t) => sum + (t.amount || 0), 0),
+          totalRevenue: transactions
+            .filter((t) => t.type === "purchase")
+            .reduce((sum, t) => sum + parseFloat(t.price?.toString() || "0"), 0),
+          averageCreditsPerTryOn: 0,
+          transactionCount: transactions.length,
+        };
+
+        if (stats.totalTryOns > 0) {
+          stats.averageCreditsPerTryOn = Math.round(
+            stats.totalCreditsUsed / stats.totalTryOns
+          );
+        }
+
+        return {
+          boutique: boutique[0],
+          dateRange: {
+            start: input.startDate,
+            end: input.endDate,
+          },
+          statistics: stats,
+          transactions: transactions.map((t) => ({
+            id: t.id,
+            type: t.type,
+            amount: t.amount,
+            price: t.price,
+            currency: t.currency,
+            description: t.description,
+            status: t.status,
+            createdAt: t.createdAt,
+          })),
+        };
+      } catch (error) {
+        console.error("[Admin] Failed to get boutique performance report:", error);
+        return null;
+      }
+    }),
+
+  /**
+   * Get all boutiques performance summary for date range
+   */
+  getAllBoutiquesPerformanceSummary: protectedProcedure
+    .input(
+      z.object({
+        startDate: z.date(),
+        endDate: z.date(),
+        limit: z.number().int().positive().default(50),
+        offset: z.number().int().nonnegative().default(0),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can view performance reports",
+        });
+      }
+
+      const db = await getDb();
+      if (!db) return { boutiques: [], total: 0 };
+
+      try {
+        const { boutiqueTransactions } = await import("../../drizzle/schema");
+        const { eq, and, gte, lte, sql } = await import("drizzle-orm");
+
+        // Get all active boutiques
+        const allBoutiques = await db
+          .select()
+          .from(boutiques)
+          .where(eq(boutiques.status, "active"))
+          .limit(input.limit)
+          .offset(input.offset);
+
+        const summaryData = await Promise.all(
+          allBoutiques.map(async (boutique) => {
+            const transactions = await db
+              .select()
+              .from(boutiqueTransactions)
+              .where(
+                and(
+                  eq(boutiqueTransactions.boutiqueId, boutique.id),
+                  gte(boutiqueTransactions.createdAt, input.startDate),
+                  lte(boutiqueTransactions.createdAt, input.endDate)
+                )
+              );
+
+            const tryOns = transactions.filter((t) => t.type === "usage").length;
+            const creditsUsed = transactions
+              .filter((t) => t.type === "usage")
+              .reduce((sum, t) => sum + (t.amount || 0), 0);
+            const revenue = transactions
+              .filter((t) => t.type === "purchase")
+              .reduce((sum, t) => sum + parseFloat(t.price?.toString() || "0"), 0);
+
+            return {
+              id: boutique.id,
+              name: boutique.name,
+              slug: boutique.slug,
+              totalTryOns: tryOns,
+              totalCreditsUsed: creditsUsed,
+              totalRevenue: revenue,
+              transactionCount: transactions.length,
+            };
+          })
+        );
+
+        // Get total count
+        const totalResult = await db
+          .select({ count: sql`COUNT(*)` })
+          .from(boutiques)
+          .where(eq(boutiques.status, "active"));
+
+        return {
+          boutiques: summaryData,
+          total: totalResult[0]?.count || 0,
+        };
+      } catch (error) {
+        console.error(
+          "[Admin] Failed to get boutiques performance summary:",
+          error
+        );
+        return { boutiques: [], total: 0 };
+      }
+    }),
 });
+
