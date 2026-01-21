@@ -131,6 +131,17 @@ export default function Dashboard() {
             <History className="w-4 h-4 mr-2" />
             History
           </Button>
+
+          {/* Admin Dashboard Link - Only visible to owner */}
+          {user?.role === 'admin' && (
+            <Button
+              onClick={() => setLocation('/admin')}
+              variant="outline"
+              className="ml-auto border-primary/50 text-primary hover:bg-primary/10"
+            >
+              Platform Analytics
+            </Button>
+          )}
         </div>
 
         {/* Tab Content */}
