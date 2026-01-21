@@ -587,3 +587,15 @@ The /api/tryon/upload endpoint was not properly authenticating the user. It was 
 - Polling mechanism works correctly
 - Credits are refunded if try-on fails
 - End-to-end flow works with proper authentication
+
+
+## Phase 31: Fitroom API Validation & Error Handling (TODAY)
+- [x] Enable model image validation endpoint
+- [x] Enable clothing image validation endpoint
+- [x] Parse and display specific error codes from Fitroom API
+- [x] Implement error code to user message mapping
+- [ ] Add detailed logging to capture Fitroom API responses
+- [ ] Add progress tracking to try-on UI
+- [ ] Show progress percentage during processing
+- [ ] Test with real images and validate error messages
+- [ ] Implement exponential backoff for polling

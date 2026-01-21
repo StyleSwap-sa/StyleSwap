@@ -89,27 +89,41 @@ export const tryonRouter = router({
 
         const fitroomClient = getFitroomClient();
         
-        // TEMPORARY: Bypass validation to test if validation endpoint is the issue
-        // The validation endpoint appears to be rejecting images that work on Fitroom's official app
-        // console.log("[Try-On] Validating model image...");
-        // const modelValidation = await fitroomClient.validateModelImage(modelImagePath);
-        // if (!modelValidation.success) {
-        //   throw new TRPCError({
-        //     code: "BAD_REQUEST",
-        //     message: `Body photo validation failed: ${modelValidation.error || "Image does not meet requirements. Ensure full body is visible, standing straight, facing forward, with simple background."}`,
-        //   });
-        // }
-
-        // console.log("[Try-On] Validating clothing image...");
-        // const clothValidation = await fitroomClient.validateClothingImage(clothImagePath);
-        // if (!clothValidation.success) {
-        //   throw new TRPCError({
-        //     code: "BAD_REQUEST",
-        //     message: `Clothing image validation failed: ${clothValidation.error || "Image does not meet requirements. Ensure clothing is clearly visible, well-lit, on solid background."}`,
-        //   });
-        // }
-
-         console.log("[Try-On] Skipping validation - sending directly to task creation");
+        // Validate model image first
+        console.log("[Try-On] Validating model image...");
+        const modelValidation = await fitroomClient.validateModelImage(modelImagePath);
+        console.log("[Try-On] Model validation result:", modelValidation);
+        
+        // Check for critical errors (400xxx codes)
+        if (modelValidation.errorCode && modelValidation.errorCode.startsWith("400")) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: modelValidation.userMessage || modelValidation.error || "Body photo validation failed. Please check the image requirements.",
+          });
+        }
+        
+        // Validate clothing image
+        console.log("[Try-On] Validating clothing image...");
+        const clothValidation = await fitroomClient.validateClothImage(clothImagePath);
+        console.log("[Try-On] Clothing validation result:", clothValidation);
+        
+        // Check for critical errors (400xxx codes)
+        if (clothValidation.errorCode && clothValidation.errorCode.startsWith("400")) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: clothValidation.userMessage || clothValidation.error || "Clothing image validation failed. Please check the image requirements.",
+          });
+        }
+        
+        // Log warnings (410xxx codes) but allow processing to continue
+        if (modelValidation.errorCode && modelValidation.errorCode.startsWith("410")) {
+          console.warn("[Try-On] Model image warning:", modelValidation.userMessage);
+        }
+        if (clothValidation.errorCode && clothValidation.errorCode.startsWith("410")) {
+          console.warn("[Try-On] Clothing image warning:", clothValidation.userMessage);
+        }
+        
+        console.log("[Try-On] Image validation passed - proceeding with try-on task creation");
         const modelStats = fs.statSync(modelImagePath);
         const clothStats = fs.statSync(clothImagePath);
         console.log(`[Try-On] Model image: ${modelImagePath} (${modelStats.size} bytes, type: ${path.extname(modelImagePath)})`);

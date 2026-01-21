@@ -3,60 +3,63 @@ import FormData from "form-data";
 import fs from "fs";
 import path from "path";
 import https from "https";
+import { ENV } from "./env";
 
-export interface FitroomTryOnRequest {
-  modelImagePath: string;
-  clothImagePath: string;
-  clothType: "single" | "combo" | "upper" | "lower" | "dress";
-  lowerClothImagePath?: string;
-  hdMode?: boolean;
+/**
+ * Fitroom API Client
+ * Handles all communication with Fitroom's virtual try-on rendering engine
+ * API Docs: https://developer.fitroom.app/
+ */
+
+interface FitroomTryOnRequest {
+  modelImagePath: string; // Path to customer's body photo
+  clothImagePath: string; // Path to garment image
+  clothType: "single" | "combo"; // Type of clothing ("single" for one garment, "combo" for top+bottom)
+  lowerClothImagePath?: string; // For combo try-ons
+  hdMode?: boolean; // Optional: true for HD quality (~30s), false for normal (~9s)
 }
 
-export interface FitroomTryOnResponse {
+interface FitroomTryOnResponse {
   success: boolean;
-  taskId?: string;
-  status?: string;
+  taskId?: string; // Task ID to poll for results
+  status?: string; // Initial status (usually "CREATED")
   error?: string;
 }
 
-export interface FitroomTaskStatusResponse {
+interface FitroomTaskStatusResponse {
   success: boolean;
-  status?: string;
-  resultImage?: string;
-  progress?: number;
+  status?: string; // CREATED, PROCESSING, COMPLETED, FAILED
+  resultImage?: string; // URL to result image when completed
+  progress?: number; // Progress percentage (0-100)
   error?: string;
   errorCode?: string;
 }
 
-export class FitroomClient {
+class FitroomClient {
   private client: AxiosInstance;
   private apiKey: string;
+  private baseURL: string = "https://platform.fitroom.app";
 
-  constructor(apiKey: string, baseURL: string = "https://platform.fitroom.app") {
+  constructor(apiKey: string) {
     this.apiKey = apiKey;
-
-    // Create axios instance with custom HTTPS agent for self-signed certificates
-    const httpsAgent = new https.Agent({
-      rejectUnauthorized: false,
-    });
-
     this.client = axios.create({
-      baseURL,
+      baseURL: this.baseURL,
+      timeout: 60000, // Increased timeout for processing
       headers: {
         "X-API-KEY": apiKey,
       },
-      httpAgent: undefined,
-      httpsAgent,
-      timeout: 30000,
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false, // Allow self-signed certificates for development
+      }),
     });
   }
 
   /**
    * Create a virtual try-on task
-   * Sends model image and clothing image to Fitroom API
+   * Sends customer's body photo and garment image to Fitroom for processing
    * 
    * @param request - Try-on request with image paths and clothing type
-   * @returns Task ID and status if successful
+   * @returns Task ID and initial status
    */
   async createTryOn(request: FitroomTryOnRequest): Promise<FitroomTryOnResponse> {
     try {
@@ -74,27 +77,11 @@ export class FitroomClient {
         };
       }
 
-      // Log file details
-      const modelStats = fs.statSync(request.modelImagePath);
-      const clothStats = fs.statSync(request.clothImagePath);
-      console.log("[Fitroom] Model image:", { 
-        path: request.modelImagePath, 
-        size: modelStats.size,
-        ext: path.extname(request.modelImagePath)
-      });
-      console.log("[Fitroom] Clothing image:", { 
-        path: request.clothImagePath, 
-        size: clothStats.size,
-        ext: path.extname(request.clothImagePath)
-      });
-
       // Create form data
       const formData = new FormData();
       formData.append("model_image", fs.createReadStream(request.modelImagePath));
       formData.append("cloth_image", fs.createReadStream(request.clothImagePath));
       formData.append("cloth_type", request.clothType);
-
-      console.log("[Fitroom] FormData fields: cloth_type=" + request.clothType);
 
       // For combo try-ons, add lower clothing image
       if (request.clothType === "combo" && request.lowerClothImagePath) {
@@ -113,72 +100,54 @@ export class FitroomClient {
       }
 
       // Create try-on task
-      console.log("[Fitroom] Sending POST to /api/tryon/v2/tasks");
+      console.log("[Fitroom] Sending request to /api/tryon/v2/tasks");
       const response = await this.client.post("/api/tryon/v2/tasks", formData, {
         headers: formData.getHeaders(),
       });
 
-      console.log("[Fitroom] SUCCESS - Response status:", response.status);
-      console.log("[Fitroom] SUCCESS - Response data:", JSON.stringify(response.data));
+      console.log("[Fitroom] Create task response status:", response.status);
+      console.log("[Fitroom] Create task response:", JSON.stringify(response.data));
 
       const taskId = response.data.task_id || response.data.taskId || response.data.id;
       const status = response.data.status || "CREATED";
 
       if (!taskId) {
-        console.error("[Fitroom] ERROR - No task ID in response:", response.data);
+        console.error("[Fitroom] No task ID in response:", response.data);
         return {
           success: false,
           error: "No task ID returned from Fitroom API",
         };
       }
 
-      console.log("[Fitroom] SUCCESS - Task created:", { taskId, status });
       return {
         success: true,
         taskId,
         status,
       };
     } catch (error: any) {
-      console.error("[Fitroom] ERROR - API call failed");
-      
-      // Log detailed error information
       const errorDetails = {
         status: error.response?.status,
-        statusText: error.response?.statusText,
         data: error.response?.data,
         message: error.message,
-        code: error.code,
+        headers: error.response?.headers,
       };
-      
-      console.error("[Fitroom] ERROR - Full details:", JSON.stringify(errorDetails, null, 2));
-      
+      console.error("[Fitroom API Error - Create Try-On]", JSON.stringify(errorDetails, null, 2));
       if (error.response?.data) {
-        console.error("[Fitroom] ERROR - Response body:", error.response.data);
-        if (typeof error.response.data === 'object') {
-          Object.entries(error.response.data).forEach(([key, value]) => {
-            console.error(`[Fitroom] ERROR - ${key}:`, value);
-          });
-        }
+        console.error("[Fitroom API Error - Raw Response Data]:", error.response.data);
       }
-      
       const errorMessage = error.response?.data?.error || error.response?.data?.message || error.response?.data?.detail || error.message || "Unknown error";
       const statusCode = error.response?.status || "unknown";
       const detailedError = `[${statusCode}] ${errorMessage}`;
+      console.log(`[Fitroom] Detailed error: ${detailedError}`);
       
-      console.error(`[Fitroom] ERROR - Detailed: ${detailedError}`);
-      console.error(`[Fitroom] ERROR - Code: ${error.code}`);
-      
-      // Write error to file
+      // Write error to file for debugging
       try {
         const logPath = '/tmp/fitroom-errors.log';
-        const timestamp = new Date().toISOString();
-        const logEntry = `\n=== Fitroom API Error [${timestamp}] ===\nStatus: ${statusCode}\nMessage: ${errorMessage}\nCode: ${error.code}\nFull Response: ${JSON.stringify(error.response?.data, null, 2)}\n`;
+        const logEntry = `${new Date().toISOString()} - Status: ${statusCode}, Message: ${errorMessage}, Full Response: ${JSON.stringify(error.response?.data)}\n`;
         fs.appendFileSync(logPath, logEntry);
-        console.log('[Fitroom] Error logged to /tmp/fitroom-errors.log');
       } catch (e) {
         console.error('[Fitroom] Failed to write error log:', e);
       }
-      
       return {
         success: false,
         error: detailedError,
@@ -195,10 +164,9 @@ export class FitroomClient {
    */
   async getTaskStatus(taskId: string): Promise<FitroomTaskStatusResponse> {
     try {
-      console.log(`[Fitroom] Polling task status: ${taskId}`);
       const response = await this.client.get(`/api/tryon/v2/tasks/${taskId}`);
 
-      console.log(`[Fitroom] Task status response:`, JSON.stringify(response.data));
+      console.log(`[Fitroom] Task status for ${taskId}:`, JSON.stringify(response.data));
 
       return {
         success: true,
@@ -209,7 +177,7 @@ export class FitroomClient {
         errorCode: response.data.error_code,
       };
     } catch (error: any) {
-      console.error("[Fitroom] ERROR - Get Status failed:", error.message);
+      console.error("[Fitroom API Error - Get Status]", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
@@ -220,6 +188,11 @@ export class FitroomClient {
 
   /**
    * Check model image suitability before try-on
+   * Validates if the model image is suitable for virtual try-on
+   * Uses official Fitroom API endpoint: /api/tryon/input_check/v1/model
+   * 
+   * @param modelImagePath - Path to model image
+   * @returns Validation result with error code and user-friendly message
    */
   async validateModelImage(modelImagePath: string): Promise<{ valid: boolean; error?: string; errorCode?: string; userMessage?: string }> {
     try {
@@ -227,7 +200,6 @@ export class FitroomClient {
         return { valid: false, error: `Model image not found: ${modelImagePath}` };
       }
 
-      console.log("[Fitroom] Validating model image:", modelImagePath);
       const formData = new FormData();
       formData.append("input_image", fs.createReadStream(modelImagePath));
 
@@ -237,6 +209,7 @@ export class FitroomClient {
 
       console.log("[Fitroom] Model validation response:", JSON.stringify(response.data));
 
+      // Parse error codes and provide user-friendly messages
       const errorCode = response.data.error_code || response.data.code;
       let userMessage = "";
       
@@ -251,7 +224,7 @@ export class FitroomClient {
         userMessage: userMessage,
       };
     } catch (error: any) {
-      console.error("[Fitroom] ERROR - Model validation failed:", error.message);
+      console.error("[Fitroom API Error - Validate Model]", error);
       const errorCode = error.response?.data?.error_code || error.response?.data?.code;
       return {
         valid: false,
@@ -264,6 +237,11 @@ export class FitroomClient {
 
   /**
    * Check clothing image suitability before try-on
+   * Validates if the clothing image is suitable for virtual try-on
+   * Uses official Fitroom API endpoint: /api/tryon/input_check/v1/clothes
+   * 
+   * @param clothImagePath - Path to clothing image
+   * @returns Validation result with error code and user-friendly message
    */
   async validateClothImage(clothImagePath: string): Promise<{ valid: boolean; error?: string; errorCode?: string; userMessage?: string }> {
     try {
@@ -271,7 +249,6 @@ export class FitroomClient {
         return { valid: false, error: `Cloth image not found: ${clothImagePath}` };
       }
 
-      console.log("[Fitroom] Validating clothing image:", clothImagePath);
       const formData = new FormData();
       formData.append("input_image", fs.createReadStream(clothImagePath));
 
@@ -281,6 +258,7 @@ export class FitroomClient {
 
       console.log("[Fitroom] Clothing validation response:", JSON.stringify(response.data));
 
+      // Parse error codes and provide user-friendly messages
       const errorCode = response.data.error_code || response.data.code;
       let userMessage = "";
       
@@ -295,7 +273,7 @@ export class FitroomClient {
         userMessage: userMessage,
       };
     } catch (error: any) {
-      console.error("[Fitroom] ERROR - Clothing validation failed:", error.message);
+      console.error("[Fitroom API Error - Validate Cloth]", error);
       const errorCode = error.response?.data?.error_code || error.response?.data?.code;
       return {
         valid: false,
@@ -307,74 +285,66 @@ export class FitroomClient {
   }
 
   /**
-   * Convert Fitroom error codes to user-friendly messages
+   * Map Fitroom error codes to user-friendly messages
    */
-  private getErrorMessage(errorCode: string | number): string {
-    const codeStr = String(errorCode);
-    
-    // Model validation errors (400xxx)
-    const modelErrors: { [key: string]: string } = {
-      "400001": "No person detected in the image. Please upload a clear photo with a person visible.",
+  private getErrorMessage(errorCode: string): string {
+    const errorMessages: Record<string, string> = {
+      // Model image errors (400xxx)
+      "400001": "No person detected in the body photo. Please ensure your full body is visible in the image.",
       "400002": "Multiple people detected. Please upload a photo with only one person.",
-      "400003": "Person not facing forward. Please upload a photo where the person is facing the camera.",
-      "400004": "Person too small in the image. Please upload a photo where the person takes up more of the frame.",
-      "400005": "Person partially cut off. Please upload a full-body photo.",
-      "400006": "Image quality too low. Please upload a clearer image.",
-      "400007": "Background too complex. Please use a simple, plain background.",
-      "400008": "Clothing obscuring body. Please wear fitted clothing.",
-      "400009": "Body pose not suitable. Please stand straight and face the camera.",
-      "400010": "Image resolution too low. Please upload a higher resolution image.",
-      "400011": "Image too dark or too bright. Please ensure proper lighting.",
-      "400012": "Person wearing accessories blocking body. Please remove large accessories.",
-      "400013": "Image format not supported. Please use PNG, JPG, or GIF.",
-      "400014": "Image file too large. Please compress the image.",
+      "400003": "Person is not facing forward. Please face the camera directly.",
+      "400004": "Person is too small in the image. Please take a closer photo where your body fills most of the frame.",
+      "400005": "Poor lighting detected. Please use better lighting or try a different photo.",
+      "400006": "Background is too complex. Please use a simple, solid-colored background.",
+      
+      // Clothing image errors (400xxx)
+      "400010": "No clothing detected in the image. Please ensure the clothing is clearly visible.",
+      "400011": "Multiple clothing items detected. Please upload a photo with only one clothing item.",
+      "400012": "Clothing is not clearly visible. Please ensure the clothing edges are distinct.",
+      "400013": "Clothing is wrinkled or poorly positioned. Please use a flat, well-spread clothing image.",
+      "400014": "Background is not suitable. Please use a white or solid-colored background for clothing images.",
+      
+      // Warnings (410xxx - processing may continue)
+      "410001": "Body photo quality is lower than optimal. Try-on may still work but quality might be reduced.",
+      "410002": "Clothing image quality is lower than optimal. Try-on may still work but quality might be reduced.",
+      "410003": "Image resolution is low. For better results, use higher resolution images.",
     };
+    
+    return errorMessages[errorCode] || `Image validation failed (Code: ${errorCode}). Please try a different image.`;
+  }
 
-    // Clothing validation errors (400xxx)
-    const clothErrors: { [key: string]: string } = {
-      "400101": "No clothing detected. Please upload a clear image of the garment.",
-      "400102": "Multiple clothing items detected. Please upload a single garment.",
-      "400103": "Clothing partially cut off. Please upload a complete view of the garment.",
-      "400104": "Clothing quality too low. Please upload a clearer image.",
-      "400105": "Background too complex. Please use a simple, plain background.",
-      "400106": "Clothing wrinkled or folded. Please use a smooth, flat image.",
-      "400107": "Clothing color not visible. Please ensure good lighting.",
-      "400108": "Image resolution too low. Please upload a higher resolution image.",
-      "400109": "Image too dark or too bright. Please ensure proper lighting.",
-      "400110": "Clothing with patterns hard to process. Please try a simpler design.",
-      "400111": "Image format not supported. Please use PNG, JPG, or GIF.",
-      "400112": "Image file too large. Please compress the image.",
-    };
-
-    // Warnings (410xxx)
-    const warnings: { [key: string]: string } = {
-      "410001": "Image quality is acceptable but could be improved for better results.",
-      "410002": "Clothing may not process optimally. Consider using a clearer image.",
-      "410003": "Body photo quality is acceptable but could be improved.",
-    };
-
-    return modelErrors[codeStr] || clothErrors[codeStr] || warnings[codeStr] || `Error code: ${codeStr}`;
+  /**
+   * Check API connectivity and validate credentials
+   */
+  async validateCredentials(): Promise<boolean> {
+    try {
+      // Try to make a simple request to verify API key
+      const response = await this.client.get("/api/tryon/v2/tasks");
+      return true;
+    } catch (error: any) {
+      // 401 or 403 means auth failed, but endpoint exists
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.error("[Fitroom] Invalid API key");
+        return false;
+      }
+      // Other errors might mean endpoint doesn't exist
+      console.error("[Fitroom Validation Error]", error.message);
+      return false;
+    }
   }
 }
-
 
 // Singleton instance
 let fitroomClient: FitroomClient | null = null;
 
-/**
- * Get or create the Fitroom API client singleton
- * Ensures only one client instance is used throughout the application
- */
 export function getFitroomClient(): FitroomClient {
   if (!fitroomClient) {
-    // Get API key from environment
-    const apiKey = process.env.FITROOM_API_KEY;
-    if (!apiKey) {
+    if (!ENV.fitroomApiKey) {
       throw new Error("FITROOM_API_KEY is not configured");
     }
-    fitroomClient = new FitroomClient(apiKey);
+    fitroomClient = new FitroomClient(ENV.fitroomApiKey);
   }
   return fitroomClient;
 }
 
-
+export type { FitroomTryOnRequest, FitroomTryOnResponse, FitroomTaskStatusResponse };
