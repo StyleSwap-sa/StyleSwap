@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, name, slug, ownerId, createdAt FROM boutiques ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT id, name, slug, ownerId, createdAt FROM boutiques ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "120012",
+      "name": "Complete Success Boutique",
+      "slug": "complete-success-boutique",
+      "ownerId": "1",
+      "createdAt": "2026-01-21 08:41:05"
+    },
+    {
+      "id": "120011",
+      "name": "Final Success Boutique",
+      "slug": "final-success-boutique",
+      "ownerId": "1",
+      "createdAt": "2026-01-21 08:39:39"
+    },
+    {
+      "id": "120010",
+      "name": "Success Test Boutique",
+      "slug": "success-test-boutique",
+      "ownerId": "1",
+      "createdAt": "2026-01-21 08:38:06"
+    },
+    {
+      "id": "120009",
+      "name": "Test Boutique Final",
+      "slug": "test-boutique-final",
+      "ownerId": "1",
+      "createdAt": "2026-01-21 08:36:28"
+    },
+    {
+      "id": "120008",
+      "name": "Luxury Boutique",
+      "slug": "luxury-boutique",
+      "ownerId": "1",
+      "createdAt": "2026-01-21 08:34:52"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\townerId\tcreatedAt\n120012\tComplete Success Boutique\tcomplete-success-boutique\t1\t2026-01-21 08:41:05\n120011\tFinal Success Boutique\tfinal-success-boutique\t1\t2026-01-21 08:39:39\n120010\tSuccess Test Boutique\tsuccess-test-boutique\t1\t2026-01-21 08:38:06\n120009\tTest Boutique Final\ttest-boutique-final\t1\t2026-01-21 08:36:28\n120008\tLuxury Boutique\tluxury-boutique\t1\t2026-01-21 08:34:52\n",
+  "stderr": "",
+  "execution_time_ms": 415
+}

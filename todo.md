@@ -375,3 +375,28 @@
 - [x] Add checkSlugAvailability endpoint to backend
 - [x] Integrate slug check in signup form
 - [x] Auto-suggest alternative slugs if collision occurs
+
+
+## Phase 29: Boutique Creation Database Defaults Approach (TODAY)
+
+### Database Insertion Fixes
+- [x] Identify Drizzle ORM issue with `default` placeholders in INSERT statements
+- [x] Fix `createBoutique` to properly extract and return the inserted boutique ID
+- [x] Implement ID extraction by querying database after insert (using slug as key)
+- [x] Skip `createBoutiqueSettings` insertion (temporary - needs proper fix)
+- [x] Skip `createBoutiqueCredits` insertion (temporary - needs proper fix)
+- [x] Skip `addBoutiqueUser` insertion (temporary - needs proper fix)
+- [x] Test boutique creation flow end-to-end (3-step wizard)
+- [x] Verify boutique data is saved to database successfully
+- [ ] Implement proper database defaults for boutiqueSettings table
+- [ ] Implement proper database defaults for boutiqueCredits table
+- [ ] Implement proper database defaults for boutiqueUsers table
+- [ ] Test full boutique creation with all related records
+- [ ] Verify boutique appears in dashboard after creation
+
+### Next Steps
+- [ ] Fix remaining database insertion issues using proper Drizzle ORM patterns
+- [ ] Implement proper error handling for database operations
+- [ ] Add validation for boutique data before insertion
+- [ ] Create comprehensive test suite for boutique creation
+- [ ] Document database default handling approach for future reference
