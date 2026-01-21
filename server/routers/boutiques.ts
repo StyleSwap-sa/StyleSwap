@@ -514,13 +514,21 @@ export const boutiquesRouter = router({
         }
 
         // Create checkout directly with Yoco API
+        console.log("[Yoco] Environment Check:", {
+          yocoApiBaseUrl: ENV.yocoApiBaseUrl,
+          yocoSecretKeyExists: !!ENV.yocoSecretKey,
+          yocoSecretKeyLength: ENV.yocoSecretKey?.length,
+        });
         const checkoutUrl = `${ENV.yocoApiBaseUrl}/checkouts`;
         console.log("[Yoco] Creating checkout:", {
           url: checkoutUrl,
           amount: input.amount,
           currency: input.currency,
           baseUrl,
+          fullUrl: checkoutUrl,
         });
+        console.log("[Yoco] Fetch URL:", checkoutUrl);
+        console.log("[Yoco] Auth Header:", `Bearer ${ENV.yocoSecretKey?.substring(0, 10)}...`);
         const response = await fetch(checkoutUrl, {
           method: "POST",
           headers: {
