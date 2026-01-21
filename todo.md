@@ -768,3 +768,33 @@ This approach:
 - Reuses existing infrastructure
 - Provides all necessary functionality
 - Is simpler to maintain and test
+
+## Phase 41: Implement Credit Alert System (COMPLETED)
+
+### SQL Query Fixes
+- [x] Fixed SQL GROUP BY error in getMonthlyCreditsUsage function
+- [x] Rewrote query to use proper Drizzle query builder with groupBy
+- [x] Verified TypeScript compilation errors resolved
+
+### Credit Alert Procedures
+- [x] Implement checkCreditAlerts tRPC procedure
+  - Returns boutiques at 80%, 50%, 20%, 10% usage thresholds
+  - Filters only active boutiques
+  - Categorizes by alert level
+- [x] Implement getBoutiqueAlertStatus tRPC procedure
+  - Returns alert level for specific boutique
+  - Calculates usage percentage
+  - Estimates days until credits empty
+  - Requires admin role
+- [x] Add admin role permission checks
+- [x] Create comprehensive test suite for credit alerts
+- [x] All tests passing
+
+### Next Steps: Boutique Performance Reports
+- [ ] Create report generation tRPC procedure
+- [ ] Implement CSV export functionality
+- [ ] Implement PDF export functionality
+- [ ] Add date range filtering for reports
+- [ ] Add boutique selection for reports
+- [ ] Create report UI component in admin dashboard
+- [ ] Test report generation and exports

@@ -253,17 +253,17 @@ export async function getMonthlyCreditsUsage() {
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     
-    const dateColumn = sql<string>`DATE(${boutiqueTransactions.createdAt})`;
+    // Use Drizzle query builder with proper GROUP BY handling
     const usage = await db
       .select({
-        date: dateColumn,
+        date: sql<string>`DATE(${boutiqueTransactions.createdAt})`,
         creditsUsed: sql<number>`SUM(CASE WHEN ${boutiqueTransactions.type} = 'usage' THEN ${boutiqueTransactions.amount} ELSE 0 END)`,
         creditsPurchased: sql<number>`SUM(CASE WHEN ${boutiqueTransactions.type} = 'purchase' THEN ${boutiqueTransactions.amount} ELSE 0 END)`,
       })
       .from(boutiqueTransactions)
       .where(gte(boutiqueTransactions.createdAt, thirtyDaysAgo))
-      .groupBy(dateColumn)
-      .orderBy(dateColumn);
+      .groupBy(sql`DATE(${boutiqueTransactions.createdAt})`)
+      .orderBy(sql`DATE(${boutiqueTransactions.createdAt}) DESC`);
 
     return usage;
   } catch (error) {

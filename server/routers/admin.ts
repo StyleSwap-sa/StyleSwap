@@ -10,7 +10,7 @@ import {
 import { getBillingHistory, getTotalSpending, getTotalCreditsUsed } from "../db.billing";
 import { getBoutiqueTryOnResults, getBoutiqueUsageStats } from "../db.tryons";
 import { getDb, getPlatformMetrics, getBoutiquesList, getMonthlyCreditsUsage, getTopBoutiques } from "../db";
-import { boutiqueTransactions, tryOnResults } from "../../drizzle/schema";
+import { boutiqueTransactions, tryOnResults, boutiques, boutiqueCredits } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 
 /**
@@ -409,5 +409,118 @@ export const adminRouter = router({
       }
 
       return await getTopBoutiques(input.limit);
+    }),
+
+  /**
+   * Check boutiques that need credit alerts
+   * Returns boutiques at 80%, 50%, 20%, and 10% credit usage thresholds
+   */
+  checkCreditAlerts: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Only admins can check credit alerts",
+      });
+    }
+
+    const db = await getDb();
+    if (!db) return { alerts80: [], alerts50: [], alerts20: [], alerts10: [] };
+
+    try {
+      
+      
+      // Get all boutiques with their credit status
+      const boutiquesWithCredits = await db
+        .select({
+          id: boutiques.id,
+          name: boutiques.name,
+          slug: boutiques.slug,
+          totalCredits: boutiqueCredits.totalCredits,
+          usedCredits: boutiqueCredits.usedCredits,
+          remainingCredits: boutiqueCredits.remainingCredits,
+        })
+        .from(boutiques)
+        .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
+        .where(eq(boutiques.status, "active"));
+
+      // Categorize boutiques by alert threshold
+      const alerts80: any[] = [];
+      const alerts50: any[] = [];
+      const alerts20: any[] = [];
+      const alerts10: any[] = [];
+
+      for (const boutique of boutiquesWithCredits) {
+        if (!boutique.totalCredits || boutique.totalCredits === 0) continue;
+        
+        const usagePercentage = (boutique.usedCredits || 0) / boutique.totalCredits * 100;
+        
+        if (usagePercentage >= 80) alerts80.push(boutique);
+        else if (usagePercentage >= 50) alerts50.push(boutique);
+        else if (usagePercentage >= 20) alerts20.push(boutique);
+        else if (usagePercentage >= 10) alerts10.push(boutique);
+      }
+
+      return { alerts80, alerts50, alerts20, alerts10 };
+    } catch (error) {
+      console.error('[Admin] Failed to check credit alerts:', error);
+      return { alerts80: [], alerts50: [], alerts20: [], alerts10: [] };
+    }
+  }),
+
+  /**
+   * Get credit alert status for a specific boutique
+   */
+  getBoutiqueAlertStatus: protectedProcedure
+    .input(z.object({ boutiqueId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can view boutique alert status",
+        });
+      }
+
+      const db = await getDb();
+      if (!db) return null;
+
+      try {
+        
+        
+        const result = await db
+          .select({
+            id: boutiques.id,
+            name: boutiques.name,
+            totalCredits: boutiqueCredits.totalCredits,
+            usedCredits: boutiqueCredits.usedCredits,
+            remainingCredits: boutiqueCredits.remainingCredits,
+          })
+          .from(boutiques)
+          .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
+          .where(eq(boutiques.id, input.boutiqueId))
+          .limit(1);
+
+        if (result.length === 0) return null;
+
+        const boutique = result[0];
+        const totalCredits = boutique.totalCredits || 0;
+        const usedCredits = boutique.usedCredits || 0;
+        const usagePercentage = totalCredits > 0 ? (usedCredits / totalCredits) * 100 : 0;
+
+        let alertLevel: "none" | "10" | "20" | "50" | "80" = "none";
+        if (usagePercentage >= 80) alertLevel = "80";
+        else if (usagePercentage >= 50) alertLevel = "50";
+        else if (usagePercentage >= 20) alertLevel = "20";
+        else if (usagePercentage >= 10) alertLevel = "10";
+
+        return {
+          ...boutique,
+          usagePercentage: Math.round(usagePercentage),
+          alertLevel,
+          daysUntilEmpty: usedCredits > 0 ? Math.ceil(totalCredits / (usedCredits / 30)) : null,
+        };
+      } catch (error) {
+        console.error('[Admin] Failed to get boutique alert status:', error);
+        return null;
+      }
     }),
 });
