@@ -78,14 +78,17 @@ async function startServer() {
     let tempDir: string | null = null;
     try {
       console.log("[Try-On Upload] Received request");
+      console.log("[Try-On Upload] Cookie header:", req.headers.cookie ? "present" : "missing");
       
       // Authenticate the user using the same method as tRPC
       let user;
       try {
         user = await sdk.authenticateRequest(req);
+        console.log("[Try-On Upload] Authentication successful for user:", user.id);
       } catch (authError) {
-        console.log("[Try-On Upload] Authentication failed:", authError);
-        return res.status(401).json({ error: "Unauthorized" });
+        console.error("[Try-On Upload] Authentication failed:", authError);
+        const errorMsg = authError instanceof Error ? authError.message : "Invalid session";
+        return res.status(401).json({ error: "Unauthorized: " + errorMsg });
       }
       
       const userId = user.id;

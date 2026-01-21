@@ -132,8 +132,16 @@ export function VirtualTryOnUpload() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error && typeof errorData.error === 'string') {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          // If response is not JSON, use default error message
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -147,11 +155,28 @@ export function VirtualTryOnUpload() {
         // Refetch credits to show updated balance
         refetchCredits();
       } else {
-        setError(data.error || "Failed to create try-on task");
+        // Ensure error is always a string, not a boolean
+        console.log('[VirtualTryOn] Response not successful:', { success: data.success, taskId: data.taskId, error: data.error, errorType: typeof data.error });
+        let errorMsg = "Failed to create try-on task";
+        if (data.error) {
+          console.log('[VirtualTryOn] data.error exists:', data.error, 'type:', typeof data.error);
+          if (typeof data.error === 'string') {
+            errorMsg = data.error;
+          } else if (typeof data.error === 'object' && data.error.message) {
+            errorMsg = data.error.message;
+          } else if (typeof data.error === 'boolean') {
+            errorMsg = "Try-on generation failed. Please check your images and try again.";
+          } else {
+            errorMsg = String(data.error);
+          }
+        }
+        console.log('[VirtualTryOn] Final error message:', errorMsg);
+        setError(errorMsg);
         setIsLoading(false);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMsg = err instanceof Error ? err.message : "An error occurred";
+      setError(errorMsg);
       setIsLoading(false);
     }
   };

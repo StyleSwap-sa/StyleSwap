@@ -149,7 +149,7 @@ export const tryonRouter = router({
     .input(z.object({ taskId: z.string() }))
     .query(async ({ ctx, input }) => {
       const fitroomClient = getFitroomClient();
-      const status = await fitroomClient.getTaskStatus(input.taskId);
+      const status = await fitroomClient.getTryOnStatus(input.taskId);
 
       if (!status.success) {
         throw new TRPCError({
