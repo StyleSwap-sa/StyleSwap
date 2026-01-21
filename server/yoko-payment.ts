@@ -123,16 +123,16 @@ export async function createPaymentIntent(
     throw new Error(`Package not found: ${request.packageId}`);
   }
 
-  if (!ENV.yokoSecretKey || !ENV.yokoApiBaseUrl) {
-    throw new Error("Yoko credentials not configured");
+  if (!ENV.yocoSecretKey || !ENV.yocoApiBaseUrl) {
+    throw new Error("Yoco credentials not configured");
   }
 
   try {
-    const response = await fetch(`${ENV.yokoApiBaseUrl}/api/checkouts`, {
+    const response = await fetch(`${ENV.yocoApiBaseUrl}/api/checkouts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${ENV.yokoSecretKey}`,
+        Authorization: `Bearer ${ENV.yocoSecretKey}`,
       },
       body: JSON.stringify({
         amount: pkg.price,
@@ -177,18 +177,18 @@ export async function createPaymentIntent(
 export async function getPaymentIntent(
   paymentIntentId: string
 ): Promise<PaymentIntentResponse> {
-  if (!ENV.yokoSecretKey || !ENV.yokoApiBaseUrl) {
-    throw new Error("Yoko credentials not configured");
+  if (!ENV.yocoSecretKey || !ENV.yocoApiBaseUrl) {
+    throw new Error("Yoco credentials not configured");
   }
 
   try {
     const response = await fetch(
-      `${ENV.yokoApiBaseUrl}/payment_intents/${paymentIntentId}`,
+      `${ENV.yocoApiBaseUrl}/payment_intents/${paymentIntentId}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${ENV.yokoSecretKey}`,
+          Authorization: `Bearer ${ENV.yocoSecretKey}`,
         },
       }
     );
@@ -293,7 +293,7 @@ export function verifyWebhookSignature(
   payload: string,
   signature: string
 ): boolean {
-  if (!ENV.yokoSecretKey) {
+  if (!ENV.yocoSecretKey) {
     console.error("[Yoko Payment] Yoko secret key not configured");
     return false;
   }

@@ -85,7 +85,7 @@ export const paymentRouter = router({
         });
 
         // Generate checkout URL from payment intent
-        const checkoutUrl = paymentIntent.checkoutUrl || `https://checkout.yoko.com/${paymentIntent.id}`;
+        const checkoutUrl = paymentIntent.checkoutUrl || `https://checkout.yoco.com/${paymentIntent.id}`;
         
         return {
           id: paymentIntent.id,

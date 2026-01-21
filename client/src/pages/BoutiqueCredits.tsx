@@ -3,6 +3,7 @@ import { useRoute, useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { YocoPaymentForm } from "@/components/YocoPaymentForm";
 import { trpc } from "@/lib/trpc";
 import { Loader2, ArrowLeft, Zap, Check, AlertCircle } from "lucide-react";
 
@@ -52,7 +53,7 @@ export default function BoutiqueCredits() {
     },
   });
 
-  const handlePayment = async () => {
+  const handlePaymentSuccess = async (token: string) => {
     if (!selectedTier || !boutiqueId) return;
 
     const tier = CREDIT_TIERS.find((t) => t.id === selectedTier);
@@ -62,21 +63,21 @@ export default function BoutiqueCredits() {
     setError(null);
 
     try {
-      // For now, we'll use a test token
-      // In production, this would integrate with Yoco payment form
-      const testToken = "test_token_" + Math.random().toString(36).substring(7);
-
       await purchaseMutation.mutateAsync({
         boutiqueId,
         credits: tier.credits,
-        amount: tier.price,
-        token: testToken,
+        amount: tier.price * 100,
+        token,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Payment error occurred");
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handlePaymentError = (errorMessage: string) => {
+    setError(errorMessage);
   };
 
   if (!boutiqueId || creditsLoading) {
@@ -243,20 +244,16 @@ export default function BoutiqueCredits() {
                 </span>
               </div>
 
-              <Button
-                className="w-full cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg"
-                onClick={handlePayment}
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing Payment...
-                  </>
-                ) : (
-                  "Proceed to Payment"
-                )}
-              </Button>
+              <YocoPaymentForm
+                amount={(CREDIT_TIERS.find((t) => t.id === selectedTier)?.price ?? 0) * 100}
+                currency="ZAR"
+                description={`${CREDIT_TIERS.find((t) => t.id === selectedTier)?.credits} credits for boutique`}
+                onSuccess={handlePaymentSuccess}
+                onError={handlePaymentError}
+                isProcessing={isProcessing}
+                boutiqueId={boutiqueId}
+                credits={CREDIT_TIERS.find((t) => t.id === selectedTier)?.credits}
+              />
 
               <p className="text-xs text-muted-foreground text-center">
                 Secure payment powered by Yoco

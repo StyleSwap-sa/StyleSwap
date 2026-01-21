@@ -477,6 +477,74 @@ export const boutiquesRouter = router({
   }),
 
   /**
+   * Create Yoco payment checkout session
+   */
+  createPaymentCheckout: protectedProcedure
+    .input(
+      z.object({
+        boutiqueId: z.number(),
+        credits: z.number().positive(),
+        amount: z.number().positive(),
+        currency: z.string(),
+        description: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userRole = await getBoutiqueUserRole(input.boutiqueId, ctx.user.id);
+      if (!userRole) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have access to this boutique",
+        });
+      }
+
+      try {
+        const { ENV } = await import("../_core/env");
+        if (!ENV.yocoSecretKey || !ENV.yocoApiBaseUrl) {
+          throw new Error("Yoco credentials not configured");
+        }
+
+        const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
+
+        // Create checkout directly with Yoco API
+        const response = await fetch(`${ENV.yocoApiBaseUrl}/api/checkouts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${ENV.yocoSecretKey}`,
+          },
+          body: JSON.stringify({
+            amount: input.amount,
+            currency: input.currency,
+            successUrl: `${baseUrl}/boutique-credits/${input.boutiqueId}?success=true`,
+            cancelUrl: `${baseUrl}/boutique-credits/${input.boutiqueId}?cancelled=true`,
+            metadata: {
+              boutiqueId: input.boutiqueId.toString(),
+              credits: input.credits.toString(),
+              userId: ctx.user.id.toString(),
+              type: "boutique_credit_purchase",
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(`Yoco API error: ${error.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        const checkoutUrl = data.redirectUrl || `https://checkout.yoco.com/${data.id}`;
+
+        return { success: true, checkoutUrl };
+      } catch (error: any) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error.message || "Failed to create checkout session",
+        });
+      }
+    }),
+
+  /**
    * Purchase credits with Yoco payment
    */
   purchaseCredits: protectedProcedure
