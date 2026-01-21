@@ -9,6 +9,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { handleYokoWebhook } from "../webhooks/yoco";
+import { handleYocoBoutiqueWebhook } from "../webhooks/yoco-boutique";
+import { testYocoBoutiqueWebhook } from "../webhooks/test-webhook";
 import { getFitroomClient } from "./fitroom";
 import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
 import crypto from "crypto";
@@ -47,8 +49,9 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   
-  // Yoco webhook endpoint
+  // Yoco webhook endpoints
   app.post("/api/webhooks/yoco", handleYokoWebhook);
+  app.post("/api/webhooks/yoco/boutique", handleYocoBoutiqueWebhook);
   
   // Yoco charge creation endpoint
   app.post("/api/yoco/charge", async (req, res) => {

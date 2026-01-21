@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getDb } from "../db";
-import { transactions, userCredits, users } from "../../drizzle/schema";
+import { transactions, userCredits, users, boutiqueCredits } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { sendEmailNotification } from "../email";
 import { verifyWebhookSignature } from "../yoko-payment";
@@ -15,13 +15,14 @@ export interface YokoWebhookPayload {
     amount: number;
     currency: string;
     metadata: {
-      userId: string;
+      userId?: string;
+      boutiqueId?: string;
       packageId: string;
       credits: number;
-      userName: string;
-      userEmail: string;
+      userName?: string;
+      userEmail?: string;
     };
-    created_at: string;
+    created_at?: string;
   };
 }
 
@@ -73,10 +74,23 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"]) {
     throw new Error("Database not available");
   }
 
-  const userId = parseInt(data.metadata.userId, 10);
+  // Check if this is a boutique credit purchase or user credit purchase
+  const boutiqueId = data.metadata.boutiqueId ? parseInt(data.metadata.boutiqueId, 10) : null;
+  const userId = data.metadata.userId ? parseInt(data.metadata.userId, 10) : null;
   const credits = data.metadata.credits;
   const userEmail = data.metadata.userEmail;
   const userName = data.metadata.userName;
+
+  // Handle boutique credit purchase
+  if (boutiqueId) {
+    await handleBoutiqueCreditPurchase(db, boutiqueId, credits, data);
+    return;
+  }
+
+  // Handle user credit purchase
+  if (!userId) {
+    throw new Error("No userId or boutiqueId in metadata");
+  }
 
   try {
     // Get existing user credits
@@ -121,21 +135,23 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"]) {
       type: "purchase",
       amount: credits,
       price: (data.amount / 100).toString(),
-      currency: data.currency.toUpperCase(),
+      currency: (data.currency || "ZAR").toUpperCase(),
       description: `Purchased ${credits} try-on credits`,
       fitRoomOrderId: data.id,
       status: "completed",
     });
 
     // Send confirmation email
-    const emailHtml = `<html><body style="font-family: Arial, sans-serif;"><h2>Purchase Confirmation</h2><p>Hi ${userName},</p><p>Thank you for your purchase! You have successfully purchased <strong>${credits} try-on credits</strong> for <strong>R${(data.amount / 100).toFixed(2)}</strong>.</p><p>Your credits are valid for 30 days from today.</p><p>Best regards,<br/>StyleSwap Team</p></body></html>`;
-    await sendEmailNotification({
-      userId,
-      type: "purchase_confirmation",
-      recipientEmail: userEmail,
-      subject: "Purchase Confirmation - StyleSwap",
-      htmlContent: emailHtml,
-    });
+    if (userEmail) {
+      const emailHtml = `<html><body style="font-family: Arial, sans-serif;"><h2>Purchase Confirmation</h2><p>Hi ${userName},</p><p>Thank you for your purchase! You have successfully purchased <strong>${credits} try-on credits</strong> for <strong>R${(data.amount / 100).toFixed(2)}</strong>.</p><p>Your credits are valid for 30 days from today.</p><p>Best regards,<br/>StyleSwap Team</p></body></html>`;
+      await sendEmailNotification({
+        userId,
+        type: "purchase_confirmation",
+        recipientEmail: userEmail,
+        subject: "Purchase Confirmation - StyleSwap",
+        htmlContent: emailHtml,
+      });
+    }
 
     // Send SMS confirmation
     try {
@@ -171,6 +187,63 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"]) {
 }
 
 /**
+ * Handle boutique credit purchase
+ */
+async function handleBoutiqueCreditPurchase(
+  db: any,
+  boutiqueId: number,
+  credits: number,
+  data: YokoWebhookPayload["data"]
+) {
+  try {
+    // Get existing boutique credits
+    const existingCredits = await db
+      .select()
+      .from(boutiqueCredits)
+      .where(eq(boutiqueCredits.boutiqueId, boutiqueId))
+      .limit(1);
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+
+    if (existingCredits.length === 0) {
+      // Create new boutique credit record
+      await db.insert(boutiqueCredits).values({
+        boutiqueId,
+        totalCredits: credits,
+        usedCredits: 0,
+        remainingCredits: credits,
+        expiresAt,
+      });
+    } else {
+      // Update existing boutique credit record
+      const current = existingCredits[0];
+      const newTotal = current.totalCredits + credits;
+      const newRemaining = current.remainingCredits + credits;
+
+      await db
+        .update(boutiqueCredits)
+        .set({
+          totalCredits: newTotal,
+          remainingCredits: newRemaining,
+          expiresAt,
+          updatedAt: new Date(),
+        })
+        .where(eq(boutiqueCredits.boutiqueId, boutiqueId));
+    }
+
+    // TODO: Record boutique transaction in a separate boutique_transactions table
+
+    console.log(
+      `[Yoko Webhook] Payment succeeded for boutique ${boutiqueId}: +${credits} credits`
+    );
+  } catch (error) {
+    console.error("[Yoko Webhook] Error handling boutique credit purchase:", error);
+    throw error;
+  }
+}
+
+/**
  * Handle failed payment
  */
 async function handlePaymentFailed(data: YokoWebhookPayload["data"]) {
@@ -179,20 +252,23 @@ async function handlePaymentFailed(data: YokoWebhookPayload["data"]) {
     throw new Error("Database not available");
   }
 
-  const userId = parseInt(data.metadata.userId, 10);
+  const userId = data.metadata.userId ? parseInt(data.metadata.userId, 10) : null;
+  const boutiqueId = data.metadata.boutiqueId ? parseInt(data.metadata.boutiqueId, 10) : null;
 
   try {
-    // Record failed transaction
-    await db.insert(transactions).values({
-      userId,
-      type: "purchase",
-      amount: data.metadata.credits,
-      price: (data.amount / 100).toString(),
-      currency: data.currency.toUpperCase(),
-      description: `Failed purchase attempt for ${data.metadata.credits} credits`,
-      fitRoomOrderId: data.id,
-      status: "failed",
-    });
+    // Record failed transaction (only if userId exists)
+    if (userId) {
+      await db.insert(transactions).values({
+        userId,
+        type: "purchase",
+        amount: data.metadata.credits,
+        price: (data.amount / 100).toString(),
+        currency: (data.currency || "ZAR").toUpperCase(),
+        description: `Failed purchase attempt for ${data.metadata.credits} credits`,
+        fitRoomOrderId: data.id,
+        status: "failed",
+      });
+    }
 
     console.log(`[Yoko Webhook] Payment failed for user ${userId}`);
   } catch (error) {
@@ -210,20 +286,23 @@ async function handlePaymentCanceled(data: YokoWebhookPayload["data"]) {
     throw new Error("Database not available");
   }
 
-  const userId = parseInt(data.metadata.userId, 10);
+  const userId = data.metadata.userId ? parseInt(data.metadata.userId, 10) : null;
+  const boutiqueId = data.metadata.boutiqueId ? parseInt(data.metadata.boutiqueId, 10) : null;
 
   try {
-    // Record canceled transaction
-    await db.insert(transactions).values({
-      userId,
-      type: "purchase",
-      amount: data.metadata.credits,
-      price: (data.amount / 100).toString(),
-      currency: data.currency.toUpperCase(),
-      description: `Canceled purchase for ${data.metadata.credits} credits`,
-      fitRoomOrderId: data.id,
-      status: "failed",
-    });
+    // Record canceled transaction (only if userId exists)
+    if (userId) {
+      await db.insert(transactions).values({
+        userId,
+        type: "purchase",
+        amount: data.metadata.credits,
+        price: (data.amount / 100).toString(),
+        currency: (data.currency || "ZAR").toUpperCase(),
+        description: `Canceled purchase for ${data.metadata.credits} credits`,
+        fitRoomOrderId: data.id,
+        status: "failed",
+      });
+    }
 
     console.log(`[Yoko Webhook] Payment canceled for user ${userId}`);
   } catch (error) {
