@@ -13,6 +13,7 @@ import { handleYocoBoutiqueWebhook } from "../webhooks/yoco-boutique";
 import { testYocoBoutiqueWebhook } from "../webhooks/test-webhook";
 import { getFitroomClient } from "./fitroom";
 import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
+import { sdk } from "./sdk";
 import crypto from "crypto";
 import path from "path";
 import fs from "fs";
@@ -78,15 +79,16 @@ async function startServer() {
     try {
       console.log("[Try-On Upload] Received request");
       
-      // Get user from session (similar to tRPC context)
-      const sessionCookie = req.headers.cookie?.split("; ").find(c => c.startsWith("session="));
-      if (!sessionCookie) {
+      // Authenticate the user using the same method as tRPC
+      let user;
+      try {
+        user = await sdk.authenticateRequest(req);
+      } catch (authError) {
+        console.log("[Try-On Upload] Authentication failed:", authError);
         return res.status(401).json({ error: "Unauthorized" });
       }
-
-      // For now, we'll extract userId from context
-      // In production, you'd decode the session cookie properly
-      const userId = (req as any).userId || "test-user";
+      
+      const userId = user.id;
       
       const modelImageFiles = (req.files as any)?.modelImage;
       const clothImageFiles = (req.files as any)?.clothImage;

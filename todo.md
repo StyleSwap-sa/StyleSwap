@@ -561,3 +561,29 @@
 6. Credits are now available for use in virtual try-ons
 
 ### Status: VERIFIED - Credit addition logic is correct and will work as expected
+
+
+## Phase 28: Fix Fitroom API Unauthorized Error (TODAY)
+- [x] Investigate Fitroom API authorization error (Unauthorized when generating try-on)
+- [x] Verify FITROOM_API_KEY credentials are correct and valid
+- [x] Check Fitroom API endpoint authentication method
+- [x] Debug the virtual try-on generation API call
+- [x] Test with valid credentials
+- [x] Verify credits are deducted after successful generation
+- [x] Test end-to-end virtual try-on flow
+
+### Root Cause
+The /api/tryon/upload endpoint was not properly authenticating the user. It was using a hardcoded fallback user ID (test-user) instead of decoding the session cookie.
+
+### Solution Implemented
+1. Updated /api/tryon/upload endpoint to use sdk.authenticateRequest(req) for proper session verification
+2. This properly decodes the JWT session cookie and retrieves the authenticated user
+3. Now uses the real user ID from the authenticated user object
+
+### Testing Results
+- No more Unauthorized errors when generating try-ons
+- Credits are properly deducted (9 to 8)
+- Try-on task is successfully created with Fitroom API
+- Polling mechanism works correctly
+- Credits are refunded if try-on fails
+- End-to-end flow works with proper authentication
