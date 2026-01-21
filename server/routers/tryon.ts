@@ -83,56 +83,16 @@ export const tryonRouter = router({
           console.log(`[Try-On] WARNING: Cloth image exceeds ${MAX_IMAGE_SIZE} bytes (${clothBuffer.length} bytes)`);
         }
 
-        console.log(`[Try-On] Saving model image as ${modelFormat}, cloth image as ${clothFormat}`);
-        fs.writeFileSync(modelImagePath, modelBuffer);
-        fs.writeFileSync(clothImagePath, clothBuffer);
+
+        console.log("[Try-On] Using base64 encoded images for try-on task creation");
 
         const fitroomClient = getFitroomClient();
         
-        // Validate model image first
-        console.log("[Try-On] Validating model image...");
-        const modelValidation = await fitroomClient.validateModelImage(modelImagePath);
-        console.log("[Try-On] Model validation result:", modelValidation);
-        
-        // Check for critical errors (400xxx codes)
-        if (modelValidation.errorCode && modelValidation.errorCode.startsWith("400")) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: modelValidation.userMessage || modelValidation.error || "Body photo validation failed. Please check the image requirements.",
-          });
-        }
-        
-        // Validate clothing image
-        console.log("[Try-On] Validating clothing image...");
-        const clothValidation = await fitroomClient.validateClothImage(clothImagePath);
-        console.log("[Try-On] Clothing validation result:", clothValidation);
-        
-        // Check for critical errors (400xxx codes)
-        if (clothValidation.errorCode && clothValidation.errorCode.startsWith("400")) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: clothValidation.userMessage || clothValidation.error || "Clothing image validation failed. Please check the image requirements.",
-          });
-        }
-        
-        // Log warnings (410xxx codes) but allow processing to continue
-        if (modelValidation.errorCode && modelValidation.errorCode.startsWith("410")) {
-          console.warn("[Try-On] Model image warning:", modelValidation.userMessage);
-        }
-        if (clothValidation.errorCode && clothValidation.errorCode.startsWith("410")) {
-          console.warn("[Try-On] Clothing image warning:", clothValidation.userMessage);
-        }
-        
-        console.log("[Try-On] Image validation passed - proceeding with try-on task creation");
-        const modelStats = fs.statSync(modelImagePath);
-        const clothStats = fs.statSync(clothImagePath);
-        console.log(`[Try-On] Model image: ${modelImagePath} (${modelStats.size} bytes, type: ${path.extname(modelImagePath)})`);
-        console.log(`[Try-On] Cloth image: ${clothImagePath} (${clothStats.size} bytes, type: ${path.extname(clothImagePath)})`);
-        console.log("[Try-On] Creating try-on task...");
-        
-        const taskResult = await fitroomClient.createTryOn({
-          modelImagePath,
-          clothImagePath,
+        // Create try-on task with base64 encoded images
+        console.log("[Try-On] Creating try-on task with base64 images...");
+        const taskResult = await fitroomClient.createTryOnWithBase64({
+          modelImageBase64: input.modelImageBase64,
+          clothImageBase64: input.clothImageBase64,
           clothType: input.clothType as "single" | "combo",
           hdMode: input.hdMode,
         });

@@ -12,6 +12,14 @@ export interface FitroomTryOnRequest {
   hdMode?: boolean;
 }
 
+export interface FitroomTryOnBase64Request {
+  modelImageBase64: string;
+  clothImageBase64: string;
+  clothType: "single" | "combo" | "upper" | "lower" | "dress";
+  lowerClothImageBase64?: string;
+  hdMode?: boolean;
+}
+
 export interface FitroomTryOnResponse {
   success: boolean;
   taskId?: string;
@@ -52,6 +60,93 @@ export class FitroomClient {
   }
 
   /**
+   * Get MIME type based on file extension
+   */
+  private getMimeType(filePath: string): string {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes: { [key: string]: string } = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp',
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+  }
+
+  /**
+   * Create a virtual try-on task with base64 encoded images
+   * This method sends base64 images directly in JSON body to avoid BytesIO issues
+   */
+  async createTryOnWithBase64(request: FitroomTryOnBase64Request): Promise<FitroomTryOnResponse> {
+    try {
+      console.log("[Fitroom] Creating try-on with base64 encoded images");
+      
+      // Calculate base64 sizes for logging
+      const modelBase64Size = Buffer.byteLength(request.modelImageBase64, 'utf8');
+      const clothBase64Size = Buffer.byteLength(request.clothImageBase64, 'utf8');
+      
+      console.log("[Fitroom] Model image base64 size:", modelBase64Size, "bytes");
+      console.log("[Fitroom] Cloth image base64 size:", clothBase64Size, "bytes");
+
+      // Send base64 images directly in JSON body instead of multipart form data
+      const payload = {
+        model_image: request.modelImageBase64,
+        cloth_image: request.clothImageBase64,
+        cloth_type: request.clothType,
+      };
+
+      // For combo try-ons, add lower clothing image
+      if (request.clothType === "combo" && request.lowerClothImageBase64) {
+        (payload as any).lower_cloth_image = request.lowerClothImageBase64;
+      }
+
+      // Add HD mode if specified
+      if (request.hdMode) {
+        (payload as any).hd_mode = true;
+      }
+
+      console.log("[Fitroom] Sending POST to /api/tryon/v2/tasks with base64 JSON payload");
+      console.log("[Fitroom] Payload keys:", Object.keys(payload));
+      
+      const response = await this.client.post("/api/tryon/v2/tasks", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("[Fitroom] SUCCESS - Response status:", response.status);
+      console.log("[Fitroom] SUCCESS - Response data:", JSON.stringify(response.data));
+
+      const taskId = response.data.task_id || response.data.taskId || response.data.id;
+      const status = response.data.status || "CREATED";
+
+      if (!taskId) {
+        console.error("[Fitroom] ERROR - No task ID in response:", response.data);
+        return {
+          success: false,
+          error: "No task ID returned from Fitroom API",
+        };
+      }
+
+      console.log("[Fitroom] SUCCESS - Task created:", { taskId, status });
+      return {
+        success: true,
+        taskId,
+        status,
+      };
+    } catch (error: any) {
+      console.error("[Fitroom] ERROR - Base64 try-on failed:", error.message);
+      const errorMessage = error.response?.data?.reason || error.response?.data?.error || error.message || "Unknown error";
+      console.error("[Fitroom] ERROR - Response data:", error.response?.data);
+      return {
+        success: false,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
    * Create a virtual try-on task
    * Sends model image and clothing image to Fitroom API
    * 
@@ -88,10 +183,20 @@ export class FitroomClient {
         ext: path.extname(request.clothImagePath)
       });
 
-      // Create form data
+      // Create form data with buffers instead of streams
       const formData = new FormData();
-      formData.append("model_image", fs.createReadStream(request.modelImagePath));
-      formData.append("cloth_image", fs.createReadStream(request.clothImagePath));
+      const modelBuffer = fs.readFileSync(request.modelImagePath);
+      const clothBuffer = fs.readFileSync(request.clothImagePath);
+      
+      // Append as buffers with proper file names and MIME types
+      formData.append("model_image", modelBuffer, {
+        filename: path.basename(request.modelImagePath),
+        contentType: this.getMimeType(request.modelImagePath),
+      });
+      formData.append("cloth_image", clothBuffer, {
+        filename: path.basename(request.clothImagePath),
+        contentType: this.getMimeType(request.clothImagePath),
+      });
       formData.append("cloth_type", request.clothType);
 
       console.log("[Fitroom] FormData fields: cloth_type=" + request.clothType);

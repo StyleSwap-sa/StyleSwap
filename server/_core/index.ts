@@ -104,31 +104,12 @@ async function startServer() {
       console.log(`[Try-On Upload] Model image size: ${modelImageBuffer.length} bytes`);
       console.log(`[Try-On Upload] Cloth image size: ${clothImageBuffer.length} bytes`);
 
-      // Create temp directory for image files
-      tempDir = path.join("/tmp", `fitroom-${crypto.randomBytes(8).toString("hex")}`);
-      fs.mkdirSync(tempDir, { recursive: true });
-
-      // Get MIME type extensions
-      const getExtension = (mimeType: string): string => {
-        if (mimeType.includes("jpeg") || mimeType.includes("jpg")) return "jpg";
-        if (mimeType.includes("png")) return "png";
-        if (mimeType.includes("gif")) return "gif";
-        if (mimeType.includes("webp")) return "webp";
-        return "jpg";
-      };
-
-      const modelExt = getExtension(modelImageFiles[0].mimetype);
-      const clothExt = getExtension(clothImageFiles[0].mimetype);
-
-      const modelImagePath = path.join(tempDir, `model.${modelExt}`);
-      const clothImagePath = path.join(tempDir, `cloth.${clothExt}`);
-
-      // Write files directly (no base64 conversion)
-      fs.writeFileSync(modelImagePath, modelImageBuffer);
-      fs.writeFileSync(clothImagePath, clothImageBuffer);
-
-      console.log(`[Try-On Upload] Saved model image: ${modelImagePath}`);
-      console.log(`[Try-On Upload] Saved cloth image: ${clothImagePath}`);
+      // Convert buffers to base64
+      const modelImageBase64 = modelImageBuffer.toString('base64');
+      const clothImageBase64 = clothImageBuffer.toString('base64');
+      
+      console.log(`[Try-On Upload] Model image base64 size: ${modelImageBase64.length} bytes`);
+      console.log(`[Try-On Upload] Cloth image base64 size: ${clothImageBase64.length} bytes`);
 
       // Check credits
       const credits = await getUserCredits(userId);
@@ -136,11 +117,11 @@ async function startServer() {
         return res.status(402).json({ error: "Insufficient credits" });
       }
 
-      // Create try-on task with Fitroom
+      // Create try-on task with Fitroom using base64 encoding
       const fitroomClient = getFitroomClient();
-      const taskResult = await fitroomClient.createTryOn({
-        modelImagePath,
-        clothImagePath,
+      const taskResult = await fitroomClient.createTryOnWithBase64({
+        modelImageBase64,
+        clothImageBase64,
         clothType: clothType as "single" | "combo",
         hdMode: false,
       });
@@ -161,12 +142,6 @@ async function startServer() {
       });
     } catch (error) {
       console.error("[Try-On Upload] Error:", error);
-      
-      // Cleanup on error
-      if (tempDir && fs.existsSync(tempDir)) {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      }
-      
       return res.status(500).json({ error: error instanceof Error ? error.message : "Failed to process try-on upload" });
     }
   });

@@ -81,36 +81,24 @@ export const b2bTryonRouter = router({
           });
         }
 
-        // 4. Prepare images for Fitroom API
-        // Convert base64 body photo to temp file
-        const tempDir = os.tmpdir();
-        const bodyPhotoPath = path.join(tempDir, `body-${uuidv4()}.jpg`);
-        const bodyPhotoBuffer = Buffer.from(input.bodyPhotoBase64, 'base64');
-        fs.writeFileSync(bodyPhotoPath, bodyPhotoBuffer);
 
-        // Download product image to temp file
-        const productImagePath = path.join(tempDir, `product-${uuidv4()}.jpg`);
+        // Create try-on with Fitroom API using base64 encoding
+        const fitroomClient = getFitroomClient();
+        
+        // Download product image to get base64
         const axios = require('axios');
         const imageResponse = await axios.get(product.imageUrl, { responseType: 'arraybuffer' });
-        fs.writeFileSync(productImagePath, imageResponse.data);
-
-        // Create try-on with Fitroom API
-        const fitroomClient = getFitroomClient();
-        const fitRoomResult = await fitroomClient.createTryOn({
-          modelImagePath: bodyPhotoPath,
-          clothImagePath: productImagePath,
+        const clothImageBase64 = Buffer.from(imageResponse.data).toString('base64');
+        
+        const fitRoomResult = await fitroomClient.createTryOnWithBase64({
+          modelImageBase64: input.bodyPhotoBase64,
+          clothImageBase64: clothImageBase64,
           clothType: 'single',
         });
 
         const requestId = uuidv4();
 
-        // Clean up temp files
-        try {
-          fs.unlinkSync(bodyPhotoPath);
-          fs.unlinkSync(productImagePath);
-        } catch (e) {
-          console.warn("Failed to clean up temp files", e);
-        }
+        // No temp files to clean up - using base64 encoding directly
 
         if (!fitRoomResult.success) {
           throw new TRPCError({

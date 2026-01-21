@@ -599,3 +599,11 @@ The /api/tryon/upload endpoint was not properly authenticating the user. It was 
 - [ ] Show progress percentage during processing
 - [ ] Test with real images and validate error messages
 - [ ] Implement exponential backoff for polling
+
+## Phase 32: Fix Fitroom API BytesIO Error with Base64 Encoding (TODAY)
+- [x] Implement base64 image encoding in Fitroom client - DONE: Updated createTryOnWithBase64 to send base64 directly in JSON body instead of multipart form data
+- [x] Update personal try-on to use base64 encoded images - DONE: Updated /api/tryon/upload endpoint to convert files to base64 and use createTryOnWithBase64
+- [x] Update boutique try-on to use base64 encoded images - DONE: B2B try-on router already uses createTryOnWithBase64 method
+- [ ] Test personal try-on with base64 encoding - IN PROGRESS
+- [ ] Test boutique try-on with base64 encoding - PENDING
+- [ ] Verify both features work with real images - PENDING
