@@ -437,3 +437,37 @@
 - Product price displays correctly (R299.99)
 - Product category displays correctly (Clothing)
 - Edit and Delete buttons are functional
+
+
+## Phase 31: Fix Dashboard Widgets (TODAY)
+
+### Issues Reported
+- [ ] Buy Credits widget not clickable/functional
+- [ ] Settings widget not clickable/functional
+- [ ] Need to implement navigation or pages for these features
+- [ ] Check if pages exist or need to be created
+
+
+## Phase 31: Dashboard Widget Fixes (TODAY)
+
+### Buy Credits Widget
+- [x] Identify missing route `/boutique-credits/:boutiqueId`
+- [x] Create BoutiqueCredits page component
+- [x] Add route to App.tsx
+- [x] Test Buy Credits widget navigation
+- [x] Verify credit tier selection UI works
+- [x] Display current credits information
+
+### Settings Widget
+- [x] Identify missing route `/boutique-settings/:boutiqueId`
+- [x] Create BoutiqueSettings page component
+- [x] Add route to App.tsx
+- [x] Test Settings widget navigation
+- [x] Verify settings form loads with current boutique data
+- [x] Test form field editing
+
+### Completed Features
+- Dashboard widgets now fully functional and clickable
+- Buy Credits page with 6 credit tier options
+- Boutique Settings page with editable fields
+- Proper navigation between dashboard and feature pages

@@ -195,29 +195,33 @@ export default function BoutiqueDashboard() {
                 </Card>
               </Link>
 
-              <Card className="premium-card cursor-pointer hover:shadow-lg transition">
-                <CardContent className="pt-6">
-                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
-                    <Zap className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold mb-2">Buy Credits</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Purchase more try-ons
-                  </p>
-                </CardContent>
-              </Card>
+              <Link href={`/boutique-credits/${selectedBoutique}`}>
+                <Card className="premium-card cursor-pointer hover:shadow-lg transition">
+                  <CardContent className="pt-6">
+                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
+                      <Zap className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-bold mb-2">Buy Credits</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Purchase more try-ons
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
 
-              <Card className="premium-card cursor-pointer hover:shadow-lg transition">
-                <CardContent className="pt-6">
-                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
-                    <Settings className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold mb-2">Settings</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Configure your boutique
-                  </p>
-                </CardContent>
-              </Card>
+              <Link href={`/boutique-settings/${selectedBoutique}`}>
+                <Card className="premium-card cursor-pointer hover:shadow-lg transition">
+                  <CardContent className="pt-6">
+                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
+                      <Settings className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-bold mb-2">Settings</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Configure your boutique
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
 
             {/* Landing Page & Social Media */}

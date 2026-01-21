@@ -23,6 +23,8 @@ import B2BSignup from "./pages/B2BSignup";
 import BoutiqueDashboard from "./pages/BoutiqueDashboard";
 import BoutiqueLandingPage from "./pages/BoutiqueLandingPage";
 import ProductManagement from "./pages/ProductManagement";
+import BoutiqueCredits from "./pages/BoutiqueCredits";
+import BoutiqueSettings from "./pages/BoutiqueSettings";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -47,6 +49,8 @@ function Router() {
       <Route path={"/boutique-dashboard"} component={BoutiqueDashboard} />
       <Route path={"/boutique/:slug"} component={(props: any) => <BoutiqueLandingPage slug={props.params.slug} />} />
       <Route path={"/boutique-products/:boutiqueId"} component={ProductManagement} />
+      <Route path={"/boutique-credits/:boutiqueId"} component={BoutiqueCredits} />
+      <Route path={"/boutique-settings/:boutiqueId"} component={BoutiqueSettings} />
       <Route path={"/products"} component={ProductManagement} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
