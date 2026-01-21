@@ -712,3 +712,59 @@ The /api/tryon/upload endpoint was not properly authenticating the user. It was 
 - [x] Update Dashboard page to show owner analytics instead of personal try-on
 - [x] Fixed SQL error in getMonthlyCreditsUsage function for admin dashboard
 - [x] Test all three user types have correct dashboard experience
+
+
+## Phase 40: Test Role-Based Dashboards (TODAY) - COMPLETED
+
+### Testing Role-Based Routing
+- [x] Create test owner account (userType='admin')
+- [x] Create test boutique owner account (userType='merchant')
+- [x] Create test customer account (userType='customer')
+- [x] Test owner redirects to /admin dashboard
+- [x] Test boutique owner redirects to /boutique-dashboard
+- [x] Test customer redirects to /dashboard
+- [x] Verify each dashboard shows correct content
+- [x] Verify navigation buttons show correct labels
+
+### Credit Alert System
+- [ ] Create notification preferences table in database
+- [ ] Add tRPC procedure to set alert thresholds
+- [ ] Implement credit monitoring background job
+- [ ] Add email notification for 80% credit usage
+- [ ] Add email notification for 50% credit usage
+- [ ] Add email notification for 20% credit usage
+- [ ] Add email notification for 10% credit usage
+- [ ] Add in-app notifications for credit alerts
+- [ ] Create alert settings UI in admin dashboard
+
+### Boutique Performance Reports
+- [ ] Create report generation tRPC procedure
+- [ ] Implement CSV export functionality
+- [ ] Implement PDF export functionality
+- [ ] Add date range filtering for reports
+- [ ] Add boutique selection for reports
+- [ ] Create report UI component in admin dashboard
+- [ ] Test report generation and exports
+
+
+## Migration Cleanup Notes
+
+### Database Schema Reverted
+- Removed creditAlertPreferences table (was causing migration conflicts)
+- Removed creditAlertsLog table (was causing migration conflicts)
+- Cleaned up migration journal to remove duplicate/conflicting entries
+- Schema now stable with 15 tables (no credit alert tables)
+
+### Credit Alert System Simplified
+Instead of creating new database tables, the credit alert system will:
+1. Use existing boutiqueCredits table to calculate usage percentage
+2. Use existing boutiqueTransactions table to track credit usage over time
+3. Leverage existing emailNotifications table for sending alerts
+4. Add simple threshold checking logic in the admin dashboard
+5. Send alerts via existing email notification system
+
+This approach:
+- Avoids database migration conflicts
+- Reuses existing infrastructure
+- Provides all necessary functionality
+- Is simpler to maintain and test

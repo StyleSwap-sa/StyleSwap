@@ -356,3 +356,5 @@ export const deletionLogs = mysqlTable("deletionLogs", {
 
 export type DeletionLog = typeof deletionLogs.$inferSelect;
 export type InsertDeletionLog = typeof deletionLogs.$inferInsert;
+
+

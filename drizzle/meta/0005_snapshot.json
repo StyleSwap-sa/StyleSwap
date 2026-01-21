@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "3717f540-7874-4d82-a724-6c21280d1722",
-  "prevId": "66351d1d-c909-4789-bce1-8954cd914a9c",
+  "id": "4a776a62-e32d-4668-be2a-745ff674156b",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "auditLogs": {
       "name": "auditLogs",
@@ -285,14 +285,16 @@
           "type": "varchar(7)",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'#FF6B35'"
         },
         "customDomain": {
           "name": "customDomain",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "''"
         },
         "enableSharing": {
           "name": "enableSharing",
@@ -315,7 +317,8 @@
           "type": "varchar(500)",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "''"
         },
         "createdAt": {
           "name": "createdAt",
@@ -672,6 +675,34 @@
           "notNull": false,
           "autoincrement": false
         },
+        "instagramHandle": {
+          "name": "instagramHandle",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tiktokHandle": {
+          "name": "tiktokHandle",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "facebookUrl": {
+          "name": "facebookUrl",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "whatsappNumber": {
+          "name": "whatsappNumber",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "ownerId": {
           "name": "ownerId",
           "type": "int",
@@ -686,6 +717,28 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'active'"
+        },
+        "isVerified": {
+          "name": "isVerified",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "verificationToken": {
+          "name": "verificationToken",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "verificationTokenExpiry": {
+          "name": "verificationTokenExpiry",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "createdAt": {
           "name": "createdAt",
@@ -752,6 +805,243 @@
           ]
         }
       },
+      "checkConstraint": {}
+    },
+    "creditAlertPreferences": {
+      "name": "creditAlertPreferences",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "alertAt80Percent": {
+          "name": "alertAt80Percent",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "alertAt50Percent": {
+          "name": "alertAt50Percent",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "alertAt20Percent": {
+          "name": "alertAt20Percent",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "alertAt10Percent": {
+          "name": "alertAt10Percent",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "emailNotifications": {
+          "name": "emailNotifications",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "inAppNotifications": {
+          "name": "inAppNotifications",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "lastAlertSentAt": {
+          "name": "lastAlertSentAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "idx_alert_prefs_user": {
+          "name": "idx_alert_prefs_user",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "creditAlertPreferences_userId_users_id_fk": {
+          "name": "creditAlertPreferences_userId_users_id_fk",
+          "tableFrom": "creditAlertPreferences",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "creditAlertPreferences_id": {
+          "name": "creditAlertPreferences_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "creditAlertsLog": {
+      "name": "creditAlertsLog",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "alertType": {
+          "name": "alertType",
+          "type": "enum('80_percent','50_percent','20_percent','10_percent')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creditsRemaining": {
+          "name": "creditsRemaining",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creditsUsed": {
+          "name": "creditsUsed",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "totalCredits": {
+          "name": "totalCredits",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "emailSent": {
+          "name": "emailSent",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "inAppNotificationSent": {
+          "name": "inAppNotificationSent",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "idx_alerts_log_user": {
+          "name": "idx_alerts_log_user",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        },
+        "idx_alerts_log_created": {
+          "name": "idx_alerts_log_created",
+          "columns": [
+            "createdAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "creditAlertsLog_userId_users_id_fk": {
+          "name": "creditAlertsLog_userId_users_id_fk",
+          "tableFrom": "creditAlertsLog",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "creditAlertsLog_id": {
+          "name": "creditAlertsLog_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
       "checkConstraint": {}
     },
     "deletionLogs": {
