@@ -15,12 +15,12 @@ interface CreditTier {
 }
 
 const CREDIT_TIERS: CreditTier[] = [
-  { id: "tier-1", credits: 10, price: 50, pricePerCredit: 5.00 },
-  { id: "tier-2", credits: 50, price: 225, pricePerCredit: 4.50, popular: true },
-  { id: "tier-3", credits: 100, price: 400, pricePerCredit: 4.00 },
-  { id: "tier-4", credits: 250, price: 875, pricePerCredit: 3.50 },
-  { id: "tier-5", credits: 500, price: 1500, pricePerCredit: 3.00 },
-  { id: "tier-6", credits: 1000, price: 2500, pricePerCredit: 2.50 },
+  { id: "tier-1", credits: 100, price: 385, pricePerCredit: 3.85 },
+  { id: "tier-2", credits: 200, price: 750, pricePerCredit: 3.75, popular: true },
+  { id: "tier-3", credits: 500, price: 1350, pricePerCredit: 2.70 },
+  { id: "tier-4", credits: 1000, price: 2200, pricePerCredit: 2.20 },
+  { id: "tier-5", credits: 5000, price: 6250, pricePerCredit: 1.25 },
+  { id: "tier-6", credits: 20000, price: 18600, pricePerCredit: 0.93 },
 ];
 
 export default function BoutiqueCredits() {

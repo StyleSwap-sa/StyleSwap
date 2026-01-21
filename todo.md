@@ -471,3 +471,16 @@
 - Buy Credits page with 6 credit tier options
 - Boutique Settings page with editable fields
 - Proper navigation between dashboard and feature pages
+
+
+## Phase 32: Buy Credits Pricing Update (TODAY)
+
+### Pricing Tiers Updated
+- [x] Update tier 1: 100 credits → R385 (R3.85/try-on)
+- [x] Update tier 2: 200 credits → R750 (R3.75/try-on) - MOST POPULAR
+- [x] Update tier 3: 500 credits → R1,350 (R2.70/try-on)
+- [x] Update tier 4: 1,000 credits → R2,200 (R2.20/try-on)
+- [x] Update tier 5: 5,000 credits → R6,250 (R1.25/try-on)
+- [x] Update tier 6: 20,000 credits → R18,600 (R0.93/try-on)
+- [x] Verify all prices display correctly on Buy Credits page
+- [x] Test price calculations for each tier
