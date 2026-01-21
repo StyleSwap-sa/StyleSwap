@@ -10,7 +10,7 @@ export const ENV = {
   fitroomApiKey: process.env.FITROOM_API_KEY ?? "",
   yocoSecretKey: process.env.YOCO_SECRET_KEY ?? process.env.YOKO_SECRET_KEY ?? "",
   yocoPublicKey: process.env.YOCO_PUBLIC_KEY ?? process.env.YOKO_PUBLIC_KEY ?? "",
-  yocoApiBaseUrl: process.env.YOCO_API_BASE_URL ?? process.env.YOKO_API_BASE_URL ?? "https://api.yoco.com",
+  yocoApiBaseUrl: process.env.YOCO_API_BASE_URL ?? process.env.YOKO_API_BASE_URL ?? "https://payments.yoco.com/api",
   twilioAccountSid: process.env.TWILIO_ACCOUNT_SID ?? "",
   twilioAuthToken: process.env.TWILIO_AUTH_TOKEN ?? "",
   twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER ?? "",

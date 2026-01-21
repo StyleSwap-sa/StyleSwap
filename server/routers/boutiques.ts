@@ -504,15 +504,28 @@ export const boutiquesRouter = router({
           throw new Error("Yoco credentials not configured");
         }
 
-        const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
+        // Get the base URL from the request origin (should be HTTPS in production)
+        const origin = ctx.req?.headers?.origin || process.env.VITE_APP_URL || "http://localhost:3000";
+        // For local development with HTTP, use the HTTPS proxy URL if available
+        let baseUrl = origin;
+        if (origin.includes("localhost") && origin.startsWith("http://")) {
+          // In development, we might need to use the actual deployed URL
+          baseUrl = "https://3000-ibgtueni2ktvdrad3l0mt-73908040.us2.manus.computer";
+        }
 
         // Create checkout directly with Yoco API
-        const basicAuth = Buffer.from(`${ENV.yocoSecretKey}:`).toString('base64');
-        const response = await fetch(`${ENV.yocoApiBaseUrl}/checkouts`, {
+        const checkoutUrl = `${ENV.yocoApiBaseUrl}/checkouts`;
+        console.log("[Yoco] Creating checkout:", {
+          url: checkoutUrl,
+          amount: input.amount,
+          currency: input.currency,
+          baseUrl,
+        });
+        const response = await fetch(checkoutUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Basic ${basicAuth}`,
+            Authorization: `Bearer ${ENV.yocoSecretKey}`,
           },
           body: JSON.stringify({
             amount: input.amount,
@@ -529,14 +542,24 @@ export const boutiquesRouter = router({
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(`Yoco API error: ${error.message || response.statusText}`);
+          const errorText = await response.text();
+          console.error("[Yoco] API Error Response:", {
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText,
+          });
+          try {
+            const error = JSON.parse(errorText);
+            throw new Error(`Yoco API error: ${error.message || response.statusText}`);
+          } catch (e) {
+            throw new Error(`Yoco API error: ${response.statusText} - ${errorText}`);
+          }
         }
 
         const data = await response.json();
-        const checkoutUrl = data.redirectUrl || `https://checkout.yoco.com/${data.id}`;
+        const redirectUrl = data.redirectUrl || `https://checkout.yoco.com/${data.id}`;
 
-        return { success: true, checkoutUrl };
+        return { success: true, checkoutUrl: redirectUrl };
       } catch (error: any) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

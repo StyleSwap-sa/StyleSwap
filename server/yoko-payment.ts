@@ -128,12 +128,11 @@ export async function createPaymentIntent(
   }
 
   try {
-    const basicAuth = Buffer.from(`${ENV.yocoSecretKey}:`).toString('base64');
     const response = await fetch(`${ENV.yocoApiBaseUrl}/checkouts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Basic ${basicAuth}`,
+        Authorization: `Bearer ${ENV.yocoSecretKey}`,
       },
       body: JSON.stringify({
         amount: pkg.price,
