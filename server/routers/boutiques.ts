@@ -507,11 +507,12 @@ export const boutiquesRouter = router({
         const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
 
         // Create checkout directly with Yoco API
-        const response = await fetch(`${ENV.yocoApiBaseUrl}/api/checkouts`, {
+        const basicAuth = Buffer.from(`${ENV.yocoSecretKey}:`).toString('base64');
+        const response = await fetch(`${ENV.yocoApiBaseUrl}/checkouts`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${ENV.yocoSecretKey}`,
+            Authorization: `Basic ${basicAuth}`,
           },
           body: JSON.stringify({
             amount: input.amount,
