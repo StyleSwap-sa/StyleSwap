@@ -27,6 +27,7 @@ import BoutiqueCredits from "./pages/BoutiqueCredits";
 import BoutiqueSettings from "./pages/BoutiqueSettings";
 import AdminDashboard from "./pages/AdminDashboard";
 import BoutiquePerformanceExport from "./pages/BoutiquePerformanceExport";
+import BoutiqueFeatures from "./pages/BoutiqueFeatures";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -48,6 +49,7 @@ function Router() {
       <Route path={"/analytics"} component={Analytics} />
       <Route path={"/b2b"} component={B2BLanding} />
       <Route path={"/b2b-signup"} component={B2BSignup} />
+      <Route path={"/for-boutiques"} component={BoutiqueFeatures} />
       <Route path={"/boutique-dashboard"} component={BoutiqueDashboard} />
       <Route path={"/boutique/:slug"} component={(props: any) => <BoutiqueLandingPage slug={props.params.slug} />} />
       <Route path={"/boutique-products/:boutiqueId"} component={ProductManagement} />

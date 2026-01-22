@@ -36,6 +36,20 @@
       "when": 1768989717219,
       "tag": "0004_small_lyja",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1769062084751,
+      "tag": "0005_lovely_wrecker",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1769062130861,
+      "tag": "0006_complete_blue_blade",
+      "breakpoints": true
     }
   ]
 }

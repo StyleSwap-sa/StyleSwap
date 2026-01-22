@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "4a776a62-e32d-4668-be2a-745ff674156b",
+  "id": "6a96c0a3-daa4-4213-9183-641d3ce5e85f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "auditLogs": {
@@ -807,243 +807,6 @@
       },
       "checkConstraint": {}
     },
-    "creditAlertPreferences": {
-      "name": "creditAlertPreferences",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "alertAt80Percent": {
-          "name": "alertAt80Percent",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "alertAt50Percent": {
-          "name": "alertAt50Percent",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "alertAt20Percent": {
-          "name": "alertAt20Percent",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "alertAt10Percent": {
-          "name": "alertAt10Percent",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "emailNotifications": {
-          "name": "emailNotifications",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "inAppNotifications": {
-          "name": "inAppNotifications",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "lastAlertSentAt": {
-          "name": "lastAlertSentAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "onUpdate": true,
-          "default": "(now())"
-        }
-      },
-      "indexes": {
-        "idx_alert_prefs_user": {
-          "name": "idx_alert_prefs_user",
-          "columns": [
-            "userId"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "creditAlertPreferences_userId_users_id_fk": {
-          "name": "creditAlertPreferences_userId_users_id_fk",
-          "tableFrom": "creditAlertPreferences",
-          "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "creditAlertPreferences_id": {
-          "name": "creditAlertPreferences_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
-    "creditAlertsLog": {
-      "name": "creditAlertsLog",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "alertType": {
-          "name": "alertType",
-          "type": "enum('80_percent','50_percent','20_percent','10_percent')",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "creditsRemaining": {
-          "name": "creditsRemaining",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "creditsUsed": {
-          "name": "creditsUsed",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "totalCredits": {
-          "name": "totalCredits",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "emailSent": {
-          "name": "emailSent",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "inAppNotificationSent": {
-          "name": "inAppNotificationSent",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
-        }
-      },
-      "indexes": {
-        "idx_alerts_log_user": {
-          "name": "idx_alerts_log_user",
-          "columns": [
-            "userId"
-          ],
-          "isUnique": false
-        },
-        "idx_alerts_log_created": {
-          "name": "idx_alerts_log_created",
-          "columns": [
-            "createdAt"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "creditAlertsLog_userId_users_id_fk": {
-          "name": "creditAlertsLog_userId_users_id_fk",
-          "tableFrom": "creditAlertsLog",
-          "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "creditAlertsLog_id": {
-          "name": "creditAlertsLog_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
     "deletionLogs": {
       "name": "deletionLogs",
       "columns": {
@@ -1291,6 +1054,124 @@
         }
       },
       "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "emailVerifications": {
+      "name": "emailVerifications",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(320)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "isVerified": {
+          "name": "isVerified",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "verifiedAt": {
+          "name": "verifiedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "idx_email_verifications_user": {
+          "name": "idx_email_verifications_user",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        },
+        "idx_email_verifications_token": {
+          "name": "idx_email_verifications_token",
+          "columns": [
+            "token"
+          ],
+          "isUnique": false
+        },
+        "idx_email_verifications_expires": {
+          "name": "idx_email_verifications_expires",
+          "columns": [
+            "expiresAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "emailVerifications_userId_users_id_fk": {
+          "name": "emailVerifications_userId_users_id_fk",
+          "tableFrom": "emailVerifications",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "emailVerifications_id": {
+          "name": "emailVerifications_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "emailVerifications_token_unique": {
+          "name": "emailVerifications_token_unique",
+          "columns": [
+            "token"
+          ]
+        }
+      },
       "checkConstraint": {}
     },
     "favorites": {
@@ -1609,6 +1490,272 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
+    "shareMetrics": {
+      "name": "shareMetrics",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "boutiqueId": {
+          "name": "boutiqueId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "totalShares": {
+          "name": "totalShares",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "instagramShares": {
+          "name": "instagramShares",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "tiktokShares": {
+          "name": "tiktokShares",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "twitterShares": {
+          "name": "twitterShares",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "facebookShares": {
+          "name": "facebookShares",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "whatsappShares": {
+          "name": "whatsappShares",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "totalClicks": {
+          "name": "totalClicks",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "totalConversions": {
+          "name": "totalConversions",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "conversionRate": {
+          "name": "conversionRate",
+          "type": "decimal(5,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'0.00'"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "idx_share_metrics_boutique": {
+          "name": "idx_share_metrics_boutique",
+          "columns": [
+            "boutiqueId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "shareMetrics_boutiqueId_boutiques_id_fk": {
+          "name": "shareMetrics_boutiqueId_boutiques_id_fk",
+          "tableFrom": "shareMetrics",
+          "tableTo": "boutiques",
+          "columnsFrom": [
+            "boutiqueId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "shareMetrics_id": {
+          "name": "shareMetrics_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "socialShares": {
+      "name": "socialShares",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tryOnId": {
+          "name": "tryOnId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "platform": {
+          "name": "platform",
+          "type": "enum('instagram','tiktok','twitter','facebook','whatsapp')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shareUrl": {
+          "name": "shareUrl",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "clickCount": {
+          "name": "clickCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "conversionCount": {
+          "name": "conversionCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "idx_social_shares_try_on": {
+          "name": "idx_social_shares_try_on",
+          "columns": [
+            "tryOnId"
+          ],
+          "isUnique": false
+        },
+        "idx_social_shares_user": {
+          "name": "idx_social_shares_user",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        },
+        "idx_social_shares_platform": {
+          "name": "idx_social_shares_platform",
+          "columns": [
+            "platform"
+          ],
+          "isUnique": false
+        },
+        "idx_social_shares_created": {
+          "name": "idx_social_shares_created",
+          "columns": [
+            "createdAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "socialShares_tryOnId_tryOnHistory_id_fk": {
+          "name": "socialShares_tryOnId_tryOnHistory_id_fk",
+          "tableFrom": "socialShares",
+          "tableTo": "tryOnHistory",
+          "columnsFrom": [
+            "tryOnId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "socialShares_userId_users_id_fk": {
+          "name": "socialShares_userId_users_id_fk",
+          "tableFrom": "socialShares",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "socialShares_id": {
+          "name": "socialShares_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "transactions": {
       "name": "transactions",
       "columns": {
@@ -1729,6 +1876,187 @@
       "compositePrimaryKeys": {
         "transactions_id": {
           "name": "transactions_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "tryOnHistory": {
+      "name": "tryOnHistory",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "boutiqueId": {
+          "name": "boutiqueId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "garmentId": {
+          "name": "garmentId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "originalImageUrl": {
+          "name": "originalImageUrl",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resultImageUrl": {
+          "name": "resultImageUrl",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "garmentName": {
+          "name": "garmentName",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "garmentColor": {
+          "name": "garmentColor",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "garmentSize": {
+          "name": "garmentSize",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "isFavorite": {
+          "name": "isFavorite",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "shareCount": {
+          "name": "shareCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "downloadCount": {
+          "name": "downloadCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "idx_try_on_history_user": {
+          "name": "idx_try_on_history_user",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        },
+        "idx_try_on_history_boutique": {
+          "name": "idx_try_on_history_boutique",
+          "columns": [
+            "boutiqueId"
+          ],
+          "isUnique": false
+        },
+        "idx_try_on_history_created": {
+          "name": "idx_try_on_history_created",
+          "columns": [
+            "createdAt"
+          ],
+          "isUnique": false
+        },
+        "idx_try_on_history_favorite": {
+          "name": "idx_try_on_history_favorite",
+          "columns": [
+            "isFavorite"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "tryOnHistory_userId_users_id_fk": {
+          "name": "tryOnHistory_userId_users_id_fk",
+          "tableFrom": "tryOnHistory",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tryOnHistory_boutiqueId_boutiques_id_fk": {
+          "name": "tryOnHistory_boutiqueId_boutiques_id_fk",
+          "tableFrom": "tryOnHistory",
+          "tableTo": "boutiques",
+          "columnsFrom": [
+            "boutiqueId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tryOnHistory_garmentId_garments_id_fk": {
+          "name": "tryOnHistory_garmentId_garments_id_fk",
+          "tableFrom": "tryOnHistory",
+          "tableTo": "garments",
+          "columnsFrom": [
+            "garmentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "tryOnHistory_id": {
+          "name": "tryOnHistory_id",
           "columns": [
             "id"
           ]

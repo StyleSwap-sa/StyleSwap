@@ -50,6 +50,7 @@ export default function Home() {
     { label: 'Pricing', path: '/pricing-page' },
     { label: 'ROI', path: '/roi' },
     { label: 'Case Studies', path: '/case-studies' },
+    { label: 'For Boutiques', path: '/for-boutiques' },
     { label: 'Contact', path: '/contact' },
   ];
 
