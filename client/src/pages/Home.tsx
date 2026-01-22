@@ -16,7 +16,8 @@ export default function Home() {
       } else if (user?.userType === 'merchant') {
         setLocation('/boutique-dashboard');
       } else {
-        setLocation('/dashboard');
+        // Route to virtual try-on tab directly
+        setLocation('/dashboard?tab=try-on');
       }
     } else {
       window.location.href = getLoginUrl();
