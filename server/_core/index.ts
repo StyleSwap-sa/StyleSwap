@@ -17,6 +17,13 @@ import { sdk } from "./sdk";
 import crypto from "crypto";
 import path from "path";
 import fs from "fs";
+import {
+  createPerUserRateLimiter,
+  createStrictRateLimiter,
+  createLoginRateLimiter,
+  createPaymentRateLimiter,
+  createUploadRateLimiter,
+} from "./rateLimiter";
 
 // Configure multer for file uploads
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
@@ -47,6 +54,9 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   
+  // Apply per-user rate limiting to all routes (100 requests per minute)
+  app.use(createPerUserRateLimiter());
+  
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   
@@ -54,8 +64,8 @@ async function startServer() {
   app.post("/api/webhooks/yoco", handleYokoWebhook);
   app.post("/api/webhooks/yoco/boutique", handleYocoBoutiqueWebhook);
   
-  // Yoco charge creation endpoint
-  app.post("/api/yoco/charge", async (req, res) => {
+  // Yoco charge creation endpoint - with strict rate limiting
+  app.post("/api/yoco/charge", createPaymentRateLimiter(), async (req, res) => {
     try {
       const { amount, currency } = req.body;
       if (!amount || !currency) {
@@ -71,7 +81,7 @@ async function startServer() {
   
   // Try-on file upload endpoint (handles multipart/form-data)
   // This endpoint receives files directly and forwards to Fitroom without base64 encoding
-  app.post("/api/tryon/upload", upload.fields([
+  app.post("/api/tryon/upload", createUploadRateLimiter(), upload.fields([
     { name: "modelImage", maxCount: 1 },
     { name: "clothImage", maxCount: 1 }
   ]), async (req, res) => {

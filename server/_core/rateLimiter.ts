@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { Request, Response } from 'express';
 
 /**
@@ -14,8 +14,8 @@ export const createPerUserRateLimiter = () => {
       if (userId) {
         return `user:${userId}`;
       }
-      // Fall back to IP address for unauthenticated requests
-      return req.ip || 'unknown';
+      // Fall back to IP address for unauthenticated requests (with IPv6 support)
+      return ipKeyGenerator(req as any);
     },
     
     // 100 requests per 60 seconds (1 minute)
@@ -71,7 +71,7 @@ export const createStrictRateLimiter = () => {
       if (userId) {
         return `strict:${userId}`;
       }
-      return `strict:${req.ip || 'unknown'}`;
+      return `strict:${ipKeyGenerator(req as any)}`;
     },
     
     // 10 requests per 60 seconds (1 minute)
@@ -110,7 +110,7 @@ export const createLoginRateLimiter = () => {
       if (email) {
         return `login:${email}`;
       }
-      return `login:${req.ip || 'unknown'}`;
+      return `login:${ipKeyGenerator(req as any)}`;
     },
     
     // 5 attempts per 15 minutes
@@ -148,7 +148,7 @@ export const createPaymentRateLimiter = () => {
       if (userId) {
         return `payment:${userId}`;
       }
-      return `payment:${req.ip || 'unknown'}`;
+      return `payment:${ipKeyGenerator(req as any)}`;
     },
     
     // 5 payment attempts per hour
@@ -186,7 +186,7 @@ export const createUploadRateLimiter = () => {
       if (userId) {
         return `upload:${userId}`;
       }
-      return `upload:${req.ip || 'unknown'}`;
+      return `upload:${ipKeyGenerator(req as any)}`;
     },
     
     // 20 uploads per hour
@@ -224,7 +224,7 @@ export const createApiRateLimiter = () => {
       if (userId) {
         return `api:${userId}`;
       }
-      return `api:${req.ip || 'unknown'}`;
+      return `api:${ipKeyGenerator(req as any)}`;
     },
     
     // 1000 requests per hour
