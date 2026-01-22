@@ -1127,3 +1127,15 @@ This approach:
 - [ ] Test call-to-action buttons
 - [ ] Check SEO metadata
 - [ ] Deploy to production
+
+
+## Phase 51: Fix Boutique Features Page (TODAY)
+
+### Corrections Needed
+- [ ] Update pricing tiers with correct values (6 tiers from R385 to R18,600)
+- [ ] Remove "Get Started Free" buttons from top of page
+- [ ] Remove "Schedule Demo" button from top of page
+- [ ] Update FAQ: Remove "unused credits never expire", add "Credits valid for 30 days"
+- [ ] Remove "live chat" reference from help section (not integrated)
+- [ ] Remove "Start Free Trial" button from bottom section
+- [ ] Fix "Schedule Demo Call" link to be non-clickable or remove it

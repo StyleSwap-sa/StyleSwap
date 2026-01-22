@@ -68,28 +68,12 @@ export default function BoutiqueFeatures() {
   ];
 
   const pricingTiers = [
-    {
-      name: "Starter",
-      price: "R0.85",
-      unit: "per try-on",
-      minCredits: "100 credits",
-      features: ["Virtual try-ons", "Landing page", "Basic analytics", "Email support"]
-    },
-    {
-      name: "Growth",
-      price: "R0.75",
-      unit: "per try-on",
-      minCredits: "1,000 credits",
-      features: ["Virtual try-ons", "Landing page", "Advanced analytics", "Priority support", "Volume discounts"],
-      highlighted: true
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      unit: "pricing",
-      minCredits: "10,000+ credits",
-      features: ["Virtual try-ons", "Landing page", "Premium analytics", "Dedicated support", "Custom integrations"]
-    }
+    { price: "R385", credits: "100 try-ons", perTryOn: "R3.85/try-on" },
+    { price: "R750", credits: "200 try-ons", perTryOn: "R3.75/try-on" },
+    { price: "R1,350", credits: "500 try-ons", perTryOn: "R2.70/try-on" },
+    { price: "R2,200", credits: "1,000 try-ons", perTryOn: "R2.20/try-on" },
+    { price: "R6,250", credits: "5,000 try-ons", perTryOn: "R1.25/try-on" },
+    { price: "R18,600", credits: "20,000 try-ons", perTryOn: "R0.93/try-on" }
   ];
 
   const benefits = [
@@ -137,16 +121,6 @@ export default function BoutiqueFeatures() {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               AI-powered virtual fitting room technology designed specifically for fashion boutiques. Reduce returns, increase sales, and delight your customers.
             </p>
-            <div className="flex gap-4 justify-center pt-4">
-              <Link href="/signup">
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  Get Started Free <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline">
-                Schedule Demo
-              </Button>
-            </div>
           </div>
         </div>
       </section>
@@ -212,39 +186,12 @@ export default function BoutiqueFeatures() {
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {pricingTiers.map((tier, i) => (
-              <Card 
-                key={i} 
-                className={`relative ${tier.highlighted ? 'ring-2 ring-primary shadow-lg scale-105' : ''}`}
-              >
-                {tier.highlighted && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
-                  </div>
-                )}
+              <Card key={i} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                  <div className="mt-4">
-                    <div className="text-3xl font-bold">{tier.price}</div>
-                    <div className="text-sm text-muted-foreground">{tier.unit}</div>
-                    <div className="text-sm text-primary font-semibold mt-2">{tier.minCredits}</div>
-                  </div>
+                  <div className="text-3xl font-bold">{tier.price}</div>
+                  <div className="text-sm text-muted-foreground mt-2">{tier.credits}</div>
+                  <div className="text-sm text-primary font-semibold mt-2">{tier.perTryOn}</div>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <ul className="space-y-3">
-                    {tier.features.map((feature, j) => (
-                      <li key={j} className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    className="w-full" 
-                    variant={tier.highlighted ? "default" : "outline"}
-                  >
-                    Get Started
-                  </Button>
-                </CardContent>
               </Card>
             ))}
           </div>
@@ -279,7 +226,7 @@ export default function BoutiqueFeatures() {
             {[
               {
                 q: "How does the credit system work?",
-                a: "Each try-on generation consumes one credit. Credits are purchased in bulk with volume discounts. Unused credits never expire."
+                a: "Each try-on generation consumes one credit. Credits are purchased in bulk with volume discounts. Credits are valid for 30 days from purchase."
               },
               {
                 q: "What's included in the landing page?",
@@ -299,7 +246,7 @@ export default function BoutiqueFeatures() {
               },
               {
                 q: "What if I need help?",
-                a: "We offer email support, live chat, video tutorials, and a dedicated onboarding specialist for your boutique."
+                a: "We offer email support, video tutorials, and a dedicated onboarding specialist for your boutique."
               }
             ].map((faq, i) => (
               <Card key={i}>
@@ -322,18 +269,8 @@ export default function BoutiqueFeatures() {
           <p className="text-xl text-muted-foreground">
             Join 50+ boutiques already using StyleSwap to reduce returns and increase sales.
           </p>
-          <div className="flex gap-4 justify-center">
-            <Link href="/signup">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                Start Free Trial <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
-            <Button size="lg" variant="outline">
-              Schedule Demo Call
-            </Button>
-          </div>
           <p className="text-sm text-muted-foreground">
-            No credit card required. Get 100 free credits to test the platform.
+            Contact us to learn more about our platform and pricing options.
           </p>
         </div>
       </section>
