@@ -1139,3 +1139,33 @@ This approach:
 - [ ] Remove "live chat" reference from help section (not integrated)
 - [ ] Remove "Start Free Trial" button from bottom section
 - [ ] Fix "Schedule Demo Call" link to be non-clickable or remove it
+
+
+## Phase 52: Add Lead Capture Form & Live Chat Widget (TODAY)
+
+### Lead Capture Form
+- [ ] Create LeadCaptureForm component with email input
+- [ ] Add form validation and error handling
+- [ ] Implement form submission to backend
+- [ ] Add success/error toast notifications
+- [ ] Store leads in database
+
+### Live Chat Widget
+- [ ] Create ChatWidget component
+- [ ] Implement chat message interface
+- [ ] Add real-time messaging
+- [ ] Create backend chat endpoints
+- [ ] Add chat history persistence
+
+### Boutique Testimonials
+- [ ] Create TestimonialsSection component
+- [ ] Add 3 success stories with metrics
+- [ ] Include boutique names and results
+- [ ] Add star ratings and quotes
+- [ ] Style testimonial cards
+
+### Integration
+- [ ] Add LeadCaptureForm to BoutiqueFeatures page
+- [ ] Add ChatWidget to BoutiqueFeatures page
+- [ ] Add TestimonialsSection to BoutiqueFeatures page
+- [ ] Test all components together

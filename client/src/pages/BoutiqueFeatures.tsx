@@ -14,6 +14,9 @@ import {
   ArrowRight
 } from "lucide-react";
 import { Link } from "wouter";
+import { LeadCaptureForm } from "@/components/LeadCaptureForm";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { ChatWidget } from "@/components/ChatWidget";
 
 export default function BoutiqueFeatures() {
   const features = [
@@ -297,6 +300,27 @@ export default function BoutiqueFeatures() {
           </div>
         </div>
       </section>
+
+      {/* Testimonials Section */}
+      <TestimonialsSection />
+
+      {/* Lead Capture Section */}
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Ready to Get Started?</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Join our growing community of successful boutiques. Fill out the form below and our team will contact you with personalized pricing and a demo.
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <LeadCaptureForm />
+          </div>
+        </div>
+      </section>
+
+      {/* Chat Widget */}
+      <ChatWidget />
     </div>
   );
 }
