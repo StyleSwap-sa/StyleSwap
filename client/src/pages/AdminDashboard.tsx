@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, TrendingUp, Users, Zap, DollarSign } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { CreditAlertsCard } from "@/components/CreditAlertsCard";
+import { AdvancedAnalyticsCharts } from "@/components/AdvancedAnalyticsCharts";
+import { SchedulerControls } from "@/components/SchedulerControls";
 
 export default function AdminDashboard() {
   const [selectedBoutiqueId, setSelectedBoutiqueId] = useState<number | null>(null);
@@ -150,6 +152,14 @@ export default function AdminDashboard() {
 
         {/* Credit Alerts Card */}
         <CreditAlertsCard />
+
+        {/* Advanced Analytics Section */}
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Advanced Analytics</h2>
+          </div>
+          <AdvancedAnalyticsCharts />
+        </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -304,6 +314,12 @@ export default function AdminDashboard() {
               </p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Scheduler Controls Section */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-6">Alert Scheduler</h2>
+          <SchedulerControls />
         </div>
       </div>
     </div>
