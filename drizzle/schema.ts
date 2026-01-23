@@ -324,3 +324,92 @@ export const webhookAlerts = mysqlTable("webhookAlerts", {
 	index("idx_alert_severity").on(table.severity),
 	index("idx_alert_resolved").on(table.isResolved),
 ]);
+
+// Analytics Tables for A/B Testing and Success Rate Tracking
+export const tryOnAnalytics = mysqlTable("tryOnAnalytics", {
+	id: int().autoincrement().notNull(),
+	tryOnResultId: int().notNull().references(() => tryOnResults.id),
+	userId: int().notNull().references(() => users.id),
+	boutiqueId: int().references(() => boutiques.id),
+	flowType: mysqlEnum(['b2c','b2b']).default('b2c').notNull(),
+	
+	// Image optimization tracking
+	imageOptimizationVersion: varchar({ length: 50 }).default('v1').notNull(),
+	originalModelImageWidth: int(),
+	originalModelImageHeight: int(),
+	originalModelImageSize: int(),
+	optimizedModelImageWidth: int(),
+	optimizedModelImageHeight: int(),
+	optimizedModelImageSize: int(),
+	originalClothImageWidth: int(),
+	originalClothImageHeight: int(),
+	originalClothImageSize: int(),
+	optimizedClothImageWidth: int(),
+	optimizedClothImageHeight: int(),
+	optimizedClothImageSize: int(),
+	
+	// Success metrics
+	success: int().notNull().default(0),
+	processingTimeMs: int(),
+	fitRoomResponseTime: int(),
+	uploadTimeMs: int(),
+	
+	// Error tracking
+	errorType: varchar({ length: 100 }),
+	errorMessage: text(),
+	fitRoomErrorCode: varchar({ length: 50 }),
+	
+	// Metadata
+	userAgent: text(),
+	ipAddress: varchar({ length: 45 }),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_analytics_user").on(table.userId),
+	index("idx_analytics_boutique").on(table.boutiqueId),
+	index("idx_analytics_success").on(table.success),
+	index("idx_analytics_version").on(table.imageOptimizationVersion),
+	index("idx_analytics_created").on(table.createdAt),
+	index("idx_analytics_error").on(table.errorType),
+	index("idx_analytics_flow").on(table.flowType),
+]);
+
+export const analyticsSnapshots = mysqlTable("analyticsSnapshots", {
+	id: int().autoincrement().notNull(),
+	snapshotDate: varchar({ length: 10 }).notNull(),
+	imageOptimizationVersion: varchar({ length: 50 }).notNull(),
+	flowType: mysqlEnum(['b2c','b2b']).notNull(),
+	
+	// Aggregated metrics
+	totalAttempts: int().notNull().default(0),
+	successfulAttempts: int().notNull().default(0),
+	failedAttempts: int().notNull().default(0),
+	successRate: decimal({ precision: 5, scale: 2 }).notNull().default(0),
+	
+	// Performance metrics
+	avgProcessingTimeMs: int(),
+	p95ProcessingTimeMs: int(),
+	p99ProcessingTimeMs: int(),
+	avgUploadTimeMs: int(),
+	avgFitRoomResponseTimeMs: int(),
+	
+	// Image optimization metrics
+	avgOriginalModelImageSize: int(),
+	avgOptimizedModelImageSize: int(),
+	avgOriginalClothImageSize: int(),
+	avgOptimizedClothImageSize: int(),
+	compressionRatio: decimal({ precision: 5, scale: 2 }),
+	
+	// Error metrics
+	topErrorType: varchar({ length: 100 }),
+	errorTypeBreakdown: text(),
+	
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_snapshot_date").on(table.snapshotDate),
+	index("idx_snapshot_version").on(table.imageOptimizationVersion),
+	index("idx_snapshot_flow").on(table.flowType),
+]);

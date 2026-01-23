@@ -1236,3 +1236,47 @@ This approach:
 - [x] Add warning messages for large images
 - [x] Implement automatic optimization before sending to Fitroom
 - [x] Ready for testing and deployment
+
+
+## Phase 32: A/B Testing Dashboard for Success Rate Tracking
+
+### Database Schema
+- [x] Create tryOnAnalytics table (tracks success/failure metrics)
+- [x] Add fields: userId, boutique, imageOptimizationVersion, success, processingTime, errorType
+- [x] Create analyticsSnapshots table (daily aggregated data)
+- [x] Add indexes for efficient querying
+
+### Backend Analytics
+- [x] Create analytics procedures in server/routers/analytics.ts
+- [x] Add getSuccessRateMetrics (overall, by version, by user type)
+- [x] Add getProcessingTimeStats (average, p95, p99)
+- [x] Add getErrorRateByType (identify common failure reasons)
+- [x] Add getConversionFunnel (uploads → success → completion)
+- [x] Add getImageOptimizationImpact (compression ratios, bandwidth saved)
+- [x] Add getAnalyticsTrend (daily/weekly/monthly trends)
+- [x] Register analytics router in main routers.ts
+
+### Dashboard UI
+- [ ] Create AdminAnalytics.tsx page
+- [ ] Add success rate chart (before/after optimization)
+- [ ] Add processing time comparison
+- [ ] Add error breakdown pie chart
+- [ ] Add user funnel visualization
+
+### Real-Time Tracking
+- [ ] Log analytics on try-on completion/failure
+- [ ] Track image dimensions before/after optimization
+- [ ] Record processing time and API response codes
+- [ ] Capture error messages and types
+
+### Reports
+- [ ] Daily success rate report
+- [ ] Weekly trend analysis
+- [ ] User segment analysis (individual vs boutique)
+- [ ] Export reports to CSV
+
+### Testing & Deployment
+- [ ] Write analytics tests
+- [ ] Verify data accuracy
+- [ ] Test dashboard performance
+- [ ] Deploy to production
