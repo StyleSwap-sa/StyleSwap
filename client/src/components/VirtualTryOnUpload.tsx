@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { optimizeImageForFitroom, validateImageForFitroom, formatFileSize, getImageDimensions } from "@/lib/imageUtils";
+import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions } from "@/lib/imageUtils";
 
 interface TryOnResult {
   taskId: string;
@@ -144,17 +144,40 @@ export function VirtualTryOnUpload() {
     setProcessingProgress(0);
 
     try {
-      // Send original images directly to Fitroom
-      // Fitroom handles resizing internally, so we don't need to compress on client
-      // This prevents quality loss from canvas compression
+      // Auto-resize images if they exceed Fitroom limits
       setProcessingProgress(5);
-
-      // Send original files using FormData
-      const formData = new FormData();
-      formData.append("modelImage", modelPhoto);
-      formData.append("clothImage", clothImage);
-      formData.append("clothType", "single");
+      
+      let finalModelPhoto = modelPhoto;
+      let finalClothImage = clothImage;
+      
+      // Check and resize model photo if needed
+      const modelDimensions = await getImageDimensions(modelPhoto);
+      if (modelDimensions.width > 1024 || modelDimensions.height > 1024) {
+        console.log("[VirtualTryOn] Model photo exceeds 1024px, auto-resizing...");
+        const resizedBlob = await resizeImage(modelPhoto, 1024);
+        finalModelPhoto = new File([resizedBlob], modelPhoto.name, { type: "image/jpeg" });
+        setWarning(`Model photo auto-resized from ${modelDimensions.width}x${modelDimensions.height}px`);
+      }
+      
+      setProcessingProgress(10);
+      
+      // Check and resize clothing image if needed
+      const clothDimensions = await getImageDimensions(clothImage);
+      if (clothDimensions.width > 1024 || clothDimensions.height > 1024) {
+        console.log("[VirtualTryOn] Cloth image exceeds 1024px, auto-resizing...");
+        const resizedBlob = await resizeImage(clothImage, 1024);
+        finalClothImage = new File([resizedBlob], clothImage.name, { type: "image/jpeg" });
+        setWarning(`Clothing image auto-resized from ${clothDimensions.width}x${clothDimensions.height}px`);
+      }
+      
       setProcessingProgress(15);
+
+      // Send resized files using FormData
+      const formData = new FormData();
+      formData.append("modelImage", finalModelPhoto);
+      formData.append("clothImage", finalClothImage);
+      formData.append("clothType", "single");
+      setProcessingProgress(20);
 
       // Call the dedicated file upload endpoint
       const response = await fetch("/api/tryon/upload", {
