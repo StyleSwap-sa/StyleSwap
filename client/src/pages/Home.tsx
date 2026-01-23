@@ -59,6 +59,11 @@ export default function Home() {
     { label: 'Profile', path: '/profile' },
   ];
 
+  // For admin users, add a link to the customer dashboard for testing
+  const adminTestItems = (user?.role === 'admin' || user?.userType === 'admin') ? [
+    { label: 'Try Customer Dashboard', path: '/dashboard' },
+  ] : [];
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Navigation */}
@@ -88,6 +93,15 @@ export default function Home() {
                     key={item.path}
                     onClick={() => setLocation(item.path)}
                     className="hover:text-primary transition-colors uppercase tracking-wide text-primary font-bold"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                {adminTestItems.map((item) => (
+                  <button
+                    key={item.path}
+                    onClick={() => setLocation(item.path)}
+                    className="hover:text-secondary transition-colors uppercase tracking-wide text-secondary font-bold text-xs"
                   >
                     {item.label}
                   </button>

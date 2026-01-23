@@ -1,0 +1,13 @@
+{
+  "query": "\n-- Create a test customer user\nINSERT INTO users (openId, name, email, userType, role, createdAt, updatedAt)\nVALUES ('test-customer-001', 'Test Customer', 'testcustomer@styleswap.com', 'customer', 'user', NOW(), NOW());\n\n-- Get the ID of the newly created user\nSELECT id FROM users WHERE openId = 'test-customer-001';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute \n-- Create a test customer user\nINSERT INTO users (openId, name, email, userType, role, createdAt, updatedAt)\nVALUES ('test-customer-001', 'Test Customer', 'testcustomer@styleswap.com', 'customer', 'user', NOW(), NOW());\n\n-- Get the ID of the newly created user\nSELECT id FROM users WHERE openId = 'test-customer-001';\n",
+  "rows": [
+    {
+      "id": "2160058"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\n2160058\n",
+  "stderr": "",
+  "execution_time_ms": 401
+}

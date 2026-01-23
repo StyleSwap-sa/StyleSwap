@@ -1,0 +1,26 @@
+{
+  "query": "\n-- First, let's check the current users\nSELECT id, openId, name, email, userType, role FROM users LIMIT 5;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute \n-- First, let's check the current users\nSELECT id, openId, name, email, userType, role FROM users LIMIT 5;\n",
+  "rows": [
+    {
+      "id": "1",
+      "openId": "hfNUb24FZfzWLXcWkweTTM",
+      "name": "Renelle Mofokeng",
+      "email": "rtumi.m@icloud.com",
+      "userType": "customer",
+      "role": "admin"
+    },
+    {
+      "id": "270007",
+      "openId": "P3CFXrBBSAqoTe3sFFsmmv",
+      "name": "Tlhoriso Mofokeng",
+      "email": "tpmofokeng@gmail.com",
+      "userType": "customer",
+      "role": "user"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenId\tname\temail\tuserType\trole\n1\thfNUb24FZfzWLXcWkweTTM\tRenelle Mofokeng\trtumi.m@icloud.com\tcustomer\tadmin\n270007\tP3CFXrBBSAqoTe3sFFsmmv\tTlhoriso Mofokeng\ttpmofokeng@gmail.com\tcustomer\tuser\n",
+  "stderr": "",
+  "execution_time_ms": 411
+}

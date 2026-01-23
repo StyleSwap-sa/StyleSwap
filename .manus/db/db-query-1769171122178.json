@@ -1,0 +1,17 @@
+{
+  "query": "\n-- Add 100 credits to the test customer\nINSERT INTO userCredits (userId, totalCredits, usedCredits, remainingCredits, createdAt, updatedAt)\nSELECT id, 100, 0, 100, NOW(), NOW() FROM users WHERE openId = 'test-customer-001';\n\n-- Verify the credits were added\nSELECT u.id, u.name, u.email, uc.totalCredits, uc.remainingCredits FROM users u\nLEFT JOIN userCredits uc ON u.id = uc.userId\nWHERE u.openId = 'test-customer-001';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute \n-- Add 100 credits to the test customer\nINSERT INTO userCredits (userId, totalCredits, usedCredits, remainingCredits, createdAt, updatedAt)\nSELECT id, 100, 0, 100, NOW(), NOW() FROM users WHERE openId = 'test-customer-001';\n\n-- Verify the credits were added\nSELECT u.id, u.name, u.email, uc.totalCredits, uc.remainingCredits FROM users u\nLEFT JOIN userCredits uc ON u.id = uc.userId\nWHERE u.openId = 'test-customer-001';\n",
+  "rows": [
+    {
+      "id": "2160058",
+      "name": "Test Customer",
+      "email": "testcustomer@styleswap.com",
+      "totalCredits": "100",
+      "remainingCredits": "100"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\ttotalCredits\tremainingCredits\n2160058\tTest Customer\ttestcustomer@styleswap.com\t100\t100\n",
+  "stderr": "",
+  "execution_time_ms": 414
+}
