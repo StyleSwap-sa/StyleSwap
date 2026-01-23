@@ -24,6 +24,31 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Performance optimizations
+    sourcemap: false, // Disable source maps in production
+    minify: 'terser', // Minify JavaScript
+    // Code splitting for better caching and performance
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor libraries - separate chunk for better caching
+          'vendor': [
+            'react',
+            'react-dom',
+          ],
+          // tRPC and React Query
+          'trpc': [
+            '@tanstack/react-query',
+            '@trpc/client',
+            '@trpc/react-query',
+          ],
+          // UI libraries
+          'ui': [
+            'lucide-react',
+          ],
+        },
+      },
+    },
   },
   server: {
     host: true,

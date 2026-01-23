@@ -67,7 +67,7 @@
   --popover-foreground: oklch(0.2 0.02 200);
   
   --muted: oklch(0.92 0.01 60);
-  --muted-foreground: oklch(0.5 0.05 200);
+  --muted-foreground: oklch(0.4 0.08 200); /* Improved contrast for WCAG AA */
   
   --accent: oklch(0.65 0.2 40);
   --accent-foreground: oklch(0.98 0 0);
@@ -116,7 +116,7 @@
   --secondary-foreground: oklch(0.95 0.01 60);
   
   --muted: oklch(0.25 0.02 200);
-  --muted-foreground: oklch(0.7 0.05 60);
+  --muted-foreground: oklch(0.8 0.08 60); /* Improved contrast for WCAG AA */
   
   --accent: oklch(0.75 0.2 40);
   --accent-foreground: oklch(0.12 0.02 200);

@@ -1169,3 +1169,16 @@ This approach:
 - [ ] Add ChatWidget to BoutiqueFeatures page
 - [ ] Add TestimonialsSection to BoutiqueFeatures page
 - [ ] Test all components together
+
+
+## Phase 20: Lighthouse Performance & Accessibility Optimization
+- [x] Implement code splitting for routes (lazy loading)
+- [x] Optimize images (add dimensions, convert to WebP)
+- [x] Remove render-blocking resources
+- [x] Disable source maps in production build
+- [x] Remove unused CSS
+- [x] Fix heading order (H1 → H2 → H3 sequence)
+- [x] Remove viewport zoom restrictions
+- [x] Fix color contrast issues
+- [x] Run Lighthouse audit to verify improvements
+- [x] Target: Performance 80+, Accessibility 95+

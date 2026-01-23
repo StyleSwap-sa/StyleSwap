@@ -65,7 +65,7 @@ export default function Home() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/20">
         <div className="container mx-auto py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src="/images/styleswap-icon.png" alt="StyleSwap" className="w-10 h-10" />
+            <img src="/images/styleswap-icon.png" alt="StyleSwap" className="w-10 h-10" width="40" height="40" />
             <div className="font-heading font-bold text-2xl tracking-tight">
               Style<span className="text-primary">Swap</span>
             </div>
@@ -174,6 +174,9 @@ export default function Home() {
               src="/images/hero-banner.jpg" 
               alt="Virtual Fitting Room" 
               className="relative z-10 w-full rounded-2xl shadow-2xl border border-border/20"
+              width="600"
+              height="400"
+              loading="lazy"
             />
           </div>
         </div>
@@ -214,7 +217,7 @@ export default function Home() {
         <div className="premium-card bg-gradient-to-r from-primary/5 to-secondary/5 p-12 rounded-2xl border-primary/30">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div>
-              <h3 className="text-3xl font-bold mb-4 text-primary">READY TO TRANSFORM?</h3>
+              <h2 className="text-3xl font-bold mb-4 text-primary">READY TO TRANSFORM?</h2>
               <p className="text-lg max-w-xl text-muted-foreground leading-relaxed">
                 Join the future of fashion retail. StyleSwap makes it accessible for businesses of all sizes.
               </p>
