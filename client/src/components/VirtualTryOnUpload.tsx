@@ -144,18 +144,17 @@ export function VirtualTryOnUpload() {
     setProcessingProgress(0);
 
     try {
-      // Optimize images for Fitroom API
+      // Send original images directly to Fitroom
+      // Fitroom handles resizing internally, so we don't need to compress on client
+      // This prevents quality loss from canvas compression
       setProcessingProgress(5);
-      const optimizedModel = await optimizeImageForFitroom(modelPhoto, "model");
-      setProcessingProgress(10);
-      const optimizedCloth = await optimizeImageForFitroom(clothImage, "clothing");
-      setProcessingProgress(15);
 
-      // Send optimized files using FormData
+      // Send original files using FormData
       const formData = new FormData();
-      formData.append("modelImage", optimizedModel.blob);
-      formData.append("clothImage", optimizedCloth.blob);
+      formData.append("modelImage", modelPhoto);
+      formData.append("clothImage", clothImage);
       formData.append("clothType", "single");
+      setProcessingProgress(15);
 
       // Call the dedicated file upload endpoint
       const response = await fetch("/api/tryon/upload", {
