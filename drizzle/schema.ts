@@ -1,5 +1,5 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, foreignKey, int, varchar, text, timestamp, mysqlEnum, decimal } from "drizzle-orm/mysql-core"
-import { sql } from "drizzle-orm"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, foreignKey, int, varchar, text, timestamp, mysqlEnum, decimal, json } from "drizzle-orm/mysql-core"
+import { sql } from "drizzle-orm";
 
 export const auditLogs = mysqlTable("auditLogs", {
 	id: int().autoincrement().notNull(),
