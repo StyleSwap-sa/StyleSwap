@@ -187,13 +187,14 @@ export async function validateImageForFitroom(
       };
     }
 
+    // ENFORCE maximum dimensions - Fitroom API rejects images larger than these
     if (
       dimensions.width > maxDimension ||
       dimensions.height > maxDimension
     ) {
       return {
-        valid: true,
-        warning: `Image is ${dimensions.width}x${dimensions.height}px - will be resized to ${maxDimension}px for optimal processing`,
+        valid: false,
+        error: `Image exceeds maximum size. Current: ${dimensions.width}x${dimensions.height}px. Maximum allowed: ${maxDimension}px. Please resize your image.`,
       };
     }
 

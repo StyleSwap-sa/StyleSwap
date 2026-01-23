@@ -88,6 +88,10 @@ export class FitroomClient {
       
       console.log("[Fitroom] Model image base64 size:", modelBase64Size, "bytes");
       console.log("[Fitroom] Cloth image base64 size:", clothBase64Size, "bytes");
+      
+      // Debug: Check base64 format
+      console.log("[Fitroom] Model base64 first 50 chars:", request.modelImageBase64.substring(0, 50));
+      console.log("[Fitroom] Cloth base64 first 50 chars:", request.clothImageBase64.substring(0, 50));
 
       // Send base64 images directly in JSON body instead of multipart form data
       const payload = {
