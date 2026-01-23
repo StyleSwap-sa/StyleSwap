@@ -42,9 +42,6 @@ export function VirtualTryOnUpload() {
   // Create try-on mutation
   const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
   
-  // Refund try-on mutation
-  const refundTryOnMutation = trpc.tryon.refundTryOnCredits.useMutation();
-  
   // Get try-on status query
   const getTryOnStatusQuery = trpc.tryon.pollTryOnStatus.useQuery(
     { taskId: currentTaskId || "" },
@@ -193,14 +190,10 @@ export function VirtualTryOnUpload() {
     // Check if polling has exceeded timeout
     const elapsedTime = Date.now() - (pollingStartTimeRef.current || Date.now());
     if (elapsedTime > POLLING_TIMEOUT_MS) {
-      setError("Try-on generation timed out (exceeded 60 seconds). Your credit has been refunded. Please try again with a different image.");
+      setError("Try-on generation timed out (exceeded 60 seconds). Please try again with a different image.");
       setIsPolling(false);
-      if (currentTaskId) {
-        refundTryOnMutation.mutate({ taskId: currentTaskId });
-      }
       setCurrentTaskId(null);
       pollingStartTimeRef.current = null;
-      refetchCredits(); // Refetch to show refunded credits
       return;
     }
 
@@ -226,14 +219,10 @@ export function VirtualTryOnUpload() {
         pollingStartTimeRef.current = null;
       }
     } else if (status === "FAILED") {
-      setError("Try-on generation failed. Your credit has been refunded. Please try again with a different image.");
+      setError("Try-on generation failed. Please try again with a different image.");
       setIsPolling(false);
-      if (currentTaskId) {
-        refundTryOnMutation.mutate({ taskId: currentTaskId });
-      }
       setCurrentTaskId(null);
       pollingStartTimeRef.current = null;
-      refetchCredits(); // Refetch to show refunded credits
     }
   }, [getTryOnStatusQuery.data, isPolling, currentTaskId]);
 

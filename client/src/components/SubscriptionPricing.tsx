@@ -223,7 +223,7 @@ export function SubscriptionPricing() {
               Is there a refund policy?
             </h4>
             <p className="text-sm text-muted-foreground">
-              Refunds are available within 7 days of purchase if you haven't used your credits. Contact support for assistance.
+              All credit purchases are final and non-refundable. Please ensure you purchase the correct amount of credits for your needs.
             </p>
           </div>
         </div>
