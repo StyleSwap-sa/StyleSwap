@@ -1,0 +1,105 @@
+{
+  "query": "\nSELECT \n  table_name,\n  ROUND((data_length + index_length) / 1024 / 1024, 2) AS size_mb,\n  table_rows\nFROM information_schema.tables\nWHERE table_schema = DATABASE()\nORDER BY (data_length + index_length) DESC\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute \nSELECT \n  table_name,\n  ROUND((data_length + index_length) / 1024 / 1024, 2) AS size_mb,\n  table_rows\nFROM information_schema.tables\nWHERE table_schema = DATABASE()\nORDER BY (data_length + index_length) DESC\n",
+  "rows": [
+    {
+      "table_name": "boutiques",
+      "size_mb": "0.01",
+      "table_rows": "50"
+    },
+    {
+      "table_name": "transactions",
+      "size_mb": "0.00",
+      "table_rows": "35"
+    },
+    {
+      "table_name": "garments",
+      "size_mb": "0.00",
+      "table_rows": "8"
+    },
+    {
+      "table_name": "products",
+      "size_mb": "0.00",
+      "table_rows": "6"
+    },
+    {
+      "table_name": "__drizzle_migrations",
+      "size_mb": "0.00",
+      "table_rows": "7"
+    },
+    {
+      "table_name": "userCredits",
+      "size_mb": "0.00",
+      "table_rows": "4"
+    },
+    {
+      "table_name": "users",
+      "size_mb": "0.00",
+      "table_rows": "2"
+    },
+    {
+      "table_name": "boutiqueTransactions",
+      "size_mb": "0.00",
+      "table_rows": "1"
+    },
+    {
+      "table_name": "boutiqueCredits",
+      "size_mb": "0.00",
+      "table_rows": "1"
+    },
+    {
+      "table_name": "boutiqueUsers",
+      "size_mb": "0.00",
+      "table_rows": "1"
+    },
+    {
+      "table_name": "boutiqueSettings",
+      "size_mb": "0.00",
+      "table_rows": "1"
+    },
+    {
+      "table_name": "auditLogs",
+      "size_mb": "0.00",
+      "table_rows": "0"
+    },
+    {
+      "table_name": "favorites",
+      "size_mb": "0.00",
+      "table_rows": "0"
+    },
+    {
+      "table_name": "emailNotifications",
+      "size_mb": "0.00",
+      "table_rows": "0"
+    },
+    {
+      "table_name": "deletionLogs",
+      "size_mb": "0.00",
+      "table_rows": "0"
+    },
+    {
+      "table_name": "tryOnResults",
+      "size_mb": "0.00",
+      "table_rows": "0"
+    },
+    {
+      "table_name": "webhookEvents",
+      "size_mb": "0.00",
+      "table_rows": "0"
+    },
+    {
+      "table_name": "paymentReconciliation",
+      "size_mb": "0.00",
+      "table_rows": "0"
+    },
+    {
+      "table_name": "webhookAlerts",
+      "size_mb": "0.00",
+      "table_rows": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "table_name\tsize_mb\ttable_rows\nboutiques\t0.01\t50\ntransactions\t0.00\t35\ngarments\t0.00\t8\nproducts\t0.00\t6\n__drizzle_migrations\t0.00\t7\nuserCredits\t0.00\t4\nusers\t0.00\t2\nboutiqueTransactions\t0.00\t1\nboutiqueCredits\t0.00\t1\nboutiqueUsers\t0.00\t1\nboutiqueSettings\t0.00\t1\nauditLogs\t0.00\t0\nfavorites\t0.00\t0\nemailNotifications\t0.00\t0\ndeletionLogs\t0.00\t0\ntryOnResults\t0.00\t0\nwebhookEvents\t0.00\t0\npaymentReconciliation\t0.00\t0\nwebhookAlerts\t0.00\t0\n",
+  "stderr": "",
+  "execution_time_ms": 407
+}
