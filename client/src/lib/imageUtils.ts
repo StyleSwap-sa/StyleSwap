@@ -157,7 +157,12 @@ export async function validateImageForFitroom(
   file: File,
   imageType: "clothing" | "model"
 ): Promise<{ valid: boolean; error?: string; warning?: string }> {
-  // Check file type
+  // Check file type - only JPEG and PNG supported by Fitroom
+  const supportedFormats = ["image/jpeg", "image/png", "image/jpg"];
+  if (!supportedFormats.includes(file.type)) {
+    return { valid: false, error: `Unsupported image format: ${file.type}. Please use JPEG or PNG.` };
+  }
+  
   if (!file.type.startsWith("image/")) {
     return { valid: false, error: "Please upload an image file" };
   }

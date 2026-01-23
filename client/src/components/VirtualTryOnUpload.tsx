@@ -162,12 +162,22 @@ export function VirtualTryOnUpload() {
       setProcessingProgress(10);
       
       // Check and resize clothing image if needed
-      const clothDimensions = await getImageDimensions(clothImage);
-      if (clothDimensions.width > 1024 || clothDimensions.height > 1024) {
-        console.log("[VirtualTryOn] Cloth image exceeds 1024px, auto-resizing...");
-        const resizedBlob = await resizeImage(clothImage, 1024);
-        finalClothImage = new File([resizedBlob], clothImage.name, { type: "image/jpeg" });
-        setWarning(`Clothing image auto-resized from ${clothDimensions.width}x${clothDimensions.height}px`);
+      try {
+        const clothDimensions = await getImageDimensions(clothImage);
+        console.log("[VirtualTryOn] Clothing image dimensions:", clothDimensions);
+        
+        if (clothDimensions.width > 1024 || clothDimensions.height > 1024) {
+          console.log("[VirtualTryOn] Cloth image exceeds 1024px, auto-resizing...");
+          const resizedBlob = await resizeImage(clothImage, 1024);
+          console.log("[VirtualTryOn] Resized blob size:", resizedBlob.size, "bytes");
+          finalClothImage = new File([resizedBlob], clothImage.name, { type: "image/jpeg" });
+          setWarning(`Clothing image auto-resized from ${clothDimensions.width}x${clothDimensions.height}px`);
+        }
+      } catch (err) {
+        console.error("[VirtualTryOn] Error resizing clothing image:", err);
+        setError(`Error processing clothing image`);
+        setProcessingProgress(0);
+        return;
       }
       
       setProcessingProgress(15);
