@@ -14,13 +14,18 @@ export default function Dashboard() {
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
 
-  // Redirect based on user type
+  // Redirect based on user type (skip for admins testing customer dashboard)
   useEffect(() => {
     if (isAuthenticated && user) {
-      if (user.userType === 'admin' || user.role === 'admin') {
-        setLocation('/admin');
-      } else if (user.userType === 'merchant') {
-        setLocation('/boutique-dashboard');
+      const params = new URLSearchParams(window.location.search);
+      const isTestingCustomer = params.get('test') === 'customer';
+      
+      if (!isTestingCustomer) {
+        if (user.userType === 'admin' || user.role === 'admin') {
+          setLocation('/admin');
+        } else if (user.userType === 'merchant') {
+          setLocation('/boutique-dashboard');
+        }
       }
     }
   }, [isAuthenticated, user, setLocation]);
