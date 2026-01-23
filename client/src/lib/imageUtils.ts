@@ -210,6 +210,50 @@ export async function validateImageForFitroom(
 }
 
 /**
+ * Convert image to JPEG format if needed
+ */
+export async function convertToJpeg(file: File): Promise<File> {
+  if (file.type === "image/jpeg" || file.type === "image/png") {
+    return file;
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Failed to get canvas context"));
+          return;
+        }
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error("Failed to convert image"));
+              return;
+            }
+            const newName = file.name.replace(/\.[^/.]+$/, ".jpg");
+            const jpegFile = new File([blob], newName, { type: "image/jpeg" });
+            resolve(jpegFile);
+          },
+          "image/jpeg",
+          0.85
+        );
+      };
+      img.onerror = () => reject(new Error("Failed to load image"));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
  * Convert blob to base64 string
  */
 export async function blobToBase64(blob: Blob): Promise<string> {

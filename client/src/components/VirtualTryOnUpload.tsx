@@ -97,8 +97,20 @@ export function VirtualTryOnUpload() {
     setError("");
     setWarning("");
 
+    // Auto-convert WebP and other formats to JPEG
+    let finalFile = file;
+    try {
+      const { convertToJpeg } = await import("@/lib/imageUtils");
+      finalFile = await convertToJpeg(file);
+      if (finalFile.type !== file.type) {
+        setWarning(`Image auto-converted from ${file.type} to JPEG`);
+      }
+    } catch (err) {
+      console.error("Failed to convert image:", err);
+    }
+    
     // Validate image
-    const validation = await validateImageForFitroom(file, "clothing");
+    const validation = await validateImageForFitroom(finalFile, "clothing");
     if (!validation.valid) {
       setError(validation.error || "Invalid image");
       return;
@@ -108,11 +120,11 @@ export function VirtualTryOnUpload() {
       setWarning(validation.warning);
     }
 
-    setClothImage(file);
+    setClothImage(finalFile);
 
     // Get dimensions
     try {
-      const dimensions = await getImageDimensions(file);
+      const dimensions = await getImageDimensions(finalFile);
       setClothImageDimensions(dimensions);
     } catch (err) {
       console.error("Failed to get image dimensions:", err);
