@@ -85,8 +85,8 @@ export const boutiqueDashboardRouter = router({
           remaining: creditBalance?.remainingCredits || 0,
           total: creditBalance?.totalCredits || 0,
           used: creditBalance?.usedCredits || 0,
-          expirationDate: getCreditExpirationDate(creditBalance?.createdAt || null),
-          isExpired: areCreditExpired(creditBalance?.createdAt || null),
+          expirationDate: getCreditExpirationDate(creditBalance?.expiresAt ? new Date(creditBalance.expiresAt) : null),
+          isExpired: areCreditExpired(creditBalance?.expiresAt ? new Date(creditBalance.expiresAt) : null),
         },
         billing: {
           totalSpending,

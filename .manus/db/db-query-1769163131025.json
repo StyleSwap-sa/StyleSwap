@@ -1,0 +1,40 @@
+{
+  "query": "SELECT * FROM userCredits WHERE userId IN (SELECT id FROM users WHERE email LIKE '%renelle%' OR name LIKE '%Renelle%');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT * FROM userCredits WHERE userId IN (SELECT id FROM users WHERE email LIKE '%renelle%' OR name LIKE '%Renelle%');",
+  "rows": [
+    {
+      "id": "1",
+      "userId": "1",
+      "totalCredits": "10",
+      "usedCredits": "1",
+      "remainingCredits": "9",
+      "expiresAt": "NULL",
+      "createdAt": "2026-01-16 10:37:16",
+      "updatedAt": "2026-01-21 14:56:14"
+    },
+    {
+      "id": "30001",
+      "userId": "1",
+      "totalCredits": "10",
+      "usedCredits": "1",
+      "remainingCredits": "9",
+      "expiresAt": "2026-02-17 12:55:23",
+      "createdAt": "2026-01-18 12:55:23",
+      "updatedAt": "2026-01-21 14:56:14"
+    },
+    {
+      "id": "60001",
+      "userId": "1",
+      "totalCredits": "10",
+      "usedCredits": "1",
+      "remainingCredits": "9",
+      "expiresAt": "2026-02-18 11:33:23",
+      "createdAt": "2026-01-19 11:33:23",
+      "updatedAt": "2026-01-21 14:56:14"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\ttotalCredits\tusedCredits\tremainingCredits\texpiresAt\tcreatedAt\tupdatedAt\n1\t1\t10\t1\t9\tNULL\t2026-01-16 10:37:16\t2026-01-21 14:56:14\n30001\t1\t10\t1\t9\t2026-02-17 12:55:23\t2026-01-18 12:55:23\t2026-01-21 14:56:14\n60001\t1\t10\t1\t9\t2026-02-18 11:33:23\t2026-01-19 11:33:23\t2026-01-21 14:56:14\n",
+  "stderr": "",
+  "execution_time_ms": 369
+}

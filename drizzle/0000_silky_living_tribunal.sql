@@ -115,19 +115,6 @@ CREATE TABLE `emailNotifications` (
 	CONSTRAINT `emailNotifications_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `emailVerifications` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`userId` int NOT NULL,
-	`email` varchar(320) NOT NULL,
-	`token` varchar(255) NOT NULL,
-	`isVerified` int NOT NULL DEFAULT 0,
-	`expiresAt` timestamp NOT NULL,
-	`verifiedAt` timestamp,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	CONSTRAINT `emailVerifications_id` PRIMARY KEY(`id`),
-	CONSTRAINT `emailVerifications_token_unique` UNIQUE(`token`)
-);
---> statement-breakpoint
 CREATE TABLE `favorites` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
@@ -150,6 +137,25 @@ CREATE TABLE `garments` (
 	CONSTRAINT `garments_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `paymentReconciliation` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`yocoTransactionId` varchar(255) NOT NULL,
+	`yocoAmount` decimal(10,2) NOT NULL,
+	`yocoCurrency` varchar(3) NOT NULL DEFAULT 'ZAR',
+	`yocoStatus` varchar(50) NOT NULL,
+	`yocoTimestamp` timestamp NOT NULL,
+	`styleswapUserId` int,
+	`styleswapTransactionId` int,
+	`styleswapCreditsAdded` int,
+	`styleswapTimestamp` timestamp,
+	`reconciliationStatus` enum('matched','unmatched','duplicate','mismatch') NOT NULL DEFAULT 'unmatched',
+	`notes` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `paymentReconciliation_id` PRIMARY KEY(`id`),
+	CONSTRAINT `paymentReconciliation_yocoTransactionId_unique` UNIQUE(`yocoTransactionId`)
+);
+--> statement-breakpoint
 CREATE TABLE `products` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`boutiqueId` int NOT NULL,
@@ -166,34 +172,6 @@ CREATE TABLE `products` (
 	CONSTRAINT `products_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `shareMetrics` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`boutiqueId` int NOT NULL,
-	`totalShares` int NOT NULL DEFAULT 0,
-	`instagramShares` int NOT NULL DEFAULT 0,
-	`tiktokShares` int NOT NULL DEFAULT 0,
-	`twitterShares` int NOT NULL DEFAULT 0,
-	`facebookShares` int NOT NULL DEFAULT 0,
-	`whatsappShares` int NOT NULL DEFAULT 0,
-	`totalClicks` int NOT NULL DEFAULT 0,
-	`totalConversions` int NOT NULL DEFAULT 0,
-	`conversionRate` decimal(5,2) NOT NULL DEFAULT '0.00',
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT `shareMetrics_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
-CREATE TABLE `socialShares` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`tryOnId` int NOT NULL,
-	`userId` int NOT NULL,
-	`platform` enum('instagram','tiktok','twitter','facebook','whatsapp') NOT NULL,
-	`shareUrl` varchar(500),
-	`clickCount` int NOT NULL DEFAULT 0,
-	`conversionCount` int NOT NULL DEFAULT 0,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	CONSTRAINT `socialShares_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
 CREATE TABLE `transactions` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
@@ -207,23 +185,6 @@ CREATE TABLE `transactions` (
 	`createdAt` timestamp NOT NULL DEFAULT (now()),
 	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `transactions_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
-CREATE TABLE `tryOnHistory` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`userId` int NOT NULL,
-	`boutiqueId` int,
-	`garmentId` int,
-	`originalImageUrl` varchar(500) NOT NULL,
-	`resultImageUrl` varchar(500) NOT NULL,
-	`garmentName` varchar(255),
-	`garmentColor` varchar(100),
-	`garmentSize` varchar(50),
-	`isFavorite` int NOT NULL DEFAULT 0,
-	`shareCount` int NOT NULL DEFAULT 0,
-	`downloadCount` int NOT NULL DEFAULT 0,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	CONSTRAINT `tryOnHistory_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `tryOnResults` (
@@ -275,6 +236,41 @@ CREATE TABLE `users` (
 	CONSTRAINT `users_openId_unique` UNIQUE(`openId`)
 );
 --> statement-breakpoint
+CREATE TABLE `webhookAlerts` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`alertType` enum('webhook_failed','webhook_max_retries','payment_unmatched','payment_mismatch') NOT NULL,
+	`severity` enum('low','medium','high','critical') NOT NULL DEFAULT 'medium',
+	`webhookEventId` int,
+	`paymentReconciliationId` int,
+	`title` varchar(255) NOT NULL,
+	`description` text,
+	`isResolved` int NOT NULL DEFAULT 0,
+	`resolvedAt` timestamp,
+	`resolvedBy` int,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `webhookAlerts_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `webhookEvents` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`source` varchar(50) NOT NULL,
+	`eventType` varchar(100) NOT NULL,
+	`externalEventId` varchar(255) NOT NULL,
+	`payload` text NOT NULL,
+	`status` enum('pending','processing','success','failed','retrying') NOT NULL DEFAULT 'pending',
+	`retryCount` int NOT NULL DEFAULT 0,
+	`maxRetries` int NOT NULL DEFAULT 3,
+	`lastRetryAt` timestamp,
+	`nextRetryAt` timestamp,
+	`error` text,
+	`processedAt` timestamp,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `webhookEvents_id` PRIMARY KEY(`id`),
+	CONSTRAINT `webhookEvents_externalEventId_unique` UNIQUE(`externalEventId`)
+);
+--> statement-breakpoint
 ALTER TABLE `auditLogs` ADD CONSTRAINT `auditLogs_boutiqueId_boutiques_id_fk` FOREIGN KEY (`boutiqueId`) REFERENCES `boutiques`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `auditLogs` ADD CONSTRAINT `auditLogs_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `boutiqueCredits` ADD CONSTRAINT `boutiqueCredits_boutiqueId_boutiques_id_fk` FOREIGN KEY (`boutiqueId`) REFERENCES `boutiques`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -288,22 +284,20 @@ ALTER TABLE `deletionLogs` ADD CONSTRAINT `deletionLogs_boutiqueId_boutiques_id_
 ALTER TABLE `deletionLogs` ADD CONSTRAINT `deletionLogs_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `deletionLogs` ADD CONSTRAINT `deletionLogs_deletedBy_users_id_fk` FOREIGN KEY (`deletedBy`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `emailNotifications` ADD CONSTRAINT `emailNotifications_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `emailVerifications` ADD CONSTRAINT `emailVerifications_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `favorites` ADD CONSTRAINT `favorites_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `favorites` ADD CONSTRAINT `favorites_garmentId_garments_id_fk` FOREIGN KEY (`garmentId`) REFERENCES `garments`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `paymentReconciliation` ADD CONSTRAINT `paymentReconciliation_styleswapUserId_users_id_fk` FOREIGN KEY (`styleswapUserId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `paymentReconciliation` ADD CONSTRAINT `paymentReconciliation_styleswapTransactionId_transactions_id_fk` FOREIGN KEY (`styleswapTransactionId`) REFERENCES `transactions`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `products` ADD CONSTRAINT `products_boutiqueId_boutiques_id_fk` FOREIGN KEY (`boutiqueId`) REFERENCES `boutiques`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `shareMetrics` ADD CONSTRAINT `shareMetrics_boutiqueId_boutiques_id_fk` FOREIGN KEY (`boutiqueId`) REFERENCES `boutiques`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `socialShares` ADD CONSTRAINT `socialShares_tryOnId_tryOnHistory_id_fk` FOREIGN KEY (`tryOnId`) REFERENCES `tryOnHistory`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `socialShares` ADD CONSTRAINT `socialShares_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `transactions` ADD CONSTRAINT `transactions_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `tryOnHistory` ADD CONSTRAINT `tryOnHistory_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `tryOnHistory` ADD CONSTRAINT `tryOnHistory_boutiqueId_boutiques_id_fk` FOREIGN KEY (`boutiqueId`) REFERENCES `boutiques`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `tryOnHistory` ADD CONSTRAINT `tryOnHistory_garmentId_garments_id_fk` FOREIGN KEY (`garmentId`) REFERENCES `garments`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `tryOnResults` ADD CONSTRAINT `tryOnResults_boutiqueId_boutiques_id_fk` FOREIGN KEY (`boutiqueId`) REFERENCES `boutiques`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `tryOnResults` ADD CONSTRAINT `tryOnResults_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `tryOnResults` ADD CONSTRAINT `tryOnResults_productId_products_id_fk` FOREIGN KEY (`productId`) REFERENCES `products`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `tryOnResults` ADD CONSTRAINT `tryOnResults_garmentId_garments_id_fk` FOREIGN KEY (`garmentId`) REFERENCES `garments`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `userCredits` ADD CONSTRAINT `userCredits_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `webhookAlerts` ADD CONSTRAINT `webhookAlerts_webhookEventId_webhookEvents_id_fk` FOREIGN KEY (`webhookEventId`) REFERENCES `webhookEvents`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `webhookAlerts` ADD CONSTRAINT `webhookAlerts_paymentReconciliationId_paymentReconciliation_id_fk` FOREIGN KEY (`paymentReconciliationId`) REFERENCES `paymentReconciliation`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `webhookAlerts` ADD CONSTRAINT `webhookAlerts_resolvedBy_users_id_fk` FOREIGN KEY (`resolvedBy`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX `idx_audit_logs_boutique` ON `auditLogs` (`boutiqueId`);--> statement-breakpoint
 CREATE INDEX `idx_audit_logs_user` ON `auditLogs` (`userId`);--> statement-breakpoint
 CREATE INDEX `idx_audit_logs_action` ON `auditLogs` (`action`);--> statement-breakpoint
@@ -319,25 +313,27 @@ CREATE INDEX `idx_boutique_status` ON `boutiques` (`status`);--> statement-break
 CREATE INDEX `idx_deletion_logs_boutique` ON `deletionLogs` (`boutiqueId`);--> statement-breakpoint
 CREATE INDEX `idx_deletion_logs_created` ON `deletionLogs` (`createdAt`);--> statement-breakpoint
 CREATE INDEX `idx_email_notifications_user` ON `emailNotifications` (`userId`);--> statement-breakpoint
-CREATE INDEX `idx_email_verifications_user` ON `emailVerifications` (`userId`);--> statement-breakpoint
-CREATE INDEX `idx_email_verifications_token` ON `emailVerifications` (`token`);--> statement-breakpoint
-CREATE INDEX `idx_email_verifications_expires` ON `emailVerifications` (`expiresAt`);--> statement-breakpoint
 CREATE INDEX `idx_favorites_user` ON `favorites` (`userId`);--> statement-breakpoint
 CREATE INDEX `idx_garments_active` ON `garments` (`isActive`);--> statement-breakpoint
+CREATE INDEX `idx_reconciliation_yoco_id` ON `paymentReconciliation` (`yocoTransactionId`);--> statement-breakpoint
+CREATE INDEX `idx_reconciliation_user` ON `paymentReconciliation` (`styleswapUserId`);--> statement-breakpoint
+CREATE INDEX `idx_reconciliation_status` ON `paymentReconciliation` (`reconciliationStatus`);--> statement-breakpoint
+CREATE INDEX `idx_reconciliation_timestamp` ON `paymentReconciliation` (`yocoTimestamp`);--> statement-breakpoint
+CREATE INDEX `idx_reconciliation_created` ON `paymentReconciliation` (`createdAt`);--> statement-breakpoint
 CREATE INDEX `idx_products_boutique` ON `products` (`boutiqueId`);--> statement-breakpoint
 CREATE INDEX `idx_products_active` ON `products` (`isActive`);--> statement-breakpoint
-CREATE INDEX `idx_share_metrics_boutique` ON `shareMetrics` (`boutiqueId`);--> statement-breakpoint
-CREATE INDEX `idx_social_shares_try_on` ON `socialShares` (`tryOnId`);--> statement-breakpoint
-CREATE INDEX `idx_social_shares_user` ON `socialShares` (`userId`);--> statement-breakpoint
-CREATE INDEX `idx_social_shares_platform` ON `socialShares` (`platform`);--> statement-breakpoint
-CREATE INDEX `idx_social_shares_created` ON `socialShares` (`createdAt`);--> statement-breakpoint
 CREATE INDEX `idx_transactions_user` ON `transactions` (`userId`);--> statement-breakpoint
 CREATE INDEX `idx_transactions_type` ON `transactions` (`type`);--> statement-breakpoint
-CREATE INDEX `idx_try_on_history_user` ON `tryOnHistory` (`userId`);--> statement-breakpoint
-CREATE INDEX `idx_try_on_history_boutique` ON `tryOnHistory` (`boutiqueId`);--> statement-breakpoint
-CREATE INDEX `idx_try_on_history_created` ON `tryOnHistory` (`createdAt`);--> statement-breakpoint
-CREATE INDEX `idx_try_on_history_favorite` ON `tryOnHistory` (`isFavorite`);--> statement-breakpoint
 CREATE INDEX `idx_tryon_boutique` ON `tryOnResults` (`boutiqueId`);--> statement-breakpoint
 CREATE INDEX `idx_tryon_user` ON `tryOnResults` (`userId`);--> statement-breakpoint
 CREATE INDEX `idx_tryon_flowtype` ON `tryOnResults` (`flowType`);--> statement-breakpoint
-CREATE INDEX `idx_user_credits_user` ON `userCredits` (`userId`);
+CREATE INDEX `idx_user_credits_user` ON `userCredits` (`userId`);--> statement-breakpoint
+CREATE INDEX `idx_alerts_type` ON `webhookAlerts` (`alertType`);--> statement-breakpoint
+CREATE INDEX `idx_alerts_severity` ON `webhookAlerts` (`severity`);--> statement-breakpoint
+CREATE INDEX `idx_alerts_resolved` ON `webhookAlerts` (`isResolved`);--> statement-breakpoint
+CREATE INDEX `idx_alerts_created` ON `webhookAlerts` (`createdAt`);--> statement-breakpoint
+CREATE INDEX `idx_webhook_source` ON `webhookEvents` (`source`);--> statement-breakpoint
+CREATE INDEX `idx_webhook_status` ON `webhookEvents` (`status`);--> statement-breakpoint
+CREATE INDEX `idx_webhook_external_id` ON `webhookEvents` (`externalEventId`);--> statement-breakpoint
+CREATE INDEX `idx_webhook_next_retry` ON `webhookEvents` (`nextRetryAt`);--> statement-breakpoint
+CREATE INDEX `idx_webhook_created` ON `webhookEvents` (`createdAt`);

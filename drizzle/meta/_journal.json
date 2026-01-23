@@ -5,50 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1768927361776,
-      "tag": "0000_wakeful_saracen",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1768927669289,
-      "tag": "0001_mute_madelyne_pryor",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1768931314148,
-      "tag": "0002_watery_tattoo",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1768931328822,
-      "tag": "0003_omniscient_rockslide",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1768989717219,
-      "tag": "0004_small_lyja",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1769062084751,
-      "tag": "0005_lovely_wrecker",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1769062130861,
-      "tag": "0006_complete_blue_blade",
+      "when": 1769163572647,
+      "tag": "0000_silky_living_tribunal",
       "breakpoints": true
     }
   ]

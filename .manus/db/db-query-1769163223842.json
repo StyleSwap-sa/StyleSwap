@@ -1,0 +1,13 @@
+{
+  "query": "SELECT id FROM users WHERE email = 'rtumi.m@icloud.com' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT id FROM users WHERE email = 'rtumi.m@icloud.com' LIMIT 1;",
+  "rows": [
+    {
+      "id": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\n1\n",
+  "stderr": "",
+  "execution_time_ms": 390
+}

@@ -24,6 +24,7 @@ import {
   createPaymentRateLimiter,
   createUploadRateLimiter,
 } from "./rateLimiter";
+import { initializeWebhookJobs } from "../webhookRetryService";
 
 // Configure multer for file uploads
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
@@ -182,9 +183,20 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
+  // Initialize webhook retry jobs (reconciliation and retry processor)
+  try {
+    initializeWebhookJobs();
+    console.log("[Webhook] Retry and reconciliation jobs initialized");
+  } catch (error) {
+    console.error("[Webhook] Failed to initialize jobs:", error);
+  }
+
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
   });
 }
 
-startServer().catch(console.error);
+startServer().catch((error) => {
+  console.error("Server startup failed:", error);
+  process.exit(1);
+});

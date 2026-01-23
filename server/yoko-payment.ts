@@ -239,6 +239,7 @@ export async function handlePaymentSuccess(
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // Credits valid for 30 days
+    const expiresAtString = expiresAt.toISOString();
 
     if (existingCredits.length === 0) {
       // Create new credit record
@@ -247,7 +248,7 @@ export async function handlePaymentSuccess(
         totalCredits: credits,
         usedCredits: 0,
         remainingCredits: credits,
-        expiresAt,
+        expiresAt: expiresAtString,
       });
     } else {
       // Update existing credit record
@@ -260,8 +261,8 @@ export async function handlePaymentSuccess(
         .set({
           totalCredits: newTotal,
           remainingCredits: newRemaining,
-          expiresAt,
-          updatedAt: new Date(),
+          expiresAt: expiresAtString,
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(userCredits.userId, userId));
     }
@@ -273,6 +274,7 @@ export async function handlePaymentSuccess(
       amount: credits,
       description: `Purchased ${credits} try-on credits`,
       fitRoomOrderId: paymentIntentId,
+      createdAt: new Date().toISOString(),
       status: "completed",
       currency: "ZAR",
     });

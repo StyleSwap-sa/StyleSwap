@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, userId, type, amount, price, status, fitRoomOrderId, createdAt FROM transactions WHERE userId IN (SELECT id FROM users WHERE email = 'rtumi.m@icloud.com') AND DATE(createdAt) = '2026-01-18' ORDER BY createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT id, userId, type, amount, price, status, fitRoomOrderId, createdAt FROM transactions WHERE userId IN (SELECT id FROM users WHERE email = 'rtumi.m@icloud.com') AND DATE(createdAt) = '2026-01-18' ORDER BY createdAt DESC;",
+  "rows": [
+    {
+      "id": "1",
+      "userId": "1",
+      "type": "purchase",
+      "amount": "10",
+      "price": "45.00",
+      "status": "completed",
+      "fitRoomOrderId": "manual_allocation_rtumi",
+      "createdAt": "2026-01-18 12:55:27"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\ttype\tamount\tprice\tstatus\tfitRoomOrderId\tcreatedAt\n1\t1\tpurchase\t10\t45.00\tcompleted\tmanual_allocation_rtumi\t2026-01-18 12:55:27\n",
+  "stderr": "",
+  "execution_time_ms": 357
+}

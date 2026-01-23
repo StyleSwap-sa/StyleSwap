@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `webhookEvents` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`source` varchar(50) NOT NULL,\n\t`eventType` varchar(100) NOT NULL,\n\t`externalEventId` varchar(255) NOT NULL,\n\t`payload` text NOT NULL,\n\t`status` enum('pending','processing','success','failed','retrying') NOT NULL DEFAULT 'pending',\n\t`retryCount` int NOT NULL DEFAULT 0,\n\t`maxRetries` int NOT NULL DEFAULT 3,\n\t`lastRetryAt` timestamp,\n\t`nextRetryAt` timestamp,\n\t`error` text,\n\t`processedAt` timestamp,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `webhookEvents_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `webhookEvents_externalEventId_unique` UNIQUE(`externalEventId`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute CREATE TABLE IF NOT EXISTS `webhookEvents` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`source` varchar(50) NOT NULL,\n\t`eventType` varchar(100) NOT NULL,\n\t`externalEventId` varchar(255) NOT NULL,\n\t`payload` text NOT NULL,\n\t`status` enum('pending','processing','success','failed','retrying') NOT NULL DEFAULT 'pending',\n\t`retryCount` int NOT NULL DEFAULT 0,\n\t`maxRetries` int NOT NULL DEFAULT 3,\n\t`lastRetryAt` timestamp,\n\t`nextRetryAt` timestamp,\n\t`error` text,\n\t`processedAt` timestamp,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `webhookEvents_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `webhookEvents_externalEventId_unique` UNIQUE(`externalEventId`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 478
+}

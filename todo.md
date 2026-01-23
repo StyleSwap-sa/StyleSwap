@@ -1182,3 +1182,18 @@ This approach:
 - [x] Fix color contrast issues
 - [x] Run Lighthouse audit to verify improvements
 - [x] Target: Performance 80+, Accessibility 95+
+
+
+## Phase 21: Webhook Reliability & Payment Reconciliation
+- [x] Create webhook events table for tracking delivery status
+- [x] Implement webhook retry logic with exponential backoff (3 retries)
+- [x] Create daily payment reconciliation job (Yoco vs StyleSwap)
+- [x] Set up webhook failure alerts and monitoring
+- [x] Create standalone webhook retry service (webhookRetryService.ts)
+- [x] Create comprehensive integration guide (WEBHOOK_RETRY_INTEGRATION_GUIDE.md)
+- [ ] Integrate service into server startup (server/_core/index.ts)
+- [ ] Update Yoco webhook handler to use retry logic
+- [ ] Implement webhook retry processor (background job)
+- [ ] Create admin dashboard for alerts
+- [ ] Test webhook retry with simulated failures
+- [ ] Deploy and verify systems working

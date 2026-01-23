@@ -5,6 +5,13 @@ import { eq } from "drizzle-orm";
 import { sendEmailNotification } from "../email";
 import { verifyWebhookSignature } from "../yoko-payment";
 import { sendPaymentConfirmationSMS } from "../sms";
+import {
+  recordWebhookEvent,
+  markWebhookSuccess,
+  scheduleWebhookRetry,
+  recordYocoPayment,
+  matchPaymentWithCredits,
+} from "../webhookRetryService";
 
 export interface YokoWebhookPayload {
   id: string;
@@ -30,22 +37,34 @@ export interface YokoWebhookPayload {
  * Handle Yoko payment webhooks
  */
 export async function handleYokoWebhook(req: Request, res: Response) {
+  const event: YokoWebhookPayload = req.body;
+  const externalEventId = event.id;
+
   try {
+    // 1. Record webhook event immediately (before processing)
+    await recordWebhookEvent(
+      'yoco',
+      event.type,
+      externalEventId,
+      event
+    );
+    console.log(`[Yoko Webhook] Recorded webhook event: ${externalEventId}`);
+
     const signature = req.headers["x-yoko-signature"] as string;
     const payload = JSON.stringify(req.body);
 
     // Verify webhook signature
     if (!verifyWebhookSignature(payload, signature)) {
       console.warn("[Yoko Webhook] Invalid signature");
+      // Schedule for retry even with invalid signature
+      await scheduleWebhookRetry(externalEventId, "Invalid webhook signature");
       return res.status(401).json({ error: "Invalid signature" });
     }
-
-    const event: YokoWebhookPayload = req.body;
 
     // Handle different event types
     switch (event.type) {
       case "payment_intent.succeeded":
-        await handlePaymentSucceeded(event.data);
+        await handlePaymentSucceeded(event.data, externalEventId);
         break;
       case "payment_intent.failed":
         await handlePaymentFailed(event.data);
@@ -57,18 +76,26 @@ export async function handleYokoWebhook(req: Request, res: Response) {
         console.log(`[Yoko Webhook] Unhandled event type: ${event.type}`);
     }
 
+    // 2. Mark webhook as successfully processed
+    await markWebhookSuccess(externalEventId);
+    console.log(`[Yoko Webhook] Successfully processed: ${externalEventId}`);
+
     // Acknowledge receipt
     res.json({ received: true });
   } catch (error) {
     console.error("[Yoko Webhook] Error processing webhook:", error);
-    res.status(500).json({ error: "Internal server error" });
+    // 3. Schedule for retry on error
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    await scheduleWebhookRetry(externalEventId, errorMsg);
+    // Return 500 so Yoco knows to retry
+    res.status(500).json({ error: "Processing failed, will retry" });
   }
 }
 
 /**
  * Handle successful payment
  */
-async function handlePaymentSucceeded(data: YokoWebhookPayload["data"]) {
+async function handlePaymentSucceeded(data: YokoWebhookPayload["data"], externalEventId: string) {
   const db = await getDb();
   if (!db) {
     throw new Error("Database not available");
@@ -102,6 +129,7 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"]) {
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30);
+    const expiresAtString = expiresAt.toISOString();
 
     if (existingCredits.length === 0) {
       // Create new credit record
@@ -110,7 +138,7 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"]) {
         totalCredits: credits,
         usedCredits: 0,
         remainingCredits: credits,
-        expiresAt,
+        expiresAt: expiresAtString,
       });
     } else {
       // Update existing credit record
@@ -123,8 +151,8 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"]) {
         .set({
           totalCredits: newTotal,
           remainingCredits: newRemaining,
-          expiresAt,
-          updatedAt: new Date(),
+          expiresAt: expiresAtString,
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(userCredits.userId, userId));
     }

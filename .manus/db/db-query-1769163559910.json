@@ -1,0 +1,18 @@
+{
+  "query": "SHOW COLUMNS FROM boutiques WHERE Field = 'instagramHandle';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SHOW COLUMNS FROM boutiques WHERE Field = 'instagramHandle';",
+  "rows": [
+    {
+      "Field": "instagramHandle",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\ninstagramHandle\tvarchar(255)\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 374
+}

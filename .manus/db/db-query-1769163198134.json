@@ -1,0 +1,37 @@
+{
+  "query": "SELECT u.id, u.name, u.email, u.createdAt, uc.totalCredits, uc.usedCredits, uc.remainingCredits FROM users u LEFT JOIN userCredits uc ON u.id = uc.userId WHERE u.email = 'rtumi.m@icloud.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT u.id, u.name, u.email, u.createdAt, uc.totalCredits, uc.usedCredits, uc.remainingCredits FROM users u LEFT JOIN userCredits uc ON u.id = uc.userId WHERE u.email = 'rtumi.m@icloud.com';",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Renelle Mofokeng",
+      "email": "rtumi.m@icloud.com",
+      "createdAt": "2026-01-14 11:46:28",
+      "totalCredits": "10",
+      "usedCredits": "1",
+      "remainingCredits": "9"
+    },
+    {
+      "id": "1",
+      "name": "Renelle Mofokeng",
+      "email": "rtumi.m@icloud.com",
+      "createdAt": "2026-01-14 11:46:28",
+      "totalCredits": "10",
+      "usedCredits": "1",
+      "remainingCredits": "9"
+    },
+    {
+      "id": "1",
+      "name": "Renelle Mofokeng",
+      "email": "rtumi.m@icloud.com",
+      "createdAt": "2026-01-14 11:46:28",
+      "totalCredits": "10",
+      "usedCredits": "1",
+      "remainingCredits": "9"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tcreatedAt\ttotalCredits\tusedCredits\tremainingCredits\n1\tRenelle Mofokeng\trtumi.m@icloud.com\t2026-01-14 11:46:28\t10\t1\t9\n1\tRenelle Mofokeng\trtumi.m@icloud.com\t2026-01-14 11:46:28\t10\t1\t9\n1\tRenelle Mofokeng\trtumi.m@icloud.com\t2026-01-14 11:46:28\t10\t1\t9\n",
+  "stderr": "",
+  "execution_time_ms": 360
+}
