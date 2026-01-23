@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions } from "@/lib/imageUtils";
+import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom } from "@/lib/imageUtils";
 
 interface TryOnResult {
   taskId: string;
@@ -60,8 +60,21 @@ export function VirtualTryOnUpload() {
     setError("");
     setWarning("");
 
+    // Auto-optimize image (convert WebP to JPEG if needed)
+    let finalFile = file;
+    try {
+      finalFile = await optimizeImageForFitroom(file);
+      if (finalFile.type !== file.type) {
+        setWarning(`Image auto-converted from ${file.type} to JPEG`);
+      }
+    } catch (err) {
+      console.error("Failed to optimize image:", err);
+      setError(`Optimization failed: ${err instanceof Error ? err.message : String(err)}`);
+      return;
+    }
+
     // Validate image
-    const validation = await validateImageForFitroom(file, "model");
+    const validation = await validateImageForFitroom(finalFile, "model");
     if (!validation.valid) {
       setError(validation.error || "Invalid image");
       return;
@@ -71,11 +84,11 @@ export function VirtualTryOnUpload() {
       setWarning(validation.warning);
     }
 
-    setModelPhoto(file);
+    setModelPhoto(finalFile);
 
     // Get dimensions
     try {
-      const dimensions = await getImageDimensions(file);
+      const dimensions = await getImageDimensions(finalFile);
       setModelPhotoDimensions(dimensions);
     } catch (err) {
       console.error("Failed to get image dimensions:", err);
@@ -86,7 +99,7 @@ export function VirtualTryOnUpload() {
     reader.onload = (e) => {
       setModelPhotoPreview(e.target?.result as string);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(finalFile);
   };
 
   // Handle clothing image upload
@@ -97,8 +110,21 @@ export function VirtualTryOnUpload() {
     setError("");
     setWarning("");
 
+    // Auto-optimize image (convert WebP to JPEG if needed)
+    let finalFile = file;
+    try {
+      finalFile = await optimizeImageForFitroom(file);
+      if (finalFile.type !== file.type) {
+        setWarning(`Image auto-converted from ${file.type} to JPEG`);
+      }
+    } catch (err) {
+      console.error("Failed to optimize image:", err);
+      setError(`Optimization failed: ${err instanceof Error ? err.message : String(err)}`);
+      return;
+    }
+
     // Validate image
-    const validation = await validateImageForFitroom(file, "clothing");
+    const validation = await validateImageForFitroom(finalFile, "clothing");
     if (!validation.valid) {
       setError(validation.error || "Invalid image");
       return;
@@ -108,11 +134,11 @@ export function VirtualTryOnUpload() {
       setWarning(validation.warning);
     }
 
-    setClothImage(file);
+    setClothImage(finalFile);
 
     // Get dimensions
     try {
-      const dimensions = await getImageDimensions(file);
+      const dimensions = await getImageDimensions(finalFile);
       setClothImageDimensions(dimensions);
     } catch (err) {
       console.error("Failed to get image dimensions:", err);
@@ -123,7 +149,7 @@ export function VirtualTryOnUpload() {
     reader.onload = (e) => {
       setClothImagePreview(e.target?.result as string);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(finalFile);
   };
 
   // Handle try-on creation
