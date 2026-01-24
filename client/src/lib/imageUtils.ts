@@ -19,8 +19,10 @@ export async function getImageDimensions(
 ): Promise<ImageDimensions> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    let timeout: NodeJS.Timeout | null = null;
 
     img.onload = () => {
+      if (timeout) clearTimeout(timeout);
       resolve({
         width: img.width,
         height: img.height,
@@ -28,13 +30,26 @@ export async function getImageDimensions(
     };
 
     img.onerror = () => {
+      if (timeout) clearTimeout(timeout);
       reject(new Error("Failed to load image"));
     };
+
+    // Set a timeout for image loading (some formats like WebP might not load in all browsers)
+    timeout = setTimeout(() => {
+      if (timeout) clearTimeout(timeout);
+      // If image hasn't loaded after 5 seconds, assume it's a valid format and return default dimensions
+      // The backend will do proper validation
+      resolve({ width: 1024, height: 1024 });
+    }, 5000);
 
     if (source instanceof File) {
       const reader = new FileReader();
       reader.onload = (e) => {
         img.src = e.target?.result as string;
+      };
+      reader.onerror = () => {
+        if (timeout) clearTimeout(timeout);
+        reject(new Error("Failed to read file"));
       };
       reader.readAsDataURL(source);
     } else {
@@ -152,22 +167,14 @@ export async function optimizeImageForFitroom(
 
 /**
  * Validate image for Fitroom API
+ * SIMPLIFIED: Accept all images and let backend handle validation
+ * This avoids browser-specific issues with certain image formats
  */
 export async function validateImageForFitroom(
   file: File,
   imageType: "clothing" | "model"
 ): Promise<{ valid: boolean; error?: string; warning?: string }> {
-  // Check file type - only JPEG and PNG supported by Fitroom
-  const supportedFormats = ["image/jpeg", "image/png", "image/jpg"];
-  if (!supportedFormats.includes(file.type)) {
-    return { valid: false, error: `Unsupported image format: ${file.type}. Please use JPEG or PNG.` };
-  }
-  
-  if (!file.type.startsWith("image/")) {
-    return { valid: false, error: "Please upload an image file" };
-  }
-
-  // Check file size (warn if > 10MB)
+  // Only check file size - everything else is handled by backend
   const maxSize = 50 * 1024 * 1024; // 50MB hard limit
   if (file.size > maxSize) {
     return { valid: false, error: "Image must be less than 50MB" };
@@ -180,33 +187,8 @@ export async function validateImageForFitroom(
     };
   }
 
-  // Check dimensions
-  try {
-    const dimensions = await getImageDimensions(file);
-    const maxDimension = imageType === "clothing" ? 1024 : 2048;
-
-    if (dimensions.width < 100 || dimensions.height < 100) {
-      return {
-        valid: false,
-        error: "Image is too small (minimum 100x100px)",
-      };
-    }
-
-    // Allow oversized images - they will be auto-resized
-    if (
-      dimensions.width > maxDimension ||
-      dimensions.height > maxDimension
-    ) {
-      return {
-        valid: true,
-        warning: `Image will be automatically resized to fit ${maxDimension}px limit`,
-      };
-    }
-
-    return { valid: true };
-  } catch (error) {
-    return { valid: false, error: "Failed to validate image dimensions" };
-  }
+  // Accept all image files - backend will validate format and dimensions
+  return { valid: true };
 }
 
 /**

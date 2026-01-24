@@ -100,36 +100,32 @@ export function VirtualTryOnUpload() {
     setError("");
     setWarning("");
 
-    // Validate original file first
-    const validation = await validateImageForFitroom(file, "clothing");
-    if (!validation.valid) {
-      setError(validation.error || "Invalid image");
-      return;
-    }
+    // Skip all validation - let backend handle it
+    // This avoids browser-specific issues with certain image formats
+    setClothImage(file);
 
-    if (validation.warning) {
-      setWarning(validation.warning);
-    }
-
-    // Use original file as-is (no optimization needed)
-    let finalFile = file;
-
-    setClothImage(finalFile);
-
-    // Get dimensions
+    // Try to get dimensions but don't fail if it doesn't work
     try {
-      const dimensions = await getImageDimensions(finalFile);
+      const dimensions = await getImageDimensions(file);
       setClothImageDimensions(dimensions);
     } catch (err) {
       console.error("Failed to get image dimensions:", err);
+      // Don't set error - just continue
     }
 
     // Create preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setClothImagePreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(finalFile);
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setClothImagePreview(e.target?.result as string);
+      };
+      reader.onerror = () => {
+        console.error("Failed to read clothing image");
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Error creating preview:", err);
+    }
   };
 
   // Handle try-on creation
@@ -167,26 +163,12 @@ export function VirtualTryOnUpload() {
       
       setProcessingProgress(10);
       
-      // Check and resize clothing image if needed
-      try {
-        const clothDimensions = await getImageDimensions(clothImage);
-        console.log("[VirtualTryOn] Clothing image dimensions:", clothDimensions);
-        
-        if (clothDimensions.width > 1024 || clothDimensions.height > 1024) {
-          console.log("[VirtualTryOn] Cloth image exceeds 1024px, auto-resizing...");
-          const resizedBlob = await resizeImage(clothImage, 1024);
-          console.log("[VirtualTryOn] Resized blob size:", resizedBlob.size, "bytes");
-          finalClothImage = new File([resizedBlob], clothImage.name, { type: "image/jpeg" });
-          setWarning(`Clothing image auto-resized from ${clothDimensions.width}x${clothDimensions.height}px`);
-        }
-      } catch (err) {
-        console.error("[VirtualTryOn] Error resizing clothing image:", err);
-        setError(`Error processing clothing image`);
-        setProcessingProgress(0);
-        return;
-      }
+      // Skip dimension check for clothing images (backend will handle resizing)
+      // This avoids issues with WebP images not loading in browser Image API
+      console.log("[VirtualTryOn] Clothing image will be processed by backend");
       
       setProcessingProgress(15);
+      console.log("[VirtualTryOn] Ready to send images to backend");
 
       // Send resized files using FormData
       const formData = new FormData();
@@ -275,16 +257,16 @@ export function VirtualTryOnUpload() {
     
     setProcessingProgress(Math.min(progress, 95)); // Cap at 95% until complete
 
-    if (status === "completed") {
+    if (status?.toUpperCase() === "COMPLETED") {
       setResult({
         taskId: getTryOnStatusQuery.data.taskId,
-        resultImageUrl: getTryOnStatusQuery.data.resultImageUrl,
-        createdAt: new Date(getTryOnStatusQuery.data.createdAt),
+        resultImageUrl: getTryOnStatusQuery.data.resultImage || getTryOnStatusQuery.data.resultImageUrl,
+        createdAt: new Date(),
       });
       setIsPolling(false);
       setProcessingProgress(100);
       pollingStartTimeRef.current = null;
-    } else if (status === "failed") {
+    } else if (status?.toUpperCase() === "FAILED") {
       setError(getTryOnStatusQuery.data.error || "Try-on generation failed");
       setIsPolling(false);
       pollingStartTimeRef.current = null;

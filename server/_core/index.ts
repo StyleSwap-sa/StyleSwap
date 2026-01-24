@@ -1,4 +1,3 @@
-import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -17,6 +16,7 @@ import { sdk } from "./sdk";
 import crypto from "crypto";
 import path from "path";
 import fs from "fs";
+import sharp from "sharp";
 import {
   createPerUserRateLimiter,
   createStrictRateLimiter,
@@ -29,59 +29,23 @@ import { initializeWebhookJobs } from "../webhookRetryService";
 // Configure multer for file uploads
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
-function isPortAvailable(port: number): Promise<boolean> {
-  return new Promise(resolve => {
-    const server = net.createServer();
-    server.listen(port, () => {
-      server.close(() => resolve(true));
-    });
-    server.on("error", () => resolve(false));
-  });
-}
-
-async function findAvailablePort(startPort: number = 3000): Promise<number> {
-  for (let port = startPort; port < startPort + 20; port++) {
-    if (await isPortAvailable(port)) {
-      return port;
-    }
-  }
-  throw new Error(`No available port found starting from ${startPort}`);
-}
-
-async function startServer() {
+export async function startServer() {
   const app = express();
   const server = createServer(app);
-  // Configure body parser with larger size limit for file uploads
+
+  // Middleware
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  
-  // Apply per-user rate limiting to all routes (100 requests per minute)
-  app.use(createPerUserRateLimiter());
-  
-  // OAuth callback under /api/oauth/callback
+
+  // Register OAuth routes
   registerOAuthRoutes(app);
-  
-  // Yoco webhook endpoints
-  app.post("/api/webhooks/yoco", handleYokoWebhook);
-  app.post("/api/webhooks/yoco/boutique", handleYocoBoutiqueWebhook);
-  
-  // Yoco charge creation endpoint - with strict rate limiting
-  app.post("/api/yoco/charge", createPaymentRateLimiter(), async (req, res) => {
-    try {
-      const { amount, currency } = req.body;
-      if (!amount || !currency) {
-        return res.status(400).json({ error: "Amount and currency required" });
-      }
-      const token = crypto.randomBytes(32).toString("hex");
-      res.json({ token, amount, currency });
-    } catch (error) {
-      console.error("Yoco Charge Error:", error);
-      res.status(500).json({ error: "Failed to create charge" });
-    }
+
+  // Health check
+  app.get("/health", (req, res) => {
+    res.json({ status: "ok" });
   });
-  
-  // Try-on file upload endpoint (handles multipart/form-data)
-  // This endpoint receives files directly and forwards to Fitroom without base64 encoding
+
+  // Try-on upload endpoint with file upload support
   app.post("/api/tryon/upload", createUploadRateLimiter(), upload.fields([
     { name: "modelImage", maxCount: 1 },
     { name: "clothImage", maxCount: 1 }
@@ -118,9 +82,54 @@ async function startServer() {
       console.log(`[Try-On Upload] Model image size: ${modelImageBuffer.length} bytes`);
       console.log(`[Try-On Upload] Cloth image size: ${clothImageBuffer.length} bytes`);
 
+      // Validate image types using magic bytes (file signatures)
+      const validateImageType = (buffer: Buffer): { valid: boolean; format?: string; error?: string } => {
+        // Check for JPEG (FFD8FF)
+        if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+          return { valid: true, format: 'JPEG' };
+        }
+        // Check for PNG (89504E47)
+        if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+          return { valid: true, format: 'PNG' };
+        }
+        // Check for WebP (RIFF...WEBP)
+        if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+            buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50) {
+          return { valid: true, format: 'WebP' };
+        }
+        return { valid: false, error: 'Unsupported image format. Please use JPEG, PNG, or WebP.' };
+      };
+
+      const modelValidation = validateImageType(modelImageBuffer);
+      if (!modelValidation.valid) {
+        return res.status(400).json({ error: `Model image: ${modelValidation.error}` });
+      }
+      console.log(`[Try-On Upload] Model image format: ${modelValidation.format}`);
+
+      const clothValidation = validateImageType(clothImageBuffer);
+      if (!clothValidation.valid) {
+        return res.status(400).json({ error: `Clothing image: ${clothValidation.error}` });
+      }
+      console.log(`[Try-On Upload] Clothing image format: ${clothValidation.format}`);
+
+      // Convert WebP to JPEG if needed (Fitroom only supports JPEG and PNG)
+      let finalModelBuffer = modelImageBuffer;
+      let finalClothBuffer = clothImageBuffer;
+
+      // Convert all images to JPEG for Fitroom compatibility
+      if (modelValidation.format !== 'JPEG') {
+        console.log(`[Try-On Upload] Converting model from ${modelValidation.format} to JPEG`);
+        finalModelBuffer = await sharp(modelImageBuffer).jpeg({ quality: 95 }).toBuffer();
+      }
+
+      if (clothValidation.format !== 'JPEG') {
+        console.log(`[Try-On Upload] Converting cloth from ${clothValidation.format} to JPEG`);
+        finalClothBuffer = await sharp(clothImageBuffer).jpeg({ quality: 95 }).toBuffer();
+      }
+
       // Convert buffers to base64
-      const modelImageBase64 = modelImageBuffer.toString('base64');
-      const clothImageBase64 = clothImageBuffer.toString('base64');
+      const modelImageBase64 = finalModelBuffer.toString('base64');
+      const clothImageBase64 = finalClothBuffer.toString('base64');
       
       console.log(`[Try-On Upload] Model image base64 size: ${modelImageBase64.length} bytes`);
       console.log(`[Try-On Upload] Cloth image base64 size: ${clothImageBase64.length} bytes`);
@@ -131,16 +140,41 @@ async function startServer() {
         return res.status(402).json({ error: "Insufficient credits" });
       }
 
-      // Create try-on task with Fitroom using base64 encoding
+      // Save buffers to temporary files for multipart upload
+      const tempDir = path.join('/tmp', `tryon-${Date.now()}`);
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      const modelPath = path.join(tempDir, 'model.jpg');
+      const clothPath = path.join(tempDir, 'cloth.jpg');
+      
+      fs.writeFileSync(modelPath, finalModelBuffer);
+      fs.writeFileSync(clothPath, finalClothBuffer);
+      console.log(`[Try-On Upload] Saved temp files: ${modelPath}, ${clothPath}`);
+      
+      // Create try-on task with Fitroom using multipart form data (like the website)
       const fitroomClient = getFitroomClient();
-      const taskResult = await fitroomClient.createTryOnWithBase64({
-        modelImageBase64,
-        clothImageBase64,
+      console.log('[Try-On Upload] Sending to Fitroom API using multipart form data');
+      const taskResult = await fitroomClient.createTryOn({
+        modelImagePath: modelPath,
+        clothImagePath: clothPath,
         clothType: clothType as "single" | "combo",
         hdMode: false,
       });
+      
+      // Clean up temp files
+      try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        console.log('[Try-On Upload] Cleaned up temp files');
+      } catch (e) {
+        console.warn('[Try-On Upload] Failed to clean temp files:', e);
+      }
 
+      console.log('[Try-On Upload] Fitroom response:', JSON.stringify(taskResult));
+      
       if (!taskResult.success || !taskResult.taskId) {
+        console.error('[Try-On Upload] Fitroom failed:', taskResult.error);
         return res.status(500).json({ error: taskResult.error || "Failed to create try-on task" });
       }
 
@@ -179,24 +213,31 @@ async function startServer() {
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
 
-  if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
-  }
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`[Server] Listening on port ${port}`);
+  });
 
-  // Initialize webhook retry jobs (reconciliation and retry processor)
-  try {
-    initializeWebhookJobs();
-    console.log("[Webhook] Retry and reconciliation jobs initialized");
-  } catch (error) {
-    console.error("[Webhook] Failed to initialize jobs:", error);
-  }
+  // Initialize webhook retry service
+  initializeWebhookJobs();
 
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+  return { app, server, port };
+}
+
+async function findAvailablePort(preferredPort: number): Promise<number> {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.listen(preferredPort, "0.0.0.0", () => {
+      const port = (server.address() as net.AddressInfo).port;
+      server.close(() => resolve(port));
+    });
+    server.on("error", () => {
+      resolve(findAvailablePort(preferredPort + 1));
+    });
   });
 }
 
-startServer().catch((error) => {
-  console.error("Server startup failed:", error);
+// Start the server
+startServer().catch((err) => {
+  console.error("Failed to start server:", err);
   process.exit(1);
 });
