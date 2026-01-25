@@ -32,7 +32,7 @@ export const tryonRouter = router({
       z.object({
         modelImageBase64: z.string().describe("Base64 encoded customer body photo"),
         clothImageBase64: z.string().describe("Base64 encoded garment image"),
-        clothType: z.enum(["single", "combo"]).default("single"), // "single" for one garment, "combo" for top+bottom
+        clothType: z.enum(["upper", "lower", "combo"]).default("upper"), // "upper" for tops/dresses, "lower" for bottoms, "combo" for top+bottom
         hdMode: z.boolean().optional().default(false),
       })
     )

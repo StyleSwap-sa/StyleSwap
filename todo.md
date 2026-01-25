@@ -1317,4 +1317,13 @@ This approach:
 - [x] Update VirtualTryOnUpload component to show correct upload fields based on selection
 - [x] Test all three cloth types: upper, lower, combo
 - [x] Verify full dress try-ons work correctly with "upper" cloth type
-- [ ] Save checkpoint with corrected cloth type mapping
+- [x] Save checkpoint with corrected cloth type mapping
+
+## Phase 33: Fix Backend Cloth Type Validation
+- [x] Update createTryOn router to accept upper, lower, combo (not single, combo)
+- [x] Update upload endpoint to accept upper, lower, combo
+- [x] Update default cloth type from single to upper
+- [x] Test full dress with corrected backend
+- [x] Test bottom/pants with corrected backend
+- [x] Test top + bottom combo with corrected backend
+- [x] Save checkpoint with backend cloth type fix

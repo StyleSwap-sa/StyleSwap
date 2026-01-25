@@ -74,7 +74,7 @@ export async function startServer() {
       const clothImageFiles = (req.files as any)?.clothImage;
       const upperClothImageFiles = (req.files as any)?.upperClothImage;
       const lowerClothImageFiles = (req.files as any)?.lowerClothImage;
-      const clothType = req.body.clothType || "single";
+      const clothType = req.body.clothType || "upper";
 
       if (!modelImageFiles || !modelImageFiles[0]) {
         return res.status(400).json({ error: "Model image is required" });
@@ -190,7 +190,7 @@ export async function startServer() {
       const taskResult = await fitroomClient.createTryOn({
         modelImagePath: modelPath,
         clothImagePath: clothPath,
-        clothType: clothType as "single" | "combo",
+        clothType: clothType as "upper" | "lower" | "combo",
         lowerClothImagePath: lowerClothPath,
         hdMode: true,
       });
