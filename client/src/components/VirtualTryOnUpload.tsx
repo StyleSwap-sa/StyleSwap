@@ -39,6 +39,7 @@ export function VirtualTryOnUpload() {
   // Refs
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
   const clothImageInputRef = useRef<HTMLInputElement>(null);
+  const lowerClothImageInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
   const POLLING_TIMEOUT_MS = 150000; // 2.5 minutes max (HD mode can take up to 30 seconds)
@@ -590,12 +591,12 @@ export function VirtualTryOnUpload() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div
-                  onClick={() => clothImageInputRef.current?.click()}
+                  <div
+                  onClick={() => lowerClothImageInputRef.current?.click()}
                   className="border-2 border-dashed border-primary/30 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
                 >
                   <input
-                    ref={clothImageInputRef}
+                    ref={lowerClothImageInputRef}
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     onChange={(e) => {

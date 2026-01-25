@@ -1344,3 +1344,10 @@ This approach:
 - [x] Test single garment with dress image
 - [x] Test top & bottom with separate images
 - [x] Save checkpoint with simplified UI
+
+## Phase 36: Debug Clothing Image Not Being Sent
+- [x] Check if clothing image is being captured in frontend
+- [x] Verify FormData is including clothImage field
+- [x] Check backend receives clothImage from frontend
+- [x] Verify Fitroom API receives cloth_image parameter
+- [x] Fix the issue and test dress try-on again
