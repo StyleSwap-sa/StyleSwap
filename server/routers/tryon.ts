@@ -144,6 +144,8 @@ export const tryonRouter = router({
 
   /**
    * Poll for try-on task status and results
+   * CRITICAL FIX: Return FAILED status with error message instead of throwing
+   * This prevents frontend polling from hanging indefinitely
    */
   pollTryOnStatus: protectedProcedure
     .input(z.object({ taskId: z.string() }))
@@ -151,6 +153,19 @@ export const tryonRouter = router({
       const fitroomClient = getFitroomClient();
       const status = await fitroomClient.getTryOnStatus(input.taskId);
 
+      // If task failed, return the failure status with error message (don't throw)
+      // This allows frontend to detect failure immediately and refund credits
+      if (status.status === "FAILED") {
+        return {
+          taskId: input.taskId,
+          status: "FAILED",
+          error: status.error || "Try-on generation failed",
+          isComplete: false,
+          isFailed: true,
+        };
+      }
+
+      // If there was an error getting status (not a task failure), throw error
       if (!status.success) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -162,6 +177,7 @@ export const tryonRouter = router({
         taskId: input.taskId,
         status: status.status,
         resultImage: status.resultImage,
+        error: status.error,
         isComplete: status.status === "COMPLETED",
         isFailed: status.status === "FAILED",
       };

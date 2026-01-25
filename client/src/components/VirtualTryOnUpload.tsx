@@ -38,13 +38,16 @@ export function VirtualTryOnUpload() {
   const clothImageInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
-  const POLLING_TIMEOUT_MS = 180000; // 3 minutes max (Fitroom can take up to 2+ minutes)
+  const POLLING_TIMEOUT_MS = 120000; // 2 minutes max (Fitroom typically completes within 2 minutes)
 
   // Fetch user credits
   const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery();
 
   // Create try-on mutation
   const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
+  
+  // Refund credits mutation
+  const refundCreditsMutation = trpc.tryon.refundTryOnCredits.useMutation();
   
   // Get try-on status query
   const getTryOnStatusQuery = trpc.tryon.pollTryOnStatus.useQuery(
@@ -267,9 +270,29 @@ export function VirtualTryOnUpload() {
       setProcessingProgress(100);
       pollingStartTimeRef.current = null;
     } else if (status?.toUpperCase() === "FAILED") {
-      setError(getTryOnStatusQuery.data.error || "Try-on generation failed");
+      const errorMsg = getTryOnStatusQuery.data.error || "Try-on generation failed";
+      setError(errorMsg);
       setIsPolling(false);
       pollingStartTimeRef.current = null;
+      
+      // Refund credit for failed try-on
+      if (currentTaskId) {
+        console.log("[VirtualTryOn] Refunding credit for failed try-on", currentTaskId);
+        refundCreditsMutation.mutate(
+          { taskId: currentTaskId },
+          {
+            onSuccess: () => {
+              console.log("[VirtualTryOn] Credit refunded successfully");
+              refetchCredits();
+              setError(`${errorMsg} - Credit refunded.`);
+            },
+            onError: (err) => {
+              console.error("[VirtualTryOn] Failed to refund credit:", err);
+              setError(`${errorMsg} - Failed to refund credit. Please contact support.`);
+            },
+          }
+        );
+      }
     }
   }, [getTryOnStatusQuery.data, isPolling]);
 
