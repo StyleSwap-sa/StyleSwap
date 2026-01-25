@@ -22,6 +22,8 @@ export function VirtualTryOnUpload() {
   const [clothImagePreview, setClothImagePreview] = useState<string>("");
   const [clothImageDimensions, setClothImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [clothType, setClothType] = useState<"upper" | "lower" | "combo">("upper");
+  const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
+  const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
   
   // State for processing
   const [isLoading, setIsLoading] = useState(false);
@@ -178,10 +180,12 @@ export function VirtualTryOnUpload() {
       const formData = new FormData();
       formData.append("modelImage", finalModelPhoto);
       
-      // For combo (full dress), send the same image as both upper and lower
+      // For combo (top + bottom), send separate upper and lower clothing images
       if (clothType === "combo") {
         formData.append("upperClothImage", finalClothImage);
-        formData.append("lowerClothImage", finalClothImage);
+        if (lowerClothImage) {
+          formData.append("lowerClothImage", lowerClothImage);
+        }
       } else {
         formData.append("clothImage", finalClothImage);
       }
@@ -335,6 +339,8 @@ export function VirtualTryOnUpload() {
     setClothImage(null);
     setClothImagePreview("");
     setClothImageDimensions(null);
+    setLowerClothImage(null);
+    setLowerClothImagePreview("");
     setResult(null);
     setError("");
     setWarning("");
@@ -477,11 +483,18 @@ export function VirtualTryOnUpload() {
                 <div className="text-xs text-muted-foreground mt-1">Lower body only</div>
               </button>
               <button
+                onClick={() => setClothType("upper")}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" && !lowerClothImage ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+              >
+                <div className="font-semibold text-sm">Full Dress</div>
+                <div className="text-xs text-muted-foreground mt-1">Single garment</div>
+              </button>
+              <button
                 onClick={() => setClothType("combo")}
                 className={`p-4 rounded-lg border-2 transition-all ${clothType === "combo" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
               >
-                <div className="font-semibold text-sm">Full Dress</div>
-                <div className="text-xs text-muted-foreground mt-1">Full body</div>
+                <div className="font-semibold text-sm">Top + Bottom</div>
+                <div className="text-xs text-muted-foreground mt-1">Two pieces</div>
               </button>
             </div>
           </CardContent>
@@ -538,7 +551,9 @@ export function VirtualTryOnUpload() {
           {/* Clothing Image Upload */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">2. Upload Clothing Image</CardTitle>
+              <CardTitle className="text-lg">
+                {clothType === "combo" ? "2a. Upload Top/Shirt Image" : "2. Upload Clothing Image"}
+              </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
                 Clear front view on solid background (recommended: 1024px width)
               </p>
@@ -579,8 +594,58 @@ export function VirtualTryOnUpload() {
             </CardContent>
           </Card>
 
+          {/* Lower Clothing Image Upload (Combo Mode Only) */}
+          {clothType === "combo" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">2b. Upload Bottom/Pants Image</CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Clear front view on solid background (recommended: 1024px width)
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div
+                  onClick={() => clothImageInputRef.current?.click()}
+                  className="border-2 border-dashed border-primary/30 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                >
+                  <input
+                    ref={clothImageInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setLowerClothImage(file);
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        setLowerClothImagePreview(e.target?.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                    className="hidden"
+                  />
+                  <div className="space-y-2">
+                    <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
+                    <div className="font-medium">Click to upload bottom/pants image</div>
+                    <div className="text-sm text-muted-foreground">PNG, JPG, or WebP</div>
+                  </div>
+                </div>
+
+                {lowerClothImagePreview && (
+                  <div className="space-y-2">
+                    <img 
+                      src={lowerClothImagePreview} 
+                      alt="Lower clothing preview" 
+                      className="w-full rounded-lg border border-border"
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Generate Button */}
-          {modelPhoto && clothImage && (
+          {modelPhoto && clothImage && (clothType !== "combo" || lowerClothImage) && (
             <div className="space-y-4">
               {isPolling && (
                 <Card className="bg-blue-50 border-blue-200">

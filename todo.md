@@ -1310,3 +1310,11 @@ This approach:
 - [x] Verify all features work on mobile
 - [x] Mobile menu hamburger icon working
 - [x] All navigation links accessible on mobile
+
+## Phase 32: Fix Cloth Type Selector for Correct Fitroom API Mapping
+- [x] Update cloth type options: Full Dress/Jumpsuit should use "upper" (not "combo")
+- [x] Add new "Top + Bottom" option for true combo mode (separate upper and lower images)
+- [x] Update VirtualTryOnUpload component to show correct upload fields based on selection
+- [x] Test all three cloth types: upper, lower, combo
+- [x] Verify full dress try-ons work correctly with "upper" cloth type
+- [ ] Save checkpoint with corrected cloth type mapping
