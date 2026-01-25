@@ -107,7 +107,7 @@ export default function Home() {
                   <>
                     <div className="w-px bg-border/30"></div>
                     <button
-                      onClick={() => setLocation('/dashboard')}
+                      onClick={() => setLocation('/demo')}
                       className="hover:text-secondary transition-colors uppercase tracking-wide text-secondary font-bold"
                       title="Test the customer try-on dashboard"
                     >
@@ -211,7 +211,7 @@ export default function Home() {
                     <div className="border-t border-border/20 my-2"></div>
                     <button
                       onClick={() => {
-                        setLocation('/dashboard');
+                        setLocation('/demo');
                         setMobileMenuOpen(false);
                       }}
                       className="block w-full text-left px-4 py-2 hover:bg-background/80 rounded transition-colors uppercase tracking-wide text-sm font-bold text-secondary"
