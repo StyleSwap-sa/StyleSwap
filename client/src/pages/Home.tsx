@@ -6,7 +6,7 @@ import { getLoginUrl } from "@/const";
 import { useState } from "react";
 
 export default function Home() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -57,13 +57,13 @@ export default function Home() {
   ];
 
   const authenticatedNavItems = [
-    { label: 'Dashboard', path: '/boutique-dashboard' },
+    { label: 'Dashboard', path: getDashboardPath() },
     { label: 'Profile', path: '/profile' },
   ];
 
   // For admin users, add a link to the customer dashboard for testing
   const adminTestItems = (user?.role === 'admin' || user?.userType === 'admin') ? [
-    { label: 'Try Customer Dashboard', path: '/dashboard?test=customer' },
+    { label: 'Try Customer Dashboard', path: '/dashboard' },
   ] : [];
 
   return (
@@ -101,15 +101,20 @@ export default function Home() {
                     {item.label}
                   </button>
                 ))}
-                {adminTestItems.map((item) => (
-                  <button
-                    key={item.path}
-                    onClick={() => setLocation(item.path)}
-                    className="hover:text-secondary transition-colors uppercase tracking-wide text-secondary font-bold text-xs"
-                  >
-                    {item.label}
-                  </button>
-                ))}
+                {adminTestItems.length > 0 && (
+                  <>
+                    <div className="w-px bg-border/30"></div>
+                    {adminTestItems.map((item) => (
+                      <button
+                        key={item.path}
+                        onClick={() => setLocation(item.path)}
+                        className="hover:text-secondary transition-colors uppercase tracking-wide text-secondary font-bold"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </>
+                )}
               </>
             )}
           </div>

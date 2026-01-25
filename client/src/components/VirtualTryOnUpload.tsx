@@ -38,7 +38,7 @@ export function VirtualTryOnUpload() {
   const clothImageInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
-  const POLLING_TIMEOUT_MS = 120000; // 2 minutes max (Fitroom typically completes within 2 minutes)
+  const POLLING_TIMEOUT_MS = 150000; // 2.5 minutes max (HD mode can take up to 30 seconds)
 
   // Fetch user credits
   const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery();
@@ -177,7 +177,8 @@ export function VirtualTryOnUpload() {
       const formData = new FormData();
       formData.append("modelImage", finalModelPhoto);
       formData.append("clothImage", finalClothImage);
-      formData.append("clothType", "single");
+      // Use 'upper' for single clothing items (Fitroom API expects: upper, lower, or combo)
+      formData.append("clothType", "upper");
       setProcessingProgress(20);
 
       // Call the dedicated file upload endpoint
@@ -249,18 +250,39 @@ export function VirtualTryOnUpload() {
     // Check if polling has exceeded timeout
     const elapsedTime = Date.now() - (pollingStartTimeRef.current || Date.now());
     if (elapsedTime > POLLING_TIMEOUT_MS) {
-      setError("Try-on generation timed out. Please try again.");
+      console.log("[VirtualTryOn] Polling timeout after", elapsedTime, "ms");
+      setError("Try-on generation timed out. Please try again. Credit has been refunded.");
       setIsPolling(false);
       pollingStartTimeRef.current = null;
+      setProcessingProgress(100);
+      
+      if (currentTaskId) {
+        console.log("[VirtualTryOn] Refunding credit due to timeout", currentTaskId);
+        refundCreditsMutation.mutate(
+          { taskId: currentTaskId },
+          {
+            onSuccess: () => {
+              console.log("[VirtualTryOn] Credit refunded successfully after timeout");
+              refetchCredits();
+            },
+            onError: (err) => {
+              console.error("[VirtualTryOn] Failed to refund credit after timeout:", err);
+            },
+          }
+        );
+      }
       return;
     }
 
     const status = getTryOnStatusQuery.data.status;
     const progress = getTryOnStatusQuery.data.progress || 0;
     
-    setProcessingProgress(Math.min(progress, 95)); // Cap at 95% until complete
+    // Update progress bar with API progress (cap at 95% until complete)
+    const displayProgress = Math.min(20 + (progress * 0.75), 95);
+    setProcessingProgress(displayProgress);
 
     if (status?.toUpperCase() === "COMPLETED") {
+      console.log("[VirtualTryOn] Try-on completed successfully!");
       setResult({
         taskId: getTryOnStatusQuery.data.taskId,
         resultImageUrl: getTryOnStatusQuery.data.resultImage || getTryOnStatusQuery.data.resultImageUrl,
@@ -271,11 +293,12 @@ export function VirtualTryOnUpload() {
       pollingStartTimeRef.current = null;
     } else if (status?.toUpperCase() === "FAILED") {
       const errorMsg = getTryOnStatusQuery.data.error || "Try-on generation failed";
+      console.log("[VirtualTryOn] Try-on failed:", errorMsg);
       setError(errorMsg);
       setIsPolling(false);
       pollingStartTimeRef.current = null;
+      setProcessingProgress(100);
       
-      // Refund credit for failed try-on
       if (currentTaskId) {
         console.log("[VirtualTryOn] Refunding credit for failed try-on", currentTaskId);
         refundCreditsMutation.mutate(

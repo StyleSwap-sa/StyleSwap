@@ -31,6 +31,7 @@ export interface FitroomTaskStatusResponse {
   success: boolean;
   status?: string;
   resultImage?: string;
+  downloadSignedUrl?: string;
   progress?: number;
   error?: string;
   errorCode?: string;
@@ -81,6 +82,8 @@ export class FitroomClient {
   async createTryOnWithBase64(request: FitroomTryOnBase64Request): Promise<FitroomTryOnResponse> {
     try {
       console.log("[Fitroom] Creating try-on with base64 encoded images");
+      console.log("[Fitroom] Cloth type:", request.clothType);
+      console.log("[Fitroom] HD mode:", request.hdMode !== false ? "enabled" : "disabled");
       
       // Calculate base64 sizes for logging
       const modelBase64Size = Buffer.byteLength(request.modelImageBase64, 'utf8');
@@ -105,13 +108,13 @@ export class FitroomClient {
         (payload as any).lower_cloth_image = request.lowerClothImageBase64;
       }
 
-      // Add HD mode if specified
-      if (request.hdMode) {
-        (payload as any).hd_mode = true;
-      }
+      // Enable HD mode by default for better quality (30s vs 9s processing)
+      // HD mode provides higher quality output at the cost of longer processing time
+      (payload as any).hd_mode = true;
 
       console.log("[Fitroom] Sending POST to /api/tryon/v2/tasks with base64 JSON payload");
       console.log("[Fitroom] Payload keys:", Object.keys(payload));
+      console.log("[Fitroom] Payload:", { ...payload, model_image: payload.model_image.substring(0, 50) + "...", cloth_image: payload.cloth_image.substring(0, 50) + "..." });
       
       const response = await this.client.post("/api/tryon/v2/tasks", payload, {
         headers: {
@@ -245,11 +248,12 @@ export class FitroomClient {
         });
       }
 
-      if (request.hdMode) {
-        form.append("hd_mode", "true");
-      }
+      // Enable HD mode by default for better quality (30s vs 9s processing)
+      // HD mode provides higher quality output at the cost of longer processing time
+      form.append("hd_mode", "true");
 
-      console.log("[Fitroom] Sending POST to /api/tryon/v2/tasks");
+      console.log("[Fitroom] Sending POST to /api/tryon/v2/tasks with multipart form data");
+      console.log("[Fitroom] Form fields: model_image, cloth_image, cloth_type, hd_mode");
 
       const response = await this.client.post("/api/tryon/v2/tasks", form, {
         headers: form.getHeaders(),
@@ -295,19 +299,27 @@ export class FitroomClient {
   async getTryOnStatus(taskId: string): Promise<FitroomTaskStatusResponse> {
     try {
       console.log("[Fitroom] Getting status for task:", taskId);
+      console.log("[Fitroom] Polling endpoint: /api/tryon/v2/tasks/" + taskId);
 
       const response = await this.client.get(`/api/tryon/v2/tasks/${taskId}`);
 
-      console.log("[Fitroom] Status response:", response.data);
+      console.log("[Fitroom] Status response:", { status: response.data.status, progress: response.data.progress, hasUrl: !!response.data.download_signed_url });
 
       const status = response.data.status || "UNKNOWN";
-      const resultImage = response.data.result_image || response.data.resultImage;
+      // Fitroom API returns download_signed_url for completed tasks
+      const resultImage = response.data.download_signed_url || response.data.result_image || response.data.resultImage;
       const progress = response.data.progress;
+
+      // If task is completed, log the result URL
+      if (status === "COMPLETED" && resultImage) {
+        console.log("[Fitroom] Task completed! Result URL available.");
+      }
 
       return {
         success: true,
         status,
         resultImage,
+        downloadSignedUrl: resultImage,
         progress,
       };
     } catch (error: any) {
