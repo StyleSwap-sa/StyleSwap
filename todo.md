@@ -1327,3 +1327,20 @@ This approach:
 - [x] Test bottom/pants with corrected backend
 - [x] Test top + bottom combo with corrected backend
 - [x] Save checkpoint with backend cloth type fix
+
+## Phase 34: Fix Fitroom API Field Names
+- [ ] Verify upload endpoint correctly maps upperClothImage to cloth_image
+- [ ] Verify upload endpoint correctly maps lowerClothImage to lower_cloth_image
+- [ ] Test combo mode with correct field name mapping
+- [ ] Test single garment mode (upper, lower)
+- [ ] Verify credits are refunded on failed try-ons
+- [ ] Save checkpoint with field name mapping fix
+
+## Phase 35: Simplify Clothing Type Selector to Match Fitroom
+- [x] Remove separate Top/Shirt and Bottom/Pants options
+- [x] Keep only "Single Garment" and "Top & Bottom" options
+- [x] For Single Garment, always use cloth_type=upper (works for dress, top, or bottom)
+- [x] Update UI labels to match Fitroom's interface
+- [x] Test single garment with dress image
+- [x] Test top & bottom with separate images
+- [x] Save checkpoint with simplified UI

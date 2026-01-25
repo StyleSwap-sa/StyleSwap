@@ -461,39 +461,25 @@ export function VirtualTryOnUpload() {
       {!result && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Select Clothing Type</CardTitle>
+            <CardTitle className="text-lg">Select Clothes</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">
-              Choose what type of clothing you are trying on
+              Choose single garment or mix top & bottom
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setClothType("upper")}
-                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" && clothType !== "combo" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
               >
-                <div className="font-semibold text-sm">Top/Shirt</div>
-                <div className="text-xs text-muted-foreground mt-1">Upper body only</div>
-              </button>
-              <button
-                onClick={() => setClothType("lower")}
-                className={`p-4 rounded-lg border-2 transition-all ${clothType === "lower" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
-              >
-                <div className="font-semibold text-sm">Bottom/Pants</div>
-                <div className="text-xs text-muted-foreground mt-1">Lower body only</div>
-              </button>
-              <button
-                onClick={() => setClothType("upper")}
-                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" && !lowerClothImage ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
-              >
-                <div className="font-semibold text-sm">Full Dress</div>
-                <div className="text-xs text-muted-foreground mt-1">Single garment</div>
+                <div className="font-semibold text-sm">Single clothes</div>
+                <div className="text-xs text-muted-foreground mt-1">Dress, top, or bottom</div>
               </button>
               <button
                 onClick={() => setClothType("combo")}
                 className={`p-4 rounded-lg border-2 transition-all ${clothType === "combo" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
               >
-                <div className="font-semibold text-sm">Top + Bottom</div>
+                <div className="font-semibold text-sm">Top & bottom</div>
                 <div className="text-xs text-muted-foreground mt-1">Two pieces</div>
               </button>
             </div>
@@ -552,10 +538,10 @@ export function VirtualTryOnUpload() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">
-                {clothType === "combo" ? "2a. Upload Top/Shirt Image" : "2. Upload Clothing Image"}
+                {clothType === "combo" ? "Upload Top Image" : "Upload Clothing Image"}
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Clear front view on solid background (recommended: 1024px width)
+                {clothType === "combo" ? "Top/shirt image" : "Dress, top, or bottom - clear front view on solid background"}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -598,9 +584,9 @@ export function VirtualTryOnUpload() {
           {clothType === "combo" && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">2b. Upload Bottom/Pants Image</CardTitle>
+                <CardTitle className="text-lg">Upload Bottom Image</CardTitle>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Clear front view on solid background (recommended: 1024px width)
+                  Bottom/pants image - clear front view on solid background
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
