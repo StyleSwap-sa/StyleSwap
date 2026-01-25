@@ -66,6 +66,8 @@ export default function Home() {
     { label: 'Try Customer Dashboard', path: '/dashboard' },
   ] : [];
 
+  const isAdmin = user?.role === 'admin' || user?.userType === 'admin';
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Navigation */}
@@ -101,18 +103,16 @@ export default function Home() {
                     {item.label}
                   </button>
                 ))}
-                {adminTestItems.length > 0 && (
+                {isAdmin && (
                   <>
                     <div className="w-px bg-border/30"></div>
-                    {adminTestItems.map((item) => (
-                      <button
-                        key={item.path}
-                        onClick={() => setLocation(item.path)}
-                        className="hover:text-secondary transition-colors uppercase tracking-wide text-secondary font-bold"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
+                    <button
+                      onClick={() => setLocation('/dashboard')}
+                      className="hover:text-secondary transition-colors uppercase tracking-wide text-secondary font-bold"
+                      title="Test the customer try-on dashboard"
+                    >
+                      Try Customer Dashboard
+                    </button>
                   </>
                 )}
               </>
@@ -206,58 +206,33 @@ export default function Home() {
                     {item.label}
                   </button>
                 ))}
-                {adminTestItems.length > 0 && (
+                {isAdmin && (
                   <>
                     <div className="border-t border-border/20 my-2"></div>
-                    {adminTestItems.map((item) => (
-                      <button
-                        key={item.path}
-                        onClick={() => {
-                          setLocation(item.path);
-                          setMobileMenuOpen(false);
-                        }}
-                        className="block w-full text-left px-4 py-2 hover:bg-background/80 rounded transition-colors uppercase tracking-wide text-sm font-bold text-secondary"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
+                    <button
+                      onClick={() => {
+                        setLocation('/dashboard');
+                        setMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 hover:bg-background/80 rounded transition-colors uppercase tracking-wide text-sm font-bold text-secondary"
+                      title="Test the customer try-on dashboard"
+                    >
+                      Try Customer Dashboard
+                    </button>
                   </>
                 )}
               </>
             )}
             <div className="border-t border-border/20 my-2"></div>
-            {isAuthenticated ? (
+            {isAuthenticated && user ? (
               <>
                 <div className="px-4 py-2 text-sm font-medium text-muted-foreground">
                   {user?.name}
                 </div>
-                {(user?.role === 'admin' || user?.userType === 'admin') && (
-                  <Button
-                    onClick={() => {
-                      setLocation('/dashboard');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                  >
-                    Try Customer Dashboard
-                  </Button>
-                )}
                 <Button
-                  onClick={() => {
-                    setLocation(getDashboardPath());
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full premium-button bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  {getDashboardLabel()}
-                </Button>
-                <Button
-                  onClick={() => {
-                    setLocation('/profile');
-                    setMobileMenuOpen(false);
-                  }}
-                  variant="outline"
+                  onClick={() => setLocation('/profile')}
                   className="w-full"
+                  variant="outline"
                 >
                   Profile
                 </Button>
