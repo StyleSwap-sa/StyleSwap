@@ -1,4 +1,5 @@
 import express from "express";
+const app = express();
 import { createServer } from "http";
 import net from "net";
 import multer from "multer";
@@ -76,6 +77,8 @@ export async function startServer() {
       const lowerClothImageFiles = (req.files as any)?.lowerClothImage;
       const clothType = req.body.clothType || "upper";
 
+      console.log("[Try-On Upload] Files received:", Object.keys(req.files || {}));
+      console.log("[Try-On Upload] clothType:", clothType);
       if (!modelImageFiles || !modelImageFiles[0]) {
         return res.status(400).json({ error: "Model image is required" });
       }
@@ -84,7 +87,7 @@ export async function startServer() {
       let clothImageBuffer: Buffer;
       let lowerClothImageBuffer: Buffer | null = null;
       
-      if (clothType === "combo" && upperClothImageFiles && upperClothImageFiles[0]) {
+      if ((clothType === "combo" || clothType === "upper") && upperClothImageFiles && upperClothImageFiles[0]) {
         clothImageBuffer = upperClothImageFiles[0].buffer;
         if (lowerClothImageFiles && lowerClothImageFiles[0]) {
           lowerClothImageBuffer = lowerClothImageFiles[0].buffer;
@@ -172,7 +175,7 @@ export async function startServer() {
       console.log(`[Try-On Upload] Saved temp files: ${modelPath}, ${clothPath}`);
       
       let lowerClothPath: string | undefined;
-      if (clothType === "combo" && lowerClothImageBuffer) {
+      if ((clothType === "combo" || clothType === "upper") && lowerClothImageBuffer) {
         lowerClothPath = path.join(tempDir, 'lower_cloth.jpg');
         let finalLowerClothBuffer = lowerClothImageBuffer;
         const lowerClothValidation = validateImageType(lowerClothImageBuffer);
@@ -184,6 +187,13 @@ export async function startServer() {
         console.log(`[Try-On Upload] Saved lower cloth temp file: ${lowerClothPath}`);
       }
       
+      // For single garments (upper/lower), don't use lower cloth image
+      // For combo mode, use both upper and lower cloth images
+      let fitroomLowerClothPath: string | undefined = undefined;
+      if (clothType === "combo") {
+        fitroomLowerClothPath = lowerClothPath;
+      }
+      
       // Create try-on task with Fitroom using multipart form data (like the website)
       const fitroomClient = getFitroomClient();
       console.log('[Try-On Upload] Sending to Fitroom API using multipart form data');
@@ -191,7 +201,7 @@ export async function startServer() {
         modelImagePath: modelPath,
         clothImagePath: clothPath,
         clothType: clothType as "upper" | "lower" | "combo",
-        lowerClothImagePath: lowerClothPath,
+        lowerClothImagePath: fitroomLowerClothPath,
         hdMode: true,
       });
       
@@ -225,6 +235,11 @@ export async function startServer() {
       return res.status(500).json({ error: error instanceof Error ? error.message : "Failed to process try-on upload" });
     }
   });
+  
+  // Webhook endpoints
+  app.post("/api/yoco/webhook", handleYokoWebhook);
+  app.post("/api/yoco-boutique/webhook", handleYocoBoutiqueWebhook);
+  app.post("/api/test-webhook", testYocoBoutiqueWebhook);
   
   // tRPC API
   app.use(

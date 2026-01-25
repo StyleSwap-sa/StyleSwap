@@ -181,18 +181,22 @@ export function VirtualTryOnUpload() {
       const formData = new FormData();
       formData.append("modelImage", finalModelPhoto);
       
-      // For combo (top + bottom), send separate upper and lower clothing images
+      // For combo, send as upper+lower. For single garments, send only cloth image
       if (clothType === "combo") {
         formData.append("upperClothImage", finalClothImage);
         if (lowerClothImage) {
           formData.append("lowerClothImage", lowerClothImage);
         }
       } else {
+        // For single garments (upper/lower), send only the cloth image
         formData.append("clothImage", finalClothImage);
       }
       
       // Use selected cloth type (Fitroom API expects: upper, lower, or combo)
       formData.append("clothType", clothType);
+      console.log("[VirtualTryOn] FormData clothType:", clothType);
+      console.log("[VirtualTryOn] FormData modelImage:", finalModelPhoto?.name, finalModelPhoto?.size);
+      console.log("[VirtualTryOn] FormData clothImage:", finalClothImage?.name, finalClothImage?.size);
       setProcessingProgress(20);
 
       // Call the dedicated file upload endpoint

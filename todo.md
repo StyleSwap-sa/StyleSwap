@@ -1351,3 +1351,23 @@ This approach:
 - [x] Check backend receives clothImage from frontend
 - [x] Verify Fitroom API receives cloth_image parameter
 - [x] Fix the issue and test dress try-on again
+
+## Phase 37: Fix Full Dress Try-on to Apply as Complete Garment
+- [x] Identify that Fitroom treats cloth_type=upper as top-only
+- [x] Implement solution: send full dress as combo with same image for upper and lower
+- [x] Update frontend to send dress image as both upperClothImage and lowerClothImage
+- [x] Update backend to convert upper type to combo when lowerClothPath exists
+- [x] Test full dress try-on with the fix - Result: dress is divided into top/bottom seam
+- [x] Revert combo mode and use cloth_type=upper only
+- [ ] Test with upper mode to see if Fitroom applies full dress correctly
+- [ ] Save checkpoint with final fix
+
+## Phase 38: Fix Yoco Payment Webhook Integration
+- [x] Check if Yoco webhook handler exists in backend
+- [x] Verify webhook endpoint is configured in Yoco dashboard (added /api/yoco/webhook route)
+- [x] Register webhook endpoints in Express server
+- [x] Manually add 10 credits from R45 payment to user account
+- [ ] Test payment flow: purchase → webhook received → credits added to dashboard
+- [ ] Configure Yoco dashboard to send webhooks to /api/yoco/webhook
+- [ ] Test webhook delivery with next payment
+- [ ] Verify credits are automatically added after payment
