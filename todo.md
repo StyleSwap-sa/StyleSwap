@@ -1372,3 +1372,13 @@ This approach:
 - [ ] Configure Yoco dashboard to send webhooks to /api/yoco/webhook
 - [ ] Test webhook delivery with next payment
 - [ ] Verify credits are automatically added after payment
+
+
+## Phase 39: Implement Fitroom Native Full Clothing Type Support
+- [x] Research Fitroom API documentation - CONFIRMED: "full" is supported
+- [x] Update backend to accept cloth_type: "full"
+- [x] Remove manual image splitting code
+- [x] Update frontend UI to use native "full" mode
+- [ ] Test full dress try-on with native Fitroom support
+- [ ] Verify credits deduction works correctly
+- [ ] Integrate Check Clothes Image validation API (optional enhancement)
