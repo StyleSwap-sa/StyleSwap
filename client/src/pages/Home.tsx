@@ -206,18 +206,23 @@ export default function Home() {
                     {item.label}
                   </button>
                 ))}
-                {adminTestItems.map((item) => (
-                  <button
-                    key={item.path}
-                    onClick={() => {
-                      setLocation(item.path);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 hover:bg-background/80 rounded transition-colors uppercase tracking-wide text-xs font-bold text-secondary"
-                  >
-                    {item.label}
-                  </button>
-                ))}
+                {adminTestItems.length > 0 && (
+                  <>
+                    <div className="border-t border-border/20 my-2"></div>
+                    {adminTestItems.map((item) => (
+                      <button
+                        key={item.path}
+                        onClick={() => {
+                          setLocation(item.path);
+                          setMobileMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-background/80 rounded transition-colors uppercase tracking-wide text-sm font-bold text-secondary"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </>
+                )}
               </>
             )}
             <div className="border-t border-border/20 my-2"></div>
@@ -226,6 +231,17 @@ export default function Home() {
                 <div className="px-4 py-2 text-sm font-medium text-muted-foreground">
                   {user?.name}
                 </div>
+                {(user?.role === 'admin' || user?.userType === 'admin') && (
+                  <Button
+                    onClick={() => {
+                      setLocation('/dashboard');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                  >
+                    Try Customer Dashboard
+                  </Button>
+                )}
                 <Button
                   onClick={() => {
                     setLocation(getDashboardPath());
