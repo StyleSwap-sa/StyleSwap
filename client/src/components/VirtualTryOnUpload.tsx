@@ -495,17 +495,24 @@ export function VirtualTryOnUpload() {
           <CardHeader>
             <CardTitle className="text-lg">Select Clothes</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">
-              Choose single garment or mix top & bottom
+              Select the type of clothing you want to try on
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setClothType("upper")}
-                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" && clothType !== "combo" && clothType !== "dress" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
               >
-                <div className="font-semibold text-sm">Single Item</div>
-                <div className="text-xs text-muted-foreground mt-1">Top or bottom</div>
+                <div className="font-semibold text-sm">Top</div>
+                <div className="text-xs text-muted-foreground mt-1">Shirt, jacket, etc</div>
+              </button>
+              <button
+                onClick={() => setClothType("lower")}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "lower" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+              >
+                <div className="font-semibold text-sm">Bottom</div>
+                <div className="text-xs text-muted-foreground mt-1">Pants, skirt, etc</div>
               </button>
               <button
                 onClick={() => setClothType("full")}

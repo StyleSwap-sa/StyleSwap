@@ -1382,3 +1382,13 @@ This approach:
 - [ ] Test full dress try-on with native Fitroom support
 - [ ] Verify credits deduction works correctly
 - [ ] Integrate Check Clothes Image validation API (optional enhancement)
+
+
+## Phase 40: Add Separate Top and Bottom Clothing Type Options
+- [ ] Update UI to show 4 clothing type buttons: Top, Bottom, Full Dress, Top+Bottom
+- [ ] Update frontend clothType state to distinguish between "upper" and "lower"
+- [ ] Ensure correct cloth_type is sent to Fitroom for each option
+- [ ] Test Top option with top clothing image
+- [ ] Test Bottom option with bottom clothing image
+- [ ] Test Full Dress option with full dress image
+- [ ] Test Top+Bottom combo option with two separate images
