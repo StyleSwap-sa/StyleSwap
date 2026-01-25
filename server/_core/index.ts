@@ -48,7 +48,9 @@ export async function startServer() {
   // Try-on upload endpoint with file upload support
   app.post("/api/tryon/upload", createUploadRateLimiter(), upload.fields([
     { name: "modelImage", maxCount: 1 },
-    { name: "clothImage", maxCount: 1 }
+    { name: "clothImage", maxCount: 1 },
+    { name: "upperClothImage", maxCount: 1 },
+    { name: "lowerClothImage", maxCount: 1 }
   ]), async (req, res) => {
     let tempDir: string | null = null;
     try {
@@ -70,14 +72,30 @@ export async function startServer() {
       
       const modelImageFiles = (req.files as any)?.modelImage;
       const clothImageFiles = (req.files as any)?.clothImage;
+      const upperClothImageFiles = (req.files as any)?.upperClothImage;
+      const lowerClothImageFiles = (req.files as any)?.lowerClothImage;
+      const clothType = req.body.clothType || "single";
 
-      if (!modelImageFiles || !modelImageFiles[0] || !clothImageFiles || !clothImageFiles[0]) {
-        return res.status(400).json({ error: "Both model image and cloth image are required" });
+      if (!modelImageFiles || !modelImageFiles[0]) {
+        return res.status(400).json({ error: "Model image is required" });
       }
 
       const modelImageBuffer = modelImageFiles[0].buffer;
-      const clothImageBuffer = clothImageFiles[0].buffer;
-      const clothType = req.body.clothType || "single";
+      let clothImageBuffer: Buffer;
+      let lowerClothImageBuffer: Buffer | null = null;
+      
+      if (clothType === "combo" && upperClothImageFiles && upperClothImageFiles[0]) {
+        clothImageBuffer = upperClothImageFiles[0].buffer;
+        if (lowerClothImageFiles && lowerClothImageFiles[0]) {
+          lowerClothImageBuffer = lowerClothImageFiles[0].buffer;
+        } else {
+          lowerClothImageBuffer = clothImageBuffer;
+        }
+      } else if (clothImageFiles && clothImageFiles[0]) {
+        clothImageBuffer = clothImageFiles[0].buffer;
+      } else {
+        return res.status(400).json({ error: "Clothing image is required" });
+      }
 
       console.log(`[Try-On Upload] Model image size: ${modelImageBuffer.length} bytes`);
       console.log(`[Try-On Upload] Cloth image size: ${clothImageBuffer.length} bytes`);
@@ -153,6 +171,19 @@ export async function startServer() {
       fs.writeFileSync(clothPath, finalClothBuffer);
       console.log(`[Try-On Upload] Saved temp files: ${modelPath}, ${clothPath}`);
       
+      let lowerClothPath: string | undefined;
+      if (clothType === "combo" && lowerClothImageBuffer) {
+        lowerClothPath = path.join(tempDir, 'lower_cloth.jpg');
+        let finalLowerClothBuffer = lowerClothImageBuffer;
+        const lowerClothValidation = validateImageType(lowerClothImageBuffer);
+        if (lowerClothValidation.format !== 'JPEG') {
+          console.log(`[Try-On Upload] Converting lower cloth to JPEG`);
+          finalLowerClothBuffer = await sharp(lowerClothImageBuffer).jpeg({ quality: 95 }).toBuffer();
+        }
+        fs.writeFileSync(lowerClothPath, finalLowerClothBuffer);
+        console.log(`[Try-On Upload] Saved lower cloth temp file: ${lowerClothPath}`);
+      }
+      
       // Create try-on task with Fitroom using multipart form data (like the website)
       const fitroomClient = getFitroomClient();
       console.log('[Try-On Upload] Sending to Fitroom API using multipart form data');
@@ -160,7 +191,8 @@ export async function startServer() {
         modelImagePath: modelPath,
         clothImagePath: clothPath,
         clothType: clothType as "single" | "combo",
-        hdMode: false,
+        lowerClothImagePath: lowerClothPath,
+        hdMode: true,
       });
       
       // Clean up temp files

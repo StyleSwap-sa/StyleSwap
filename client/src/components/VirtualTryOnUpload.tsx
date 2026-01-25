@@ -21,6 +21,7 @@ export function VirtualTryOnUpload() {
   const [clothImage, setClothImage] = useState<File | null>(null);
   const [clothImagePreview, setClothImagePreview] = useState<string>("");
   const [clothImageDimensions, setClothImageDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [clothType, setClothType] = useState<"upper" | "lower" | "combo">("upper");
   
   // State for processing
   const [isLoading, setIsLoading] = useState(false);
@@ -176,9 +177,17 @@ export function VirtualTryOnUpload() {
       // Send resized files using FormData
       const formData = new FormData();
       formData.append("modelImage", finalModelPhoto);
-      formData.append("clothImage", finalClothImage);
-      // Use 'upper' for single clothing items (Fitroom API expects: upper, lower, or combo)
-      formData.append("clothType", "upper");
+      
+      // For combo (full dress), send the same image as both upper and lower
+      if (clothType === "combo") {
+        formData.append("upperClothImage", finalClothImage);
+        formData.append("lowerClothImage", finalClothImage);
+      } else {
+        formData.append("clothImage", finalClothImage);
+      }
+      
+      // Use selected cloth type (Fitroom API expects: upper, lower, or combo)
+      formData.append("clothType", clothType);
       setProcessingProgress(20);
 
       // Call the dedicated file upload endpoint
@@ -437,6 +446,43 @@ export function VirtualTryOnUpload() {
               >
                 Try Again
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Cloth Type Selector */}
+      {!result && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Select Clothing Type</CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">
+              Choose what type of clothing you are trying on
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                onClick={() => setClothType("upper")}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+              >
+                <div className="font-semibold text-sm">Top/Shirt</div>
+                <div className="text-xs text-muted-foreground mt-1">Upper body only</div>
+              </button>
+              <button
+                onClick={() => setClothType("lower")}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "lower" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+              >
+                <div className="font-semibold text-sm">Bottom/Pants</div>
+                <div className="text-xs text-muted-foreground mt-1">Lower body only</div>
+              </button>
+              <button
+                onClick={() => setClothType("combo")}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "combo" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+              >
+                <div className="font-semibold text-sm">Full Dress</div>
+                <div className="text-xs text-muted-foreground mt-1">Full body</div>
+              </button>
             </div>
           </CardContent>
         </Card>
