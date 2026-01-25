@@ -34,17 +34,21 @@ export const tryonRouter = router({
         clothImageBase64: z.string().describe("Base64 encoded garment image"),
         clothType: z.enum(["upper", "lower", "combo"]).default("upper"), // "upper" for tops/dresses, "lower" for bottoms, "combo" for top+bottom
         hdMode: z.boolean().optional().default(false),
+        testMode: z.boolean().optional().default(false).describe("Skip credit deduction for testing"),
       })
     )
     .mutation(async ({ ctx, input }) => {
       let tempDir: string | null = null;
       try {
-        const credits = await getUserCredits(ctx.user.id);
-        if (credits.remainingCredits < 1) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Insufficient credits. Please purchase more credits to continue.",
-          });
+        // Skip credit check in test mode
+        if (!input.testMode) {
+          const credits = await getUserCredits(ctx.user.id);
+          if (credits.remainingCredits < 1) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Insufficient credits. Please purchase more credits to continue.",
+            });
+          }
         }
 
         // Create temp directory for image files
@@ -106,8 +110,10 @@ export const tryonRouter = router({
           });
         }
 
-        // Deduct credit AFTER successful task creation
-        await deductCredits(ctx.user.id, 1);
+        // Deduct credit AFTER successful task creation (skip in test mode)
+        if (!input.testMode) {
+          await deductCredits(ctx.user.id, 1);
+        }
 
         return {
           success: true,
@@ -117,8 +123,8 @@ export const tryonRouter = router({
       } catch (error) {
         console.error("[Try-On] Error:", error);
         
-        // Refund credit if task creation failed
-        if (tempDir) {
+        // Refund credit if task creation failed (skip in test mode)
+        if (tempDir && !input.testMode) {
           try {
             await refundCredits(ctx.user.id, 1);
           } catch (refundError) {

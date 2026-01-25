@@ -71,6 +71,10 @@ export async function startServer() {
       
       const userId = user.id;
       
+      // Get testMode from query param or body
+      const testMode = req.query.testMode === 'true' || req.body.testMode === 'true';
+      console.log("[Try-On Upload] Test mode:", testMode);
+      
       const modelImageFiles = (req.files as any)?.modelImage;
       const clothImageFiles = (req.files as any)?.clothImage;
       const upperClothImageFiles = (req.files as any)?.upperClothImage;
@@ -155,10 +159,12 @@ export async function startServer() {
       console.log(`[Try-On Upload] Model image base64 size: ${modelImageBase64.length} bytes`);
       console.log(`[Try-On Upload] Cloth image base64 size: ${clothImageBase64.length} bytes`);
 
-      // Check credits
-      const credits = await getUserCredits(userId);
-      if (credits.remainingCredits < 1) {
-        return res.status(402).json({ error: "Insufficient credits" });
+      // Check credits (skip in test mode)
+      if (!testMode) {
+        const credits = await getUserCredits(userId);
+        if (credits.remainingCredits < 1) {
+          return res.status(402).json({ error: "Insufficient credits" });
+        }
       }
 
       // Save buffers to temporary files for multipart upload
@@ -220,8 +226,12 @@ export async function startServer() {
         return res.status(500).json({ error: taskResult.error || "Failed to create try-on task" });
       }
 
-      // Deduct credit after successful task creation
-      await deductCredits(userId, 1);
+      // Deduct credit after successful task creation (skip in test mode)
+      if (!testMode) {
+        await deductCredits(userId, 1);
+      } else {
+        console.log("[Try-On Upload] Test mode - skipping credit deduction");
+      }
 
       console.log(`[Try-On Upload] Task created successfully: ${taskResult.taskId}`);
       

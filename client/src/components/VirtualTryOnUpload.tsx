@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom } from "@/lib/imageUtils";
+import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage } from "@/lib/imageUtils";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 interface TryOnResult {
   taskId: string;
@@ -21,7 +22,7 @@ export function VirtualTryOnUpload() {
   const [clothImage, setClothImage] = useState<File | null>(null);
   const [clothImagePreview, setClothImagePreview] = useState<string>("");
   const [clothImageDimensions, setClothImageDimensions] = useState<{ width: number; height: number } | null>(null);
-  const [clothType, setClothType] = useState<"upper" | "lower" | "combo">("upper");
+  const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "dress">("upper");
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
   
@@ -35,6 +36,9 @@ export function VirtualTryOnUpload() {
   const [result, setResult] = useState<TryOnResult | null>(null);
   const [error, setError] = useState<string>("");
   const [warning, setWarning] = useState<string>("");
+  
+  // State for test mode
+  const [testMode, setTestMode] = useState(false);
   
   // Refs
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
@@ -51,6 +55,10 @@ export function VirtualTryOnUpload() {
   useEffect(() => {
     refetchCredits();
   }, [refetchCredits]);
+
+  // Check if user is admin (can access test mode)
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   // Create try-on mutation
   const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
@@ -112,9 +120,17 @@ export function VirtualTryOnUpload() {
     setError("");
     setWarning("");
 
+    // If dress mode, split the image
+    if (clothType === "dress") {
+      await handleDressImageSplitting(file);
+      return;
+    }
+
     // Skip all validation - let backend handle it
     // This avoids browser-specific issues with certain image formats
     setClothImage(file);
+    setLowerClothImage(null);
+    setLowerClothImagePreview("");
 
     // Try to get dimensions but don't fail if it doesn't work
     try {
@@ -140,6 +156,35 @@ export function VirtualTryOnUpload() {
     }
   };
 
+  // Helper function to handle dress image splitting
+  const handleDressImageSplitting = async (file: File) => {
+    try {
+      const { topImage, bottomImage } = await splitDressImage(file);
+      setClothImage(topImage);
+      setLowerClothImage(bottomImage);
+      
+      // Create previews for both
+      const topReader = new FileReader();
+      topReader.onload = (e) => {
+        setClothImagePreview(e.target?.result as string);
+      };
+      topReader.readAsDataURL(topImage);
+      
+      const bottomReader = new FileReader();
+      bottomReader.onload = (e) => {
+        setLowerClothImagePreview(e.target?.result as string);
+      };
+      bottomReader.readAsDataURL(bottomImage);
+      
+      // Get dimensions
+      const topDims = await getImageDimensions(topImage);
+      setClothImageDimensions(topDims);
+    } catch (error) {
+      console.error("[VirtualTryOn] Error splitting dress:", error);
+      setError("Failed to split dress image. Please try again.");
+    }
+  };
+
   // Handle try-on creation
   const handleCreateTryOn = async () => {
     if (!modelPhoto || !clothImage) {
@@ -147,7 +192,7 @@ export function VirtualTryOnUpload() {
       return;
     }
 
-    if (!credits || credits.remainingCredits < 1) {
+    if (!testMode && (!credits || credits.remainingCredits < 1)) {
       setError("Insufficient credits. Please purchase more try-ons.");
       return;
     }
@@ -199,13 +244,16 @@ export function VirtualTryOnUpload() {
       
       // Use selected cloth type (Fitroom API expects: upper, lower, or combo)
       formData.append("clothType", clothType);
+      // Pass test mode to backend
+      formData.append("testMode", testMode.toString());
       console.log("[VirtualTryOn] FormData clothType:", clothType);
+      console.log("[VirtualTryOn] FormData testMode:", testMode);
       console.log("[VirtualTryOn] FormData modelImage:", finalModelPhoto?.name, finalModelPhoto?.size);
       console.log("[VirtualTryOn] FormData clothImage:", finalClothImage?.name, finalClothImage?.size);
       setProcessingProgress(20);
 
       // Call the dedicated file upload endpoint
-      const response = await fetch("/api/tryon/upload", {
+      const response = await fetch("/api/tryon/upload?testMode=" + testMode, {
         method: "POST",
         body: formData,
         credentials: "include", // Include session cookie
@@ -232,8 +280,12 @@ export function VirtualTryOnUpload() {
         setProcessingProgress(20);
         setIsLoading(false);
         
-        // Refetch credits to show updated balance
-        refetchCredits();
+        // Refetch credits to show updated balance (only if not in test mode)
+        if (!testMode) {
+          refetchCredits();
+        } else {
+          console.log("[VirtualTryOn] Test mode active - credits not deducted");
+        }
       } else {
         // Ensure error is always a string, not a boolean
         console.log('[VirtualTryOn] Response not successful:', { success: data.success, taskId: data.taskId, error: data.error, errorType: typeof data.error });
@@ -477,19 +529,26 @@ export function VirtualTryOnUpload() {
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setClothType("upper")}
-                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" && clothType !== "combo" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" && clothType !== "combo" && clothType !== "dress" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
               >
-                <div className="font-semibold text-sm">Single clothes</div>
-                <div className="text-xs text-muted-foreground mt-1">Dress, top, or bottom</div>
+                <div className="font-semibold text-sm">Single Item</div>
+                <div className="text-xs text-muted-foreground mt-1">Top or bottom</div>
+              </button>
+              <button
+                onClick={() => setClothType("dress")}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "dress" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+              >
+                <div className="font-semibold text-sm">Full Dress</div>
+                <div className="text-xs text-muted-foreground mt-1">One piece</div>
               </button>
               <button
                 onClick={() => setClothType("combo")}
                 className={`p-4 rounded-lg border-2 transition-all ${clothType === "combo" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
               >
-                <div className="font-semibold text-sm">Top & bottom</div>
+                <div className="font-semibold text-sm">Top & Bottom</div>
                 <div className="text-xs text-muted-foreground mt-1">Two pieces</div>
               </button>
             </div>
@@ -687,8 +746,28 @@ export function VirtualTryOnUpload() {
         </div>
       )}
 
+      {/* Test Mode Toggle */}
+      {isAdmin && user && (
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-blue-900">Test Mode</p>
+                <p className="text-sm text-blue-800">Generate try-ons without using credits</p>
+              </div>
+              <Button
+                onClick={() => setTestMode(!testMode)}
+                variant={testMode ? "default" : "outline"}
+              >
+                {testMode ? "Enabled" : "Disabled"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Credits Info */}
-      {credits && (
+      {credits && !testMode && (
         <Card className="bg-muted/50">
           <CardContent className="pt-6">
             <div className="flex justify-between items-center">
@@ -698,6 +777,15 @@ export function VirtualTryOnUpload() {
               </div>
               <Button variant="outline">Buy More Credits</Button>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Test Mode Active Notice */}
+      {testMode && isAdmin && (
+        <Card className="bg-green-50 border-green-200">
+          <CardContent className="pt-6">
+            <p className="text-green-900 font-semibold">✓ Test Mode Active - Credits will not be deducted</p>
           </CardContent>
         </Card>
       )}
