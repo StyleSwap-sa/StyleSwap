@@ -1,0 +1,40 @@
+{
+  "query": "SELECT u.id, u.email, uc.remainingCredits, uc.totalCredits FROM users u LEFT JOIN userCredits uc ON u.id = uc.userId ORDER BY u.id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT u.id, u.email, uc.remainingCredits, uc.totalCredits FROM users u LEFT JOIN userCredits uc ON u.id = uc.userId ORDER BY u.id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "2160058",
+      "email": "testcustomer@styleswap.com",
+      "remainingCredits": "110",
+      "totalCredits": "110"
+    },
+    {
+      "id": "270007",
+      "email": "tpmofokeng@gmail.com",
+      "remainingCredits": "0",
+      "totalCredits": "0"
+    },
+    {
+      "id": "1",
+      "email": "rtumi.m@icloud.com",
+      "remainingCredits": "0",
+      "totalCredits": "20"
+    },
+    {
+      "id": "1",
+      "email": "rtumi.m@icloud.com",
+      "remainingCredits": "0",
+      "totalCredits": "10"
+    },
+    {
+      "id": "1",
+      "email": "rtumi.m@icloud.com",
+      "remainingCredits": "0",
+      "totalCredits": "10"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tremainingCredits\ttotalCredits\n2160058\ttestcustomer@styleswap.com\t110\t110\n270007\ttpmofokeng@gmail.com\t0\t0\n1\trtumi.m@icloud.com\t0\t20\n1\trtumi.m@icloud.com\t0\t10\n1\trtumi.m@icloud.com\t0\t10\n",
+  "stderr": "",
+  "execution_time_ms": 80
+}

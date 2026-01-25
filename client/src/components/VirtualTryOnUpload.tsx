@@ -47,6 +47,11 @@ export function VirtualTryOnUpload() {
   // Fetch user credits
   const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery();
 
+  // Refetch credits on component mount to ensure fresh data
+  useEffect(() => {
+    refetchCredits();
+  }, [refetchCredits]);
+
   // Create try-on mutation
   const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
   

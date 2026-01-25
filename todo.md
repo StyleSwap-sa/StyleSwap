@@ -1366,8 +1366,9 @@ This approach:
 - [x] Check if Yoco webhook handler exists in backend
 - [x] Verify webhook endpoint is configured in Yoco dashboard (added /api/yoco/webhook route)
 - [x] Register webhook endpoints in Express server
-- [x] Manually add 10 credits from R45 payment to user account
-- [ ] Test payment flow: purchase → webhook received → credits added to dashboard
+- [x] Manually add 10 credits from R45 payment to user account (rtumi.m@icloud.com)
+- [x] Verify credits are now showing in database
+- [ ] Test full dress try-on with available credits
 - [ ] Configure Yoco dashboard to send webhooks to /api/yoco/webhook
 - [ ] Test webhook delivery with next payment
 - [ ] Verify credits are automatically added after payment
