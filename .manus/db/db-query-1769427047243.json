@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `productSizeVariants` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `productId` int NOT NULL,\n  `size` int NOT NULL,\n  `stock` int DEFAULT 0 NOT NULL,\n  `isAvailable` int DEFAULT 1 NOT NULL,\n  `fitAdjustment` enum('tight', 'perfect', 'loose') DEFAULT 'perfect' NOT NULL,\n  `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  `updatedAt` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,\n  CONSTRAINT `productSizeVariants_id` PRIMARY KEY(`id`),\n  CONSTRAINT `productSizeVariants_productId_fk` FOREIGN KEY(`productId`) REFERENCES `products`(`id`),\n  INDEX `idx_product_size_product`(`productId`),\n  INDEX `idx_product_size_available`(`isAvailable`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute CREATE TABLE IF NOT EXISTS `productSizeVariants` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `productId` int NOT NULL,\n  `size` int NOT NULL,\n  `stock` int DEFAULT 0 NOT NULL,\n  `isAvailable` int DEFAULT 1 NOT NULL,\n  `fitAdjustment` enum('tight', 'perfect', 'loose') DEFAULT 'perfect' NOT NULL,\n  `createdAt` timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,\n  `updatedAt` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,\n  CONSTRAINT `productSizeVariants_id` PRIMARY KEY(`id`),\n  CONSTRAINT `productSizeVariants_productId_fk` FOREIGN KEY(`productId`) REFERENCES `products`(`id`),\n  INDEX `idx_product_size_product`(`productId`),\n  INDEX `idx_product_size_available`(`isAvailable`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 506
+}

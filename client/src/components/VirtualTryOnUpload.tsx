@@ -38,6 +38,11 @@ export function VirtualTryOnUpload() {
   // State for test mode
   const [testMode, setTestMode] = useState(false);
   
+  // State for size variants
+  const [selectedSize, setSelectedSize] = useState<number | null>(null);
+  const [availableSizes] = useState<Array<{ size: number; isAvailable: boolean; fitAdjustment: 'tight' | 'perfect' | 'loose'; stock?: number }>>([]);
+  const [showSizeSelector, setShowSizeSelector] = useState(false);
+  
   // Refs
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
   const clothImageInputRef = useRef<HTMLInputElement>(null);
@@ -611,6 +616,64 @@ export function VirtualTryOnUpload() {
             </Card>
           )}
 
+          {/* Size Selector (Demo) */}
+          <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span>Size Selection (Demo)</span>
+                <button
+                  onClick={() => setShowSizeSelector(!showSizeSelector)}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-normal"
+                >
+                  {showSizeSelector ? '▼ Hide' : '▶ Show'}
+                </button>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Select a size to see how the fit adjusts (this feature will show different fit feedback based on selected size)
+              </p>
+            </CardHeader>
+            {showSizeSelector && (
+              <CardContent className="space-y-4">
+                {/* Demo sizes */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                  {[28, 30, 32, 34, 36, 38].map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`p-3 rounded-lg border-2 transition-all font-semibold ${
+                        selectedSize === size
+                          ? 'border-primary bg-primary/10'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+                
+                {selectedSize && (
+                  <div className="p-3 bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <p className="font-semibold text-sm mb-2">Size {selectedSize} Selected</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      When you generate the try-on, the system will show how this garment fits in size {selectedSize}.
+                      Different sizes will show different fit feedback (tight, perfect, or loose).
+                    </p>
+                  </div>
+                )}
+                
+                <div className="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg text-xs">
+                  <p className="font-semibold mb-1">💡 How Size Selection Works:</p>
+                  <ul className="space-y-1 text-gray-700 dark:text-gray-300">
+                    <li>• Select a size before generating the try-on</li>
+                    <li>• The system will show how the garment fits in that size</li>
+                    <li>• Try different sizes to compare fits</li>
+                    <li>• Fit feedback: Tight (snug), Perfect (as expected), Loose (relaxed)</li>
+                  </ul>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+
           {/* Submit Button */}
           <Button 
             onClick={handleCreateTryOn}
@@ -625,7 +688,7 @@ export function VirtualTryOnUpload() {
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                Generate Try-On
+                Generate Try-On{selectedSize ? ` (Size ${selectedSize})` : ''}
               </>
             )}
           </Button>

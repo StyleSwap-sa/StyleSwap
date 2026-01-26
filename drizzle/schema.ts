@@ -178,12 +178,28 @@ export const products = mysqlTable("products", {
 	price: decimal({ precision: 10, scale: 2 }),
 	currency: varchar({ length: 3 }).default('ZAR'),
 	isActive: int().default(1).notNull(),
+	hasSizeVariants: int().default(0).notNull(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
 (table) => [
 	index("idx_products_boutique").on(table.boutiqueId),
 	index("idx_products_active").on(table.isActive),
+]);
+
+export const productSizeVariants = mysqlTable("productSizeVariants", {
+	id: int().autoincrement().notNull(),
+	productId: int().notNull().references(() => products.id),
+	size: int().notNull(),
+	stock: int().default(0).notNull(),
+	isAvailable: int().default(1).notNull(),
+	fitAdjustment: mysqlEnum(['tight', 'perfect', 'loose']).default('perfect').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_product_size_product").on(table.productId),
+	index("idx_product_size_available").on(table.isAvailable),
 ]);
 
 export const transactions = mysqlTable("transactions", {

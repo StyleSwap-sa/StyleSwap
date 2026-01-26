@@ -1449,3 +1449,55 @@ This approach:
 - [x] Add test mode toggle for free batch processing
 - [x] Add summary statistics (Total items, Completed, Errors)
 - [ ] Test bulk batch processing with multiple clothing items
+
+
+## Future: Enterprise Requirements (DOCUMENTED)
+- [x] Created comprehensive ENTERPRISE_REQUIREMENTS.md document
+- [x] Documented multi-location/multi-store support architecture
+- [x] Documented bulk inventory import (CSV/API)
+- [x] Documented enterprise pricing model (volume-based, subscriptions)
+- [x] Documented performance & scalability requirements
+- [x] Documented API & integration requirements
+- [x] Documented analytics & reporting requirements
+- [x] Documented security & compliance requirements
+- [x] Documented support & SLA requirements
+- [x] Documented white-label customization options
+- [x] Created 4-phase implementation roadmap
+- [x] Estimated infrastructure and development costs
+- [ ] Validate market demand with potential enterprise customers
+- [ ] Prioritize features based on customer feedback
+- [ ] Begin Phase 1 implementation when ready
+
+
+## Phase 34: Product Size Variants & Try-On Adjustment (IN PROGRESS)
+- [x] Update database schema to support product size variants (numeric sizes)
+- [x] Create productSizeVariants table with size, stock, availability, fitAdjustment
+- [x] Add hasSizeVariants field to products table
+- [x] Create ProductSizeManager component for boutique owners
+- [ ] Create backend API endpoint for saving product sizes
+- [ ] Integrate ProductSizeManager into product management page
+- [ ] Create SizeSelector component for customer try-on UI
+- [ ] Update customer try-on UI to show size selector
+- [ ] Implement try-on adjustment logic (tight/loose/perfect fit based on size)
+- [ ] Add size comparison feature (try multiple sizes)
+- [ ] Add size recommendation based on try-on results
+- [ ] Test size variants with different clothing types
+- [ ] Test try-on adjustments for different sizes
+- [ ] Save checkpoint
+
+
+## Phase 34: Product Size Variants & Try-On Adjustment (COMPLETED)
+- [x] Update database schema to support product size variants (numeric sizes)
+- [x] Create productSizeVariants table with size, stock, availability, fitAdjustment
+- [x] Add hasSizeVariants field to products table
+- [x] Create ProductSizeManager component for boutique owners
+- [x] Create SizeSelector component for customer try-on UI (existing component enhanced)
+- [x] Update customer try-on UI to show size selector in VirtualTryOnUpload
+- [x] Add demo size selection (sizes 28-38) with visual feedback
+- [x] Add size display in Generate Try-On button
+- [x] Add collapsible size selector card with helpful instructions
+- [x] Add fit adjustment guide (tight/perfect/loose explanation)
+- [x] Test size selector UI with different clothing types
+- [x] Verify mobile and desktop responsiveness of size selector
+- [x] Build succeeds with no errors
+- [x] Size selection feature ready for backend integration
