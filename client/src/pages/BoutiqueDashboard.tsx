@@ -180,7 +180,7 @@ export default function BoutiqueDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid md:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-5 gap-6">
               <Link href="/products">
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
@@ -204,6 +204,20 @@ export default function BoutiqueDashboard() {
                     <h3 className="font-bold mb-2">Test Try-Ons</h3>
                     <p className="text-sm text-muted-foreground">
                       Test your products with all clothing types
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/bulk-batch">
+                <Card className="premium-card cursor-pointer hover:shadow-lg transition">
+                  <CardContent className="pt-6">
+                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
+                      <Zap className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-bold mb-2">Bulk Batch</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Process multiple items in parallel
                     </p>
                   </CardContent>
                 </Card>
