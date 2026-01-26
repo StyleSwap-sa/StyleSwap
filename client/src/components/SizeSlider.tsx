@@ -14,6 +14,7 @@ interface SizeSliderProps {
 }
 
 // Helper function to determine fit adjustment based on size
+// Used for feedback messages and color coding, not for visual scaling
 function getFitAdjustment(size: number): 'tight' | 'perfect' | 'loose' {
   const tightRange = [20, 26]; // XS sizes
   const perfectRange = [28, 34]; // S-M sizes (standard)
@@ -23,19 +24,6 @@ function getFitAdjustment(size: number): 'tight' | 'perfect' | 'loose' {
   if (size >= perfectRange[0] && size <= perfectRange[1]) return 'perfect';
   if (size >= looseRange[0] && size <= looseRange[1]) return 'loose';
   return 'perfect';
-}
-
-// Helper function to calculate scale factor based on fit
-function getScaleFactor(fit: 'tight' | 'perfect' | 'loose'): number {
-  switch (fit) {
-    case 'tight':
-      return 0.85; // Scale down 15% for tight fit
-    case 'loose':
-      return 1.15; // Scale up 15% for loose fit
-    case 'perfect':
-    default:
-      return 1.0; // No scaling for perfect fit
-  }
 }
 
 export function SizeSlider({
@@ -79,8 +67,8 @@ export function SizeSlider({
 
   const currentSize = selectedSize || minSize;
   const fit = getFitAdjustment(currentSize);
-  const scale = getScaleFactor(fit);
 
+  // Fit colors for feedback badges (not for image scaling)
   const fitColors = {
     tight: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
     perfect: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -135,20 +123,14 @@ export function SizeSlider({
               </div>
             </div>
           )}
-          <div
+          <img
+            src={resultImageUrl}
+            alt={`Size ${currentSize} preview`}
+            className="rounded-lg shadow-lg max-w-sm"
             style={{
-              transform: `scale(${scale})`,
-              transformOrigin: 'center',
-              transition: isDragging ? 'none' : 'transform 0.2s ease-out',
               opacity: isLoading ? 0.5 : 1,
             }}
-          >
-            <img
-              src={resultImageUrl}
-              alt={`Size ${currentSize} preview`}
-              className="rounded-lg shadow-lg max-w-sm"
-            />
-          </div>
+          />
         </div>
 
         {/* Fit Feedback Message */}
