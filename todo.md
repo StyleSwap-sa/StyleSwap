@@ -1392,3 +1392,20 @@ This approach:
 - [ ] Test Bottom option with bottom clothing image
 - [ ] Test Full Dress option with full dress image
 - [ ] Test Top+Bottom combo option with two separate images
+
+
+## Phase 30: Fix Bottom Clothing Type Bug (PRIORITY)
+- [x] Debug why "Bottom" clothing type applies as top instead of bottom
+- [x] Implement automatic image cropping for top and bottom clothing types
+- [x] Add cropTopClothing and cropBottomClothing functions to imageUtils
+- [x] Update VirtualTryOnUpload component to use image cropping
+- [x] Verify all clothing types work correctly (Top, Bottom, Full Dress, Top & Bottom)
+- [ ] Test with actual bottom clothing image to confirm fix works
+
+## Phase 31: Boutique Dashboard Try-On Settings (NEXT)
+- [ ] Add clothing type selector to boutique dashboard (Top, Bottom, Full Dress, Top & Bottom)
+- [ ] Implement boutique model/image upload for try-on testing
+- [ ] Create boutique inventory management with clothing types
+- [ ] Allow boutique owners to test try-ons with their own models
+- [ ] Sync try-on settings between customer and boutique dashboards
+- [ ] Test boutique dashboard try-on flow end-to-end
