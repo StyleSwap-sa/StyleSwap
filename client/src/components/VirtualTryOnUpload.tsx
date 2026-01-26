@@ -5,6 +5,7 @@ import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles }
 import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { SizeSlider } from "./SizeSlider";
 
 interface TryOnResult {
   taskId: string;
@@ -30,9 +31,9 @@ function getFitAdjustment(size: number): 'tight' | 'perfect' | 'loose' {
 function getScaleFactor(fit: 'tight' | 'perfect' | 'loose'): number {
   switch (fit) {
     case 'tight':
-      return 0.92; // Scale down 8% for tight fit
+      return 0.85; // Scale down 15% for tight fit (for slider)
     case 'loose':
-      return 1.08; // Scale up 8% for loose fit
+      return 1.15; // Scale up 15% for loose fit (for slider)
     case 'perfect':
     default:
       return 1.0; // No scaling for perfect fit
@@ -369,83 +370,20 @@ export function VirtualTryOnUpload() {
       {result && (
         <Card className="border-green-500/30 bg-green-50 dark:bg-green-950/20">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-green-600" />
-                Try-On Complete!
-              </CardTitle>
-              {result.selectedSize && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Size {result.selectedSize}
-                  </span>
-                  {(() => {
-                    const fit = getFitAdjustment(result.selectedSize);
-                    const fitColors = {
-                      tight: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-                      perfect: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                      loose: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-                    };
-                    const fitLabels = {
-                      tight: 'Snug Fit',
-                      perfect: 'Perfect Fit',
-                      loose: 'Relaxed Fit',
-                    };
-                    return (
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${fitColors[fit]}`}>
-                        {fitLabels[fit]}
-                      </span>
-                    );
-                  })()}
-                </div>
-              )}
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-green-600" />
+              Try-On Complete! Drag the slider to compare sizes.
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Image with size-based scaling */}
-            <div className="flex justify-center items-center overflow-hidden rounded-lg border border-border bg-white dark:bg-slate-900 p-4">
-              {(() => {
-                const fit = result.selectedSize ? getFitAdjustment(result.selectedSize) : 'perfect';
-                const scale = getScaleFactor(fit);
-                return (
-                  <div
-                    style={{
-                      transform: `scale(${scale})`,
-                      transformOrigin: 'center',
-                      transition: 'transform 0.3s ease-in-out',
-                    }}
-                  >
-                    <img
-                      src={result.resultImageUrl}
-                      alt="Try-on result"
-                      className="rounded-lg shadow-lg"
-                    />
-                  </div>
-                );
-              })()}
-            </div>
-            
-            {/* Fit Feedback */}
-            {result.selectedSize && (() => {
-              const fit = getFitAdjustment(result.selectedSize);
-              const feedbackMessages = {
-                tight: 'This garment in size ' + result.selectedSize + ' will fit snugly. Consider sizing up if you prefer a more relaxed fit.',
-                perfect: 'This garment in size ' + result.selectedSize + ' should fit as expected. This is our recommended size for you.',
-                loose: 'This garment in size ' + result.selectedSize + ' will fit with extra room. Consider sizing down if you prefer a snugger fit.',
-              };
-              const feedbackColors = {
-                tight: 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
-                perfect: 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800',
-                loose: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800',
-              };
-              return (
-                <div className={`p-3 rounded-lg border ${feedbackColors[fit]}`}>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {feedbackMessages[fit]}
-                  </p>
-                </div>
-              );
-            })()}
+            {/* Interactive Size Slider */}
+            <SizeSlider
+              selectedSize={selectedSize}
+              onSizeChange={setSelectedSize}
+              resultImageUrl={result.resultImageUrl}
+              minSize={24}
+              maxSize={50}
+            />
             
             <div className="flex gap-3">
               <Button onClick={handleReset} className="flex-1">
