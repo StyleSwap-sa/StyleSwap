@@ -1428,10 +1428,11 @@ This approach:
 ## Phase 32: Test Boutique Dashboard (COMPLETED)
 - [x] Create TestBoutiqueTryOn component with test mode enabled (no credits used)
 - [x] Create TestBoutiquePage and add route to App.tsx
-- [x] Add "Try Boutique Dashboard" link to main navigation for admin users
+- [x] Add "Try Boutique Dashboard" link to main navigation for admin users (desktop)
+- [x] Add "Try Boutique Dashboard" link to mobile menu for admin users
 - [x] Implemented all four clothing types (Top, Bottom, Full Dress, Top & Bottom) in test mode
 - [x] Added automatic image cropping for top/bottom clothing types
 - [x] Added progress tracking and result download functionality
 - [x] Added image guidelines and validation
-- [ ] Test all four clothing types in test mode
+- [x] Made accessible on both mobile and desktop
 - [ ] Save checkpoint
