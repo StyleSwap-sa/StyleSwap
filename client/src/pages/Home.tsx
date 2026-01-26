@@ -113,6 +113,13 @@ export default function Home() {
                     >
                       Try Customer Dashboard
                     </button>
+                    <button
+                      onClick={() => setLocation('/test-boutique')}
+                      className="hover:text-secondary transition-colors uppercase tracking-wide text-secondary font-bold"
+                      title="Test the boutique try-on dashboard"
+                    >
+                      Try Boutique Dashboard
+                    </button>
                   </>
                 )}
               </>
