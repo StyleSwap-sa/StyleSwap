@@ -10,6 +10,33 @@ interface TryOnResult {
   taskId: string;
   resultImageUrl: string;
   createdAt: Date;
+  selectedSize?: number | null;
+}
+
+// Helper function to determine fit adjustment based on size
+function getFitAdjustment(size: number): 'tight' | 'perfect' | 'loose' {
+  // Define size ranges - adjust these based on your sizing system
+  const tightRange = [20, 26]; // XS sizes
+  const perfectRange = [28, 34]; // S-M sizes (standard)
+  const looseRange = [36, 50]; // L+ sizes
+  
+  if (size >= tightRange[0] && size <= tightRange[1]) return 'tight';
+  if (size >= perfectRange[0] && size <= perfectRange[1]) return 'perfect';
+  if (size >= looseRange[0] && size <= looseRange[1]) return 'loose';
+  return 'perfect'; // default
+}
+
+// Helper function to calculate scale factor based on fit
+function getScaleFactor(fit: 'tight' | 'perfect' | 'loose'): number {
+  switch (fit) {
+    case 'tight':
+      return 0.92; // Scale down 8% for tight fit
+    case 'loose':
+      return 1.08; // Scale up 8% for loose fit
+    case 'perfect':
+    default:
+      return 1.0; // No scaling for perfect fit
+  }
 }
 
 export function VirtualTryOnUpload() {
@@ -259,6 +286,7 @@ export function VirtualTryOnUpload() {
         taskId: getTryOnStatusQuery.data.taskId,
         resultImageUrl: getTryOnStatusQuery.data.resultImage || getTryOnStatusQuery.data.resultImageUrl,
         createdAt: new Date(),
+        selectedSize: selectedSize,
       });
       setIsPolling(false);
       setProcessingProgress(100);
@@ -292,25 +320,22 @@ export function VirtualTryOnUpload() {
   }, [getTryOnStatusQuery.data, isPolling]);
 
   const handleReset = () => {
+    setResult(null);
     setModelPhoto(null);
     setModelPhotoPreview("");
-    setModelPhotoDimensions(null);
     setClothImage(null);
     setClothImagePreview("");
-    setClothImageDimensions(null);
+    setClothType("upper");
     setLowerClothImage(null);
     setLowerClothImagePreview("");
-    setResult(null);
-    setError("");
-    setWarning("");
     setCurrentTaskId(null);
     setIsPolling(false);
     setProcessingProgress(0);
     pollingStartTimeRef.current = null;
     if (modelPhotoInputRef.current) modelPhotoInputRef.current.value = "";
     if (clothImageInputRef.current) clothImageInputRef.current.value = "";
+    // Note: Keep selectedSize so user can try another size without re-selecting
   };
-
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
       {/* Header */}
@@ -344,17 +369,84 @@ export function VirtualTryOnUpload() {
       {result && (
         <Card className="border-green-500/30 bg-green-50 dark:bg-green-950/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Check className="w-5 h-5 text-green-600" />
-              Try-On Complete!
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-green-600" />
+                Try-On Complete!
+              </CardTitle>
+              {result.selectedSize && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Size {result.selectedSize}
+                  </span>
+                  {(() => {
+                    const fit = getFitAdjustment(result.selectedSize);
+                    const fitColors = {
+                      tight: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                      perfect: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                      loose: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+                    };
+                    const fitLabels = {
+                      tight: 'Snug Fit',
+                      perfect: 'Perfect Fit',
+                      loose: 'Relaxed Fit',
+                    };
+                    return (
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${fitColors[fit]}`}>
+                        {fitLabels[fit]}
+                      </span>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <img
-              src={result.resultImageUrl}
-              alt="Try-on result"
-              className="w-full rounded-lg border border-border shadow-lg"
-            />
+            {/* Image with size-based scaling */}
+            <div className="flex justify-center items-center overflow-hidden rounded-lg border border-border bg-white dark:bg-slate-900 p-4">
+              {(() => {
+                const fit = result.selectedSize ? getFitAdjustment(result.selectedSize) : 'perfect';
+                const scale = getScaleFactor(fit);
+                return (
+                  <div
+                    style={{
+                      transform: `scale(${scale})`,
+                      transformOrigin: 'center',
+                      transition: 'transform 0.3s ease-in-out',
+                    }}
+                  >
+                    <img
+                      src={result.resultImageUrl}
+                      alt="Try-on result"
+                      className="rounded-lg shadow-lg"
+                    />
+                  </div>
+                );
+              })()}
+            </div>
+            
+            {/* Fit Feedback */}
+            {result.selectedSize && (() => {
+              const fit = getFitAdjustment(result.selectedSize);
+              const feedbackMessages = {
+                tight: 'This garment in size ' + result.selectedSize + ' will fit snugly. Consider sizing up if you prefer a more relaxed fit.',
+                perfect: 'This garment in size ' + result.selectedSize + ' should fit as expected. This is our recommended size for you.',
+                loose: 'This garment in size ' + result.selectedSize + ' will fit with extra room. Consider sizing down if you prefer a snugger fit.',
+              };
+              const feedbackColors = {
+                tight: 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
+                perfect: 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800',
+                loose: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800',
+              };
+              return (
+                <div className={`p-3 rounded-lg border ${feedbackColors[fit]}`}>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    {feedbackMessages[fit]}
+                  </p>
+                </div>
+              );
+            })()}
+            
             <div className="flex gap-3">
               <Button onClick={handleReset} className="flex-1">
                 <Sparkles className="w-4 h-4 mr-2" />
