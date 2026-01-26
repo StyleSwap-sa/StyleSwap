@@ -70,6 +70,7 @@ export function VirtualTryOnUpload() {
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [availableSizes] = useState<Array<{ size: number; isAvailable: boolean; fitAdjustment: 'tight' | 'perfect' | 'loose'; stock?: number }>>([]);
   const [showSizeSelector, setShowSizeSelector] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   
   // Refs
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
@@ -320,6 +321,83 @@ export function VirtualTryOnUpload() {
     }
   }, [getTryOnStatusQuery.data, isPolling]);
 
+  // Handle size regeneration with debouncing
+  const handleSizeRegeneration = async (newSize: number) => {
+    if (!modelPhoto || !clothImage || !result) {
+      setError("Missing required data for regeneration");
+      return;
+    }
+
+    setIsRegenerating(true);
+    setError("");
+
+    try {
+      let finalModelPhoto = modelPhoto;
+      let finalClothImage = clothImage;
+      let finalLowerClothImage = lowerClothImage;
+
+      const modelValidation = await validateImageForFitroom(modelPhoto);
+      if (!modelValidation.isValid) {
+        setError(modelValidation.error || "Invalid body photo");
+        setIsRegenerating(false);
+        return;
+      }
+
+      const clothValidation = await validateImageForFitroom(clothImage);
+      if (!clothValidation.isValid) {
+        setError(clothValidation.error || "Invalid clothing image");
+        setIsRegenerating(false);
+        return;
+      }
+
+      if (modelValidation.shouldResize) {
+        finalModelPhoto = await optimizeImageForFitroom(modelPhoto);
+      }
+      if (clothValidation.shouldResize) {
+        finalClothImage = await optimizeImageForFitroom(clothImage);
+      }
+
+      let processedClothImage = finalClothImage;
+      if (clothType === "lower" && finalLowerClothImage) {
+        processedClothImage = finalLowerClothImage;
+      } else if (clothType === "combo") {
+        if (finalLowerClothImage) {
+          finalLowerClothImage = await optimizeImageForFitroom(finalLowerClothImage);
+        }
+      }
+
+      const formData = new FormData();
+      formData.append("bodyImage", finalModelPhoto);
+      formData.append("clothImage", processedClothImage);
+      if (clothType === "combo" && finalLowerClothImage) {
+        formData.append("lowerClothImage", finalLowerClothImage);
+      }
+      formData.append("clothType", clothType);
+      formData.append("size", newSize.toString());
+
+      const response = await fetch("/api/tryon/create", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.taskId) {
+        setCurrentTaskId(data.taskId);
+        setIsPolling(true);
+        setSelectedSize(newSize);
+      } else {
+        const errorMsg = typeof data.error === "string" ? data.error : "Failed to regenerate try-on";
+        setError(errorMsg);
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "An error occurred during regeneration";
+      setError(errorMsg);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   const handleReset = () => {
     setResult(null);
     setModelPhoto(null);
@@ -383,6 +461,8 @@ export function VirtualTryOnUpload() {
               resultImageUrl={result.resultImageUrl}
               minSize={24}
               maxSize={50}
+              isLoading={isRegenerating}
+              onSizeChangeDebounced={handleSizeRegeneration}
             />
             
             <div className="flex gap-3">

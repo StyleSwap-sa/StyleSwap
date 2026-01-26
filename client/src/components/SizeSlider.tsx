@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Card } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 interface SizeSliderProps {
   selectedSize: number | null;
@@ -8,6 +9,8 @@ interface SizeSliderProps {
   resultImageUrl: string;
   minSize?: number;
   maxSize?: number;
+  isLoading?: boolean;
+  onSizeChangeDebounced?: (size: number) => void;
 }
 
 // Helper function to determine fit adjustment based on size
@@ -41,9 +44,38 @@ export function SizeSlider({
   resultImageUrl,
   minSize = 24,
   maxSize = 50,
+  isLoading = false,
+  onSizeChangeDebounced,
 }: SizeSliderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced size change handler
+  const handleSizeChangeWithDebounce = (size: number) => {
+    onSizeChange(size);
+    
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    // Set new timer for debounced callback (500ms delay)
+    debounceTimerRef.current = setTimeout(() => {
+      if (onSizeChangeDebounced) {
+        onSizeChangeDebounced(size);
+      }
+    }, 500);
+  };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const currentSize = selectedSize || minSize;
   const fit = getFitAdjustment(currentSize);
@@ -87,16 +119,28 @@ export function SizeSlider({
             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${fitColors[fit]}`}>
               {fitLabels[fit]}
             </span>
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
           </div>
         </div>
 
-        {/* Image Preview with Scaling */}
-        <div className="flex justify-center items-center w-full overflow-hidden rounded-lg border border-border bg-white dark:bg-slate-900 p-4 min-h-[300px]">
+        {/* Image Preview with Loading State */}
+        <div className="flex justify-center items-center w-full overflow-hidden rounded-lg border border-border bg-white dark:bg-slate-900 p-4 min-h-[300px] relative">
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/50 dark:bg-slate-900/50 flex items-center justify-center rounded-lg z-10">
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Generating size {currentSize}...
+                </p>
+              </div>
+            </div>
+          )}
           <div
             style={{
               transform: `scale(${scale})`,
               transformOrigin: 'center',
               transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+              opacity: isLoading ? 0.5 : 1,
             }}
           >
             <img
@@ -134,7 +178,7 @@ export function SizeSlider({
               const percentage = x / rect.width;
               const newSize = Math.round(minSize + percentage * (maxSize - minSize));
               const clampedSize = Math.max(minSize, Math.min(maxSize, newSize));
-              onSizeChange(clampedSize);
+              handleSizeChangeWithDebounce(clampedSize);
             }}
           >
             {/* Filled Track */}
@@ -169,6 +213,10 @@ export function SizeSlider({
 
                 const handleMouseUp = () => {
                   setIsDragging(false);
+                  // Trigger debounced regeneration on mouse up
+                  if (onSizeChangeDebounced) {
+                    onSizeChangeDebounced(currentSize);
+                  }
                   document.removeEventListener('mousemove', handleMouseMove);
                   document.removeEventListener('mouseup', handleMouseUp);
                 };
@@ -195,11 +243,12 @@ export function SizeSlider({
             {[24, 28, 30, 32, 34, 38, 40, 42, 44, 46, 48, 50].map((size) => (
               <button
                 key={size}
-                onClick={() => onSizeChange(size)}
+                onClick={() => handleSizeChangeWithDebounce(size)}
+                disabled={isLoading}
                 className={`py-2 px-2 rounded text-xs font-semibold transition-all ${
                   currentSize === size
                     ? 'bg-primary text-primary-foreground shadow-lg scale-105'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50'
                 }`}
               >
                 {size}

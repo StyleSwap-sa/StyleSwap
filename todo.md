@@ -1531,3 +1531,19 @@ This approach:
 - [x] Create comprehensive slider tests (39 tests - all passing)
 - [x] Build succeeds with no errors
 - [x] Save checkpoint
+
+
+## Phase 37: Size Regeneration with Fitroom API (COMPLETED)
+- [x] Update SizeSlider to accept onSizeChange callback
+- [x] Modify VirtualTryOnUpload to regenerate try-on for selected size
+- [x] Pass size parameter to Fitroom API call
+- [x] Add loading state during regeneration
+- [x] Add debouncing to prevent excessive API calls (500ms delay)
+- [x] Show "Generating size X..." message during processing
+- [x] Update result image when new size try-on completes
+- [x] Maintain size history for quick comparisons
+- [x] Create comprehensive tests for regeneration feature (32 tests - all passing)
+- [x] Test with multiple size changes in sequence
+- [x] Verify API calls are properly debounced
+- [x] Build succeeds with no errors
+- [x] Save checkpoint
