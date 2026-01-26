@@ -14,6 +14,7 @@ import { adminRouter } from "./routers/admin";
 import { boutiqueDashboardRouter } from "./routers/boutique-dashboard";
 import { webhookAdminRouter } from "./routers/webhookAdmin";
 import { analyticsRouter } from "./routers/analytics";
+import { recommendationRouter } from "./routers/recommendation";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -41,6 +42,7 @@ export const appRouter = router({
   boutiqueDashboard: boutiqueDashboardRouter,
   webhookAdmin: webhookAdminRouter,
   analytics: router(analyticsRouter),
+  recommendation: recommendationRouter,
 });
 
 export type AppRouter = typeof appRouter;
