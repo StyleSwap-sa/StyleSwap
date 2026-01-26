@@ -56,7 +56,7 @@ export class FitroomClient {
       },
       httpAgent: undefined,
       httpsAgent,
-      timeout: 30000,
+      timeout: 120000, // 120 seconds for Fitroom API (can be slow)
     });
   }
 
@@ -120,6 +120,7 @@ export class FitroomClient {
         headers: {
           "Content-Type": "application/json",
         },
+        timeout: 120000, // 120 seconds for Fitroom API
       });
 
       console.log("[Fitroom] SUCCESS - Response status:", response.status);
@@ -257,6 +258,7 @@ export class FitroomClient {
 
       const response = await this.client.post("/api/tryon/v2/tasks", form, {
         headers: form.getHeaders(),
+        timeout: 120000, // 120 seconds for Fitroom API
       });
 
       console.log("[Fitroom] SUCCESS - Response status:", response.status);

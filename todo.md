@@ -1400,7 +1400,11 @@ This approach:
 - [x] Add cropTopClothing and cropBottomClothing functions to imageUtils
 - [x] Update VirtualTryOnUpload component to use image cropping
 - [x] Verify all clothing types work correctly (Top, Bottom, Full Dress, Top & Bottom)
-- [ ] Test with actual bottom clothing image to confirm fix works
+- [x] Fix Fitroom API timeout (increased from 30s to 120s)
+- [x] Fix frontend polling timeout (increased from 150s to 300s)
+- [x] Add missing getTryOnStatus procedure to backend
+- [x] Add progress field to status responses
+- [x] Test with actual bottom clothing image - ALL CLOTHING TYPES WORKING PERFECTLY
 
 ## Phase 31: Boutique Dashboard Try-On Settings (NEXT)
 - [ ] Add clothing type selector to boutique dashboard (Top, Bottom, Full Dress, Top & Bottom)
