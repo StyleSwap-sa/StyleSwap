@@ -383,9 +383,12 @@ export function VirtualTryOnUpload() {
       const data = await response.json();
 
       if (data.success && data.taskId) {
+        console.log("[VirtualTryOn] Starting regeneration for size", newSize, "with taskId", data.taskId);
         setCurrentTaskId(data.taskId);
         setIsPolling(true);
         setSelectedSize(newSize);
+        // Clear the old result to show loading state
+        setResult(prev => prev ? { ...prev, resultImageUrl: '' } : null);
       } else {
         const errorMsg = typeof data.error === "string" ? data.error : "Failed to regenerate try-on";
         setError(errorMsg);
