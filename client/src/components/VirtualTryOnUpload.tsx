@@ -457,6 +457,21 @@ export function VirtualTryOnUpload() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* AI Distortion Disclaimer */}
+            <Card className="border-blue-500/30 bg-blue-50 dark:bg-blue-950/20">
+              <CardContent className="pt-6">
+                <div className="flex gap-3">
+                  <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Note: AI Distortion</p>
+                    <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
+                      The AI may distort some body parts like fingers or legs. This is normal and does not affect fit accuracy. Focus on how the clothing fits the torso and overall silhouette.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Interactive Size Slider */}
             <SizeSlider
               selectedSize={selectedSize}

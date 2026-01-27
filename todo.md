@@ -1597,3 +1597,17 @@ This approach:
 - [ ] Add review ratings and helpfulness voting (NEXT)
 - [ ] Create comprehensive tests for review system (NEXT)
 - [ ] Save checkpoint (NEXT)
+
+
+## Phase 42: AI Distortion Disclaimer & Customer Dashboard Size Recommendations (COMPLETED)
+- [x] Add distortion disclaimer to VirtualTryOnUpload result display
+- [x] Create informative disclaimer card with Info icon
+- [x] Display disclaimer when try-on is complete
+- [x] Create SizeRecommendationWidget for customer dashboard (SizeRecommendationWidget.tsx)
+- [x] Copy boutique dashboard approach to customer dashboard
+- [x] Widget shows recommended size with confidence score
+- [x] Widget displays size categories (Tight/Perfect/Loose)
+- [x] Widget shows alternative sizes
+- [x] Widget includes personalized feedback
+- [x] Build succeeds with no errors
+- [x] Save checkpoint
