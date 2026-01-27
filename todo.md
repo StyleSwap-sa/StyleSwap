@@ -1581,3 +1581,19 @@ This approach:
 - [x] Verify no zoom/scale effects are interfering
 - [x] Build succeeds with no errors
 - [x] Save checkpoint
+
+
+## Phase 41: Size Recommendations with Customer Reviews (IN PROGRESS)
+- [x] Create sizeReviews table in database schema
+- [x] Create customerSizePreferences table to track customer choices
+- [x] Build backend service for saving size reviews (sizeReviewsService.ts)
+- [x] Build backend service for retrieving reviews by size and body type
+- [x] Create tRPC router for size reviews endpoints (sizeReviews.ts)
+- [x] Integrate sizeReviewsRouter into main appRouter
+- [x] Build succeeds with no errors
+- [ ] Create SizeReviewsDisplay component to show customer reviews (NEXT)
+- [ ] Add "Write Review" functionality for customers (NEXT)
+- [ ] Integrate reviews into VirtualTryOnUpload (NEXT)
+- [ ] Add review ratings and helpfulness voting (NEXT)
+- [ ] Create comprehensive tests for review system (NEXT)
+- [ ] Save checkpoint (NEXT)
