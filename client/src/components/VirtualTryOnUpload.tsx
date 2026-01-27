@@ -6,6 +6,8 @@ import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { SizeSlider } from "./SizeSlider";
+import { ReviewSubmissionForm } from "./ReviewSubmissionForm";
+import { SizeReviewsDisplay } from "./SizeReviewsDisplay";
 
 interface TryOnResult {
   taskId: string;
@@ -489,6 +491,30 @@ export function VirtualTryOnUpload() {
                 Try Another
               </Button>
             </div>
+
+            {/* Review Submission Section */}
+            {selectedSize && (
+              <div className="mt-8 pt-8 border-t border-border space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Share Your Experience</h3>
+                  <p className="text-sm text-muted-foreground">Help other customers find the right size by sharing your review</p>
+                </div>
+                <ReviewSubmissionForm 
+                  selectedSize={selectedSize}
+                  onSuccess={() => {
+                    // Optionally refresh reviews or show success message
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Customer Reviews Section */}
+            {selectedSize && (
+              <div className="mt-8 pt-8 border-t border-border">
+                <h3 className="text-lg font-semibold mb-4">Customer Reviews for Size {selectedSize}</h3>
+                <SizeReviewsDisplay selectedSize={selectedSize} />
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
