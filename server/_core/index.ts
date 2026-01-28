@@ -223,7 +223,11 @@ export async function startServer() {
       
       if (!taskResult.success || !taskResult.taskId) {
         console.error('[Try-On Upload] Fitroom failed:', taskResult.error);
-        return res.status(500).json({ error: taskResult.error || "Failed to create try-on task" });
+        let errorMsg = taskResult.error || "Failed to create try-on task";
+        if (typeof errorMsg === 'boolean') {
+          errorMsg = "Try-on generation failed. Please check your images and try again.";
+        }
+        return res.status(500).json({ error: String(errorMsg) });
       }
 
       // Deduct credit after successful task creation (skip in test mode)
