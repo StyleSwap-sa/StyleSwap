@@ -1341,28 +1341,23 @@ This approach:
 - [ ] Add test mode badge to VirtualTryOnUpload when in test mode
 
 ### Align Clothing Selection
-- [x] Add clothing type selector (Top, Bottom, Full Dress, Top & Bottom) to VirtualTryOnUpload
-- [x] Make clothing type selection identical between customer dashboard and boutique dashboard
-- [x] Ensure same clothing types available and working
-- [x] Match UI styling and layout
+- [ ] Add clothing type selector (Top, Bottom, Full Dress, Top & Bottom) to VirtualTryOnUpload
+- [ ] Make clothing type selection identical between customer dashboard and boutique dashboard
+- [ ] Ensure same clothing types available and working
+- [ ] Match UI styling and layout
 
 ### Restore Try-On Implementations
-- [x] Restore automatic image cropping (cropTopClothing, cropBottomClothing)
-- [x] Restore recent try-on implementations on both dashboards
-- [x] Verify Fitroom API integration works correctly with all clothing types
-- [x] Test all clothing types generate properly
-- [x] Restore FormData handling for combo clothing types
+- [ ] Restore automatic image cropping (cropTopClothing, cropBottomClothing)
+- [ ] Restore recent try-on implementations on both dashboards
+- [ ] Verify Fitroom API integration works correctly with all clothing types
+- [ ] Test all clothing types generate properly
+- [ ] Restore FormData handling for combo clothing types
 
 ### Integrate Review Components
-- [x] Integrate ReviewSubmissionForm into VirtualTryOnUpload result display
-- [x] Integrate SizeReviewsDisplay into VirtualTryOnUpload result display
-- [x] Display reviews after customer selects size
-- [x] Allow customers to submit reviews after try-on
-
-### Image Validation Fix
-- [x] Fix validateImageForFitroom function calls to include imageType parameter
-- [x] Ensure model photos are validated as "model" type
-- [x] Ensure clothing images are validated as "clothing" type
+- [ ] Integrate ReviewSubmissionForm into VirtualTryOnUpload result display
+- [ ] Integrate SizeReviewsDisplay into VirtualTryOnUpload result display
+- [ ] Display reviews after customer selects size
+- [ ] Allow customers to submit reviews after try-on
 
 ### Final Testing & Deployment
 - [ ] Test complete customer flow: login → try-on → review
