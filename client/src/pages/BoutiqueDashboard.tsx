@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle } from "lucide-react";
+import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 
 export default function BoutiqueDashboard() {
@@ -180,7 +180,7 @@ export default function BoutiqueDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-4 gap-6">
               <Link href="/products">
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
@@ -190,6 +190,20 @@ export default function BoutiqueDashboard() {
                     <h3 className="font-bold mb-2">Add Products</h3>
                     <p className="text-sm text-muted-foreground">
                       Upload your clothing catalog
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/boutique-try-on">
+                <Card className="premium-card cursor-pointer hover:shadow-lg transition">
+                  <CardContent className="pt-6">
+                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
+                      <Sparkles className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-bold mb-2">Test Try-Ons</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Test your products with all clothing types
                     </p>
                   </CardContent>
                 </Card>
