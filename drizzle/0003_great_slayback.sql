@@ -1,0 +1,2 @@
+ALTER TABLE `tryOnResults` ADD `creditRestored` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `tryOnResults` ADD `generationStatus` enum('pending','success','failed','timeout') DEFAULT 'pending' NOT NULL;

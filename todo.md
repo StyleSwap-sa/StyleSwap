@@ -1405,3 +1405,13 @@ This approach:
 - [x] Skip credit validation when testMode=true
 - [x] Verify VirtualTryOnUpload passes testMode=true to API
 - [x] Test mode now allows free try-ons without credit deduction on both dashboards
+
+
+## Phase 37: Credit Restoration for Failed Generations
+
+- [ ] Add credit restoration logic to /api/tryon/status endpoint
+- [ ] Track which try-ons have had credits deducted
+- [ ] Implement automatic refund for failed/timeout generations
+- [ ] Add UI feedback when credits are restored
+- [ ] Test credit restoration with failed generations
+- [ ] Save checkpoint with credit restoration feature

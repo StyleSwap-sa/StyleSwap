@@ -203,7 +203,10 @@ export function VirtualTryOnUpload() {
           setProcessingProgress(100);
           pollingStartTimeRef.current = null;
         } else if (data.status?.toUpperCase() === "FAILED") {
-          const errorMsg = data.error || "Try-on generation failed";
+          let errorMsg = data.error || "Try-on generation failed";
+          if (data.creditsRestored) {
+            errorMsg += " (Your credit has been restored)";
+          }
           console.log("[VirtualTryOnUpload] Try-on failed:", errorMsg);
           setError(errorMsg);
           setIsPolling(false);

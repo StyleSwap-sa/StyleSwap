@@ -220,6 +220,8 @@ export const tryOnResults = mysqlTable("tryOnResults", {
 	fitRoomTaskId: varchar({ length: 255 }),
 	fitRoomRequestId: varchar({ length: 255 }),
 	flowType: mysqlEnum(['b2c','b2b']).default('b2c').notNull(),
+	creditRestored: int().default(0).notNull(),
+	generationStatus: mysqlEnum(['pending','success','failed','timeout']).default('pending').notNull(),
 },
 (table) => [
 	index("tryOnResults_shareToken_unique").on(table.shareToken),
