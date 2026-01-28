@@ -271,10 +271,14 @@ export const users = mysqlTable("users", {
 	phone: varchar({ length: 20 }),
 	userType: mysqlEnum(['customer','merchant','admin']).default('customer').notNull(),
 	currentBoutiqueId: int(),
+	emailVerified: int().default(0).notNull(),
+	emailVerificationToken: varchar({ length: 255 }),
+	emailVerificationTokenExpiry: timestamp({ mode: 'string' }),
 },
 (table) => [
-	index("users_openId_unique").on(table.openId),
-]);
+		index("users_openId_unique").on(table.openId),
+		index("users_email_verification_token").on(table.emailVerificationToken),
+	]);
 
 
 // Webhook Reliability Tables

@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import { ProtectedAdminRoute, ProtectedCustomerRoute, ProtectedBoutiqueRoute } from "./components/RouteGuards";
 import Dashboard from "./pages/Dashboard";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
@@ -45,27 +46,67 @@ function Router() {
       <Route path={"/roi"} component={ROI} />
       <Route path={"/case-studies"} component={CaseStudiesPage} />
       <Route path={"/contact"} component={ContactPage} />
-      <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/dashboard"} component={() => (
+        <ProtectedCustomerRoute>
+          <Dashboard />
+        </ProtectedCustomerRoute>
+      )} />
       <Route path={"/pricing"} component={Pricing} />
       <Route path={"/profile"} component={Profile} />
        <Route path={"/demo"} component={DemoTryOn} />
-      <Route path={"/customer-try-on"} component={CustomerTryOn} />
+      <Route path={"/customer-try-on"} component={() => (
+        <ProtectedCustomerRoute>
+          <CustomerTryOn />
+        </ProtectedCustomerRoute>
+      )} />
       <Route path={"/checkout"} component={Checkout} />
       <Route path={"/analytics"} component={Analytics} />
       <Route path={"/b2b"} component={B2BLanding} />
       <Route path={"/b2b-signup"} component={B2BSignup} />
       <Route path={"/for-boutiques"} component={BoutiqueFeatures} />
-      <Route path={"/boutique-dashboard"} component={BoutiqueDashboard} />
-      <Route path={"/boutique/:slug"} component={(props: any) => <BoutiqueLandingPage slug={props.params.slug} />} />
-      <Route path={"/boutique-products/:boutiqueId"} component={ProductManagement} />
-      <Route path={"/boutique-credits/:boutiqueId"} component={BoutiqueCredits} />
-      <Route path={"/boutique-settings/:boutiqueId"} component={BoutiqueSettings} />
+      <Route path={"/boutique-dashboard"} component={() => (
+        <ProtectedBoutiqueRoute>
+          <BoutiqueDashboard />
+        </ProtectedBoutiqueRoute>
+      )} />
+      <Route path={"/boutique/:slug"} component={(props: any) => (
+        <ProtectedBoutiqueRoute>
+          <BoutiqueLandingPage slug={props.params.slug} />
+        </ProtectedBoutiqueRoute>
+      )} />
+      <Route path={"/boutique-products/:boutiqueId"} component={(props: any) => (
+        <ProtectedBoutiqueRoute>
+          <ProductManagement {...props} />
+        </ProtectedBoutiqueRoute>
+      )} />
+      <Route path={"/boutique-credits/:boutiqueId"} component={(props: any) => (
+        <ProtectedBoutiqueRoute>
+          <BoutiqueCredits {...props} />
+        </ProtectedBoutiqueRoute>
+      )} />
+      <Route path={"/boutique-settings/:boutiqueId"} component={(props: any) => (
+        <ProtectedBoutiqueRoute>
+          <BoutiqueSettings {...props} />
+        </ProtectedBoutiqueRoute>
+      )} />
       <Route path={"products"} component={ProductManagement} />
-      <Route path={"/boutique-try-on"} component={BoutiqueTryOnPage} />
+      <Route path={"/boutique-try-on"} component={() => (
+        <ProtectedBoutiqueRoute>
+          <BoutiqueTryOnPage />
+        </ProtectedBoutiqueRoute>
+      )} />
       <Route path={"/test-boutique"} component={TestBoutiquePage} />
       <Route path={"/bulk-batch"} component={BulkBatchPage} />
-      <Route path={"/admin"} component={AdminDashboard} />
-      <Route path={"/admin/performance-export"} component={BoutiquePerformanceExport} />
+      <Route path={"/admin"} component={() => (
+        <ProtectedAdminRoute requiredRole="admin">
+          <AdminDashboard />
+        </ProtectedAdminRoute>
+      )} />
+      <Route path={"/admin/performance-export"} component={() => (
+        <ProtectedAdminRoute requiredRole="admin">
+          <BoutiquePerformanceExport />
+        </ProtectedAdminRoute>
+      )} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

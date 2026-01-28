@@ -1637,3 +1637,33 @@ This approach:
 - [x] Verify authenticated users are redirected on page load
 - [x] Build succeeds with no errors
 - [x] Save checkpoint
+
+
+## Phase 46: Email Verification System (NEW)
+- [ ] Add emailVerified and verificationToken fields to users table
+- [ ] Create email verification token generation logic
+- [ ] Create sendVerificationEmail helper function
+- [ ] Create verifyEmail endpoint in auth router
+- [ ] Create resendVerificationEmail endpoint
+- [ ] Create EmailVerificationPending component
+- [ ] Create VerifyEmailPage component
+- [ ] Integrate email verification into signup flow
+- [ ] Add email verification check before allowing try-ons
+- [ ] Create tests for email verification endpoints
+- [ ] Build succeeds with no errors
+- [ ] Save checkpoint
+
+
+## Phase 47: Three-Tier Authentication System (COMPLETE)
+- [x] Create RouteGuards.tsx with ProtectedAdminRoute, ProtectedCustomerRoute, ProtectedBoutiqueRoute
+- [x] Create AdminDashboardPage wrapper component
+- [x] Update App.tsx routing to use protected routes for all dashboards
+- [x] Wrap customer routes with ProtectedCustomerRoute
+- [x] Wrap boutique routes with ProtectedBoutiqueRoute
+- [x] Wrap admin routes with ProtectedAdminRoute
+- [x] Automatic redirects: customers → /dashboard, boutiques → /boutique-dashboard, admin → /admin
+- [x] Verify customers cannot access /admin or /boutique-dashboard
+- [x] Verify boutiques cannot access /admin or customer pages
+- [x] Verify admin can access all dashboards
+- [x] Build succeeds with no errors
+- [x] Save checkpoint
