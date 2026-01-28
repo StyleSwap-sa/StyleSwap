@@ -1,45 +1,16 @@
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { SizeSlider } from "./SizeSlider";
-import { ReviewSubmissionForm } from "./ReviewSubmissionForm";
-import { SizeReviewsDisplay } from "./SizeReviewsDisplay";
+import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom } from "@/lib/imageUtils";
 
 interface TryOnResult {
   taskId: string;
   resultImageUrl: string;
   createdAt: Date;
-  selectedSize?: number | null;
-}
-
-// Helper function to determine fit adjustment based on size
-function getFitAdjustment(size: number): 'tight' | 'perfect' | 'loose' {
-  // Define size ranges - adjust these based on your sizing system
-  const tightRange = [20, 26]; // XS sizes
-  const perfectRange = [28, 34]; // S-M sizes (standard)
-  const looseRange = [36, 50]; // L+ sizes
-  
-  if (size >= tightRange[0] && size <= tightRange[1]) return 'tight';
-  if (size >= perfectRange[0] && size <= perfectRange[1]) return 'perfect';
-  if (size >= looseRange[0] && size <= looseRange[1]) return 'loose';
-  return 'perfect'; // default
-}
-
-// Helper function to calculate scale factor based on fit
-function getScaleFactor(fit: 'tight' | 'perfect' | 'loose'): number {
-  switch (fit) {
-    case 'tight':
-      return 0.85; // Scale down 15% for tight fit (for slider)
-    case 'loose':
-      return 1.15; // Scale up 15% for loose fit (for slider)
-    case 'perfect':
-    default:
-      return 1.0; // No scaling for perfect fit
-  }
 }
 
 export function VirtualTryOnUpload() {
@@ -50,9 +21,6 @@ export function VirtualTryOnUpload() {
   const [clothImage, setClothImage] = useState<File | null>(null);
   const [clothImagePreview, setClothImagePreview] = useState<string>("");
   const [clothImageDimensions, setClothImageDimensions] = useState<{ width: number; height: number } | null>(null);
-  const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
-  const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
-  const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
   
   // State for processing
   const [isLoading, setIsLoading] = useState(false);
@@ -65,48 +33,112 @@ export function VirtualTryOnUpload() {
   const [error, setError] = useState<string>("");
   const [warning, setWarning] = useState<string>("");
   
-  // State for test mode
-  const [testMode, setTestMode] = useState(false);
-  
-  // State for size variants
-  const [selectedSize, setSelectedSize] = useState<number | null>(null);
-  const [availableSizes] = useState<Array<{ size: number; isAvailable: boolean; fitAdjustment: 'tight' | 'perfect' | 'loose'; stock?: number }>>([]);
-  const [showSizeSelector, setShowSizeSelector] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  
   // Refs
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
   const clothImageInputRef = useRef<HTMLInputElement>(null);
-  const lowerClothImageInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
-  const POLLING_TIMEOUT_MS = 300000; // 5 minutes max (Fitroom API can take up to 120 seconds, plus polling time)
+  const POLLING_TIMEOUT_MS = 150000; // 2.5 minutes max (HD mode can take up to 30 seconds)
 
-  // Fetch user info
-  const { user, isAuthenticated } = useAuth();
-  const isAdmin = user?.role === "admin";
+  // Fetch user credits
+  const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery();
 
-  // Fetch credits
-  const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
-
-  // Fetch try-on status
-  const getTryOnStatusQuery = trpc.tryon.getTryOnStatus.useQuery(
+  // Create try-on mutation
+  const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
+  
+  // Refund credits mutation
+  const refundCreditsMutation = trpc.tryon.refundTryOnCredits.useMutation();
+  
+  // Get try-on status query
+  const getTryOnStatusQuery = trpc.tryon.pollTryOnStatus.useQuery(
     { taskId: currentTaskId || "" },
     { enabled: !!currentTaskId && isPolling, refetchInterval: 2000 }
   );
 
-  // Refund credits mutation
-  const refundCreditsMutation = trpc.tryon.refundTryOnCredits.useMutation();
+  // Handle model photo upload
+  const handleModelPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
+    setError("");
+    setWarning("");
+
+    // Validate original file first
+    const validation = await validateImageForFitroom(file, "model");
+    if (!validation.valid) {
+      setError(validation.error || "Invalid image");
+      return;
+    }
+
+    if (validation.warning) {
+      setWarning(validation.warning);
+    }
+
+    // Use original file as-is (no optimization needed)
+    let finalFile = file;
+
+    setModelPhoto(finalFile);
+
+    // Get dimensions
+    try {
+      const dimensions = await getImageDimensions(finalFile);
+      setModelPhotoDimensions(dimensions);
+    } catch (err) {
+      console.error("Failed to get image dimensions:", err);
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setModelPhotoPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(finalFile);
+  };
+
+  // Handle clothing image upload
+  const handleClothImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError("");
+    setWarning("");
+
+    // Skip all validation - let backend handle it
+    // This avoids browser-specific issues with certain image formats
+    setClothImage(file);
+
+    // Try to get dimensions but don't fail if it doesn't work
+    try {
+      const dimensions = await getImageDimensions(file);
+      setClothImageDimensions(dimensions);
+    } catch (err) {
+      console.error("Failed to get image dimensions:", err);
+      // Don't set error - just continue
+    }
+
+    // Create preview
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setClothImagePreview(e.target?.result as string);
+      };
+      reader.onerror = () => {
+        console.error("Failed to read clothing image");
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Error creating preview:", err);
+    }
+  };
+
+  // Handle try-on creation
   const handleCreateTryOn = async () => {
     if (!modelPhoto || !clothImage) {
       setError("Please upload both a body photo and a clothing image");
       return;
     }
 
-    if (!testMode && (!credits || credits.remainingCredits < 1)) {
+    if (!credits || credits.remainingCredits < 1) {
       setError("Insufficient credits. Please purchase more try-ons.");
       return;
     }
@@ -134,24 +166,9 @@ export function VirtualTryOnUpload() {
       
       setProcessingProgress(10);
       
-      // Crop clothing image based on selected type
-      console.log("[VirtualTryOn] Processing clothing image for type:", clothType);
-      
-      try {
-        if (clothType === "upper") {
-          console.log("[VirtualTryOn] Cropping top portion of clothing image");
-          finalClothImage = await cropTopClothing(finalClothImage);
-          setWarning("Clothing image cropped to top portion for better fitting");
-        } else if (clothType === "lower") {
-          console.log("[VirtualTryOn] Cropping bottom portion of clothing image");
-          finalClothImage = await cropBottomClothing(finalClothImage);
-          setWarning("Clothing image cropped to bottom portion for better fitting");
-        }
-      } catch (cropError) {
-        console.error("[VirtualTryOn] Error cropping image:", cropError);
-        // Continue with original image if cropping fails
-        setWarning("Could not optimize clothing image, using original");
-      }
+      // Skip dimension check for clothing images (backend will handle resizing)
+      // This avoids issues with WebP images not loading in browser Image API
+      console.log("[VirtualTryOn] Clothing image will be processed by backend");
       
       setProcessingProgress(15);
       console.log("[VirtualTryOn] Ready to send images to backend");
@@ -159,30 +176,13 @@ export function VirtualTryOnUpload() {
       // Send resized files using FormData
       const formData = new FormData();
       formData.append("modelImage", finalModelPhoto);
-      
-      // For combo, send as upper+lower. For single garments, send only cloth image
-      if (clothType === "combo") {
-        formData.append("upperClothImage", finalClothImage);
-        if (lowerClothImage) {
-          formData.append("lowerClothImage", lowerClothImage);
-        }
-      } else {
-        // For single garments (upper/lower), send only the cloth image
-        formData.append("clothImage", finalClothImage);
-      }
-      
-      // Use selected cloth type (Fitroom API expects: upper, lower, or combo)
-      formData.append("clothType", clothType);
-      // Pass test mode to backend
-      formData.append("testMode", testMode.toString());
-      console.log("[VirtualTryOn] FormData clothType:", clothType);
-      console.log("[VirtualTryOn] FormData testMode:", testMode);
-      console.log("[VirtualTryOn] FormData modelImage:", finalModelPhoto?.name, finalModelPhoto?.size);
-      console.log("[VirtualTryOn] FormData clothImage:", finalClothImage?.name, finalClothImage?.size);
+      formData.append("clothImage", finalClothImage);
+      // Use 'upper' for single clothing items (Fitroom API expects: upper, lower, or combo)
+      formData.append("clothType", "upper");
       setProcessingProgress(20);
 
       // Call the dedicated file upload endpoint
-      const response = await fetch("/api/tryon/upload?testMode=" + testMode, {
+      const response = await fetch("/api/tryon/upload", {
         method: "POST",
         body: formData,
         credentials: "include", // Include session cookie
@@ -207,13 +207,10 @@ export function VirtualTryOnUpload() {
         setCurrentTaskId(data.taskId);
         setIsPolling(true);
         setProcessingProgress(20);
+        setIsLoading(false);
         
-        // Refetch credits to show updated balance (only if not in test mode)
-        if (!testMode) {
-          refetchCredits();
-        } else {
-          console.log("[VirtualTryOn] Test mode active - credits not deducted");
-        }
+        // Refetch credits to show updated balance
+        refetchCredits();
       } else {
         // Ensure error is always a string, not a boolean
         console.log('[VirtualTryOn] Response not successful:', { success: data.success, taskId: data.taskId, error: data.error, errorType: typeof data.error });
@@ -290,7 +287,6 @@ export function VirtualTryOnUpload() {
         taskId: getTryOnStatusQuery.data.taskId,
         resultImageUrl: getTryOnStatusQuery.data.resultImage || getTryOnStatusQuery.data.resultImageUrl,
         createdAt: new Date(),
-        selectedSize: selectedSize,
       });
       setIsPolling(false);
       setProcessingProgress(100);
@@ -323,103 +319,24 @@ export function VirtualTryOnUpload() {
     }
   }, [getTryOnStatusQuery.data, isPolling]);
 
-  // Handle size regeneration with debouncing
-  const handleSizeRegeneration = async (newSize: number) => {
-    if (!modelPhoto || !clothImage || !result) {
-      setError("Missing required data for regeneration");
-      return;
-    }
-
-    setIsRegenerating(true);
-    setError("");
-
-    try {
-      let finalModelPhoto = modelPhoto;
-      let finalClothImage = clothImage;
-      let finalLowerClothImage = lowerClothImage;
-
-      const modelValidation = await validateImageForFitroom(modelPhoto);
-      if (!modelValidation.isValid) {
-        setError(modelValidation.error || "Invalid body photo");
-        setIsRegenerating(false);
-        return;
-      }
-
-      const clothValidation = await validateImageForFitroom(clothImage);
-      if (!clothValidation.isValid) {
-        setError(clothValidation.error || "Invalid clothing image");
-        setIsRegenerating(false);
-        return;
-      }
-
-      if (modelValidation.shouldResize) {
-        finalModelPhoto = await optimizeImageForFitroom(modelPhoto);
-      }
-      if (clothValidation.shouldResize) {
-        finalClothImage = await optimizeImageForFitroom(clothImage);
-      }
-
-      let processedClothImage = finalClothImage;
-      if (clothType === "lower" && finalLowerClothImage) {
-        processedClothImage = finalLowerClothImage;
-      } else if (clothType === "combo") {
-        if (finalLowerClothImage) {
-          finalLowerClothImage = await optimizeImageForFitroom(finalLowerClothImage);
-        }
-      }
-
-      const formData = new FormData();
-      formData.append("bodyImage", finalModelPhoto);
-      formData.append("clothImage", processedClothImage);
-      if (clothType === "combo" && finalLowerClothImage) {
-        formData.append("lowerClothImage", finalLowerClothImage);
-      }
-      formData.append("clothType", clothType);
-      formData.append("size", newSize.toString());
-
-      const response = await fetch("/api/tryon/create", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.taskId) {
-        console.log("[VirtualTryOn] Starting regeneration for size", newSize, "with taskId", data.taskId);
-        setCurrentTaskId(data.taskId);
-        setIsPolling(true);
-        setSelectedSize(newSize);
-        // Clear the old result to show loading state
-        setResult(prev => prev ? { ...prev, resultImageUrl: '' } : null);
-      } else {
-        const errorMsg = typeof data.error === "string" ? data.error : "Failed to regenerate try-on";
-        setError(errorMsg);
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "An error occurred during regeneration";
-      setError(errorMsg);
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
   const handleReset = () => {
-    setResult(null);
     setModelPhoto(null);
     setModelPhotoPreview("");
+    setModelPhotoDimensions(null);
     setClothImage(null);
     setClothImagePreview("");
-    setClothType("upper");
-    setLowerClothImage(null);
-    setLowerClothImagePreview("");
+    setClothImageDimensions(null);
+    setResult(null);
+    setError("");
+    setWarning("");
     setCurrentTaskId(null);
     setIsPolling(false);
     setProcessingProgress(0);
     pollingStartTimeRef.current = null;
     if (modelPhotoInputRef.current) modelPhotoInputRef.current.value = "";
     if (clothImageInputRef.current) clothImageInputRef.current.value = "";
-    // Note: Keep selectedSize so user can try another size without re-selecting
   };
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
       {/* Header */}
@@ -434,14 +351,14 @@ export function VirtualTryOnUpload() {
       </div>
 
       {/* Image Guidelines */}
-      <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+      <Card className="bg-blue-50 border-blue-200">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Info className="w-5 h-5" />
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Info className="w-5 h-5 text-blue-600" />
             Image Guidelines for Best Results:
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm">
+        <CardContent className="space-y-2 text-sm text-blue-900">
           <p><strong>Body Photo:</strong> Full-body shot, standing straight, facing forward, simple background (recommended: 2048px)</p>
           <p><strong>Clothing:</strong> Clear front view on white/solid background, well-lit, entire item visible (recommended: 1024px)</p>
           <p><strong>Auto-optimization:</strong> Images larger than recommended will automatically be resized for faster processing</p>
@@ -449,168 +366,85 @@ export function VirtualTryOnUpload() {
         </CardContent>
       </Card>
 
+      {/* Error Message */}
+      {error && (
+        <Card className="bg-red-50 border-red-200">
+          <CardContent className="pt-6 flex gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="text-red-900">{error}</div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Warning Message */}
+      {warning && (
+        <Card className="bg-yellow-50 border-yellow-200">
+          <CardContent className="pt-6 flex gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="text-yellow-900">{warning}</div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Result Display */}
       {result && (
-        <Card className="border-green-500/30 bg-green-50 dark:bg-green-950/20">
+        <Card className="bg-green-50 border-green-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Check className="w-5 h-5 text-green-600" />
-              Try-On Complete! Drag the slider to compare sizes.
+            <CardTitle className="text-lg flex items-center gap-2 text-green-900">
+              <Check className="w-5 h-5" />
+              Try-On Generated Successfully!
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* AI Distortion Disclaimer */}
-            <Card className="border-blue-500/30 bg-blue-50 dark:bg-blue-950/20">
-              <CardContent className="pt-6">
-                <div className="flex gap-3">
-                  <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Note: AI Distortion</p>
-                    <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                      The AI may distort some body parts like fingers or legs. This is normal and does not affect fit accuracy. Focus on how the clothing fits the torso and overall silhouette.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Interactive Size Slider */}
-            <SizeSlider
-              selectedSize={selectedSize}
-              onSizeChange={setSelectedSize}
-              resultImageUrl={result.resultImageUrl}
-              minSize={24}
-              maxSize={50}
-              isLoading={isRegenerating}
-              onSizeChangeDebounced={handleSizeRegeneration}
+            <img 
+              src={result.resultImageUrl} 
+              alt="Try-on result" 
+              className="w-full rounded-lg border border-green-200"
             />
-            
-            <div className="flex gap-3">
-              <Button onClick={handleReset} className="flex-1">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Try Another
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = result.resultImageUrl;
+                  link.download = `tryon-${Date.now()}.jpg`;
+                  link.click();
+                }}
+                className="flex-1"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+              <Button 
+                onClick={() => {
+                  // Share functionality
+                  if (navigator.share) {
+                    navigator.share({
+                      title: "StyleSwap Try-On",
+                      text: "Check out my virtual try-on!",
+                      url: result.resultImageUrl,
+                    });
+                  }
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+              <Button 
+                onClick={handleReset}
+                variant="outline"
+              >
+                Try Again
               </Button>
             </div>
-
-            {/* Review Submission Section */}
-            {selectedSize && (
-              <div className="mt-8 pt-8 border-t border-border space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Share Your Experience</h3>
-                  <p className="text-sm text-muted-foreground">Help other customers find the right size by sharing your review</p>
-                </div>
-                <ReviewSubmissionForm 
-                  selectedSize={selectedSize}
-                  onSuccess={() => {
-                    // Optionally refresh reviews or show success message
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Customer Reviews Section */}
-            {selectedSize && (
-              <div className="mt-8 pt-8 border-t border-border">
-                <h3 className="text-lg font-semibold mb-4">Customer Reviews for Size {selectedSize}</h3>
-                <SizeReviewsDisplay selectedSize={selectedSize} />
-              </div>
-            )}
           </CardContent>
         </Card>
       )}
 
-      {/* Processing State */}
-      {isLoading && isPolling && (
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="pt-6 space-y-4">
-            <div className="flex items-center justify-center gap-3">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              <span className="text-lg font-medium">Generating try-on...</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div
-                className="bg-primary h-2 rounded-full transition-all duration-300"
-                style={{ width: `${processingProgress}%` }}
-              />
-            </div>
-            <p className="text-sm text-muted-foreground text-center">
-              {Math.round(processingProgress)}% complete
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Error Display */}
-      {error && (
-        <Card className="border-red-500/30 bg-red-50 dark:bg-red-950/20">
-          <CardContent className="pt-6">
-            <div className="flex gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-red-900 dark:text-red-100">{error}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Warning Display */}
-      {warning && (
-        <Card className="border-yellow-500/30 bg-yellow-50 dark:bg-yellow-950/20">
-          <CardContent className="pt-6">
-            <div className="flex gap-3">
-              <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">{warning}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Form */}
+      {/* Upload Sections */}
       {!result && (
         <div className="space-y-6">
-          {/* Clothing Type Selector */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Select Clothes</CardTitle>
-              <p className="text-sm text-muted-foreground mt-2">
-                Select the type of clothing you want to try on
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setClothType("upper")}
-                  className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
-                >
-                  <div className="font-semibold text-sm">Top</div>
-                  <div className="text-xs text-muted-foreground mt-1">Shirt, jacket, etc</div>
-                </button>
-                <button
-                  onClick={() => setClothType("lower")}
-                  className={`p-4 rounded-lg border-2 transition-all ${clothType === "lower" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
-                >
-                  <div className="font-semibold text-sm">Bottom</div>
-                  <div className="text-xs text-muted-foreground mt-1">Pants, skirt, etc</div>
-                </button>
-                <button
-                  onClick={() => setClothType("full")}
-                  className={`p-4 rounded-lg border-2 transition-all ${clothType === "full" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
-                >
-                  <div className="font-semibold text-sm">Full Dress</div>
-                  <div className="text-xs text-muted-foreground mt-1">One piece</div>
-                </button>
-                <button
-                  onClick={() => setClothType("combo")}
-                  className={`p-4 rounded-lg border-2 transition-all ${clothType === "combo" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
-                >
-                  <div className="font-semibold text-sm">Top & Bottom</div>
-                  <div className="text-xs text-muted-foreground mt-1">Two pieces</div>
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Model Photo Upload */}
           <Card>
             <CardHeader>
@@ -628,17 +462,7 @@ export function VirtualTryOnUpload() {
                   ref={modelPhotoInputRef}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setModelPhoto(file);
-                      const reader = new FileReader();
-                      reader.onload = (e) => {
-                        setModelPhotoPreview(e.target?.result as string);
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
+                  onChange={handleModelPhotoUpload}
                   className="hidden"
                 />
                 <div className="space-y-2">
@@ -650,9 +474,9 @@ export function VirtualTryOnUpload() {
 
               {modelPhotoPreview && (
                 <div className="space-y-2">
-                  <img
-                    src={modelPhotoPreview}
-                    alt="Model preview"
+                  <img 
+                    src={modelPhotoPreview} 
+                    alt="Body photo preview" 
                     className="w-full rounded-lg border border-border"
                   />
                   {modelPhotoDimensions && (
@@ -670,7 +494,7 @@ export function VirtualTryOnUpload() {
             <CardHeader>
               <CardTitle className="text-lg">2. Upload Clothing Image</CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Dress, top, or bottom - clear front view on solid background
+                Clear front view on solid background (recommended: 1024px width)
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -682,17 +506,7 @@ export function VirtualTryOnUpload() {
                   ref={clothImageInputRef}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setClothImage(file);
-                      const reader = new FileReader();
-                      reader.onload = (e) => {
-                        setClothImagePreview(e.target?.result as string);
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
+                  onChange={handleClothImageUpload}
                   className="hidden"
                 />
                 <div className="space-y-2">
@@ -704,9 +518,9 @@ export function VirtualTryOnUpload() {
 
               {clothImagePreview && (
                 <div className="space-y-2">
-                  <img
-                    src={clothImagePreview}
-                    alt="Clothing preview"
+                  <img 
+                    src={clothImagePreview} 
+                    alt="Clothing preview" 
                     className="w-full rounded-lg border border-border"
                   />
                   {clothImageDimensions && (
@@ -719,158 +533,55 @@ export function VirtualTryOnUpload() {
             </CardContent>
           </Card>
 
-          {/* Lower Clothing Image Upload (Combo Mode Only) */}
-          {clothType === "combo" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">3. Upload Bottom Image</CardTitle>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Bottom/pants image - clear front view on solid background
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div
-                  onClick={() => lowerClothImageInputRef.current?.click()}
-                  className="border-2 border-dashed border-primary/30 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
-                >
-                  <input
-                    ref={lowerClothImageInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setLowerClothImage(file);
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                          setLowerClothImagePreview(e.target?.result as string);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    className="hidden"
-                  />
-                  <div className="space-y-2">
-                    <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
-                    <div className="font-medium">Click to upload bottom image</div>
-                    <div className="text-sm text-muted-foreground">PNG, JPG, or WebP</div>
-                  </div>
-                </div>
+          {/* Generate Button */}
+          {modelPhoto && clothImage && (
+            <div className="space-y-4">
+              {isPolling && (
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="pt-6">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                        <span className="text-blue-900">Generating your try-on...</span>
+                      </div>
+                      <div className="w-full bg-blue-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${processingProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-sm text-blue-900">
+                        This may take up to 2 minutes. Please don't close this page.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
-                {lowerClothImagePreview && (
-                  <div className="space-y-2">
-                    <img
-                      src={lowerClothImagePreview}
-                      alt="Bottom preview"
-                      className="w-full rounded-lg border border-border"
-                    />
-                  </div>
+              <Button 
+                onClick={handleCreateTryOn}
+                disabled={isLoading || isPolling}
+                className="w-full h-12 text-lg"
+              >
+                {isLoading || isPolling ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {isPolling ? "Generating..." : "Uploading..."}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate Try-On
+                  </>
                 )}
-              </CardContent>
-            </Card>
+              </Button>
+            </div>
           )}
-
-          {/* Size Selector (Demo) */}
-          <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center justify-between">
-                <span>Size Selection (Demo)</span>
-                <button
-                  onClick={() => setShowSizeSelector(!showSizeSelector)}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-normal"
-                >
-                  {showSizeSelector ? '▼ Hide' : '▶ Show'}
-                </button>
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-2">
-                Select a size to see how the fit adjusts (this feature will show different fit feedback based on selected size)
-              </p>
-            </CardHeader>
-            {showSizeSelector && (
-              <CardContent className="space-y-4">
-                {/* Demo sizes */}
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                  {[28, 30, 32, 34, 36, 38].map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`p-3 rounded-lg border-2 transition-all font-semibold ${
-                        selectedSize === size
-                          ? 'border-primary bg-primary/10'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-                
-                {selectedSize && (
-                  <div className="p-3 bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <p className="font-semibold text-sm mb-2">Size {selectedSize} Selected</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      When you generate the try-on, the system will show how this garment fits in size {selectedSize}.
-                      Different sizes will show different fit feedback (tight, perfect, or loose).
-                    </p>
-                  </div>
-                )}
-                
-                <div className="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg text-xs">
-                  <p className="font-semibold mb-1">💡 How Size Selection Works:</p>
-                  <ul className="space-y-1 text-gray-700 dark:text-gray-300">
-                    <li>• Select a size before generating the try-on</li>
-                    <li>• The system will show how the garment fits in that size</li>
-                    <li>• Try different sizes to compare fits</li>
-                    <li>• Fit feedback: Tight (snug), Perfect (as expected), Loose (relaxed)</li>
-                  </ul>
-                </div>
-              </CardContent>
-            )}
-          </Card>
-
-          {/* Submit Button */}
-          <Button 
-            onClick={handleCreateTryOn}
-            disabled={isLoading || isPolling}
-            className="w-full h-12 text-lg"
-          >
-            {isLoading || isPolling ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {isPolling ? "Generating..." : "Uploading..."}
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate Try-On{selectedSize ? ` (Size ${selectedSize})` : ''}
-              </>
-            )}
-          </Button>
         </div>
       )}
 
-      {/* Test Mode Toggle */}
-      {isAdmin && user && (
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-blue-900">Test Mode</p>
-                <p className="text-sm text-blue-800">Generate try-ons without using credits</p>
-              </div>
-              <Button
-                onClick={() => setTestMode(!testMode)}
-                variant={testMode ? "default" : "outline"}
-              >
-                {testMode ? "Enabled" : "Disabled"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Credits Info */}
-      {credits && !testMode && (
+      {credits && (
         <Card className="bg-muted/50">
           <CardContent className="pt-6">
             <div className="flex justify-between items-center">
@@ -880,15 +591,6 @@ export function VirtualTryOnUpload() {
               </div>
               <Button variant="outline">Buy More Credits</Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Test Mode Active Notice */}
-      {testMode && isAdmin && (
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="pt-6">
-            <p className="text-green-900 font-semibold">✓ Test Mode Active - Credits will not be deducted</p>
           </CardContent>
         </Card>
       )}

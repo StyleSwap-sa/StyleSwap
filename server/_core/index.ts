@@ -1,5 +1,4 @@
 import express from "express";
-const app = express();
 import { createServer } from "http";
 import net from "net";
 import multer from "multer";
@@ -49,9 +48,7 @@ export async function startServer() {
   // Try-on upload endpoint with file upload support
   app.post("/api/tryon/upload", createUploadRateLimiter(), upload.fields([
     { name: "modelImage", maxCount: 1 },
-    { name: "clothImage", maxCount: 1 },
-    { name: "upperClothImage", maxCount: 1 },
-    { name: "lowerClothImage", maxCount: 1 }
+    { name: "clothImage", maxCount: 1 }
   ]), async (req, res) => {
     let tempDir: string | null = null;
     try {
@@ -71,38 +68,16 @@ export async function startServer() {
       
       const userId = user.id;
       
-      // Get testMode from query param or body
-      const testMode = req.query.testMode === 'true' || req.body.testMode === 'true';
-      console.log("[Try-On Upload] Test mode:", testMode);
-      
       const modelImageFiles = (req.files as any)?.modelImage;
       const clothImageFiles = (req.files as any)?.clothImage;
-      const upperClothImageFiles = (req.files as any)?.upperClothImage;
-      const lowerClothImageFiles = (req.files as any)?.lowerClothImage;
-      const clothType = req.body.clothType || "upper";
 
-      console.log("[Try-On Upload] Files received:", Object.keys(req.files || {}));
-      console.log("[Try-On Upload] clothType:", clothType);
-      if (!modelImageFiles || !modelImageFiles[0]) {
-        return res.status(400).json({ error: "Model image is required" });
+      if (!modelImageFiles || !modelImageFiles[0] || !clothImageFiles || !clothImageFiles[0]) {
+        return res.status(400).json({ error: "Both model image and cloth image are required" });
       }
 
       const modelImageBuffer = modelImageFiles[0].buffer;
-      let clothImageBuffer: Buffer;
-      let lowerClothImageBuffer: Buffer | null = null;
-      
-      if ((clothType === "combo" || clothType === "upper") && upperClothImageFiles && upperClothImageFiles[0]) {
-        clothImageBuffer = upperClothImageFiles[0].buffer;
-        if (lowerClothImageFiles && lowerClothImageFiles[0]) {
-          lowerClothImageBuffer = lowerClothImageFiles[0].buffer;
-        } else {
-          lowerClothImageBuffer = clothImageBuffer;
-        }
-      } else if (clothImageFiles && clothImageFiles[0]) {
-        clothImageBuffer = clothImageFiles[0].buffer;
-      } else {
-        return res.status(400).json({ error: "Clothing image is required" });
-      }
+      const clothImageBuffer = clothImageFiles[0].buffer;
+      const clothType = req.body.clothType || "single";
 
       console.log(`[Try-On Upload] Model image size: ${modelImageBuffer.length} bytes`);
       console.log(`[Try-On Upload] Cloth image size: ${clothImageBuffer.length} bytes`);
@@ -159,12 +134,10 @@ export async function startServer() {
       console.log(`[Try-On Upload] Model image base64 size: ${modelImageBase64.length} bytes`);
       console.log(`[Try-On Upload] Cloth image base64 size: ${clothImageBase64.length} bytes`);
 
-      // Check credits (skip in test mode)
-      if (!testMode) {
-        const credits = await getUserCredits(userId);
-        if (credits.remainingCredits < 1) {
-          return res.status(402).json({ error: "Insufficient credits" });
-        }
+      // Check credits
+      const credits = await getUserCredits(userId);
+      if (credits.remainingCredits < 1) {
+        return res.status(402).json({ error: "Insufficient credits" });
       }
 
       // Save buffers to temporary files for multipart upload
@@ -180,35 +153,14 @@ export async function startServer() {
       fs.writeFileSync(clothPath, finalClothBuffer);
       console.log(`[Try-On Upload] Saved temp files: ${modelPath}, ${clothPath}`);
       
-      let lowerClothPath: string | undefined;
-      if ((clothType === "combo" || clothType === "upper") && lowerClothImageBuffer) {
-        lowerClothPath = path.join(tempDir, 'lower_cloth.jpg');
-        let finalLowerClothBuffer = lowerClothImageBuffer;
-        const lowerClothValidation = validateImageType(lowerClothImageBuffer);
-        if (lowerClothValidation.format !== 'JPEG') {
-          console.log(`[Try-On Upload] Converting lower cloth to JPEG`);
-          finalLowerClothBuffer = await sharp(lowerClothImageBuffer).jpeg({ quality: 95 }).toBuffer();
-        }
-        fs.writeFileSync(lowerClothPath, finalLowerClothBuffer);
-        console.log(`[Try-On Upload] Saved lower cloth temp file: ${lowerClothPath}`);
-      }
-      
-      // For single garments (upper/lower), don't use lower cloth image
-      // For combo mode, use both upper and lower cloth images
-      let fitroomLowerClothPath: string | undefined = undefined;
-      if (clothType === "combo") {
-        fitroomLowerClothPath = lowerClothPath;
-      }
-      
       // Create try-on task with Fitroom using multipart form data (like the website)
       const fitroomClient = getFitroomClient();
       console.log('[Try-On Upload] Sending to Fitroom API using multipart form data');
       const taskResult = await fitroomClient.createTryOn({
         modelImagePath: modelPath,
         clothImagePath: clothPath,
-        clothType: clothType as "upper" | "lower" | "combo",
-        lowerClothImagePath: fitroomLowerClothPath,
-        hdMode: true,
+        clothType: clothType as "single" | "combo",
+        hdMode: false,
       });
       
       // Clean up temp files
@@ -226,12 +178,8 @@ export async function startServer() {
         return res.status(500).json({ error: taskResult.error || "Failed to create try-on task" });
       }
 
-      // Deduct credit after successful task creation (skip in test mode)
-      if (!testMode) {
-        await deductCredits(userId, 1);
-      } else {
-        console.log("[Try-On Upload] Test mode - skipping credit deduction");
-      }
+      // Deduct credit after successful task creation
+      await deductCredits(userId, 1);
 
       console.log(`[Try-On Upload] Task created successfully: ${taskResult.taskId}`);
       
@@ -245,11 +193,6 @@ export async function startServer() {
       return res.status(500).json({ error: error instanceof Error ? error.message : "Failed to process try-on upload" });
     }
   });
-  
-  // Webhook endpoints
-  app.post("/api/yoco/webhook", handleYokoWebhook);
-  app.post("/api/yoco-boutique/webhook", handleYocoBoutiqueWebhook);
-  app.post("/api/test-webhook", testYocoBoutiqueWebhook);
   
   // tRPC API
   app.use(

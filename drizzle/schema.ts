@@ -178,28 +178,12 @@ export const products = mysqlTable("products", {
 	price: decimal({ precision: 10, scale: 2 }),
 	currency: varchar({ length: 3 }).default('ZAR'),
 	isActive: int().default(1).notNull(),
-	hasSizeVariants: int().default(0).notNull(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
 (table) => [
 	index("idx_products_boutique").on(table.boutiqueId),
 	index("idx_products_active").on(table.isActive),
-]);
-
-export const productSizeVariants = mysqlTable("productSizeVariants", {
-	id: int().autoincrement().notNull(),
-	productId: int().notNull().references(() => products.id),
-	size: int().notNull(),
-	stock: int().default(0).notNull(),
-	isAvailable: int().default(1).notNull(),
-	fitAdjustment: mysqlEnum(['tight', 'perfect', 'loose']).default('perfect').notNull(),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
-},
-(table) => [
-	index("idx_product_size_product").on(table.productId),
-	index("idx_product_size_available").on(table.isAvailable),
 ]);
 
 export const transactions = mysqlTable("transactions", {
@@ -428,58 +412,4 @@ export const analyticsSnapshots = mysqlTable("analyticsSnapshots", {
 	index("idx_snapshot_date").on(table.snapshotDate),
 	index("idx_snapshot_version").on(table.imageOptimizationVersion),
 	index("idx_snapshot_flow").on(table.flowType),
-]);
-
-export const sizeReviews = mysqlTable("sizeReviews", {
-	id: int().autoincrement().notNull().primaryKey(),
-	userId: int().notNull().references(() => users.id),
-	boutiqueId: int().notNull().references(() => boutiques.id),
-	tryOnResultId: int().references(() => tryOnResults.id),
-	clothingType: varchar({ length: 50 }).notNull(), // e.g., "dress", "shirt", "pants"
-	selectedSize: int().notNull(), // The size customer chose
-	bodySize: int().notNull(), // The customer's actual body size
-	fitRating: mysqlEnum(['tight', 'perfect', 'loose']).notNull(),
-	helpfulnessRating: int().default(0), // 1-5 stars
-	reviewText: text(),
-	recommendedSize: int(), // What size they recommend for their body
-	bodyType: varchar({ length: 50 }), // e.g., "hourglass", "pear", "apple", "rectangle"
-	height: varchar({ length: 20 }), // e.g., "5'6\"", "170cm"
-	weight: varchar({ length: 20 }), // Optional: e.g., "150lbs", "68kg"
-	helpfulCount: int().default(0),
-	unhelpfulCount: int().default(0),
-	isVerifiedPurchase: int().default(0),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
-},
-(table) => [
-	index("idx_size_reviews_user").on(table.userId),
-	index("idx_size_reviews_boutique").on(table.boutiqueId),
-	index("idx_size_reviews_clothing_type").on(table.clothingType),
-	index("idx_size_reviews_selected_size").on(table.selectedSize),
-	index("idx_size_reviews_body_size").on(table.bodySize),
-	index("idx_size_reviews_fit_rating").on(table.fitRating),
-	index("idx_size_reviews_body_type").on(table.bodyType),
-	index("idx_size_reviews_created").on(table.createdAt),
-]);
-
-export const customerSizePreferences = mysqlTable("customerSizePreferences", {
-	id: int().autoincrement().notNull().primaryKey(),
-	userId: int().notNull().references(() => users.id),
-	boutiqueId: int().notNull().references(() => boutiques.id),
-	bodySize: int().notNull(), // Customer's actual body size
-	preferredSize: int(), // Size they usually buy
-	clothingType: varchar({ length: 50 }).notNull(), // e.g., "dress", "shirt", "pants"
-	bodyType: varchar({ length: 50 }), // e.g., "hourglass", "pear", "apple", "rectangle"
-	height: varchar({ length: 20 }),
-	weight: varchar({ length: 20 }),
-	notes: text(), // Customer notes about their preferences
-	lastUpdated: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-},
-(table) => [
-	index("idx_customer_prefs_user").on(table.userId),
-	index("idx_customer_prefs_boutique").on(table.boutiqueId),
-	index("idx_customer_prefs_body_size").on(table.bodySize),
-	index("idx_customer_prefs_clothing_type").on(table.clothingType),
-	index("idx_customer_prefs_body_type").on(table.bodyType),
 ]);

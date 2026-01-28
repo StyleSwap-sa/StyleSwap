@@ -29,9 +29,6 @@ import AdminDashboard from "./pages/AdminDashboard";
 import BoutiquePerformanceExport from "./pages/BoutiquePerformanceExport";
 import BoutiqueFeatures from "./pages/BoutiqueFeatures";
 import CustomerTryOn from "./pages/CustomerTryOn";
-import BoutiqueTryOnPage from "./pages/BoutiqueTryOnPage";
-import TestBoutiquePage from "./pages/TestBoutiquePage";
-import BulkBatchPage from "./pages/BulkBatchPage";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -61,9 +58,6 @@ function Router() {
       <Route path={"/boutique-credits/:boutiqueId"} component={BoutiqueCredits} />
       <Route path={"/boutique-settings/:boutiqueId"} component={BoutiqueSettings} />
       <Route path={"products"} component={ProductManagement} />
-      <Route path={"/boutique-try-on"} component={BoutiqueTryOnPage} />
-      <Route path={"/test-boutique"} component={TestBoutiquePage} />
-      <Route path={"/bulk-batch"} component={BulkBatchPage} />
       <Route path={"/admin"} component={AdminDashboard} />
       <Route path={"/admin/performance-export"} component={BoutiquePerformanceExport} />
       <Route path={"/404"} component={NotFound} />
