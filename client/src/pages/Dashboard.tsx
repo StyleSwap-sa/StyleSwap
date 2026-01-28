@@ -6,35 +6,20 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { VirtualTryOnUpload } from "@/components/VirtualTryOnUpload";
+import { GarmentCatalog } from "@/components/GarmentCatalog";
 
-type DashboardTab = "overview" | "try-on" | "history";
+type DashboardTab = "overview" | "try-on" | "catalog" | "history";
 
 export default function Dashboard() {
   const { user, isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
 
-  // Redirect based on user type (skip for admins testing customer dashboard)
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      const params = new URLSearchParams(window.location.search);
-      const isTestingCustomer = params.get('test') === 'customer';
-      
-      if (!isTestingCustomer) {
-        if (user.userType === 'admin' || user.role === 'admin') {
-          setLocation('/admin');
-        } else if (user.userType === 'merchant') {
-          setLocation('/boutique-dashboard');
-        }
-      }
-    }
-  }, [isAuthenticated, user, setLocation]);
-
   // Handle tab query parameter
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab') as DashboardTab | null;
-    if (tab && ['overview', 'try-on', 'history'].includes(tab)) {
+    if (tab && ['overview', 'try-on', 'catalog', 'history'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [location]);
@@ -43,9 +28,9 @@ export default function Dashboard() {
   const { data: credits, isLoading: creditsLoading, refetch: refetchCredits } = 
     trpc.tryon.getCredits.useQuery();
 
-  // TODO: Fetch transaction history
-  const transactions: any[] = [];
-  const transactionsLoading = false;
+  // Fetch transaction history
+  const { data: transactions, isLoading: transactionsLoading } = 
+    trpc.tryon.getTransactionHistory.useQuery({ limit: 20 });
 
   if (!isAuthenticated) {
     return (
@@ -138,7 +123,14 @@ export default function Dashboard() {
             <Shirt className="w-4 h-4 mr-2" />
             Virtual Try-On
           </Button>
-
+          <Button
+            onClick={() => setActiveTab("catalog")}
+            variant={activeTab === "catalog" ? "default" : "outline"}
+            className={activeTab === "catalog" ? "premium-button" : ""}
+          >
+            <ShoppingBag className="w-4 h-4 mr-2" />
+            Garment Catalog
+          </Button>
           <Button
             onClick={() => setActiveTab("history")}
             variant={activeTab === "history" ? "default" : "outline"}
@@ -147,17 +139,6 @@ export default function Dashboard() {
             <History className="w-4 h-4 mr-2" />
             History
           </Button>
-
-          {/* Admin Dashboard Link - Only visible to owner */}
-          {(user?.role === 'admin' || user?.userType === 'admin') && (
-            <Button
-              onClick={() => setLocation('/admin')}
-              variant="outline"
-              className="ml-auto border-primary/50 text-primary hover:bg-primary/10"
-            >
-              Platform Analytics
-            </Button>
-          )}
         </div>
 
         {/* Tab Content */}
@@ -245,7 +226,10 @@ export default function Dashboard() {
             <VirtualTryOnUpload />
           )}
 
-
+          {/* Garment Catalog Tab */}
+          {activeTab === "catalog" && (
+            <GarmentCatalog />
+          )}
 
           {/* Transaction History Tab */}
           {activeTab === "history" && (

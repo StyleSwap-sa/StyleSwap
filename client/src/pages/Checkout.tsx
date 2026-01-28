@@ -50,7 +50,6 @@ export default function Checkout() {
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[Checkout] Form submitted with phone:', phoneNumber);
 
     // Validate phone number
     if (!phoneNumber.trim()) {
@@ -72,8 +71,6 @@ export default function Checkout() {
       const successUrl = `${window.location.origin}/dashboard?tab=overview&payment=success`;
       const cancelUrl = `${window.location.origin}/dashboard?tab=overview&payment=cancelled`;
 
-      console.log('[Checkout] Creating checkout with packageId:', packageId);
-
       // Create checkout session with phone number
       createCheckoutMutation.mutate({
         packageId: packageId!,
@@ -82,17 +79,8 @@ export default function Checkout() {
         phoneNumber: phoneNumber.replace(/\s/g, ""),
       });
     } catch (err) {
-      console.error('[Checkout] Error:', err);
       setError("Failed to process checkout");
       setIsProcessing(false);
-    }
-  };
-
-  const handleContinueClick = () => {
-    console.log('[Checkout] Continue button clicked');
-    const form = document.querySelector('form') as HTMLFormElement;
-    if (form) {
-      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     }
   };
 
@@ -135,7 +123,6 @@ export default function Checkout() {
             <Button
               type="submit"
               disabled={isProcessing || !phoneNumber}
-              onClick={handleContinueClick}
               className="w-full"
             >
               {isProcessing ? (
