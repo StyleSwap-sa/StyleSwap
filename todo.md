@@ -1366,3 +1366,35 @@ This approach:
 - [ ] Verify all features working without errors
 - [ ] Save final checkpoint
 - [ ] Publish to production
+
+
+## Phase 36: Critical Issues Restoration (TODAY)
+
+### Login & Dashboard Restoration
+- [x] Fix login failures when switching between different accounts
+- [x] Add separate login options for customers and boutiques on Home page
+- [x] Add boutique signup option on Home page
+- [x] Restore test mode toggle on "Try Customer Dashboard" 
+- [x] Make test mode visible and accessible on mobile and desktop
+- [x] Add prominent test mode toggle button
+
+### Clothing Selection & Try-On Settings Restoration
+- [x] Add "Select Clothes" section (Top, Bottom, Full Dress, Top & Bottom) to customer dashboard
+- [x] Make clothing type selection identical between customer and boutique dashboards
+- [x] Restore automatic image cropping (cropTopClothing, cropBottomClothing)
+- [x] Restore FormData handling for combo clothing types
+- [x] Replace VirtualTryOnUpload with exact TestBoutiqueTryOn implementation
+- [x] Restore body upload and clothes upload settings on Try Boutique Dashboard
+- [x] Fix image validation errors (validateImageForFitroom parameter issue)
+
+### Review Components Integration
+- [x] Create ReviewSubmissionForm component
+- [x] Create SizeReviewsDisplay component
+- [x] Integrate review components into try-on result display
+
+### Final Status
+- All critical issues have been restored
+- Both Try Customer Dashboard and Try Boutique Dashboard have identical functionality
+- Test mode is fully functional and visible on mobile/desktop
+- Image uploads working correctly with proper validation
+- Ready for end-to-end testing
