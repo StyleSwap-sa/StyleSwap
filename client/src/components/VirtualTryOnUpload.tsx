@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom } from "@/lib/imageUtils";
+import { ReviewSubmissionForm } from "./ReviewSubmissionForm";
+import { SizeReviewsDisplay } from "./SizeReviewsDisplay";
 
 interface TryOnResult {
   taskId: string;
