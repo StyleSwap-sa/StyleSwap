@@ -22,6 +22,20 @@
       "when": 1769170134188,
       "tag": "0002_flimsy_iron_fist",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1769593617206,
+      "tag": "0003_great_slayback",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1769593912195,
+      "tag": "0004_cultured_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }
