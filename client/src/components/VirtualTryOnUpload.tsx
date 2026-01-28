@@ -23,6 +23,10 @@ export function VirtualTryOnUpload() {
   const [clothImage, setClothImage] = useState<File | null>(null);
   const [clothImagePreview, setClothImagePreview] = useState<string>("");
   const [clothImageDimensions, setClothImageDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
+  const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
+  const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
+  const [testMode, setTestMode] = useState(false);
   
   // State for processing
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +45,12 @@ export function VirtualTryOnUpload() {
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
   const POLLING_TIMEOUT_MS = 150000; // 2.5 minutes max (HD mode can take up to 30 seconds)
+
+  // Check if test mode is enabled (from URL params)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setTestMode(params.get('test') === 'true');
+  }, []);
 
   // Fetch user credits
   const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery();
@@ -140,7 +150,7 @@ export function VirtualTryOnUpload() {
       return;
     }
 
-    if (!credits || credits.remainingCredits < 1) {
+    if (!testMode && (!credits || credits.remainingCredits < 1)) {
       setError("Insufficient credits. Please purchase more try-ons.");
       return;
     }

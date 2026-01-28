@@ -2,13 +2,14 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, Menu, X } from "lucide-react";
-import { getLoginUrl } from "@/const";
+import { getLoginUrl, getBoutiqueSignupUrl } from "@/const";
 import { useState } from "react";
 
 export default function Home() {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLoginOptions, setShowLoginOptions] = useState(false);
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
@@ -159,12 +160,20 @@ export default function Home() {
                 </Button>
               </>
             ) : (
-              <Button 
-                onClick={handleGetStarted}
-                className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Get Started
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => window.location.href = getLoginUrl('customer')}
+                  className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Customer Login
+                </Button>
+                <Button 
+                  onClick={() => window.location.href = getLoginUrl('boutique')}
+                  variant="outline"
+                >
+                  Boutique Login
+                </Button>
+              </div>
             )}
           </div>
 
@@ -267,33 +276,86 @@ export default function Home() {
                 </Button>
               </>
             ) : (
-              <Button
-                onClick={() => {
-                  handleGetStarted();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full premium-button bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Get Started
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  onClick={() => {
+                    window.location.href = getLoginUrl('customer');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full premium-button bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Customer Login
+                </Button>
+                <Button
+                  onClick={() => {
+                    window.location.href = getLoginUrl('boutique');
+                    setMobileMenuOpen(false);
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Boutique Login
+                </Button>
+                <Button
+                  onClick={() => {
+                    window.location.href = getBoutiqueSignupUrl();
+                    setMobileMenuOpen(false);
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Boutique Signup
+                </Button>
+              </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Main Content - Placeholder */}
+      {/* Main Content */}
       <main className="pt-20 pb-20">
         <div className="container mx-auto px-4 md:px-0">
-          <div className="text-center py-20">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome to StyleSwap</h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8">AI-powered virtual try-on for fashion retail</p>
-            <Button 
-              onClick={handleGetStarted}
-              className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-            >
-              Get Started <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
+          {!isAuthenticated ? (
+            <div className="text-center py-20">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome to StyleSwap</h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-12">AI-powered virtual try-on for fashion retail</p>
+              
+              {/* Login/Signup Options */}
+              <div className="flex flex-col md:flex-row gap-4 justify-center max-w-2xl mx-auto">
+                <Button 
+                  onClick={() => window.location.href = getLoginUrl('customer')}
+                  className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 gap-2 flex-1"
+                >
+                  Customer Login <ArrowRight className="w-4 h-4" />
+                </Button>
+                <Button 
+                  onClick={() => window.location.href = getLoginUrl('boutique')}
+                  variant="outline"
+                  className="gap-2 flex-1"
+                >
+                  Boutique Login
+                </Button>
+                <Button 
+                  onClick={() => window.location.href = getBoutiqueSignupUrl()}
+                  variant="outline"
+                  className="gap-2 flex-1"
+                >
+                  Boutique Signup
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome back, {user?.name}!</h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8">Ready to create amazing try-ons?</p>
+              <Button 
+                onClick={handleGetStarted}
+                className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+              >
+                Go to Dashboard <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </main>
     </div>

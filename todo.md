@@ -1325,3 +1325,44 @@ This approach:
 - [ ] Verify admin dashboard features are complete
 - [ ] Test complete user flow: signup → try-on → review → purchase credits
 - [ ] Save final checkpoint with all features verified
+
+
+## Phase 31: Critical Issues - Login & Dashboard Restoration (TODAY)
+
+### Login Issues
+- [x] Fix login failures when switching between different accounts (confirmed fixed by user)
+- [x] Add separate login options for customers and boutiques on Home page
+- [x] Add boutique signup option on Home page
+
+### Test Mode Restoration
+- [ ] Restore test mode toggle on "Try Customer Dashboard" button in admin dashboard
+- [ ] Ensure test mode allows try-ons without using credits
+- [ ] Test mode should be accessible from admin dashboard
+- [ ] Add test mode badge to VirtualTryOnUpload when in test mode
+
+### Align Clothing Selection
+- [ ] Add clothing type selector (Top, Bottom, Full Dress, Top & Bottom) to VirtualTryOnUpload
+- [ ] Make clothing type selection identical between customer dashboard and boutique dashboard
+- [ ] Ensure same clothing types available and working
+- [ ] Match UI styling and layout
+
+### Restore Try-On Implementations
+- [ ] Restore automatic image cropping (cropTopClothing, cropBottomClothing)
+- [ ] Restore recent try-on implementations on both dashboards
+- [ ] Verify Fitroom API integration works correctly with all clothing types
+- [ ] Test all clothing types generate properly
+- [ ] Restore FormData handling for combo clothing types
+
+### Integrate Review Components
+- [ ] Integrate ReviewSubmissionForm into VirtualTryOnUpload result display
+- [ ] Integrate SizeReviewsDisplay into VirtualTryOnUpload result display
+- [ ] Display reviews after customer selects size
+- [ ] Allow customers to submit reviews after try-on
+
+### Final Testing & Deployment
+- [ ] Test complete customer flow: login → try-on → review
+- [ ] Test complete boutique flow: login → manage products → test try-ons
+- [ ] Test admin flow: test mode access and test dashboards
+- [ ] Verify all features working without errors
+- [ ] Save final checkpoint
+- [ ] Publish to production
