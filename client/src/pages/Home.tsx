@@ -113,13 +113,6 @@ export default function Home() {
                     >
                       Try Customer Dashboard
                     </button>
-                    <button
-                      onClick={() => setLocation('/test-boutique')}
-                      className="hover:text-secondary transition-colors uppercase tracking-wide text-secondary font-bold"
-                      title="Test the boutique try-on dashboard"
-                    >
-                      Try Boutique Dashboard
-                    </button>
                   </>
                 )}
               </>
@@ -225,16 +218,6 @@ export default function Home() {
                       title="Test the customer try-on dashboard"
                     >
                       Try Customer Dashboard
-                    </button>
-                    <button
-                      onClick={() => {
-                        setLocation('/test-boutique');
-                        setMobileMenuOpen(false);
-                      }}
-                      className="block w-full text-left px-4 py-2 hover:bg-background/80 rounded transition-colors uppercase tracking-wide text-sm font-bold text-secondary"
-                      title="Test the boutique try-on dashboard"
-                    >
-                      Try Boutique Dashboard
                     </button>
                   </>
                 )}
