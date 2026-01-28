@@ -3,6 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import React from "react";
 
 /**
  * Customer Try-On Dashboard
@@ -11,6 +12,12 @@ import { Loader2 } from "lucide-react";
  */
 export default function CustomerTryOn() {
   const { isAuthenticated, user, loading } = useAuth();
+  const [testMode, setTestMode] = React.useState(false);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setTestMode(params.get('test') === 'true');
+  }, []);
 
   if (loading) {
     return (
@@ -44,10 +51,19 @@ export default function CustomerTryOn() {
       <div className="container mx-auto py-8 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">Virtual Try-On</h1>
-            <p className="text-muted-foreground">
-              Upload your body photo and a clothing image to see how the garment looks on you
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-4xl font-bold mb-2">Virtual Try-On</h1>
+                <p className="text-muted-foreground">
+                  Upload your body photo and a clothing image to see how the garment looks on you
+                </p>
+              </div>
+              {testMode && (
+                <div className="bg-primary/20 border border-primary px-3 py-1 rounded-full text-sm font-medium text-primary">
+                  Test Mode
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Virtual Try-On Upload Component */}
