@@ -225,9 +225,10 @@ export function formatFileSize(bytes: number): string {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 }
 
+
 /**
  * Crop the bottom portion of a clothing image
- * Extracts the lower half (pants, skirts, etc.) from a full clothing image
+ * Extracts the lower half (pants, skirt, etc.) from a full clothing image
  * Used when user selects "Bottom" clothing type
  */
 export async function cropBottomClothing(
@@ -361,6 +362,87 @@ export async function cropTopClothing(
       
       img.onerror = () => {
         reject(new Error('Failed to load clothing image'));
+      };
+      
+      img.src = e.target?.result as string;
+    };
+    
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'));
+    };
+    
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Split a full dress image into top and bottom halves
+ * Detects the waist area and splits the dress image accordingly
+ * Returns both the top and bottom halves as separate images
+ */
+export async function splitDressImage(
+  file: File
+): Promise<{ topImage: File; bottomImage: File }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        try {
+          // Create canvas for image manipulation
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+          
+          const originalWidth = img.width;
+          const originalHeight = img.height;
+          
+          // Split at approximately 55% height (typical waist position)
+          // This can be adjusted based on dress proportions
+          const splitPoint = Math.floor(originalHeight * 0.55);
+          
+          // Create top half
+          canvas.width = originalWidth;
+          canvas.height = splitPoint;
+          ctx.drawImage(img, 0, 0, originalWidth, splitPoint, 0, 0, originalWidth, splitPoint);
+          
+          canvas.toBlob((topBlob) => {
+            if (!topBlob) {
+              reject(new Error('Failed to create top image'));
+              return;
+            }
+            
+            // Create bottom half
+            canvas.height = originalHeight - splitPoint;
+            ctx.clearRect(0, 0, originalWidth, canvas.height);
+            ctx.drawImage(img, 0, splitPoint, originalWidth, originalHeight - splitPoint, 0, 0, originalWidth, originalHeight - splitPoint);
+            
+            canvas.toBlob((bottomBlob) => {
+              if (!bottomBlob) {
+                reject(new Error('Failed to create bottom image'));
+                return;
+              }
+              
+              // Convert blobs to Files
+              const topFile = new File([topBlob], `${file.name}-top.jpg`, { type: 'image/jpeg' });
+              const bottomFile = new File([bottomBlob], `${file.name}-bottom.jpg`, { type: 'image/jpeg' });
+              
+              resolve({ topImage: topFile, bottomImage: bottomFile });
+            }, 'image/jpeg', 0.95);
+          }, 'image/jpeg', 0.95);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load dress image'));
       };
       
       img.src = e.target?.result as string;

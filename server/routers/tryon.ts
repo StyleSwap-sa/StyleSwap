@@ -32,19 +32,23 @@ export const tryonRouter = router({
       z.object({
         modelImageBase64: z.string().describe("Base64 encoded customer body photo"),
         clothImageBase64: z.string().describe("Base64 encoded garment image"),
-        clothType: z.enum(["single", "combo"]).default("single"), // "single" for one garment, "combo" for top+bottom
+        clothType: z.enum(["upper", "lower", "combo", "full"]).default("upper"), // "upper" for tops, "lower" for bottoms, "combo" for top+bottom, "full" for dresses/jumpsuits
         hdMode: z.boolean().optional().default(false),
+        testMode: z.boolean().optional().default(false).describe("Skip credit deduction for testing"),
       })
     )
     .mutation(async ({ ctx, input }) => {
       let tempDir: string | null = null;
       try {
-        const credits = await getUserCredits(ctx.user.id);
-        if (credits.remainingCredits < 1) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Insufficient credits. Please purchase more credits to continue.",
-          });
+        // Skip credit check in test mode
+        if (!input.testMode) {
+          const credits = await getUserCredits(ctx.user.id);
+          if (credits.remainingCredits < 1) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Insufficient credits. Please purchase more credits to continue.",
+            });
+          }
         }
 
         // Create temp directory for image files
@@ -93,22 +97,39 @@ export const tryonRouter = router({
         const taskResult = await fitroomClient.createTryOnWithBase64({
           modelImageBase64: input.modelImageBase64,
           clothImageBase64: input.clothImageBase64,
-          clothType: input.clothType as "single" | "combo",
-          hdMode: input.hdMode,
+          clothType: input.clothType as "upper" | "lower" | "combo" | "full",
+          hdMode: input.hdMode || true,
         });
-        
-        console.log(`[Try-On] Task result:`, taskResult);
 
+        // Clean up temp files
+        try {
+          if (tempDir && fs.existsSync(tempDir)) {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+            console.log("[Try-On] Cleaned up temp files");
+          }
+        } catch (e) {
+          console.warn("[Try-On] Failed to clean temp files:", e);
+        }
+
+        console.log("[Try-On] Fitroom response:", JSON.stringify(taskResult));
+        
         if (!taskResult.success || !taskResult.taskId) {
+          console.error("[Try-On] Fitroom failed:", taskResult.error);
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: taskResult.error || "Failed to create try-on task",
           });
         }
 
-        // Deduct credit AFTER successful task creation
-        await deductCredits(ctx.user.id, 1);
+        // Deduct credit after successful task creation (skip in test mode)
+        if (!input.testMode) {
+          await deductCredits(ctx.user.id, 1);
+        } else {
+          console.log("[Try-On] Test mode - skipping credit deduction");
+        }
 
+        console.log(`[Try-On] Task created successfully: ${taskResult.taskId}`);
+        
         return {
           success: true,
           taskId: taskResult.taskId,
@@ -116,29 +137,15 @@ export const tryonRouter = router({
         };
       } catch (error) {
         console.error("[Try-On] Error:", error);
-        
-        // Refund credit if task creation failed
-        if (tempDir) {
+        // Clean up temp files on error
+        if (tempDir && fs.existsSync(tempDir)) {
           try {
-            await refundCredits(ctx.user.id, 1);
-          } catch (refundError) {
-            console.error("[Try-On] Failed to refund credit:", refundError);
+            fs.rmSync(tempDir, { recursive: true, force: true });
+          } catch (e) {
+            console.warn("[Try-On] Failed to clean temp files on error:", e);
           }
         }
-
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error instanceof Error ? error.message : "Unknown error creating try-on",
-        });
-      } finally {
-        // Cleanup temp files
-        if (tempDir && fs.existsSync(tempDir)) {
-          fs.rmSync(tempDir, { recursive: true, force: true });
-        }
+        throw error;
       }
     }),
 
@@ -160,6 +167,7 @@ export const tryonRouter = router({
           taskId: input.taskId,
           status: "FAILED",
           error: status.error || "Try-on generation failed",
+          progress: 100,
           isComplete: false,
           isFailed: true,
         };
@@ -177,7 +185,48 @@ export const tryonRouter = router({
         taskId: input.taskId,
         status: status.status,
         resultImage: status.resultImage,
+        resultImageUrl: status.resultImage,
         error: status.error,
+        progress: status.progress || 0,
+        isComplete: status.status === "COMPLETED",
+        isFailed: status.status === "FAILED",
+      };
+    }),
+
+  /**
+   * Get try-on task status (alias for frontend compatibility)
+   */
+  getTryOnStatus: protectedProcedure
+    .input(z.object({ taskId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const fitroomClient = getFitroomClient();
+      const status = await fitroomClient.getTryOnStatus(input.taskId);
+
+      if (status.status === "FAILED") {
+        return {
+          taskId: input.taskId,
+          status: "FAILED",
+          error: status.error || "Try-on generation failed",
+          progress: 100,
+          isComplete: false,
+          isFailed: true,
+        };
+      }
+
+      if (!status.success) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: status.error || "Failed to get task status",
+        });
+      }
+
+      return {
+        taskId: input.taskId,
+        status: status.status,
+        resultImage: status.resultImage,
+        resultImageUrl: status.resultImage,
+        error: status.error,
+        progress: status.progress || 0,
         isComplete: status.status === "COMPLETED",
         isFailed: status.status === "FAILED",
       };
