@@ -248,8 +248,8 @@ export function VirtualTryOnUpload() {
     if (!file) return;
 
     try {
-      const validation = await validateImageForFitroom(file);
-      if (!validation.isValid) {
+      const validation = await validateImageForFitroom(file, "model");
+      if (!validation.valid) {
         setError(validation.error || "Invalid image");
         return;
       }
@@ -275,8 +275,8 @@ export function VirtualTryOnUpload() {
     if (!file) return;
 
     try {
-      const validation = await validateImageForFitroom(file);
-      if (!validation.isValid) {
+      const validation = await validateImageForFitroom(file, "clothing");
+      if (!validation.valid) {
         setError(validation.error || "Invalid image");
         return;
       }
@@ -302,8 +302,8 @@ export function VirtualTryOnUpload() {
     if (!file) return;
 
     try {
-      const validation = await validateImageForFitroom(file);
-      if (!validation.isValid) {
+      const validation = await validateImageForFitroom(file, "clothing");
+      if (!validation.valid) {
         setError(validation.error || "Invalid image");
         return;
       }

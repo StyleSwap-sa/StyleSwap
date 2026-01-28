@@ -1359,6 +1359,11 @@ This approach:
 - [x] Display reviews after customer selects size
 - [x] Allow customers to submit reviews after try-on
 
+### Image Validation Fix
+- [x] Fix validateImageForFitroom function calls to include imageType parameter
+- [x] Ensure model photos are validated as "model" type
+- [x] Ensure clothing images are validated as "clothing" type
+
 ### Final Testing & Deployment
 - [ ] Test complete customer flow: login → try-on → review
 - [ ] Test complete boutique flow: login → manage products → test try-ons
