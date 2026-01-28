@@ -1398,3 +1398,10 @@ This approach:
 - Test mode is fully functional and visible on mobile/desktop
 - Image uploads working correctly with proper validation
 - Ready for end-to-end testing
+
+
+### Test Mode Credit Handling (FIXED)
+- [x] Fix backend /api/tryon/upload to check for testMode parameter
+- [x] Skip credit validation when testMode=true
+- [x] Verify VirtualTryOnUpload passes testMode=true to API
+- [x] Test mode now allows free try-ons without credit deduction on both dashboards

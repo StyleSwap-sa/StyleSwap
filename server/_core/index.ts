@@ -78,9 +78,11 @@ export async function startServer() {
       const modelImageBuffer = modelImageFiles[0].buffer;
       const clothImageBuffer = clothImageFiles[0].buffer;
       const clothType = req.body.clothType || "single";
+      const testMode = req.query.testMode === 'true' || req.body.testMode === 'true';
 
       console.log(`[Try-On Upload] Model image size: ${modelImageBuffer.length} bytes`);
       console.log(`[Try-On Upload] Cloth image size: ${clothImageBuffer.length} bytes`);
+      console.log(`[Try-On Upload] Test mode: ${testMode}`);
 
       // Validate image types using magic bytes (file signatures)
       const validateImageType = (buffer: Buffer): { valid: boolean; format?: string; error?: string } => {
@@ -134,10 +136,14 @@ export async function startServer() {
       console.log(`[Try-On Upload] Model image base64 size: ${modelImageBase64.length} bytes`);
       console.log(`[Try-On Upload] Cloth image base64 size: ${clothImageBase64.length} bytes`);
 
-      // Check credits
-      const credits = await getUserCredits(userId);
-      if (credits.remainingCredits < 1) {
-        return res.status(402).json({ error: "Insufficient credits" });
+      // Check credits (skip if in test mode)
+      if (!testMode) {
+        const credits = await getUserCredits(userId);
+        if (credits.remainingCredits < 1) {
+          return res.status(402).json({ error: "Insufficient credits" });
+        }
+      } else {
+        console.log(`[Try-On Upload] Test mode enabled - skipping credit check`);
       }
 
       // Save buffers to temporary files for multipart upload
