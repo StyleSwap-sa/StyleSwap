@@ -12,11 +12,13 @@ import React from "react";
  */
 export default function CustomerTryOn() {
   const { isAuthenticated, user, loading } = useAuth();
-  const [testMode, setTestMode] = React.useState(false);
+  const [testMode, setTestMode] = React.useState(true); // Default to true for Try Customer Dashboard
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setTestMode(params.get('test') === 'true');
+    // If test parameter is explicitly set, use it; otherwise default to true
+    const testParam = params.get('test');
+    setTestMode(testParam === null ? true : testParam === 'true');
   }, []);
 
   const toggleTestMode = () => {
