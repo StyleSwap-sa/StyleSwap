@@ -184,8 +184,13 @@ export async function startServer() {
         return res.status(500).json({ error: taskResult.error || "Failed to create try-on task" });
       }
 
-      // Deduct credit after successful task creation
-      await deductCredits(userId, 1);
+      // Deduct credit after successful task creation (skip if in test mode)
+      if (!testMode) {
+        await deductCredits(userId, 1);
+        console.log(`[Try-On Upload] Deducted 1 credit from user ${userId}`);
+      } else {
+        console.log(`[Try-On Upload] Test mode - skipping credit deduction`);
+      }
 
       console.log(`[Try-On Upload] Task created successfully: ${taskResult.taskId}`);
       
