@@ -12,9 +12,6 @@ import { handleYocoBoutiqueWebhook } from "../webhooks/yoco-boutique";
 import { testYocoBoutiqueWebhook } from "../webhooks/test-webhook";
 import { getFitroomClient } from "./fitroom";
 import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
-import { getDb } from "../db";
-import { tryOnResults } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
 import { sdk } from "./sdk";
 import crypto from "crypto";
 import path from "path";
@@ -81,11 +78,9 @@ export async function startServer() {
       const modelImageBuffer = modelImageFiles[0].buffer;
       const clothImageBuffer = clothImageFiles[0].buffer;
       const clothType = req.body.clothType || "single";
-      const testMode = req.query.testMode === 'true' || req.body.testMode === 'true';
 
       console.log(`[Try-On Upload] Model image size: ${modelImageBuffer.length} bytes`);
       console.log(`[Try-On Upload] Cloth image size: ${clothImageBuffer.length} bytes`);
-      console.log(`[Try-On Upload] Test mode: ${testMode}`);
 
       // Validate image types using magic bytes (file signatures)
       const validateImageType = (buffer: Buffer): { valid: boolean; format?: string; error?: string } => {
@@ -139,14 +134,10 @@ export async function startServer() {
       console.log(`[Try-On Upload] Model image base64 size: ${modelImageBase64.length} bytes`);
       console.log(`[Try-On Upload] Cloth image base64 size: ${clothImageBase64.length} bytes`);
 
-      // Check credits (skip if in test mode)
-      if (!testMode) {
-        const credits = await getUserCredits(userId);
-        if (credits.remainingCredits < 1) {
-          return res.status(402).json({ error: "Insufficient credits" });
-        }
-      } else {
-        console.log(`[Try-On Upload] Test mode enabled - skipping credit check`);
+      // Check credits
+      const credits = await getUserCredits(userId);
+      if (credits.remainingCredits < 1) {
+        return res.status(402).json({ error: "Insufficient credits" });
       }
 
       // Save buffers to temporary files for multipart upload
@@ -187,13 +178,8 @@ export async function startServer() {
         return res.status(500).json({ error: taskResult.error || "Failed to create try-on task" });
       }
 
-      // Deduct credit after successful task creation (skip if in test mode)
-      if (!testMode) {
-        await deductCredits(userId, 1);
-        console.log(`[Try-On Upload] Deducted 1 credit from user ${userId}`);
-      } else {
-        console.log(`[Try-On Upload] Test mode - skipping credit deduction`);
-      }
+      // Deduct credit after successful task creation
+      await deductCredits(userId, 1);
 
       console.log(`[Try-On Upload] Task created successfully: ${taskResult.taskId}`);
       
@@ -205,58 +191,6 @@ export async function startServer() {
     } catch (error) {
       console.error("[Try-On Upload] Error:", error);
       return res.status(500).json({ error: error instanceof Error ? error.message : "Failed to process try-on upload" });
-    }
-  });
-
-  // Try-on status check endpoint with credit restoration for failed generations
-  app.get("/api/tryon/status", async (req, res) => {
-    try {
-      const taskId = req.query.taskId as string;
-      if (!taskId) {
-        return res.status(400).json({ error: "taskId is required" });
-      }
-
-      const fitroomClient = getFitroomClient();
-      const statusResult = await fitroomClient.checkStatus(taskId);
-      
-      console.log(`[Try-On Status] Task ${taskId} status:`, statusResult.status);
-
-      // Check if generation failed or timed out and restore credits
-      let creditsRestored = false;
-      if (statusResult.status === "FAILED" || statusResult.status === "TIMEOUT") {
-        console.log(`[Try-On Status] Generation failed for task ${taskId}, attempting credit restoration`);
-        
-        try {
-          const db = await getDb();
-          if (db) {
-            const results = await db.select().from(tryOnResults).where(eq(tryOnResults.fitRoomTaskId, taskId)).limit(1);
-            if (results.length > 0) {
-              const tryOn = results[0];
-              if (!tryOn.creditRestored) {
-                await refundCredits(tryOn.userId, 1);
-                await db.update(tryOnResults).set({ creditRestored: 1 }).where(eq(tryOnResults.id, tryOn.id));
-                creditsRestored = true;
-                console.log(`[Try-On Status] Restored 1 credit to user ${tryOn.userId}`);
-              }
-            }
-          }
-        } catch (dbError) {
-          console.error(`[Try-On Status] Database error:`, dbError);
-        }
-      }
-
-      return res.status(200).json({
-        taskId: taskId,
-        status: statusResult.status,
-        progress: statusResult.progress || 0,
-        resultImage: statusResult.resultImage,
-        resultImageUrl: statusResult.resultImageUrl,
-        error: statusResult.error,
-        creditsRestored: false,
-      });
-    } catch (error) {
-      console.error("[Try-On Status] Error:", error);
-      return res.status(500).json({ error: error instanceof Error ? error.message : "Failed to check status" });
     }
   });
   
