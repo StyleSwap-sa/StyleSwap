@@ -111,24 +111,6 @@ export default function BoutiqueDashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {/* Tab Navigation */}
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Button 
-            onClick={() => setActiveTab("overview")}
-            variant={activeTab === "overview" ? "default" : "outline"}
-            className="w-full sm:w-auto"
-          >
-            Overview
-          </Button>
-          <Button 
-            onClick={() => setActiveTab("test-tryon")}
-            variant={activeTab === "test-tryon" ? "default" : "outline"}
-            className="w-full sm:w-auto"
-          >
-            Test Try-On
-          </Button>
-        </div>
-
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
