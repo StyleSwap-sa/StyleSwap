@@ -46,6 +46,106 @@ export async function startServer() {
     res.json({ status: "ok" });
   });
 
+  // Model image validation endpoint
+  app.post("/api/tryon/validate/model", createUploadRateLimiter(), upload.single("modelImage"), async (req, res) => {
+    try {
+      console.log("[Model Validation] Received request");
+      
+      if (!req.file) {
+        return res.status(400).json({ valid: false, error: "No model image provided" });
+      }
+
+      const tempDir = path.join('/tmp', `validate-${Date.now()}`);
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+
+      const modelPath = path.join(tempDir, 'model.jpg');
+      let modelBuffer = req.file.buffer;
+
+      // Convert to JPEG if needed
+      const ext = path.extname(req.file.originalname || '').toLowerCase();
+      if (!['.jpg', '.jpeg'].includes(ext)) {
+        console.log("[Model Validation] Converting to JPEG");
+        modelBuffer = await sharp(modelBuffer).jpeg({ quality: 95 }).toBuffer();
+      }
+
+      fs.writeFileSync(modelPath, modelBuffer);
+
+      const fitroomClient = getFitroomClient();
+      const validation = await fitroomClient.validateModelImage(modelPath);
+
+      // Cleanup
+      try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      } catch (e) {
+        console.warn('[Model Validation] Failed to cleanup:', e);
+      }
+
+      return res.status(200).json({
+        valid: validation.valid,
+        message: validation.message,
+        error: validation.error,
+      });
+    } catch (error) {
+      console.error("[Model Validation] Error:", error);
+      return res.status(500).json({
+        valid: false,
+        error: error instanceof Error ? error.message : "Model validation failed",
+      });
+    }
+  });
+
+  // Clothes image validation endpoint
+  app.post("/api/tryon/validate/clothes", createUploadRateLimiter(), upload.single("clothImage"), async (req, res) => {
+    try {
+      console.log("[Clothes Validation] Received request");
+      
+      if (!req.file) {
+        return res.status(400).json({ valid: false, error: "No clothes image provided" });
+      }
+
+      const tempDir = path.join('/tmp', `validate-${Date.now()}`);
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+
+      const clothPath = path.join(tempDir, 'cloth.jpg');
+      let clothBuffer = req.file.buffer;
+
+      // Convert to JPEG if needed
+      const ext = path.extname(req.file.originalname || '').toLowerCase();
+      if (!['.jpg', '.jpeg'].includes(ext)) {
+        console.log("[Clothes Validation] Converting to JPEG");
+        clothBuffer = await sharp(clothBuffer).jpeg({ quality: 95 }).toBuffer();
+      }
+
+      fs.writeFileSync(clothPath, clothBuffer);
+
+      const fitroomClient = getFitroomClient();
+      const validation = await fitroomClient.validateClothesImage(clothPath);
+
+      // Cleanup
+      try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      } catch (e) {
+        console.warn('[Clothes Validation] Failed to cleanup:', e);
+      }
+
+      return res.status(200).json({
+        valid: validation.valid,
+        message: validation.message,
+        error: validation.error,
+      });
+    } catch (error) {
+      console.error("[Clothes Validation] Error:", error);
+      return res.status(500).json({
+        valid: false,
+        error: error instanceof Error ? error.message : "Clothes validation failed",
+      });
+    }
+  });
+
   // Try-on upload endpoint with file upload support
   app.post("/api/tryon/upload", createUploadRateLimiter(), upload.fields([
     { name: "modelImage", maxCount: 1 },

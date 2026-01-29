@@ -81,8 +81,49 @@ export function VirtualTryOnUpload() {
     setProcessingProgress(0);
 
     try {
-      // Auto-resize images if they exceed Fitroom limits
+      // Validate images first
       setProcessingProgress(5);
+      console.log("[VirtualTryOn] Validating model image...");
+      
+      const modelValidationForm = new FormData();
+      modelValidationForm.append("modelImage", modelPhoto);
+      
+      const modelValidationResponse = await fetch("/api/tryon/validate/model", {
+        method: "POST",
+        body: modelValidationForm,
+        credentials: "include",
+      });
+      
+      const modelValidation = await modelValidationResponse.json();
+      if (!modelValidation.valid) {
+        setError(`Model image validation failed: ${modelValidation.error || "Invalid model image"}`);
+        setIsLoading(false);
+        return;
+      }
+      console.log("[VirtualTryOn] Model image validation passed");
+      
+      setProcessingProgress(7);
+      console.log("[VirtualTryOn] Validating clothes image...");
+      
+      const clothValidationForm = new FormData();
+      clothValidationForm.append("clothImage", clothImage);
+      
+      const clothValidationResponse = await fetch("/api/tryon/validate/clothes", {
+        method: "POST",
+        body: clothValidationForm,
+        credentials: "include",
+      });
+      
+      const clothValidation = await clothValidationResponse.json();
+      if (!clothValidation.valid) {
+        setError(`Clothes image validation failed: ${clothValidation.error || "Invalid clothes image"}`);
+        setIsLoading(false);
+        return;
+      }
+      console.log("[VirtualTryOn] Clothes image validation passed");
+
+      // Auto-resize images if they exceed Fitroom limits
+      setProcessingProgress(10);
       
       let finalModelPhoto = modelPhoto;
       let finalClothImage = clothImage;
