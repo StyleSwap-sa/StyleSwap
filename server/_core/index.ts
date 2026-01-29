@@ -50,6 +50,8 @@ export async function startServer() {
   app.post("/api/tryon/validate/model", createUploadRateLimiter(), upload.single("modelImage"), async (req, res) => {
     try {
       console.log("[Model Validation] Received request");
+      const testMode = req.body?.testMode === 'true' || req.query?.testMode === 'true';
+      console.log("[Model Validation] Test mode:", testMode);
       
       if (!req.file) {
         return res.status(400).json({ valid: false, error: "No model image provided" });
@@ -73,7 +75,7 @@ export async function startServer() {
       fs.writeFileSync(modelPath, modelBuffer);
 
       const fitroomClient = getFitroomClient();
-      const validation = await fitroomClient.validateModelImage(modelPath);
+      const validation = await fitroomClient.validateModelImage(modelPath, testMode);
 
       // Cleanup
       try {
@@ -100,6 +102,8 @@ export async function startServer() {
   app.post("/api/tryon/validate/clothes", createUploadRateLimiter(), upload.single("clothImage"), async (req, res) => {
     try {
       console.log("[Clothes Validation] Received request");
+      const testMode = req.body?.testMode === 'true' || req.query?.testMode === 'true';
+      console.log("[Clothes Validation] Test mode:", testMode);
       
       if (!req.file) {
         return res.status(400).json({ valid: false, error: "No clothes image provided" });
@@ -123,7 +127,7 @@ export async function startServer() {
       fs.writeFileSync(clothPath, clothBuffer);
 
       const fitroomClient = getFitroomClient();
-      const validation = await fitroomClient.validateClothesImage(clothPath);
+      const validation = await fitroomClient.validateClothesImage(clothPath, testMode);
 
       // Cleanup
       try {

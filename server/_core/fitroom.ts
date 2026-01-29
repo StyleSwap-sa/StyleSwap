@@ -358,7 +358,7 @@ export class FitroomClient {
   /**
    * Validate model image before try-on
    */
-  async validateModelImage(imagePath: string): Promise<FitroomValidationResponse> {
+  async validateModelImage(imagePath: string, testMode: boolean = false): Promise<FitroomValidationResponse> {
     try {
       if (!fs.existsSync(imagePath)) {
         return {
@@ -374,10 +374,11 @@ export class FitroomClient {
         contentType: this.getMimeType(imagePath),
       });
 
-      console.log("[Fitroom] Validating model image:", imagePath);
+      console.log("[Fitroom] Validating model image:", imagePath, "Test mode:", testMode);
       const response = await this.client.post("/api/tryon/input_check/v1/model", form, {
         headers: form.getHeaders(),
         timeout: 30000,
+        params: testMode ? { test_mode: 'true' } : {},
       });
 
       console.log("[Fitroom] Model validation response:", response.data);
@@ -400,7 +401,7 @@ export class FitroomClient {
   /**
    * Validate clothes image before try-on
    */
-  async validateClothesImage(imagePath: string): Promise<FitroomValidationResponse> {
+  async validateClothesImage(imagePath: string, testMode: boolean = false): Promise<FitroomValidationResponse> {
     try {
       if (!fs.existsSync(imagePath)) {
         return {
@@ -416,10 +417,11 @@ export class FitroomClient {
         contentType: this.getMimeType(imagePath),
       });
 
-      console.log("[Fitroom] Validating clothes image:", imagePath);
+      console.log("[Fitroom] Validating clothes image:", imagePath, "Test mode:", testMode);
       const response = await this.client.post("/api/tryon/input_check/v1/clothes", form, {
         headers: form.getHeaders(),
         timeout: 30000,
+        params: testMode ? { test_mode: 'true' } : {},
       });
 
       console.log("[Fitroom] Clothes validation response:", response.data);

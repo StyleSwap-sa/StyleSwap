@@ -5,8 +5,6 @@ import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles }
 import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { ProgressTracker, type ProgressStep } from "./ProgressTracker";
-import { BatchTryOnManager, type BatchItem } from "./BatchTryOnManager";
 
 interface TryOnResult {
   taskId: string;
@@ -39,19 +37,6 @@ export function VirtualTryOnUpload() {
   
   // State for test mode
   const [testMode, setTestMode] = useState(false);
-  
-  // State for batch mode
-  const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
-  const [isBatchProcessing, setIsBatchProcessing] = useState(false);
-  const [currentBatchItemId, setCurrentBatchItemId] = useState<string | null>(null);
-  const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([
-    { id: "validate-model", label: "Validating body photo", status: "pending" },
-    { id: "validate-cloth", label: "Validating clothing image", status: "pending" },
-    { id: "optimize", label: "Optimizing images", status: "pending" },
-    { id: "generate", label: "Generating try-on", status: "pending" },
-    { id: "process", label: "Processing result", status: "pending" },
-  ]);
-  const [showProgress, setShowProgress] = useState(false);
   
   // Refs
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
@@ -90,58 +75,14 @@ export function VirtualTryOnUpload() {
       return;
     }
 
-    await handleConfirmPreview();
-  };
-
-  const handleConfirmPreview = async () => {
     setIsLoading(true);
     setError("");
     setWarning("");
     setProcessingProgress(0);
 
     try {
-      setProcessingProgress(5);
-      console.log("[VirtualTryOn] Validating model image...");
-      
-      const modelValidationForm = new FormData();
-      modelValidationForm.append("modelImage", modelPhoto);
-      
-      const modelValidationResponse = await fetch("/api/tryon/validate/model", {
-        method: "POST",
-        body: modelValidationForm,
-        credentials: "include",
-      });
-      
-      const modelValidation = await modelValidationResponse.json();
-      if (!modelValidation.valid) {
-        setError(`Model image validation failed: ${modelValidation.error || "Invalid model image"}`);
-        setIsLoading(false);
-        return;
-      }
-      console.log("[VirtualTryOn] Model image validation passed");
-      
-      setProcessingProgress(7);
-      console.log("[VirtualTryOn] Validating clothes image...");
-      
-      const clothValidationForm = new FormData();
-      clothValidationForm.append("clothImage", clothImage);
-      
-      const clothValidationResponse = await fetch("/api/tryon/validate/clothes", {
-        method: "POST",
-        body: clothValidationForm,
-        credentials: "include",
-      });
-      
-      const clothValidation = await clothValidationResponse.json();
-      if (!clothValidation.valid) {
-        setError(`Clothes image validation failed: ${clothValidation.error || "Invalid clothes image"}`);
-        setIsLoading(false);
-        return;
-      }
-      console.log("[VirtualTryOn] Clothes image validation passed");
-
       // Auto-resize images if they exceed Fitroom limits
-      setProcessingProgress(10);
+      setProcessingProgress(5);
       
       let finalModelPhoto = modelPhoto;
       let finalClothImage = clothImage;
@@ -691,8 +632,8 @@ export function VirtualTryOnUpload() {
         </div>
       )}
 
-      {/* Test Mode Toggle - Always available on Try dashboards */}
-      {user && (
+      {/* Test Mode Toggle */}
+      {isAdmin && user && (
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -703,9 +644,8 @@ export function VirtualTryOnUpload() {
               <Button
                 onClick={() => setTestMode(!testMode)}
                 variant={testMode ? "default" : "outline"}
-                className={testMode ? "bg-green-600 hover:bg-green-700" : ""}
               >
-                {testMode ? "✓ Enabled" : "Disabled"}
+                {testMode ? "Enabled" : "Disabled"}
               </Button>
             </div>
           </CardContent>
@@ -735,8 +675,6 @@ export function VirtualTryOnUpload() {
           </CardContent>
         </Card>
       )}
-
-
     </div>
   );
 }
