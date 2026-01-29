@@ -11,12 +11,12 @@ function getQueryParam(req: Request, key: string): string | undefined {
 
 function decodeState(state: string): { redirectUri: string; userType?: string } {
   try {
-    const decoded = atob(state);
+    const decoded = Buffer.from(state, "base64").toString("utf-8");
     const parsed = JSON.parse(decoded);
     return parsed;
   } catch {
     // Fallback for old-style state (just redirectUri)
-    return { redirectUri: atob(state) };
+    return { redirectUri: Buffer.from(state, "base64").toString("utf-8") };
   }
 }
 
