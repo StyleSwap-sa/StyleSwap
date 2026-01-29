@@ -101,6 +101,7 @@ export function VirtualTryOnUpload() {
       // Crop clothing image based on selected type
       console.log("[VirtualTryOn] Processing clothing image for type:", clothType);
       let finalClothTypeForBackend = clothType;
+      let finalLowerClothImage: File | null = null;
       
       try {
         if (clothType === "upper") {
@@ -115,13 +116,13 @@ export function VirtualTryOnUpload() {
           console.log("[VirtualTryOn] Splitting full dress");
           const split = await splitDressImage(finalClothImage);
           finalClothImage = split.upperImage;
-          setLowerClothImage(split.lowerImage);
+          finalLowerClothImage = split.lowerImage;
           finalClothTypeForBackend = "combo";
           setWarning("Full dress split for fitting");
         }
       } catch (cropError) {
-        console.error("[VirtualTryOn] Error cropping image:", cropError);
-        // Continue with original image if cropping fails
+        console.error("[VirtualTryOn] Error processing image:", cropError);
+        // Continue with original image if processing fails
         setWarning("Could not optimize clothing image, using original");
       }
       
@@ -135,8 +136,8 @@ export function VirtualTryOnUpload() {
       // For combo, send as upper+lower. For single garments, send only cloth image
       if (finalClothTypeForBackend === "combo") {
         formData.append("upperClothImage", finalClothImage);
-        if (lowerClothImage) {
-          formData.append("lowerClothImage", lowerClothImage);
+        if (finalLowerClothImage) {
+          formData.append("lowerClothImage", finalLowerClothImage);
         }
       } else {
         // For single garments (upper/lower), send only the cloth image
