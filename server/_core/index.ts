@@ -46,110 +46,6 @@ export async function startServer() {
     res.json({ status: "ok" });
   });
 
-  // Model image validation endpoint
-  app.post("/api/tryon/validate/model", createUploadRateLimiter(), upload.single("modelImage"), async (req, res) => {
-    try {
-      console.log("[Model Validation] Received request");
-      const testMode = req.body?.testMode === 'true' || req.query?.testMode === 'true';
-      console.log("[Model Validation] Test mode:", testMode);
-      
-      if (!req.file) {
-        return res.status(400).json({ valid: false, error: "No model image provided" });
-      }
-
-      const tempDir = path.join('/tmp', `validate-${Date.now()}`);
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
-      }
-
-      const modelPath = path.join(tempDir, 'model.jpg');
-      let modelBuffer = req.file.buffer;
-
-      // Convert to JPEG if needed
-      const ext = path.extname(req.file.originalname || '').toLowerCase();
-      if (!['.jpg', '.jpeg'].includes(ext)) {
-        console.log("[Model Validation] Converting to JPEG");
-        modelBuffer = await sharp(modelBuffer).jpeg({ quality: 95 }).toBuffer();
-      }
-
-      fs.writeFileSync(modelPath, modelBuffer);
-
-      const fitroomClient = getFitroomClient();
-      const validation = await fitroomClient.validateModelImage(modelPath, testMode);
-
-      // Cleanup
-      try {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      } catch (e) {
-        console.warn('[Model Validation] Failed to cleanup:', e);
-      }
-
-      return res.status(200).json({
-        valid: validation.valid,
-        message: validation.message,
-        error: validation.error,
-      });
-    } catch (error) {
-      console.error("[Model Validation] Error:", error);
-      return res.status(500).json({
-        valid: false,
-        error: error instanceof Error ? error.message : "Model validation failed",
-      });
-    }
-  });
-
-  // Clothes image validation endpoint
-  app.post("/api/tryon/validate/clothes", createUploadRateLimiter(), upload.single("clothImage"), async (req, res) => {
-    try {
-      console.log("[Clothes Validation] Received request");
-      const testMode = req.body?.testMode === 'true' || req.query?.testMode === 'true';
-      console.log("[Clothes Validation] Test mode:", testMode);
-      
-      if (!req.file) {
-        return res.status(400).json({ valid: false, error: "No clothes image provided" });
-      }
-
-      const tempDir = path.join('/tmp', `validate-${Date.now()}`);
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
-      }
-
-      const clothPath = path.join(tempDir, 'cloth.jpg');
-      let clothBuffer = req.file.buffer;
-
-      // Convert to JPEG if needed
-      const ext = path.extname(req.file.originalname || '').toLowerCase();
-      if (!['.jpg', '.jpeg'].includes(ext)) {
-        console.log("[Clothes Validation] Converting to JPEG");
-        clothBuffer = await sharp(clothBuffer).jpeg({ quality: 95 }).toBuffer();
-      }
-
-      fs.writeFileSync(clothPath, clothBuffer);
-
-      const fitroomClient = getFitroomClient();
-      const validation = await fitroomClient.validateClothesImage(clothPath, testMode);
-
-      // Cleanup
-      try {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      } catch (e) {
-        console.warn('[Clothes Validation] Failed to cleanup:', e);
-      }
-
-      return res.status(200).json({
-        valid: validation.valid,
-        message: validation.message,
-        error: validation.error,
-      });
-    } catch (error) {
-      console.error("[Clothes Validation] Error:", error);
-      return res.status(500).json({
-        valid: false,
-        error: error instanceof Error ? error.message : "Clothes validation failed",
-      });
-    }
-  });
-
   // Try-on upload endpoint with file upload support
   app.post("/api/tryon/upload", createUploadRateLimiter(), upload.fields([
     { name: "modelImage", maxCount: 1 },
@@ -183,13 +79,7 @@ export async function startServer() {
       const clothImageFiles = (req.files as any)?.clothImage;
       const upperClothImageFiles = (req.files as any)?.upperClothImage;
       const lowerClothImageFiles = (req.files as any)?.lowerClothImage;
-      let clothType = req.body.clothType || "upper";
-      
-      // Convert "full" to "combo" for Fitroom API
-      if (clothType === "full") {
-        clothType = "combo";
-        console.log("[Try-On Upload] Converting 'full' to 'combo' for Fitroom API");
-      }
+      const clothType = req.body.clothType || "upper";
 
       console.log("[Try-On Upload] Files received:", Object.keys(req.files || {}));
       console.log("[Try-On Upload] clothType:", clothType);
@@ -201,7 +91,7 @@ export async function startServer() {
       let clothImageBuffer: Buffer;
       let lowerClothImageBuffer: Buffer | null = null;
       
-      if ((clothType === "combo" || clothType === "full" || clothType === "upper") && upperClothImageFiles && upperClothImageFiles[0]) {
+      if ((clothType === "combo" || clothType === "upper") && upperClothImageFiles && upperClothImageFiles[0]) {
         clothImageBuffer = upperClothImageFiles[0].buffer;
         if (lowerClothImageFiles && lowerClothImageFiles[0]) {
           lowerClothImageBuffer = lowerClothImageFiles[0].buffer;
@@ -333,11 +223,7 @@ export async function startServer() {
       
       if (!taskResult.success || !taskResult.taskId) {
         console.error('[Try-On Upload] Fitroom failed:', taskResult.error);
-        let errorMsg = taskResult.error || "Failed to create try-on task";
-        if (typeof errorMsg === 'boolean') {
-          errorMsg = "Try-on generation failed. Please check your images and try again.";
-        }
-        return res.status(500).json({ error: String(errorMsg) });
+        return res.status(500).json({ error: taskResult.error || "Failed to create try-on task" });
       }
 
       // Deduct credit after successful task creation (skip in test mode)
