@@ -124,8 +124,8 @@ export function VirtualTryOnUpload() {
       const formData = new FormData();
       formData.append("modelImage", finalModelPhoto);
       
-      // For combo or full, send as upper+lower. For single garments, send only cloth image
-      if (clothType === "combo" || clothType === "full") {
+      // For combo, send as upper+lower. For single garments, send only cloth image
+      if (clothType === "combo") {
         formData.append("upperClothImage", finalClothImage);
         if (lowerClothImage) {
           formData.append("lowerClothImage", lowerClothImage);
@@ -136,7 +136,6 @@ export function VirtualTryOnUpload() {
       }
       
       // Use selected cloth type (Fitroom API expects: upper, lower, or combo)
-      // Note: "full" will be converted to "combo" on the backend
       formData.append("clothType", clothType);
       // Pass test mode to backend
       formData.append("testMode", testMode.toString());
@@ -634,7 +633,7 @@ export function VirtualTryOnUpload() {
       )}
 
       {/* Test Mode Toggle */}
-      {user && (
+      {isAdmin && user && (
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -669,7 +668,7 @@ export function VirtualTryOnUpload() {
       )}
 
       {/* Test Mode Active Notice */}
-      {testMode && user && (
+      {testMode && isAdmin && (
         <Card className="bg-green-50 border-green-200">
           <CardContent className="pt-6">
             <p className="text-green-900 font-semibold">✓ Test Mode Active - Credits will not be deducted</p>
