@@ -17,13 +17,11 @@ export const getLoginUrl = () => {
 };
 
 // Generate boutique signup URL with merchant user type
-// Encode userType in state to preserve through OAuth redirect
 export const getBoutiqueSignupUrl = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
-  const stateData = { redirectUri, userType: "merchant" };
-  const state = btoa(JSON.stringify(stateData));
+  const redirectUri = `${window.location.origin}/api/oauth/callback?userType=merchant`;
+  const state = btoa(redirectUri);
 
   const url = new URL(`${oauthPortalUrl}/app-auth`);
   url.searchParams.set("appId", appId);

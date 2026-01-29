@@ -9,14 +9,11 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
-function decodeState(state: string): { redirectUri: string; userType?: string } {
+function decodeState(state: string): string {
   try {
-    const decoded = Buffer.from(state, "base64").toString("utf-8");
-    const parsed = JSON.parse(decoded);
-    return parsed;
+    return Buffer.from(state, "base64").toString("utf-8");
   } catch {
-    // Fallback for old-style state (just redirectUri)
-    return { redirectUri: Buffer.from(state, "base64").toString("utf-8") };
+    return state;
   }
 }
 
@@ -55,8 +52,7 @@ export function registerOAuthRoutes(app: Express) {
         }
       }
 
-      const stateData = decodeState(state);
-      const userType = stateData.userType || getQueryParam(req, "userType") || "customer";
+      const userType = getQueryParam(req, "userType") || "customer";
       await db.upsertUser({
         openId: userInfo.openId,
         name: userInfo.name || null,

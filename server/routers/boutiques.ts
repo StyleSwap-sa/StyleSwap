@@ -42,6 +42,39 @@ export const boutiquesRouter = router({
   }),
 
   /**
+   * Update boutique profile during onboarding
+   */
+  updateProfile: protectedProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      location: z.string().optional(),
+      phone: z.string().optional(),
+      email: z.string().email().optional(),
+      instagramHandle: z.string().optional(),
+      facebookHandle: z.string().optional(),
+      logoUrl: z.string().url().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const userBoutiques = await getUserBoutiques(ctx.user.id);
+      if (!userBoutiques || userBoutiques.length === 0) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Boutique not found" });
+      }
+      
+      const boutique = userBoutiques[0];
+      return await updateBoutique(boutique.id, {
+        name: input.name,
+        description: input.description,
+        location: input.location,
+        phone: input.phone,
+        email: input.email,
+        instagramHandle: input.instagramHandle,
+        facebookHandle: input.facebookHandle,
+        logoUrl: input.logoUrl,
+      });
+    }),
+
+  /**
    * Get boutique by ID
    */
   getById: publicProcedure
