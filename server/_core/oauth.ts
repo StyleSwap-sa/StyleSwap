@@ -20,8 +20,11 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     try {
+      console.log("[OAuth] Starting callback with code:", code?.substring(0, 10), "state:", state?.substring(0, 10));
       const tokenResponse = await sdk.exchangeCodeForToken(code, state);
+      console.log("[OAuth] Got token response");
       const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
+      console.log("[OAuth] Got user info:", userInfo.openId);
 
       if (!userInfo.openId) {
         res.status(400).json({ error: "openId missing from user info" });
@@ -62,8 +65,9 @@ export function registerOAuthRoutes(app: Express) {
 
       res.redirect(302, "/");
     } catch (error) {
-      console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
+      console.error("[OAuth] Callback failed:", error instanceof Error ? error.message : String(error));
+      console.error("[OAuth] Full error:", error);
+      res.status(500).json({ error: "OAuth callback failed", details: error instanceof Error ? error.message : String(error) });
     }
   });
 }
