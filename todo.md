@@ -1507,3 +1507,11 @@ This approach:
 - [ ] Create boutique analytics dashboard (views, try-ons, conversions)
 - [ ] Add direct messaging/inquiry feature for customers
 - [ ] Test boutique landing pages on mobile and desktop
+
+
+## Phase 35: Fix OAuth Boutique Login
+- [x] Encode userType in state parameter to preserve through OAuth redirect
+- [x] Update OAuth callback to decode state and extract userType
+- [x] Add better error handling and logging to OAuth callback
+- [x] Ensure boutique users are created with correct userType
+- [ ] Test boutique login flow end-to-end
