@@ -1439,6 +1439,7 @@ This approach:
 
 ## Phase 28: Fix Full Dress Try-On Generation Bug
 - [x] Fix async state update issue in VirtualTryOnUpload (split images not sent to backend)
+- [x] Fix property name mismatch: splitDressImage returns { topImage, bottomImage } not { upperImage, lowerImage }
 - [x] Use local variables instead of setState for split dress images
 - [x] Verify Top, Bottom, Full Dress, and Top & Bottom all work
 - [x] Ensure error messages are user-friendly

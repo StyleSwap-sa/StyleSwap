@@ -115,8 +115,8 @@ export function VirtualTryOnUpload() {
         } else if (clothType === "full") {
           console.log("[VirtualTryOn] Splitting full dress");
           const split = await splitDressImage(finalClothImage);
-          finalClothImage = split.upperImage;
-          finalLowerClothImage = split.lowerImage;
+          finalClothImage = split.topImage;
+          finalLowerClothImage = split.bottomImage;
           finalClothTypeForBackend = "combo";
           setWarning("Full dress split for fitting");
         }
