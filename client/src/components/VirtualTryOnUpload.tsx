@@ -5,6 +5,7 @@ import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles }
 import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { ImagePreviewModal } from "./ImagePreviewModal";
 
 interface TryOnResult {
   taskId: string;
@@ -37,6 +38,11 @@ export function VirtualTryOnUpload() {
   
   // State for test mode
   const [testMode, setTestMode] = useState(false);
+  
+  // State for preview modal
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewModelImage, setPreviewModelImage] = useState<string>("");
+  const [previewClothImage, setPreviewClothImage] = useState<string>("");
   
   // Refs
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
@@ -75,13 +81,19 @@ export function VirtualTryOnUpload() {
       return;
     }
 
+    setPreviewModelImage(modelPhotoPreview);
+    setPreviewClothImage(clothImagePreview);
+    setShowPreview(true);
+  };
+
+  const handleConfirmPreview = async () => {
+    setShowPreview(false);
     setIsLoading(true);
     setError("");
     setWarning("");
     setProcessingProgress(0);
 
     try {
-      // Validate images first
       setProcessingProgress(5);
       console.log("[VirtualTryOn] Validating model image...");
       
@@ -716,6 +728,19 @@ export function VirtualTryOnUpload() {
           </CardContent>
         </Card>
       )}
+
+      {/* Image Preview Modal */}
+      <ImagePreviewModal
+        isOpen={showPreview}
+        modelImage={previewModelImage}
+        clothImage={previewClothImage}
+        modelDimensions={modelPhotoDimensions || undefined}
+        clothDimensions={clothImageDimensions || undefined}
+        clothType={clothType}
+        onConfirm={handleConfirmPreview}
+        onCancel={() => setShowPreview(false)}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
