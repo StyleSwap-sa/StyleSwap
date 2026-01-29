@@ -7,7 +7,7 @@ import https from "https";
 export interface FitroomTryOnRequest {
   modelImagePath: string;
   clothImagePath: string;
-  clothType: "single" | "combo" | "upper" | "lower" | "dress" | "full";
+  clothType: "single" | "combo" | "upper" | "lower" | "dress";
   lowerClothImagePath?: string;
   hdMode?: boolean;
 }
@@ -15,7 +15,7 @@ export interface FitroomTryOnRequest {
 export interface FitroomTryOnBase64Request {
   modelImageBase64: string;
   clothImageBase64: string;
-  clothType: "single" | "combo" | "upper" | "lower" | "dress" | "full";
+  clothType: "single" | "combo" | "upper" | "lower" | "dress";
   lowerClothImageBase64?: string;
   hdMode?: boolean;
 }
@@ -56,7 +56,7 @@ export class FitroomClient {
       },
       httpAgent: undefined,
       httpsAgent,
-      timeout: 120000, // 120 seconds for Fitroom API (can be slow)
+      timeout: 30000,
     });
   }
 
@@ -120,7 +120,6 @@ export class FitroomClient {
         headers: {
           "Content-Type": "application/json",
         },
-        timeout: 120000, // 120 seconds for Fitroom API
       });
 
       console.log("[Fitroom] SUCCESS - Response status:", response.status);
@@ -258,7 +257,6 @@ export class FitroomClient {
 
       const response = await this.client.post("/api/tryon/v2/tasks", form, {
         headers: form.getHeaders(),
-        timeout: 120000, // 120 seconds for Fitroom API
       });
 
       console.log("[Fitroom] SUCCESS - Response status:", response.status);
