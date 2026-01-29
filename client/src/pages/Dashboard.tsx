@@ -5,9 +5,9 @@ import { Loader2, Zap, History, Shirt, ShoppingBag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { VirtualTryOnUpload } from "@/components/VirtualTryOnUpload";
 
-type DashboardTab = "overview" | "try-on" | "history";
+
+type DashboardTab = "overview" | "history";
 
 export default function Dashboard() {
   const { user, isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
@@ -131,15 +131,6 @@ export default function Dashboard() {
             Overview
           </Button>
           <Button
-            onClick={() => setActiveTab("try-on")}
-            variant={activeTab === "try-on" ? "default" : "outline"}
-            className={activeTab === "try-on" ? "premium-button" : ""}
-          >
-            <Shirt className="w-4 h-4 mr-2" />
-            Virtual Try-On
-          </Button>
-
-          <Button
             onClick={() => setActiveTab("history")}
             variant={activeTab === "history" ? "default" : "outline"}
             className={activeTab === "history" ? "premium-button" : ""}
@@ -240,10 +231,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Virtual Try-On Tab */}
-          {activeTab === "try-on" && (
-            <VirtualTryOnUpload />
-          )}
+
 
 
 

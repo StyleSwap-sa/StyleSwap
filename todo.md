@@ -1444,3 +1444,25 @@ This approach:
 - [x] Verify Top, Bottom, Full Dress, and Top & Bottom all work
 - [x] Ensure error messages are user-friendly
 - [x] Save checkpoint with working implementation
+
+## Phase 29: Add Customer Review Section
+- [x] Create reviews table in database schema (id, userId, rating, comment, createdAt)
+- [x] Create backend API endpoint to submit review
+- [x] Create backend API endpoint to fetch reviews
+- [ ] Build review submission form UI component
+- [ ] Build review display component with star ratings
+- [ ] Add review section to customer dashboard
+- [ ] Test review submission and display
+- [ ] Add validation for review length and rating
+
+## Phase 30: Add Batch Picture Upload for Boutiques
+- [x] Create batch_uploads table in database schema
+- [x] Create backend API endpoint for batch upload
+- [x] Create backend API endpoint to fetch upload history
+- [ ] Build batch upload UI component with drag-and-drop
+- [ ] Implement file validation (size, format, count limits)
+- [ ] Add progress tracking for multiple uploads
+- [ ] Build upload history display
+- [ ] Add batch upload section to boutique dashboard
+- [ ] Test batch upload with multiple files
+- [ ] Add error handling for failed uploads

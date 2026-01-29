@@ -1,5 +1,5 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, foreignKey, int, varchar, text, timestamp, mysqlEnum, decimal, json } from "drizzle-orm/mysql-core"
-import { sql } from "drizzle-orm";
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, index, foreignKey, int, varchar, text, timestamp, mysqlEnum, decimal } from "drizzle-orm/mysql-core"
+import { sql } from "drizzle-orm"
 
 export const auditLogs = mysqlTable("auditLogs", {
 	id: int().autoincrement().notNull(),
@@ -167,6 +167,41 @@ export const garments = mysqlTable("garments", {
 	index("idx_garments_active").on(table.isActive),
 ]);
 
+export const paymentReconciliation = mysqlTable("paymentReconciliation", {
+	id: int().autoincrement().notNull(),
+	yocoTransactionId: varchar({ length: 255 }).notNull(),
+	yocoAmount: decimal({ precision: 10, scale: 2 }).notNull(),
+	yocoCurrency: varchar({ length: 3 }).default('ZAR').notNull(),
+	yocoStatus: varchar({ length: 50 }).notNull(),
+	yocoTimestamp: timestamp({ mode: 'string' }).notNull(),
+	styleswapUserId: int().references(() => users.id),
+	styleswapTransactionId: int().references(() => transactions.id),
+	styleswapCreditsAdded: int(),
+	styleswapTimestamp: timestamp({ mode: 'string' }),
+	reconciliationStatus: mysqlEnum(['matched','unmatched','duplicate','mismatch']).default('unmatched').notNull(),
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("paymentReconciliation_yocoTransactionId_unique").on(table.yocoTransactionId),
+]);
+
+export const productSizeVariants = mysqlTable("productSizeVariants", {
+	id: int().autoincrement().notNull(),
+	productId: int().notNull().references(() => products.id),
+	size: int().notNull(),
+	stock: int().default(0).notNull(),
+	isAvailable: int().default(1).notNull(),
+	fitAdjustment: mysqlEnum(['tight','perfect','loose']).default('perfect').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_product_size_product").on(table.productId),
+	index("idx_product_size_available").on(table.isAvailable),
+]);
+
 export const products = mysqlTable("products", {
 	id: int().autoincrement().notNull(),
 	boutiqueId: int().notNull().references(() => boutiques.id),
@@ -178,6 +213,7 @@ export const products = mysqlTable("products", {
 	price: decimal({ precision: 10, scale: 2 }),
 	currency: varchar({ length: 3 }).default('ZAR'),
 	isActive: int().default(1).notNull(),
+	hasSizeVariants: int().default(0).notNull(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
@@ -260,156 +296,121 @@ export const users = mysqlTable("users", {
 	index("users_openId_unique").on(table.openId),
 ]);
 
-
-// Webhook Reliability Tables
-export const webhookEvents = mysqlTable("webhookEvents", {
-	id: int().autoincrement().notNull(),
-	source: mysqlEnum(['yoco', 'fitroom']).notNull(),
-	eventType: varchar({ length: 100 }).notNull(),
-	externalEventId: varchar({ length: 255 }).notNull().unique(),
-	payload: json(),
-	status: mysqlEnum(['pending', 'retrying', 'success', 'failed']).notNull().default('pending'),
-	retryCount: int().notNull().default(0),
-	maxRetries: int().notNull().default(3),
-	nextRetryAt: timestamp().notNull(),
-	lastRetryAt: timestamp(),
-	processedAt: timestamp(),
-	error: text(),
-	createdAt: timestamp().notNull().defaultNow(),
-	updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
-},
-(table) => [
-	index("idx_webhook_status").on(table.status),
-	index("idx_webhook_source").on(table.source),
-	index("idx_webhook_external_id").on(table.externalEventId),
-]);
-
-export const paymentReconciliation = mysqlTable("paymentReconciliation", {
-	id: int().autoincrement().notNull(),
-	yocoTransactionId: varchar({ length: 255 }).notNull().unique(),
-	yocoAmount: decimal({ precision: 10, scale: 2 }).notNull(),
-	yocoCurrency: varchar({ length: 3 }).notNull(),
-	yocoStatus: varchar({ length: 50 }).notNull(),
-	yocoTimestamp: timestamp().notNull(),
-	styleswapUserId: int(),
-	styleswapTransactionId: int(),
-	styleswapCreditsAdded: int(),
-	styleswapTimestamp: timestamp(),
-	reconciliationStatus: mysqlEnum(['unmatched', 'matched', 'mismatch']).notNull().default('unmatched'),
-	createdAt: timestamp().notNull().defaultNow(),
-	updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
-},
-(table) => [
-	index("idx_payment_yoco_id").on(table.yocoTransactionId),
-	index("idx_payment_status").on(table.reconciliationStatus),
-	index("idx_payment_user").on(table.styleswapUserId),
-]);
-
 export const webhookAlerts = mysqlTable("webhookAlerts", {
 	id: int().autoincrement().notNull(),
-	alertType: mysqlEnum(['webhook_failed', 'webhook_max_retries', 'payment_unmatched', 'payment_mismatch']).notNull(),
-	severity: mysqlEnum(['low', 'medium', 'high', 'critical']).notNull().default('medium'),
-	webhookEventId: int(),
-	paymentReconciliationId: int(),
+	alertType: mysqlEnum(['webhook_failed','webhook_max_retries','payment_unmatched','payment_mismatch']).notNull(),
+	severity: mysqlEnum(['low','medium','high','critical']).default('medium').notNull(),
+	webhookEventId: int().references(() => webhookEvents.id),
+	paymentReconciliationId: int().references(() => paymentReconciliation.id),
 	title: varchar({ length: 255 }).notNull(),
 	description: text(),
-	isResolved: int().notNull().default(0),
-	resolvedAt: timestamp(),
-	resolvedBy: int(),
-	createdAt: timestamp().notNull().defaultNow(),
-	updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
-},
-(table) => [
-	index("idx_alert_type").on(table.alertType),
-	index("idx_alert_severity").on(table.severity),
-	index("idx_alert_resolved").on(table.isResolved),
-]);
+	isResolved: int().default(0).notNull(),
+	resolvedAt: timestamp({ mode: 'string' }),
+	resolvedBy: int().references(() => users.id),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+});
 
-// Analytics Tables for A/B Testing and Success Rate Tracking
-export const tryOnAnalytics = mysqlTable("tryOnAnalytics", {
+export const webhookEvents = mysqlTable("webhookEvents", {
 	id: int().autoincrement().notNull(),
-	tryOnResultId: int().notNull().references(() => tryOnResults.id),
-	userId: int().notNull().references(() => users.id),
-	boutiqueId: int().references(() => boutiques.id),
-	flowType: mysqlEnum(['b2c','b2b']).default('b2c').notNull(),
-	
-	// Image optimization tracking
-	imageOptimizationVersion: varchar({ length: 50 }).default('v1').notNull(),
-	originalModelImageWidth: int(),
-	originalModelImageHeight: int(),
-	originalModelImageSize: int(),
-	optimizedModelImageWidth: int(),
-	optimizedModelImageHeight: int(),
-	optimizedModelImageSize: int(),
-	originalClothImageWidth: int(),
-	originalClothImageHeight: int(),
-	originalClothImageSize: int(),
-	optimizedClothImageWidth: int(),
-	optimizedClothImageHeight: int(),
-	optimizedClothImageSize: int(),
-	
-	// Success metrics
-	success: int().notNull().default(0),
-	processingTimeMs: int(),
-	fitRoomResponseTime: int(),
-	uploadTimeMs: int(),
-	
-	// Error tracking
-	errorType: varchar({ length: 100 }),
-	errorMessage: text(),
-	fitRoomErrorCode: varchar({ length: 50 }),
-	
-	// Metadata
-	userAgent: text(),
-	ipAddress: varchar({ length: 45 }),
+	source: varchar({ length: 50 }).notNull(),
+	eventType: varchar({ length: 100 }).notNull(),
+	externalEventId: varchar({ length: 255 }).notNull(),
+	payload: text().notNull(),
+	status: mysqlEnum(['pending','processing','success','failed','retrying']).default('pending').notNull(),
+	retryCount: int().default(0).notNull(),
+	maxRetries: int().default(3).notNull(),
+	lastRetryAt: timestamp({ mode: 'string' }),
+	nextRetryAt: timestamp({ mode: 'string' }),
+	error: text(),
+	processedAt: timestamp({ mode: 'string' }),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
 (table) => [
-	index("idx_analytics_user").on(table.userId),
-	index("idx_analytics_boutique").on(table.boutiqueId),
-	index("idx_analytics_success").on(table.success),
-	index("idx_analytics_version").on(table.imageOptimizationVersion),
-	index("idx_analytics_created").on(table.createdAt),
-	index("idx_analytics_error").on(table.errorType),
-	index("idx_analytics_flow").on(table.flowType),
+	index("webhookEvents_externalEventId_unique").on(table.externalEventId),
+]);
+
+// Customer Reviews Table
+export const reviews = mysqlTable("reviews", {
+	id: int().autoincrement().notNull(),
+	userId: int().notNull().references(() => users.id),
+	tryOnResultId: int().references(() => tryOnResults.id),
+	rating: int().notNull(),
+	comment: text(),
+	helpful: int().default(0),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_reviews_user").on(table.userId),
+	index("idx_reviews_try_on").on(table.tryOnResultId),
+	index("idx_reviews_rating").on(table.rating),
+	index("idx_reviews_created").on(table.createdAt),
+]);
+
+// Batch Upload History for Boutiques
+export const batchUploads = mysqlTable("batchUploads", {
+	id: int().autoincrement().notNull(),
+	boutiqueId: int().notNull().references(() => boutiques.id),
+	userId: int().notNull().references(() => users.id),
+	uploadName: varchar({ length: 255 }).notNull(),
+	totalFiles: int().notNull().default(0),
+	successfulFiles: int().notNull().default(0),
+	failedFiles: int().notNull().default(0),
+	status: mysqlEnum(['pending', 'processing', 'completed', 'failed']).default('pending').notNull(),
+	errorMessage: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	completedAt: timestamp({ mode: 'string' }),
+},
+(table) => [
+	index("idx_batch_uploads_boutique").on(table.boutiqueId),
+	index("idx_batch_uploads_user").on(table.userId),
+	index("idx_batch_uploads_status").on(table.status),
+	index("idx_batch_uploads_created").on(table.createdAt),
+]);
+
+// Batch Upload Files (individual files in a batch)
+export const batchUploadFiles = mysqlTable("batchUploadFiles", {
+	id: int().autoincrement().notNull(),
+	batchUploadId: int().notNull().references(() => batchUploads.id),
+	fileName: varchar({ length: 255 }).notNull(),
+	fileSize: int().notNull(),
+	fileUrl: text().notNull(),
+	clothingType: mysqlEnum(['upper', 'lower', 'combo', 'full']).notNull(),
+	status: mysqlEnum(['pending', 'uploaded', 'failed']).default('pending').notNull(),
+	errorMessage: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_batch_files_batch").on(table.batchUploadId),
+	index("idx_batch_files_status").on(table.status),
+	index("idx_batch_files_created").on(table.createdAt),
+]);
+
+// Analytics Tables
+export const tryOnAnalytics = mysqlTable("tryOnAnalytics", {
+	id: int().autoincrement().notNull(),
+	tryOnResultId: int().references(() => tryOnResults.id),
+	successRate: int(),
+	processingTime: int(),
+	imageQuality: varchar({ length: 50 }),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_try_on_analytics_result").on(table.tryOnResultId),
+	index("idx_try_on_analytics_created").on(table.createdAt),
 ]);
 
 export const analyticsSnapshots = mysqlTable("analyticsSnapshots", {
 	id: int().autoincrement().notNull(),
-	snapshotDate: varchar({ length: 10 }).notNull(),
-	imageOptimizationVersion: varchar({ length: 50 }).notNull(),
-	flowType: mysqlEnum(['b2c','b2b']).notNull(),
-	
-	// Aggregated metrics
-	totalAttempts: int().notNull().default(0),
-	successfulAttempts: int().notNull().default(0),
-	failedAttempts: int().notNull().default(0),
-	successRate: decimal({ precision: 5, scale: 2 }).notNull().default(0),
-	
-	// Performance metrics
-	avgProcessingTimeMs: int(),
-	p95ProcessingTimeMs: int(),
-	p99ProcessingTimeMs: int(),
-	avgUploadTimeMs: int(),
-	avgFitRoomResponseTimeMs: int(),
-	
-	// Image optimization metrics
-	avgOriginalModelImageSize: int(),
-	avgOptimizedModelImageSize: int(),
-	avgOriginalClothImageSize: int(),
-	avgOptimizedClothImageSize: int(),
-	compressionRatio: decimal({ precision: 5, scale: 2 }),
-	
-	// Error metrics
-	topErrorType: varchar({ length: 100 }),
-	errorTypeBreakdown: text(),
-	
+	date: varchar({ length: 50 }).notNull(),
+	successRate: int(),
+	totalTryOns: int(),
+	averageProcessingTime: int(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
 (table) => [
-	index("idx_snapshot_date").on(table.snapshotDate),
-	index("idx_snapshot_version").on(table.imageOptimizationVersion),
-	index("idx_snapshot_flow").on(table.flowType),
+	index("idx_analytics_snapshots_date").on(table.date),
+	index("idx_analytics_snapshots_created").on(table.createdAt),
 ]);
