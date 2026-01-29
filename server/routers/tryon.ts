@@ -32,7 +32,7 @@ export const tryonRouter = router({
       z.object({
         modelImageBase64: z.string().describe("Base64 encoded customer body photo"),
         clothImageBase64: z.string().describe("Base64 encoded garment image"),
-        clothType: z.enum(["upper", "lower", "combo"]).default("upper"), // "upper" for tops/dresses, "lower" for bottoms, "combo" for top+bottom
+        clothType: z.enum(["upper", "lower", "combo", "full"]).default("upper"), // "upper" for tops, "lower" for bottoms, "combo" for top+bottom, "full" for dresses/jumpsuits
         hdMode: z.boolean().optional().default(false),
         testMode: z.boolean().optional().default(false).describe("Skip credit deduction for testing"),
       })
@@ -97,7 +97,7 @@ export const tryonRouter = router({
         const taskResult = await fitroomClient.createTryOnWithBase64({
           modelImageBase64: input.modelImageBase64,
           clothImageBase64: input.clothImageBase64,
-          clothType: input.clothType as "single" | "combo",
+          clothType: input.clothType as "upper" | "lower" | "combo" | "full",
           hdMode: input.hdMode,
         });
         

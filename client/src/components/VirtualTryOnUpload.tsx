@@ -22,7 +22,7 @@ export function VirtualTryOnUpload() {
   const [clothImage, setClothImage] = useState<File | null>(null);
   const [clothImagePreview, setClothImagePreview] = useState<string>("");
   const [clothImageDimensions, setClothImageDimensions] = useState<{ width: number; height: number } | null>(null);
-  const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "dress">("upper");
+  const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
   
@@ -120,11 +120,8 @@ export function VirtualTryOnUpload() {
     setError("");
     setWarning("");
 
-    // If dress mode, split the image
-    if (clothType === "dress") {
-      await handleDressImageSplitting(file);
-      return;
-    }
+    // For full dress mode, send directly to Fitroom (no splitting needed)
+    // Fitroom handles full dresses natively with cloth_type: "full"
 
     // Skip all validation - let backend handle it
     // This avoids browser-specific issues with certain image formats
@@ -156,34 +153,7 @@ export function VirtualTryOnUpload() {
     }
   };
 
-  // Helper function to handle dress image splitting
-  const handleDressImageSplitting = async (file: File) => {
-    try {
-      const { topImage, bottomImage } = await splitDressImage(file);
-      setClothImage(topImage);
-      setLowerClothImage(bottomImage);
-      
-      // Create previews for both
-      const topReader = new FileReader();
-      topReader.onload = (e) => {
-        setClothImagePreview(e.target?.result as string);
-      };
-      topReader.readAsDataURL(topImage);
-      
-      const bottomReader = new FileReader();
-      bottomReader.onload = (e) => {
-        setLowerClothImagePreview(e.target?.result as string);
-      };
-      bottomReader.readAsDataURL(bottomImage);
-      
-      // Get dimensions
-      const topDims = await getImageDimensions(topImage);
-      setClothImageDimensions(topDims);
-    } catch (error) {
-      console.error("[VirtualTryOn] Error splitting dress:", error);
-      setError("Failed to split dress image. Please try again.");
-    }
-  };
+  // Note: Dress image splitting removed - using native Fitroom "full" type support instead
 
   // Handle try-on creation
   const handleCreateTryOn = async () => {
@@ -525,21 +495,28 @@ export function VirtualTryOnUpload() {
           <CardHeader>
             <CardTitle className="text-lg">Select Clothes</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">
-              Choose single garment or mix top & bottom
+              Select the type of clothing you want to try on
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setClothType("upper")}
-                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" && clothType !== "combo" && clothType !== "dress" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "upper" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
               >
-                <div className="font-semibold text-sm">Single Item</div>
-                <div className="text-xs text-muted-foreground mt-1">Top or bottom</div>
+                <div className="font-semibold text-sm">Top</div>
+                <div className="text-xs text-muted-foreground mt-1">Shirt, jacket, etc</div>
               </button>
               <button
-                onClick={() => setClothType("dress")}
-                className={`p-4 rounded-lg border-2 transition-all ${clothType === "dress" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+                onClick={() => setClothType("lower")}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "lower" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
+              >
+                <div className="font-semibold text-sm">Bottom</div>
+                <div className="text-xs text-muted-foreground mt-1">Pants, skirt, etc</div>
+              </button>
+              <button
+                onClick={() => setClothType("full")}
+                className={`p-4 rounded-lg border-2 transition-all ${clothType === "full" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}
               >
                 <div className="font-semibold text-sm">Full Dress</div>
                 <div className="text-xs text-muted-foreground mt-1">One piece</div>

@@ -7,7 +7,7 @@ import https from "https";
 export interface FitroomTryOnRequest {
   modelImagePath: string;
   clothImagePath: string;
-  clothType: "single" | "combo" | "upper" | "lower" | "dress";
+  clothType: "single" | "combo" | "upper" | "lower" | "dress" | "full";
   lowerClothImagePath?: string;
   hdMode?: boolean;
 }
@@ -15,7 +15,7 @@ export interface FitroomTryOnRequest {
 export interface FitroomTryOnBase64Request {
   modelImageBase64: string;
   clothImageBase64: string;
-  clothType: "single" | "combo" | "upper" | "lower" | "dress";
+  clothType: "single" | "combo" | "upper" | "lower" | "dress" | "full";
   lowerClothImageBase64?: string;
   hdMode?: boolean;
 }
