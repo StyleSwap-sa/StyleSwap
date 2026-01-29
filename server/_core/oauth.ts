@@ -9,14 +9,6 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
-function decodeState(state: string): string {
-  try {
-    return Buffer.from(state, "base64").toString("utf-8");
-  } catch {
-    return state;
-  }
-}
-
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
@@ -52,12 +44,10 @@ export function registerOAuthRoutes(app: Express) {
         }
       }
 
-      const userType = getQueryParam(req, "userType") || "customer";
       await db.upsertUser({
         openId: userInfo.openId,
         name: userInfo.name || null,
         email: userInfo.email ?? null,
-        userType: userType as "customer" | "merchant",
         loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
         lastSignedIn: new Date(),
       });
@@ -72,12 +62,8 @@ export function registerOAuthRoutes(app: Express) {
 
       res.redirect(302, "/");
     } catch (error) {
-      console.error("[OAuth] Callback failed:", error instanceof Error ? error.message : error);
-      if (error instanceof Error && error.message.includes("Network")) {
-        res.status(503).json({ error: "OAuth server unavailable. Please try again." });
-      } else {
-        res.status(500).json({ error: "OAuth callback failed", details: error instanceof Error ? error.message : "Unknown error" });
-      }
+      console.error("[OAuth] Callback failed", error);
+      res.status(500).json({ error: "OAuth callback failed" });
     }
   });
 }

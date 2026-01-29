@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { BoutiqueOnboarding } from "@/components/BoutiqueOnboarding";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
@@ -12,7 +11,6 @@ export default function BoutiqueDashboard() {
   const [selectedBoutique, setSelectedBoutique] = useState<number | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
   
-  const [showOnboarding, setShowOnboarding] = useState(false);
   // Fetch user's boutiques
   const { data: boutiques, isLoading: boutiquesLoading } =
     trpc.boutiques.myBoutiques.useQuery();
@@ -39,11 +37,6 @@ export default function BoutiqueDashboard() {
         </div>
       </DashboardLayout>
     );
-  }
-
-  // Show onboarding if triggered
-  if (showOnboarding) {
-    return <BoutiqueOnboarding onComplete={() => setShowOnboarding(false)} />;
   }
 
   if (!boutiques || boutiques.length === 0) {
