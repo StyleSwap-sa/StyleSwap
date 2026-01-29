@@ -183,7 +183,13 @@ export async function startServer() {
       const clothImageFiles = (req.files as any)?.clothImage;
       const upperClothImageFiles = (req.files as any)?.upperClothImage;
       const lowerClothImageFiles = (req.files as any)?.lowerClothImage;
-      const clothType = req.body.clothType || "upper";
+      let clothType = req.body.clothType || "upper";
+      
+      // Convert "full" to "combo" for Fitroom API
+      if (clothType === "full") {
+        clothType = "combo";
+        console.log("[Try-On Upload] Converting 'full' to 'combo' for Fitroom API");
+      }
 
       console.log("[Try-On Upload] Files received:", Object.keys(req.files || {}));
       console.log("[Try-On Upload] clothType:", clothType);
@@ -195,7 +201,7 @@ export async function startServer() {
       let clothImageBuffer: Buffer;
       let lowerClothImageBuffer: Buffer | null = null;
       
-      if ((clothType === "combo" || clothType === "upper") && upperClothImageFiles && upperClothImageFiles[0]) {
+      if ((clothType === "combo" || clothType === "full" || clothType === "upper") && upperClothImageFiles && upperClothImageFiles[0]) {
         clothImageBuffer = upperClothImageFiles[0].buffer;
         if (lowerClothImageFiles && lowerClothImageFiles[0]) {
           lowerClothImageBuffer = lowerClothImageFiles[0].buffer;

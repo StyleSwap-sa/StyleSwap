@@ -124,8 +124,8 @@ export function VirtualTryOnUpload() {
       const formData = new FormData();
       formData.append("modelImage", finalModelPhoto);
       
-      // For combo, send as upper+lower. For single garments, send only cloth image
-      if (clothType === "combo") {
+      // For combo or full, send as upper+lower. For single garments, send only cloth image
+      if (clothType === "combo" || clothType === "full") {
         formData.append("upperClothImage", finalClothImage);
         if (lowerClothImage) {
           formData.append("lowerClothImage", lowerClothImage);
@@ -136,6 +136,7 @@ export function VirtualTryOnUpload() {
       }
       
       // Use selected cloth type (Fitroom API expects: upper, lower, or combo)
+      // Note: "full" will be converted to "combo" on the backend
       formData.append("clothType", clothType);
       // Pass test mode to backend
       formData.append("testMode", testMode.toString());
