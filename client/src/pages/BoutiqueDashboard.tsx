@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle } from "lucide-react";
 import { Link } from "wouter";
+import { VirtualTryOnUpload } from "@/components/VirtualTryOnUpload";
 
 export default function BoutiqueDashboard() {
   const [selectedBoutique, setSelectedBoutique] = useState<number | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "test-tryon">("overview");
   
   // Fetch user's boutiques
   const { data: boutiques, isLoading: boutiquesLoading } =
@@ -33,6 +35,33 @@ export default function BoutiqueDashboard() {
       <DashboardLayout>
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // If showing test try-on tab, display VirtualTryOnUpload
+  if (activeTab === "test-tryon") {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button 
+              onClick={() => setActiveTab("overview")}
+              variant={activeTab === "overview" ? "default" : "outline"}
+              className="w-full sm:w-auto"
+            >
+              Overview
+            </Button>
+            <Button 
+              onClick={() => setActiveTab("test-tryon")}
+              variant={activeTab === "test-tryon" ? "default" : "outline"}
+              className="w-full sm:w-auto"
+            >
+              Test Try-On
+            </Button>
+          </div>
+          <VirtualTryOnUpload />
         </div>
       </DashboardLayout>
     );
@@ -82,6 +111,24 @@ export default function BoutiqueDashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8">
+        {/* Tab Navigation */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button 
+            onClick={() => setActiveTab("overview")}
+            variant={activeTab === "overview" ? "default" : "outline"}
+            className="w-full sm:w-auto"
+          >
+            Overview
+          </Button>
+          <Button 
+            onClick={() => setActiveTab("test-tryon")}
+            variant={activeTab === "test-tryon" ? "default" : "outline"}
+            className="w-full sm:w-auto"
+          >
+            Test Try-On
+          </Button>
+        </div>
+
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
