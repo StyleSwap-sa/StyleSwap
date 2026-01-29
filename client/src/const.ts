@@ -2,8 +2,15 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
 // Generate login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = () => {
-  const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
-  const appId = import.meta.env.VITE_APP_ID;
+  // Get values from window object injected by server
+  const oauthPortalUrl = (window as any).__VITE_OAUTH_PORTAL_URL || "https://manus.im";
+  const appId = (window as any).__VITE_APP_ID || "";
+  
+  if (!appId) {
+    console.error("[OAuth] VITE_APP_ID is not configured");
+    throw new Error("OAuth configuration missing: VITE_APP_ID");
+  }
+  
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
   const state = btoa(redirectUri);
 
@@ -18,8 +25,15 @@ export const getLoginUrl = () => {
 
 // Generate boutique signup URL with merchant user type
 export const getBoutiqueSignupUrl = () => {
-  const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
-  const appId = import.meta.env.VITE_APP_ID;
+  // Get values from window object injected by server
+  const oauthPortalUrl = (window as any).__VITE_OAUTH_PORTAL_URL || "https://manus.im";
+  const appId = (window as any).__VITE_APP_ID || "";
+  
+  if (!appId) {
+    console.error("[OAuth] VITE_APP_ID is not configured");
+    throw new Error("OAuth configuration missing: VITE_APP_ID");
+  }
+  
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
   const state = btoa(redirectUri);
 

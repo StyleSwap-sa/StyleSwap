@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
+import { ENV } from "./env";
 
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
@@ -38,6 +39,16 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`
       );
+      
+      // Inject environment variables as global window variables
+      const envScript = `
+        <script>
+          window.__VITE_OAUTH_PORTAL_URL = "${ENV.oAuthPortalUrl || "https://manus.im"}";
+          window.__VITE_APP_ID = "${ENV.appId || ""}";
+        </script>
+      `;
+      template = template.replace("<body>", `<body>${envScript}`);
+      
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
