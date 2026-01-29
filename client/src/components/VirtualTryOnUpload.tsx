@@ -5,7 +5,8 @@ import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles }
 import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { ImagePreviewModal } from "./ImagePreviewModal";
+import { ProgressTracker, type ProgressStep } from "./ProgressTracker";
+import { BatchTryOnManager, type BatchItem } from "./BatchTryOnManager";
 
 interface TryOnResult {
   taskId: string;
@@ -39,10 +40,18 @@ export function VirtualTryOnUpload() {
   // State for test mode
   const [testMode, setTestMode] = useState(false);
   
-  // State for preview modal
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewModelImage, setPreviewModelImage] = useState<string>("");
-  const [previewClothImage, setPreviewClothImage] = useState<string>("");
+  // State for batch mode
+  const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
+  const [isBatchProcessing, setIsBatchProcessing] = useState(false);
+  const [currentBatchItemId, setCurrentBatchItemId] = useState<string | null>(null);
+  const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([
+    { id: "validate-model", label: "Validating body photo", status: "pending" },
+    { id: "validate-cloth", label: "Validating clothing image", status: "pending" },
+    { id: "optimize", label: "Optimizing images", status: "pending" },
+    { id: "generate", label: "Generating try-on", status: "pending" },
+    { id: "process", label: "Processing result", status: "pending" },
+  ]);
+  const [showProgress, setShowProgress] = useState(false);
   
   // Refs
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
@@ -81,13 +90,10 @@ export function VirtualTryOnUpload() {
       return;
     }
 
-    setPreviewModelImage(modelPhotoPreview);
-    setPreviewClothImage(clothImagePreview);
-    setShowPreview(true);
+    await handleConfirmPreview();
   };
 
   const handleConfirmPreview = async () => {
-    setShowPreview(false);
     setIsLoading(true);
     setError("");
     setWarning("");
@@ -730,18 +736,7 @@ export function VirtualTryOnUpload() {
         </Card>
       )}
 
-      {/* Image Preview Modal */}
-      <ImagePreviewModal
-        isOpen={showPreview}
-        modelImage={previewModelImage}
-        clothImage={previewClothImage}
-        modelDimensions={modelPhotoDimensions || undefined}
-        clothDimensions={clothImageDimensions || undefined}
-        clothType={clothType}
-        onConfirm={handleConfirmPreview}
-        onCancel={() => setShowPreview(false)}
-        isLoading={isLoading}
-      />
+
     </div>
   );
 }
