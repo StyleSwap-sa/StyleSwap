@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, Menu, X } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useState } from "react";
+import { LoginOptionsModal } from "@/components/LoginOptionsModal";
 
 export default function Home() {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLoginOptions, setShowLoginOptions] = useState(false);
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
@@ -21,7 +23,7 @@ export default function Home() {
         setLocation('/dashboard');
       }
     } else {
-      window.location.href = getLoginUrl();
+      setShowLoginOptions(true);
     }
   };
 
@@ -159,12 +161,18 @@ export default function Home() {
                 </Button>
               </>
             ) : (
-              <Button 
-                onClick={handleGetStarted}
-                className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Get Started
-              </Button>
+              <>
+                <Button 
+                  onClick={handleGetStarted}
+                  className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Get Started
+                </Button>
+                <LoginOptionsModal 
+                  open={showLoginOptions} 
+                  onOpenChange={setShowLoginOptions}
+                />
+              </>
             )}
           </div>
 

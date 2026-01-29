@@ -1466,3 +1466,10 @@ This approach:
 - [ ] Add batch upload section to boutique dashboard
 - [ ] Test batch upload with multiple files
 - [ ] Add error handling for failed uploads
+
+## Phase 31: Add Boutique Login/Signup Option
+- [x] Create LoginOptionsModal component with Customer/Boutique choice
+- [x] Update Get Started button to show login options modal
+- [x] Add boutique signup URL generation with merchant userType
+- [x] Integrate modal into Home page
+- [x] Ensure proper redirection after boutique login
