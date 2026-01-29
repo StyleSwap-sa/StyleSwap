@@ -167,57 +167,29 @@ export async function startServer() {
         }
       }
 
-      // Save buffers to temporary files for multipart upload
-      const tempDir = path.join('/tmp', `tryon-${Date.now()}`);
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
-      }
-      
-      const modelPath = path.join(tempDir, 'model.jpg');
-      const clothPath = path.join(tempDir, 'cloth.jpg');
-      
-      fs.writeFileSync(modelPath, finalModelBuffer);
-      fs.writeFileSync(clothPath, finalClothBuffer);
-      console.log(`[Try-On Upload] Saved temp files: ${modelPath}, ${clothPath}`);
-      
-      let lowerClothPath: string | undefined;
-      if ((clothType === "combo" || clothType === "upper") && lowerClothImageBuffer) {
-        lowerClothPath = path.join(tempDir, 'lower_cloth.jpg');
+      // Handle lower cloth image for combo mode
+      let lowerClothImageBase64: string | undefined;
+      if ((clothType === "combo" || clothType === "full") && lowerClothImageBuffer) {
         let finalLowerClothBuffer = lowerClothImageBuffer;
         const lowerClothValidation = validateImageType(lowerClothImageBuffer);
         if (lowerClothValidation.format !== 'JPEG') {
           console.log(`[Try-On Upload] Converting lower cloth to JPEG`);
           finalLowerClothBuffer = await sharp(lowerClothImageBuffer).jpeg({ quality: 95 }).toBuffer();
         }
-        fs.writeFileSync(lowerClothPath, finalLowerClothBuffer);
-        console.log(`[Try-On Upload] Saved lower cloth temp file: ${lowerClothPath}`);
+        lowerClothImageBase64 = finalLowerClothBuffer.toString('base64');
+        console.log(`[Try-On Upload] Lower cloth image base64 size: ${lowerClothImageBase64.length} bytes`);
       }
       
-      // For single garments (upper/lower), don't use lower cloth image
-      // For combo mode, use both upper and lower cloth images
-      let fitroomLowerClothPath: string | undefined = undefined;
-      if (clothType === "combo") {
-        fitroomLowerClothPath = lowerClothPath;
-      }
-      
-      // Create try-on task with Fitroom using multipart form data (like the website)
+      // Create try-on task with Fitroom using base64 encoded images
       const fitroomClient = getFitroomClient();
-      console.log('[Try-On Upload] Sending to Fitroom API using multipart form data');
-      const taskResult = await fitroomClient.createTryOn({
-        modelImagePath: modelPath,
-        clothImagePath: clothPath,
-        clothType: clothType as "upper" | "lower" | "combo",
-        lowerClothImagePath: fitroomLowerClothPath,
+      console.log('[Try-On Upload] Sending to Fitroom API using base64 encoded images');
+      const taskResult = await fitroomClient.createTryOnWithBase64({
+        modelImageBase64: modelImageBase64,
+        clothImageBase64: clothImageBase64,
+        clothType: clothType as "upper" | "lower" | "combo" | "full",
+        lowerClothImageBase64: lowerClothImageBase64,
         hdMode: true,
       });
-      
-      // Clean up temp files
-      try {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-        console.log('[Try-On Upload] Cleaned up temp files');
-      } catch (e) {
-        console.warn('[Try-On Upload] Failed to clean temp files:', e);
-      }
 
       console.log('[Try-On Upload] Fitroom response:', JSON.stringify(taskResult));
       

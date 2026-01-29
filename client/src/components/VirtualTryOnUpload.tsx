@@ -634,7 +634,7 @@ export function VirtualTryOnUpload() {
       )}
 
       {/* Test Mode Toggle */}
-      {isAdmin && user && (
+      {user && (
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -669,7 +669,7 @@ export function VirtualTryOnUpload() {
       )}
 
       {/* Test Mode Active Notice */}
-      {testMode && isAdmin && (
+      {testMode && user && (
         <Card className="bg-green-50 border-green-200">
           <CardContent className="pt-6">
             <p className="text-green-900 font-semibold">✓ Test Mode Active - Credits will not be deducted</p>
