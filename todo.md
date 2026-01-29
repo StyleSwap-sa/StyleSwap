@@ -1473,3 +1473,37 @@ This approach:
 - [x] Add boutique signup URL generation with merchant userType
 - [x] Integrate modal into Home page
 - [x] Ensure proper redirection after boutique login
+
+
+## Phase 32: Enforce Email Separation (Customer vs Boutique)
+- [ ] Add unique email constraint to users table
+- [ ] Update OAuth callback to check existing email and role
+- [ ] Add validation in boutique signup to prevent dual registration
+- [ ] Create database migration to enforce email uniqueness
+- [ ] Test email separation enforcement
+- [ ] Add error messages for users trying to register with existing email as different role
+
+
+## Phase 33: Private Admin/Owner Portal
+- [ ] Create private admin login page at /admin-login (not in public navigation)
+- [ ] Build admin dashboard with platform controls
+- [ ] Add admin authentication middleware
+- [ ] Hide admin portal from public navigation
+- [ ] Test admin login and dashboard access
+- [ ] Add platform statistics and analytics to admin dashboard
+- [ ] Add user management controls (view, suspend, delete users)
+- [ ] Add boutique management controls
+- [ ] Add transaction history and reporting
+
+
+## Phase 34: Boutique Landing Pages & Social Seller Integration
+- [x] Create public boutique landing page with product showcase (/boutique/:slug/shop)
+- [x] Add product gallery with filtering and search
+- [x] Integrate customer try-on interface into boutique landing page
+- [x] Create social media seller dashboard for non-website boutiques
+- [x] Add social media sharing buttons (Instagram, TikTok, Facebook, WhatsApp)
+- [x] Create QR code generator for boutique landing page
+- [ ] Add customer reviews display on boutique landing page
+- [ ] Create boutique analytics dashboard (views, try-ons, conversions)
+- [ ] Add direct messaging/inquiry feature for customers
+- [ ] Test boutique landing pages on mobile and desktop

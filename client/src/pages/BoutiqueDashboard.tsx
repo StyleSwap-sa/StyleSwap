@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles } from "lucide-react";
 import { Link } from "wouter";
+import { BatchUploadComponent } from "@/components/BatchUploadComponent";
 
 export default function BoutiqueDashboard() {
   const [selectedBoutique, setSelectedBoutique] = useState<number | null>(null);
@@ -313,6 +314,19 @@ export default function BoutiqueDashboard() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Batch Upload */}
+            <Card className="premium-card">
+              <CardHeader>
+                <CardTitle>Batch Upload Your Products</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Upload multiple clothing images at once to quickly build your catalog
+                </p>
+                <BatchUploadComponent />
+              </CardContent>
+            </Card>
 
             {/* Getting Started */}
             <Card className="premium-card bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">

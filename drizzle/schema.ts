@@ -292,9 +292,15 @@ export const users = mysqlTable("users", {
 	userType: mysqlEnum(['customer','merchant','admin']).default('customer').notNull(),
 	currentBoutiqueId: int(),
 },
-(table) => [
-	index("users_openId_unique").on(table.openId),
-]);
+	(table) => [
+		index("users_openId_unique").on(table.openId),
+		uniqueIndex("users_email_unique").on(table.email),
+	]);
+
+// Helper function to create unique constraint in SQL
+export const emailUniqueConstraint = `
+	ALTER TABLE users ADD CONSTRAINT users_email_unique UNIQUE (email);
+`;
 
 export const webhookAlerts = mysqlTable("webhookAlerts", {
 	id: int().autoincrement().notNull(),

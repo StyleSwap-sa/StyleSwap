@@ -28,6 +28,22 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
+      // Check if email already exists with a different role
+      if (userInfo.email) {
+        const existingUser = await db.getUserByEmail(userInfo.email);
+        const requestedUserType = getQueryParam(req, "userType") || "customer";
+        
+        if (existingUser && existingUser.userType !== requestedUserType) {
+          const currentRole = existingUser.userType === "merchant" ? "boutique owner" : "customer";
+          const requestedRole = requestedUserType === "merchant" ? "boutique owner" : "customer";
+          res.status(400).json({
+            error: `This email is already registered as a ${currentRole}. Cannot use same email for ${requestedRole}.`,
+            code: "EMAIL_ALREADY_REGISTERED_AS_DIFFERENT_ROLE",
+          });
+          return;
+        }
+      }
+
       await db.upsertUser({
         openId: userInfo.openId,
         name: userInfo.name || null,
