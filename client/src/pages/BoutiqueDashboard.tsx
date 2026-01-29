@@ -3,14 +3,12 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle } from "lucide-react";
+import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles } from "lucide-react";
 import { Link } from "wouter";
-import { VirtualTryOnUpload } from "@/components/VirtualTryOnUpload";
 
 export default function BoutiqueDashboard() {
   const [selectedBoutique, setSelectedBoutique] = useState<number | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "test-tryon">("overview");
   
   // Fetch user's boutiques
   const { data: boutiques, isLoading: boutiquesLoading } =
@@ -35,33 +33,6 @@ export default function BoutiqueDashboard() {
       <DashboardLayout>
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin" />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  // If showing test try-on tab, display VirtualTryOnUpload
-  if (activeTab === "test-tryon") {
-    return (
-      <DashboardLayout>
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button 
-              onClick={() => setActiveTab("overview")}
-              variant={activeTab === "overview" ? "default" : "outline"}
-              className="w-full sm:w-auto"
-            >
-              Overview
-            </Button>
-            <Button 
-              onClick={() => setActiveTab("test-tryon")}
-              variant={activeTab === "test-tryon" ? "default" : "outline"}
-              className="w-full sm:w-auto"
-            >
-              Test Try-On
-            </Button>
-          </div>
-          <VirtualTryOnUpload />
         </div>
       </DashboardLayout>
     );
@@ -209,7 +180,7 @@ export default function BoutiqueDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-4 gap-6">
               <Link href="/products">
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
@@ -219,6 +190,20 @@ export default function BoutiqueDashboard() {
                     <h3 className="font-bold mb-2">Add Products</h3>
                     <p className="text-sm text-muted-foreground">
                       Upload your clothing catalog
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/boutique-try-on">
+                <Card className="premium-card cursor-pointer hover:shadow-lg transition">
+                  <CardContent className="pt-6">
+                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
+                      <Sparkles className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-bold mb-2">Test Try-Ons</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Test your products with all clothing types
                     </p>
                   </CardContent>
                 </Card>

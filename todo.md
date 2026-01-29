@@ -1392,3 +1392,47 @@ This approach:
 - [ ] Test Bottom option with bottom clothing image
 - [ ] Test Full Dress option with full dress image
 - [ ] Test Top+Bottom combo option with two separate images
+
+
+## Phase 30: Fix Bottom Clothing Type Bug (PRIORITY)
+- [x] Debug why "Bottom" clothing type applies as top instead of bottom
+- [x] Implement automatic image cropping for top and bottom clothing types
+- [x] Add cropTopClothing and cropBottomClothing functions to imageUtils
+- [x] Update VirtualTryOnUpload component to use image cropping
+- [x] Verify all clothing types work correctly (Top, Bottom, Full Dress, Top & Bottom)
+- [x] Fix Fitroom API timeout (increased from 30s to 120s)
+- [x] Fix frontend polling timeout (increased from 150s to 300s)
+- [x] Add missing getTryOnStatus procedure to backend
+- [x] Add progress field to status responses
+- [x] Test with actual bottom clothing image - ALL CLOTHING TYPES WORKING PERFECTLY
+
+## Phase 31: Boutique Dashboard Try-On Settings (NEXT)
+- [ ] Add clothing type selector to boutique dashboard (Top, Bottom, Full Dress, Top & Bottom)
+- [ ] Implement boutique model/image upload for try-on testing
+- [ ] Create boutique inventory management with clothing types
+- [ ] Allow boutique owners to test try-ons with their own models
+- [ ] Sync try-on settings between customer and boutique dashboards
+- [ ] Test boutique dashboard try-on flow end-to-end
+
+
+## Phase 31: Boutique Dashboard Try-On Settings (COMPLETED)
+- [x] Create BoutiqueTryOn component with all four clothing types (Top, Bottom, Full Dress, Top & Bottom)
+- [x] Implement boutique model/image upload for try-on testing
+- [x] Create BoutiqueTryOnPage and add route to App.tsx
+- [x] Add "Test Try-Ons" quick action card to boutique dashboard navigation
+- [x] Verify all four clothing types (Top, Bottom, Full Dress, Top & Bottom) work in boutique dashboard
+- [x] Verify boutique owners can test their products with automatic image cropping
+- [x] Added Sparkles icon import and 4-column grid layout to boutique dashboard
+
+
+## Phase 32: Test Boutique Dashboard (COMPLETED)
+- [x] Create TestBoutiqueTryOn component with test mode enabled (no credits used)
+- [x] Create TestBoutiquePage and add route to App.tsx
+- [x] Add "Try Boutique Dashboard" link to main navigation for admin users (desktop)
+- [x] Add "Try Boutique Dashboard" link to mobile menu for admin users
+- [x] Made accessible on both mobile and desktop
+- [x] Replaced TestBoutiqueTryOn with VirtualTryOnUpload (reuse working code)
+- [x] TestBoutiquePage now uses exact same VirtualTryOnUpload component
+- [x] Image uploads working on boutique dashboard
+- [x] All four clothing types (Top, Bottom, Full Dress, Top & Bottom) working correctly
+- [x] Avoided 2-week debugging cycle by reusing tested customer dashboard code

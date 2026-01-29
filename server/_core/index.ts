@@ -79,10 +79,15 @@ export async function startServer() {
       const clothImageFiles = (req.files as any)?.clothImage;
       const upperClothImageFiles = (req.files as any)?.upperClothImage;
       const lowerClothImageFiles = (req.files as any)?.lowerClothImage;
-      const clothType = req.body.clothType || "upper";
+      let clothType = req.body.clothType || "upper";
+      
+      // Map frontend cloth types to Fitroom API cloth types
+      if (clothType === "full") {
+        clothType = "combo";
+      }
 
       console.log("[Try-On Upload] Files received:", Object.keys(req.files || {}));
-      console.log("[Try-On Upload] clothType:", clothType);
+      console.log("[Try-On Upload] clothType (mapped):", clothType);
       if (!modelImageFiles || !modelImageFiles[0]) {
         return res.status(400).json({ error: "Model image is required" });
       }
@@ -223,7 +228,11 @@ export async function startServer() {
       
       if (!taskResult.success || !taskResult.taskId) {
         console.error('[Try-On Upload] Fitroom failed:', taskResult.error);
-        return res.status(500).json({ error: taskResult.error || "Failed to create try-on task" });
+        let errorMsg = taskResult.error || "Failed to create try-on task";
+        if (typeof errorMsg === 'boolean') {
+          errorMsg = "Try-on generation failed. Please check your images and try again.";
+        }
+        return res.status(500).json({ error: String(errorMsg) });
       }
 
       // Deduct credit after successful task creation (skip in test mode)

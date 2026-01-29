@@ -56,7 +56,7 @@ export class FitroomClient {
       },
       httpAgent: undefined,
       httpsAgent,
-      timeout: 30000,
+      timeout: 120000, // 120 seconds for Fitroom API (can be slow)
     });
   }
 
@@ -120,6 +120,7 @@ export class FitroomClient {
         headers: {
           "Content-Type": "application/json",
         },
+        timeout: 120000, // 120 seconds for Fitroom API
       });
 
       console.log("[Fitroom] SUCCESS - Response status:", response.status);
@@ -257,6 +258,7 @@ export class FitroomClient {
 
       const response = await this.client.post("/api/tryon/v2/tasks", form, {
         headers: form.getHeaders(),
+        timeout: 120000, // 120 seconds for Fitroom API
       });
 
       console.log("[Fitroom] SUCCESS - Response status:", response.status);
@@ -281,7 +283,21 @@ export class FitroomClient {
       };
     } catch (error: any) {
       console.error("[Fitroom] ERROR - Try-on creation failed:", error.message);
-      const errorMessage = error.response?.data?.reason || error.response?.data?.error || error.message || "Unknown error";
+      let errorMessage = error.response?.data?.reason || error.response?.data?.error || error.message || "Unknown error";
+      
+      // Handle boolean error responses from Fitroom API
+      if (errorMessage === true || errorMessage === false) {
+        if (error.response?.status === 400) {
+          errorMessage = "Invalid image format or size. Please ensure images are valid and meet requirements.";
+        } else if (error.response?.status === 401) {
+          errorMessage = "Authentication failed. Please check API key.";
+        } else if (error.response?.status === 429) {
+          errorMessage = "Too many requests. Please wait and try again.";
+        } else {
+          errorMessage = "Try-on generation failed. Please check your images and try again.";
+        }
+      }
+      
       console.error("[Fitroom] ERROR - Response data:", error.response?.data);
       return {
         success: false,
