@@ -685,8 +685,8 @@ export function VirtualTryOnUpload() {
         </div>
       )}
 
-      {/* Test Mode Toggle */}
-      {isAdmin && user && (
+      {/* Test Mode Toggle - Always available on Try dashboards */}
+      {user && (
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -697,8 +697,9 @@ export function VirtualTryOnUpload() {
               <Button
                 onClick={() => setTestMode(!testMode)}
                 variant={testMode ? "default" : "outline"}
+                className={testMode ? "bg-green-600 hover:bg-green-700" : ""}
               >
-                {testMode ? "Enabled" : "Disabled"}
+                {testMode ? "✓ Enabled" : "Disabled"}
               </Button>
             </div>
           </CardContent>
