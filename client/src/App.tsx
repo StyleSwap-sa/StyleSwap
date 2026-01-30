@@ -34,6 +34,7 @@ import TestBoutiquePage from "./pages/TestBoutiquePage";
 import AdminLogin from "./pages/AdminLogin";
 import BoutiqueShop from "./pages/BoutiqueShop";
 import SocialSellerDashboard from "./pages/SocialSellerDashboard";
+import VerifyEmail from "./pages/VerifyEmail";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -58,6 +59,7 @@ function Router() {
       <Route path={"/b2b-signup"} component={B2BSignup} />
       <Route path={"/for-boutiques"} component={BoutiqueFeatures} />
       <Route path={"/boutique-dashboard"} component={BoutiqueDashboard} />
+      <Route path={"/verify-boutique/:token"} component={VerifyEmail} />
       <Route path={"/boutique/:slug"} component={(props: any) => <BoutiqueLandingPage slug={props.params.slug} />} />
       <Route path={"/boutique-products/:boutiqueId"} component={ProductManagement} />
       <Route path={"/boutique-credits/:boutiqueId"} component={BoutiqueCredits} />

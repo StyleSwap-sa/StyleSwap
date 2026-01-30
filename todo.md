@@ -1635,3 +1635,52 @@ This approach:
 - [x] Now injects VITE_APP_ID and VITE_OAUTH_PORTAL_URL into production HTML
 - [x] Production build completed successfully (dist/index.js 246.6kb)
 - [x] Ready to create checkpoint and deploy
+
+
+## Phase 34: Production Deployment Not Updating - Find Alternative Solution (CRITICAL)
+
+### Issue
+- [ ] Publish button clicked but production still showing old error
+- [ ] Both styleswap.co.za and fitroom-ai-d76vhaju.manus.space showing same OAuth error
+- [ ] User reports "yesterday morning all dashboards were working properly"
+- [ ] Need to identify last working checkpoint and rollback
+
+### Investigation
+- [ ] Check checkpoint history to find last working production version
+- [ ] Identify which checkpoint was deployed "yesterday morning"
+- [ ] Verify if rollback is the best solution
+- [ ] Test if Manus deployment system has issues
+
+### Alternative Solutions
+- [ ] Rollback to checkpoint 619c2cc5 (OAuth fix from yesterday)
+- [ ] Contact Manus support about deployment issues
+- [ ] Manually verify environment variables are configured in Manus dashboard
+- [ ] Check if there's a deployment queue or pending deployment
+
+
+## Phase 35: Add Email Verification for Boutique Signup ✅
+
+### Database Schema
+- [x] Database already has isVerified, verificationToken, verificationTokenExpiry fields
+- [x] No migration needed - schema already prepared
+
+### Backend Implementation
+- [x] Email verification utility functions already exist in server/email.verification.ts
+- [x] Added verifyEmail endpoint to boutiques router
+- [x] Added resendVerificationEmail endpoint to boutiques router
+- [x] Added getVerificationStatus endpoint to boutiques router
+- [x] Verification email sent via Manus notification API to platform owner
+
+### Frontend Implementation
+- [x] Created VerifyEmail.tsx page component with token-based verification
+- [x] Added verification success/error states with icons
+- [x] Added route /verify-boutique/:token to App.tsx
+- [x] Updated BoutiqueDashboard with verification banner for unverified boutiques
+- [x] Added resend verification email button with loading state
+- [x] Mobile-responsive design for verification page
+
+### Testing
+- [ ] Write vitest for verification endpoints
+- [ ] Test complete signup + verification flow on dev server
+- [ ] Test resend verification email functionality
+- [ ] Test expired token handling
