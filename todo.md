@@ -1620,3 +1620,18 @@ This approach:
 - [x] Build completed successfully (dist/index.js 246.1kb)
 - [x] Ready to create checkpoint and deploy to production
 - [x] TypeScript warnings do not block production build (Vite is more lenient)
+
+
+## Phase 33: Fix Production Deployment - OAuth Environment Variables Missing (URGENT) ✅
+
+### Issue
+- [x] Production site showing "OAuth configuration missing: VITE_APP_ID"
+- [x] Environment variables not being injected into production build
+- [x] Identified root cause: serveStatic function only served static HTML without env injection
+
+### Solution Implemented
+- [x] Updated server/_core/vite.ts serveStatic function
+- [x] Added environment variable injection for production mode
+- [x] Now injects VITE_APP_ID and VITE_OAUTH_PORTAL_URL into production HTML
+- [x] Production build completed successfully (dist/index.js 246.6kb)
+- [x] Ready to create checkpoint and deploy
