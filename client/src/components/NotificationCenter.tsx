@@ -10,7 +10,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Bell, Trash2, Check, CheckCheck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
+// Simple time formatting helper
+const formatTimeAgo = (date: string) => {
+  const now = new Date();
+  const then = new Date(date);
+  const seconds = Math.floor((now.getTime() - then.getTime()) / 1000);
+  
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  return `${Math.floor(seconds / 86400)}d ago`;
+};
 
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
@@ -226,9 +236,7 @@ export default function NotificationCenter() {
                       {notification.message}
                     </p>
                     <p className="text-xs text-muted-foreground mt-2">
-                      {formatDistanceToNow(new Date(notification.createdAt), {
-                        addSuffix: true,
-                      })}
+                      {formatTimeAgo(notification.createdAt)}
                     </p>
                   </div>
 
