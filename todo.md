@@ -1684,3 +1684,72 @@ This approach:
 - [ ] Test complete signup + verification flow on dev server
 - [ ] Test resend verification email functionality
 - [ ] Test expired token handling
+
+
+## Phase 36: Add Custom In-App Notification System
+
+### Database Schema
+- [ ] Check if notifications table exists in schema
+- [ ] Add notifications table if missing (id, userId, type, title, message, read, createdAt)
+- [ ] Add notification types enum (try_on, boutique_signup, credit_low, product_added, etc)
+- [ ] Run database migration
+
+### Backend Implementation
+- [ ] Create notification service functions (create, read, mark as read, delete)
+- [ ] Add tRPC endpoints for notifications:
+  * getNotifications - Get user's notifications (paginated)
+  * markAsRead - Mark single notification as read
+  * markAllAsRead - Mark all notifications as read
+  * deleteNotification - Delete a notification
+  * getUnreadCount - Get count of unread notifications
+- [ ] Add notification creation triggers for key events:
+  * When boutique signs up
+  * When customer tries on product
+  * When credits are low
+  * When product is added to boutique
+  * When boutique is verified
+
+### Frontend Implementation
+- [ ] Create NotificationCenter component with bell icon
+- [ ] Add notification dropdown with list of recent notifications
+- [ ] Add "Mark as Read" functionality
+- [ ] Add "Clear All" button
+- [ ] Show unread count badge on bell icon
+- [ ] Add notification detail page/modal
+- [ ] Mobile-responsive notification UI
+- [ ] Real-time notification updates (polling or WebSocket)
+
+### Integration
+- [ ] Add NotificationCenter to DashboardLayout header
+- [ ] Add NotificationCenter to customer dashboard header
+- [ ] Add NotificationCenter to admin dashboard header
+- [ ] Add notification sound/visual indicator for new notifications
+- [ ] Add notification preferences page (opt-in/out for different types)
+
+### Testing
+- [ ] Test notification creation for each event type
+- [ ] Test mark as read functionality
+- [ ] Test unread count updates
+- [ ] Test mobile responsiveness
+- [ ] Test real-time updates
+
+
+## Phase 36 COMPLETED: Custom In-App Notification System ✅
+
+### What Was Implemented
+- Database: Created inAppNotifications table with 8 notification types
+- Backend: Full notification service with create, read, mark as read, delete operations
+- Frontend: NotificationCenter component with bell icon, dropdown, and real-time updates
+- Integration: Added to DashboardLayout header for both desktop and mobile views
+- Production Build: Successful (257.1kb), no compilation errors
+
+### Features
+- Bell icon with unread count badge
+- Notification dropdown with recent notifications
+- Color-coded notifications by type
+- Mark as read / Mark all as read functionality
+- Delete individual or all notifications
+- 30-second polling for real-time updates
+- Mobile-responsive design
+- Relative time display (e.g., "2 minutes ago")
+- Action URLs for navigating to related content
