@@ -3,9 +3,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles, Mail, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { toast } from "sonner";
+import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { BatchUploadComponent } from "@/components/BatchUploadComponent";
 
@@ -23,26 +21,6 @@ export default function BoutiqueDashboard() {
       { boutiqueId: selectedBoutique || 0 },
       { enabled: !!selectedBoutique }
     );
-
-  // Fetch verification status
-  const { data: verificationStatus } =
-    trpc.boutiques.getVerificationStatus.useQuery(
-      { boutiqueId: selectedBoutique || 0 },
-      { enabled: !!selectedBoutique }
-    );
-
-  const resendVerificationMutation = trpc.boutiques.resendVerificationEmail.useMutation({
-    onSuccess: () => {
-      toast.success("Verification Email Sent", {
-        description: "Please check your email for the verification link.",
-      });
-    },
-    onError: (error) => {
-      toast.error("Error", {
-        description: error.message,
-      });
-    },
-  });
 
   // Set first boutique as default
   useEffect(() => {
@@ -105,43 +83,6 @@ export default function BoutiqueDashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {/* Email Verification Banner */}
-        {verificationStatus && !verificationStatus.isVerified && (
-          <Alert className="border-orange-500 bg-orange-50 dark:bg-orange-950">
-            <AlertCircle className="h-5 w-5 text-orange-600" />
-            <AlertTitle className="text-orange-800 dark:text-orange-200 font-bold">
-              Email Verification Required
-            </AlertTitle>
-            <AlertDescription className="text-orange-700 dark:text-orange-300 space-y-3">
-              <p>
-                Your boutique <strong>{verificationStatus.boutiqueName}</strong> needs email verification before you can use all features.
-              </p>
-              <p className="text-sm">
-                We've sent a verification link to your email. Please check your inbox (and spam folder) and click the link to verify your boutique.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => resendVerificationMutation.mutate({ boutiqueId: selectedBoutique! })}
-                disabled={resendVerificationMutation.isPending}
-                className="mt-2"
-              >
-                {resendVerificationMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Mail className="w-4 h-4 mr-2" />
-                    Resend Verification Email
-                  </>
-                )}
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>

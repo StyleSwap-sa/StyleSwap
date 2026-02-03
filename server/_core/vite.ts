@@ -73,25 +73,6 @@ export function serveStatic(app: Express) {
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
-    const indexPath = path.resolve(distPath, "index.html");
-    
-    // Read the HTML file and inject environment variables
-    fs.readFile(indexPath, "utf-8", (err, html) => {
-      if (err) {
-        console.error("Error reading index.html:", err);
-        return res.status(500).send("Internal Server Error");
-      }
-      
-      // Inject environment variables as global window variables
-      const envScript = `
-        <script>
-          window.__VITE_OAUTH_PORTAL_URL = "${ENV.oAuthPortalUrl || "https://manus.im"}";
-          window.__VITE_APP_ID = "${ENV.appId || ""}";
-        </script>
-      `;
-      
-      const modifiedHtml = html.replace("<body>", `<body>${envScript}`);
-      res.status(200).set({ "Content-Type": "text/html" }).end(modifiedHtml);
-    });
+    res.sendFile(path.resolve(distPath, "index.html"));
   });
 }

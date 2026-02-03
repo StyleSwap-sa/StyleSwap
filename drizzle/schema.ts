@@ -420,25 +420,3 @@ export const analyticsSnapshots = mysqlTable("analyticsSnapshots", {
 	index("idx_analytics_snapshots_date").on(table.date),
 	index("idx_analytics_snapshots_created").on(table.createdAt),
 ]);
-
-
-// In-App Notifications (for notification bell/center)
-export const inAppNotifications = mysqlTable("inAppNotifications", {
-	id: int().autoincrement().notNull(),
-	userId: int().notNull().references(() => users.id),
-	type: mysqlEnum(['boutique_signup', 'try_on_complete', 'credits_low', 'product_added', 'boutique_verified', 'payment_received', 'customer_inquiry', 'system']).notNull(),
-	title: varchar({ length: 255 }).notNull(),
-	message: text().notNull(),
-	relatedEntityType: varchar({ length: 100 }),
-	relatedEntityId: int(),
-	read: int().default(0).notNull(),
-	readAt: timestamp({ mode: 'string' }),
-	actionUrl: varchar({ length: 500 }),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
-},
-(table) => [
-	index("idx_in_app_notifications_user").on(table.userId),
-	index("idx_in_app_notifications_read").on(table.read),
-	index("idx_in_app_notifications_created").on(table.createdAt),
-	index("idx_in_app_notifications_type").on(table.type),
-]);

@@ -65,8 +65,8 @@ export default function BoutiqueSettings() {
   if (!currentBoutique) {
     return (
       <DashboardLayout>
-        <div className="space-y-4 sm:space-y-8 px-4 sm:px-0">
-          <div className="flex items-center gap-2 sm:gap-4">
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
@@ -78,10 +78,10 @@ export default function BoutiqueSettings() {
             </Button>
           </div>
           <Card className="premium-card border-destructive/50">
-            <CardContent className="pt-4 sm:pt-6">
-              <div className="flex items-center gap-2 sm:gap-3 text-destructive">
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                <p className="text-sm sm:text-base">Boutique not found</p>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 text-destructive">
+                <AlertCircle className="w-5 h-5" />
+                <p>Boutique not found</p>
               </div>
             </CardContent>
           </Card>
@@ -92,9 +92,9 @@ export default function BoutiqueSettings() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-4 sm:space-y-6 md:space-y-8 px-4 sm:px-0">
-        {/* Header - Fully Responsive */}
-        <div className="flex flex-col gap-3 sm:gap-4">
+      <div className="space-y-6 md:space-y-8 px-4 md:px-0">
+        {/* Header - Responsive */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <Button
             variant="ghost"
             size="sm"
@@ -104,85 +104,87 @@ export default function BoutiqueSettings() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">Boutique Settings</h1>
-            <p className="text-xs sm:text-sm md:text-base text-muted-foreground mt-2">
+            <p className="text-sm md:text-base text-muted-foreground mt-1 md:mt-2">
               Configure your boutique information and preferences
             </p>
           </div>
         </div>
 
-        {/* Settings Form - Fully Responsive */}
+        {/* Settings Form - Responsive */}
         <Card className="premium-card">
-          <CardHeader className="pb-3 sm:pb-4 md:pb-6">
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
-              <Settings className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-              <span>Basic Information</span>
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+              <Settings className="w-4 md:w-5 h-4 md:h-5" />
+              Basic Information
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 sm:space-y-4 md:space-y-6">
+          <CardContent className="space-y-4 md:space-y-6">
             {/* Boutique Name */}
             <div>
-              <label className="block text-xs sm:text-sm font-medium mb-2">Boutique Name</label>
+              <label className="block text-xs md:text-sm font-medium mb-2">Boutique Name</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="Enter boutique name"
-                className="w-full px-3 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                className="w-full px-3 py-2 md:py-3 text-sm md:text-base border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-xs sm:text-sm font-medium mb-2">Description</label>
+              <label className="block text-xs md:text-sm font-medium mb-2">Description</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
                 placeholder="Describe your boutique"
                 rows={4}
-                className="w-full px-3 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none transition-colors"
+                className="w-full px-3 py-2 md:py-3 text-sm md:text-base border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
               />
             </div>
 
             {/* Website URL */}
             <div>
-              <label className="block text-xs sm:text-sm font-medium mb-2">Website URL (Optional)</label>
+              <label className="block text-xs md:text-sm font-medium mb-2">Website URL (Optional)</label>
               <input
                 type="url"
                 name="websiteUrl"
                 value={formData.websiteUrl}
                 onChange={handleInputChange}
                 placeholder="https://example.com"
-                className="w-full px-3 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                className="w-full px-3 py-2 md:py-3 text-sm md:text-base border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
 
-            {/* Save Button - Mobile Optimized */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2 sm:pt-4 md:pt-6">
+            {/* Save Button - Mobile Friendly */}
+            <div className="flex flex-col xs:flex-row gap-2 pt-4 md:pt-6">
               <Button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:flex-1 h-10 sm:h-10 md:h-11 text-sm sm:text-base font-medium transition-all"
+                className="cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 w-full xs:flex-1 h-11 md:h-10 text-sm md:text-base"
               >
                 {isSaving ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin flex-shrink-0" />
-                    <span>Saving...</span>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <span className="hidden xs:inline">Saving...</span>
+                    <span className="xs:hidden">Save</span>
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span>Save Changes</span>
+                    <Save className="w-4 h-4 mr-2" />
+                    <span className="hidden xs:inline">Save Changes</span>
+                    <span className="xs:hidden">Save</span>
                   </>
                 )}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setLocation("/boutique-dashboard")}
-                className="cursor-pointer w-full sm:flex-1 h-10 sm:h-10 md:h-11 text-sm sm:text-base font-medium transition-all"
+                className="cursor-pointer w-full xs:flex-1 h-11 md:h-10 text-sm md:text-base"
               >
                 Cancel
               </Button>
@@ -192,12 +194,12 @@ export default function BoutiqueSettings() {
 
         {/* Additional Settings - Responsive */}
         <Card className="premium-card">
-          <CardHeader className="pb-3 sm:pb-4 md:pb-6">
-            <CardTitle className="text-base sm:text-lg md:text-xl">Advanced Settings</CardTitle>
+          <CardHeader className="pb-3 md:pb-6">
+            <CardTitle className="text-lg md:text-xl">Advanced Settings</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 sm:space-y-4">
-            <div className="p-3 sm:p-4 md:p-5 bg-muted/50 rounded-lg">
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+          <CardContent className="space-y-4">
+            <div className="p-3 md:p-4 bg-muted/50 rounded-lg">
+              <p className="text-xs md:text-sm text-muted-foreground">
                 Additional settings like payment methods, API integrations, and advanced features will be available here soon.
               </p>
             </div>
