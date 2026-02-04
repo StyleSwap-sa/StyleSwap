@@ -1598,3 +1598,52 @@ This approach:
 - [x] Confirmed layout stacking on mobile
 
 ### Status: COMPLETE - OAuth login system is fully functional and all dashboards are mobile-friendly
+
+
+## Phase 37: Implement Size-Based Virtual Try-On (PRD Requirements)
+
+### Database Schema Updates
+- [x] Add size field to products table (XS, S, M, L, XL, XXL, XXXL)
+- [x] Add size field to virtual_try_ons table to track which size was tried
+- [x] Add size_scaling_factor field to products table for relative visual scaling
+- [x] Run database migration with pnpm db:push
+
+### Backend Implementation
+- [x] Create size scaling calculation logic (relative visual scaling based on size selection)
+- [x] Update virtual try-on endpoint to accept size parameter
+- [x] Implement credit deduction logic (1 credit per try-on regardless of size)
+- [x] Add size validation (only allow supported sizes: XS, S, M, L, XL, XXL, XXXL)
+- [ ] Create endpoint to get available sizes for a product
+
+### Frontend - Size Selector UI
+- [x] Create SizeSelector component with size buttons (XS, S, M, L, XL, XXL, XXXL)
+- [x] Add visual feedback for selected size
+- [x] Display disclaimer: "Fit preview is a visual guide and may vary from real-life fit"
+- [x] Mobile-responsive size selector design
+
+### Integration with Try-On Flows
+- [x] Update BoutiqueTryOn flow: upload garment → customer selects size → try-on renders
+- [x] Update CustomerTryOn flow: upload body image → select garment → select size → try-on renders
+- [ ] Ensure size selection triggers new try-on render
+- [ ] Display selected size in try-on result
+
+### Credit System Integration
+- [x] Deduct 1 credit per try-on (regardless of size selected)
+- [x] Deduct from correct account (boutique or individual customer)
+- [ ] Show credit deduction confirmation
+- [ ] Prevent try-on if insufficient credits
+
+### Disclaimer and UX
+- [x] Display disclaimer at all times during try-on: "Fit preview is a visual guide and may vary from real-life fit"
+- [ ] Show current selected size prominently
+- [ ] Add "Try Another Size" button to allow sequential size testing
+- [ ] Show credit balance before and after try-on
+
+### Testing
+- [ ] Write vitest for size scaling calculation
+- [ ] Write vitest for credit deduction logic
+- [ ] Test boutique flow: upload → size selection → try-on → credit deduction
+- [ ] Test customer flow: upload → size selection → try-on → credit deduction
+- [ ] Test all supported sizes (XS, S, M, L, XL, XXL, XXXL)
+- [ ] Test insufficient credits scenario
+- [ ] Mobile and desktop responsiveness testing

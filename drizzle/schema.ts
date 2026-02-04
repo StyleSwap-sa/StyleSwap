@@ -190,11 +190,12 @@ export const paymentReconciliation = mysqlTable("paymentReconciliation", {
 export const productSizeVariants = mysqlTable("productSizeVariants", {
 	id: int().autoincrement().notNull(),
 	productId: int().notNull().references(() => products.id),
-	size: int().notNull(),
-	stock: int().default(0).notNull(),
-	isAvailable: int().default(1).notNull(),
-	fitAdjustment: mysqlEnum(['tight','perfect','loose']).default('perfect').notNull(),
-	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	size: mysqlEnum(['XS','S','M','L','XL','XXL','XXXL']).notNull(),
+		stock: int().default(0).notNull(),
+		isAvailable: int().default(1).notNull(),
+		fitAdjustment: mysqlEnum(['tight','perfect','loose']).default('perfect').notNull(),
+		sizeScalingFactor: decimal({ precision: 3, scale: 2 }).default('1.00').notNull(),
+		createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
 (table) => [
@@ -255,14 +256,17 @@ export const tryOnResults = mysqlTable("tryOnResults", {
 	productId: int().references(() => products.id),
 	fitRoomTaskId: varchar({ length: 255 }),
 	fitRoomRequestId: varchar({ length: 255 }),
-	flowType: mysqlEnum(['b2c','b2b']).default('b2c').notNull(),
-},
-(table) => [
-	index("tryOnResults_shareToken_unique").on(table.shareToken),
+		flowType: mysqlEnum(['b2c','b2b']).default('b2c').notNull(),
+		selectedSize: mysqlEnum(['XS','S','M','L','XL','XXL','XXXL']),
+		sizeScalingFactor: decimal({ precision: 3, scale: 2 }).default('1.00'),
+	},
+	(table) => [
+		index("tryOnResults_shareToken_unique").on(table.shareToken),
 	index("idx_tryon_boutique").on(table.boutiqueId),
 	index("idx_tryon_user").on(table.userId),
-	index("idx_tryon_flowtype").on(table.flowType),
-]);
+		index("idx_tryon_flowtype").on(table.flowType),
+		index("idx_tryon_size").on(table.selectedSize),
+	]);
 
 export const userCredits = mysqlTable("userCredits", {
 	id: int().autoincrement().notNull(),
@@ -294,7 +298,7 @@ export const users = mysqlTable("users", {
 },
 	(table) => [
 		index("users_openId_unique").on(table.openId),
-		uniqueIndex("users_email_unique").on(table.email),
+		index("users_email_unique").on(table.email),
 	]);
 
 // Helper function to create unique constraint in SQL

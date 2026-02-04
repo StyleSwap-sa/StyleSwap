@@ -5,6 +5,7 @@ import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles }
 import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { SizeSelector } from "@/components/SizeSelector";
 
 interface TryOnResult {
   taskId: string;
@@ -23,6 +24,7 @@ export function VirtualTryOnUpload() {
   const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string>("M");
   
   // State for processing
   const [isLoading, setIsLoading] = useState(false);
@@ -79,6 +81,9 @@ export function VirtualTryOnUpload() {
     setError("");
     setWarning("");
     setProcessingProgress(0);
+    
+    // Log selected size
+    console.log(`[VirtualTryOn] Selected size: ${selectedSize}`);
 
     try {
       // Auto-resize images if they exceed Fitroom limits
@@ -619,6 +624,14 @@ export function VirtualTryOnUpload() {
               </CardContent>
             </Card>
           )}
+
+          {/* Size Selector */}
+          <SizeSelector
+            selectedSize={selectedSize}
+            onSizeChange={setSelectedSize}
+            disabled={isLoading || isPolling}
+            showDisclaimer={true}
+          />
 
           {/* Submit Button */}
           <Button 
