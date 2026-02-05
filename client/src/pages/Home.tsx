@@ -76,7 +76,7 @@ export default function Home() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/20">
         <div className="container mx-auto py-4 flex justify-between items-center px-4 md:px-0">
           <div className="flex items-center gap-3">
-            <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663284718291/fGbYOqZWvWicoCAf.png" alt="StyleSwap" className="h-12" width="auto" height="48" />
+            <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663284718291/DQmoWNDaKyJFMQnw.png" alt="StyleSwap" className="h-12" width="auto" height="48" />
           </div>
 
           {/* Desktop Navigation */}
