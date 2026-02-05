@@ -22,10 +22,7 @@ export default function Navigation() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/20">
       <div className="container mx-auto py-4 flex justify-between items-center">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setLocation('/')}>
-          <img src="/images/styleswap-icon.png" alt="StyleSwap" className="w-10 h-10" width="40" height="40" />
-          <div className="font-heading font-bold text-2xl tracking-tight">
-            Style<span className="text-primary">Swap</span>
-          </div>
+          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663284718291/fGbYOqZWvWicoCAf.png" alt="StyleSwap" className="h-12" width="auto" height="48" />
         </div>
         <div className="hidden md:flex gap-8 font-medium text-sm">
           {navigationItems.map((item) => (
