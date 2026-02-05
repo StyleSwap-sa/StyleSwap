@@ -72,13 +72,24 @@ export function SizeSelector({
           </div>
         )}
 
-        {/* Disclaimer */}
+        {/* Disclaimers */}
         {showDisclaimer && (
-          <div className="flex gap-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
-            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-900 dark:text-amber-100">
-              <strong>Fit preview is a visual guide</strong> and may vary from real-life fit. Actual fit depends on fabric, cut, and personal body shape.
-            </p>
+          <div className="space-y-3">
+            {/* Fit Accuracy Disclaimer */}
+            <div className="flex gap-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-900 dark:text-amber-100">
+                <strong>Fit preview is a visual guide</strong> and may vary from real-life fit. Actual fit depends on fabric, cut, and personal body shape.
+              </p>
+            </div>
+
+            {/* AI Disorientation Disclaimer */}
+            <div className="flex gap-3 p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800">
+              <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-orange-900 dark:text-orange-100">
+                <strong>AI-generated preview:</strong> The virtual try-on is created by artificial intelligence and may appear disoriented, distorted, or unrealistic in some cases. This is a limitation of current AI technology and does not reflect the actual product quality.
+              </p>
+            </div>
           </div>
         )}
       </CardContent>

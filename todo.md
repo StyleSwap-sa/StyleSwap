@@ -1647,3 +1647,20 @@ This approach:
 - [ ] Test all supported sizes (XS, S, M, L, XL, XXL, XXXL)
 - [ ] Test insufficient credits scenario
 - [ ] Mobile and desktop responsiveness testing
+
+
+## Phase 38: AI Disorientation Disclaimer
+
+### Disclaimer Implementation
+- [x] Add AI disorientation warning to SizeSelector component
+- [x] Display warning alongside fit accuracy disclaimer
+- [x] Use orange color scheme to distinguish from fit accuracy warning
+- [x] Include clear explanation: "may appear disoriented, distorted, or unrealistic" due to AI limitations
+- [x] Explain this is a limitation of current AI technology, not product quality
+- [x] Display both disclaimers prominently in size selector
+
+### Testing
+- [ ] Test disclaimer visibility in size selector
+- [ ] Test on mobile and desktop devices
+- [ ] Verify text is readable and clear
+- [ ] Verify both disclaimers display correctly together
