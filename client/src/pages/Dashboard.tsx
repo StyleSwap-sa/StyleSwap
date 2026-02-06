@@ -8,6 +8,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { MobileNavMenu } from "@/components/MobileNavMenu";
 import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
 import { LowCreditAlert } from "@/components/LowCreditAlert";
+import { Footer } from "@/components/Footer";
 
 
 type DashboardTab = "overview" | "history";
@@ -296,6 +297,9 @@ export default function Dashboard() {
           setIsCreditModalOpen(false);
         }}
       />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

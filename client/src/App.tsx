@@ -37,6 +37,8 @@ import SocialSellerDashboard from "./pages/SocialSellerDashboard";
 import ARTryOn from "./pages/ARTryOn";
 import TryOnPage from "./pages/TryOnPage";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -77,6 +79,8 @@ function Router() {
       <Route path={"/ar-tryon"} component={ARTryOn} />
       <Route path={"/try-on"} component={TryOnPage} />
       <Route path={"/terms-and-conditions"} component={TermsAndConditions} />
+      <Route path={"/privacy-policy"} component={PrivacyPolicy} />
+      <Route path={"/refund-policy"} component={RefundPolicy} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

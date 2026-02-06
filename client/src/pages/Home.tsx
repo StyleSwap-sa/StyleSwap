@@ -5,6 +5,7 @@ import { ArrowRight, LogOut, Menu, X } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useState } from "react";
 import { LoginOptionsModal } from "@/components/LoginOptionsModal";
+import { Footer } from "@/components/Footer";
 
 export default function Home() {
   const { user, isAuthenticated, logout, loading } = useAuth();
@@ -301,6 +302,9 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

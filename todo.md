@@ -1951,3 +1951,16 @@ This approach:
 - [x] Leverage existing billing system (CREDIT_TIERS, initiatePurchase procedure)
 - [x] No changes to existing features or workflows
 - [x] Customers and boutiques can buy credits instantly without monthly limits
+
+
+## Phase 52: Add Footer Links to Legal Pages (COMPLETED)
+- [x] Create Footer component with links to Terms and Conditions, Privacy Policy, Contact
+- [x] Create Terms and Conditions page
+- [x] Create Privacy Policy page
+- [x] Create Refund Policy page
+- [x] Add routes for all legal pages to App.tsx
+- [x] Add Footer to Home page
+- [x] Add Footer to Dashboard
+- [x] Add Footer to BoutiqueDashboard
+- [x] All footer links are active and clickable
+- [x] Terms and Conditions, Privacy Policy, and Refund Policy pages are fully functional

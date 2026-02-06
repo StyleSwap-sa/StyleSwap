@@ -7,6 +7,7 @@ import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instag
 import { Link } from "wouter";
 import { BatchUploadComponent } from "@/components/BatchUploadComponent";
 import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
+import { Footer } from "@/components/Footer";
 
 export default function BoutiqueDashboard() {
   const [selectedBoutique, setSelectedBoutique] = useState<number | null>(null);
@@ -393,6 +394,9 @@ export default function BoutiqueDashboard() {
           }}
         />
       )}
+
+      {/* Footer */}
+      <Footer />
     </DashboardLayout>
   );
 }
