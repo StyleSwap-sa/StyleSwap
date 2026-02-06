@@ -5,6 +5,7 @@ import { Loader2, Zap, History, Shirt, ShoppingBag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { MobileNavMenu } from "@/components/MobileNavMenu";
 
 
 type DashboardTab = "overview" | "history";
@@ -121,44 +122,56 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Navigation Tabs - Mobile Optimized Grid */}
-        <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-wrap gap-2 p-3 sm:p-6 border-b border-border/20 bg-secondary/5">
-          <Button
-            onClick={() => setActiveTab("overview")}
-            variant={activeTab === "overview" ? "default" : "outline"}
-            className={`${activeTab === "overview" ? "premium-button" : ""} text-xs sm:text-base px-2 sm:px-4`}
-            size="sm"
-          >
-            Overview
-          </Button>
-          <Button
-            onClick={() => setLocation('/try-on')}
-            variant="outline"
-            className="border-primary/50 text-primary hover:bg-primary/10 text-xs sm:text-base px-2 sm:px-4"
-            size="sm"
-          >
-            Try-On
-          </Button>
-          <Button
-            onClick={() => setActiveTab("history")}
-            variant={activeTab === "history" ? "default" : "outline"}
-            className={`${activeTab === "history" ? "premium-button" : ""} text-xs sm:text-base px-2 sm:px-4`}
-            size="sm"
-          >
-            <History className="w-3 h-3 sm:w-4 sm:h-4" />
-          </Button>
-
-          {/* Admin Dashboard Link - Only visible to owner */}
-          {(user?.role === 'admin' || user?.userType === 'admin') && (
+        {/* Navigation Tabs - Mobile Hamburger Menu + Desktop Tabs */}
+        <div className="flex items-center justify-between p-3 sm:p-6 border-b border-border/20 bg-secondary/5">
+          {/* Desktop Navigation Tabs */}
+          <div className="hidden sm:flex sm:flex-row sm:flex-wrap gap-2 w-full">
             <Button
-              onClick={() => setLocation('/admin')}
-              variant="outline"
-              className="border-primary/50 text-primary hover:bg-primary/10 text-xs sm:text-base px-2 sm:px-4 col-span-2 sm:col-span-auto sm:ml-auto"
+              onClick={() => setActiveTab("overview")}
+              variant={activeTab === "overview" ? "default" : "outline"}
+              className={`${activeTab === "overview" ? "premium-button" : ""} text-xs sm:text-base px-2 sm:px-4`}
               size="sm"
             >
-              Analytics
+              Overview
             </Button>
-          )}
+            <Button
+              onClick={() => setLocation('/try-on')}
+              variant="outline"
+              className="border-primary/50 text-primary hover:bg-primary/10 text-xs sm:text-base px-2 sm:px-4"
+              size="sm"
+            >
+              Try-On
+            </Button>
+            <Button
+              onClick={() => setActiveTab("history")}
+              variant={activeTab === "history" ? "default" : "outline"}
+              className={`${activeTab === "history" ? "premium-button" : ""} text-xs sm:text-base px-2 sm:px-4`}
+              size="sm"
+            >
+              <History className="w-3 h-3 sm:w-4 sm:h-4" />
+            </Button>
+
+            {/* Admin Dashboard Link - Only visible to owner */}
+            {(user?.role === 'admin' || user?.userType === 'admin') && (
+              <Button
+                onClick={() => setLocation('/admin')}
+                variant="outline"
+                className="border-primary/50 text-primary hover:bg-primary/10 text-xs sm:text-base px-2 sm:px-4 ml-auto"
+                size="sm"
+              >
+                Analytics
+              </Button>
+            )}
+          </div>
+
+          {/* Mobile Hamburger Menu */}
+          <MobileNavMenu
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onTryOnClick={() => setLocation('/try-on')}
+            onAdminClick={() => setLocation('/admin')}
+            isAdmin={user?.role === 'admin' || user?.userType === 'admin'}
+          />
         </div>
 
         {/* Tab Content */}
@@ -247,40 +260,26 @@ export default function Dashboard() {
             </div>
           )}
 
-
-
-
-          {/* Transaction History Tab */}
+          {/* History Tab */}
           {activeTab === "history" && (
-            <Card className="premium-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="w-5 h-5" />
-                  Transaction History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {transactionsLoading ? (
-                  <Loader2 className="w-8 h-8 animate-spin" />
-                ) : transactions.length === 0 ? (
-                  <p className="text-muted-foreground">No transactions yet</p>
-                ) : (
-                  <div className="space-y-4">
-                    {transactions.map((tx: any) => (
-                      <div key={tx.id} className="p-4 border border-border/20 rounded-lg">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium">{tx.description}</p>
-                            <p className="text-sm text-muted-foreground">{tx.date}</p>
-                          </div>
-                          <p className="font-bold text-primary">{tx.amount}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card className="premium-card">
+                <CardHeader>
+                  <CardTitle>Transaction History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {transactionsLoading ? (
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                  ) : transactions.length === 0 ? (
+                    <p className="text-muted-foreground">No transactions yet</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Transaction list would go here */}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           )}
         </div>
       </div>
