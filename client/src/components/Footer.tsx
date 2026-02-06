@@ -113,19 +113,13 @@ export function Footer() {
               <h4 className="font-bold text-sm uppercase tracking-wider mb-4">Get in Touch</h4>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4 text-primary" />
-                <a href="mailto:support@styleswap.co.za" className="hover:text-primary transition">
-                  support@styleswap.co.za
-                </a>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Phone className="w-4 h-4 text-primary" />
-                <a href="tel:+27123456789" className="hover:text-primary transition">
-                  +27 (0) 123 456 789
+                <a href="mailto:info@styleswap.co.za" className="hover:text-primary transition">
+                  info@styleswap.co.za
                 </a>
               </div>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4 text-primary" />
-                <span>Cape Town, South Africa</span>
+                <span>Johannesburg, South Africa</span>
               </div>
             </div>
 
