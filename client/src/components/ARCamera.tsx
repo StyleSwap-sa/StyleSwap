@@ -84,7 +84,12 @@ export function ARCamera({ onPoseDetected, onError, isActive }: ARCameraProps) {
   // Start continuous pose detection
   const startPoseDetection = () => {
     const detectFrame = () => {
-      if (!isActive || !videoRef.current || !poseLandmarkerRef.current) {
+      if (!videoRef.current || !poseLandmarkerRef.current) {
+        animationFrameRef.current = requestAnimationFrame(detectFrame);
+        return;
+      }
+
+      if (!isActive) {
         animationFrameRef.current = requestAnimationFrame(detectFrame);
         return;
       }
@@ -98,9 +103,27 @@ export function ARCamera({ onPoseDetected, onError, isActive }: ARCameraProps) {
         if (poseData) {
           onPoseDetected?.(poseData);
           drawPoseOnCanvas(poseData);
+        } else {
+          // No pose detected, show video feed
+          if (canvasRef.current && videoRef.current && videoRef.current.videoWidth > 0) {
+            const ctx = canvasRef.current.getContext('2d');
+            if (ctx) {
+              canvasRef.current.width = videoRef.current.videoWidth;
+              canvasRef.current.height = videoRef.current.videoHeight;
+              ctx.drawImage(videoRef.current, 0, 0);
+            }
+          }
         }
       } catch (err) {
         console.error('Pose detection error:', err);
+        if (canvasRef.current && videoRef.current && videoRef.current.videoWidth > 0) {
+          const ctx = canvasRef.current.getContext('2d');
+          if (ctx) {
+            canvasRef.current.width = videoRef.current.videoWidth;
+            canvasRef.current.height = videoRef.current.videoHeight;
+            ctx.drawImage(videoRef.current, 0, 0);
+          }
+        }
       }
 
       animationFrameRef.current = requestAnimationFrame(detectFrame);

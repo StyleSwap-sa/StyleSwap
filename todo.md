@@ -1784,3 +1784,14 @@ This approach:
 - [x] Add "Choose Try-On Mode" button to Dashboard
 - [x] Add "Classic Upload" button to Dashboard for existing workflow
 - [x] Verify no breaking changes to existing features
+
+
+## Phase 40: AR Camera Live Feed Debugging (NEW)
+- [x] Debug AR camera not capturing live video feed
+- [x] Check camera permissions handling
+- [x] Verify getUserMedia API implementation
+- [x] Fix pose detection logic (was skipping when isActive=true)
+- [x] Add video feed display when pose not detected
+- [x] Fix video stream display in ARCamera component
+- [x] Add error handling with video fallback
+- [x] Verify pose detection with live feed
