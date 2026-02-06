@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { SizeSelector } from "@/components/SizeSelector";
+import { SaveToGalleryButton } from "@/components/SaveToGalleryButton";
 
 interface TryOnResult {
   taskId: string;
@@ -364,7 +365,12 @@ export function VirtualTryOnUpload() {
               alt="Try-on result"
               className="w-full rounded-lg border border-border shadow-lg"
             />
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-col sm:flex-row">
+              <SaveToGalleryButton
+                imageUrl={result.resultImageUrl}
+                variant="default"
+                className="flex-1"
+              />
               <Button onClick={handleReset} className="flex-1">
                 <Sparkles className="w-4 h-4 mr-2" />
                 Try Another
