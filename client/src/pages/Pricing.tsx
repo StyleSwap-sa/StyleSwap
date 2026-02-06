@@ -216,10 +216,10 @@ export default function Pricing() {
             <div className="space-y-3">
               <h3 className="font-semibold flex items-center gap-2">
                 <Zap className="w-5 h-5 text-primary" />
-                Is there a refund policy?
+                What is your refund policy?
               </h3>
               <p className="text-sm text-muted-foreground">
-                Refunds are available within 7 days of purchase if you haven't used your credits. Contact support for assistance.
+                All credit purchases are final and non-refundable. Credits are issued immediately upon successful payment and cannot be returned or exchanged for cash or other services.
               </p>
             </div>
           </div>

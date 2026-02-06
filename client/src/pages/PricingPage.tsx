@@ -206,8 +206,8 @@ export default function PricingPage() {
                 a: "We accept all major credit cards, debit cards, and digital payment methods through our secure Yoko payment gateway."
               },
               {
-                q: "Is there a refund policy?",
-                a: "Refunds are available within 7 days of purchase if you haven't used your credits. Contact support for assistance."
+                q: "What is your refund policy?",
+                a: "All credit purchases are final and non-refundable. Credits are issued immediately upon successful payment and cannot be returned or exchanged for cash or other services."
               }
             ].map((item, i) => (
               <div key={i} className="premium-card p-6 rounded-lg">
