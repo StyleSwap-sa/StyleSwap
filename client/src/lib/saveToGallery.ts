@@ -162,16 +162,17 @@ export async function saveImageToGallery(
     URL.revokeObjectURL(url);
     
     // Apply watermark if requested
+    let finalCanvas = canvas;
     if (watermark) {
       const { addWatermarkToCanvas } = await import('./watermarkUtils');
-      addWatermarkToCanvas(canvas, {
+      finalCanvas = addWatermarkToCanvas(canvas, {
         position: watermark.position,
         opacity: watermark.opacity,
       });
     }
     
     // Convert to desired format
-    const outputBlob = await canvasToBlob(canvas, format, quality);
+    const outputBlob = await canvasToBlob(finalCanvas, format, quality);
     await downloadImage(outputBlob, filename);
   } catch (error) {
     throw new Error(`Failed to save image to gallery: ${error}`);

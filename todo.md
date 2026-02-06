@@ -1837,3 +1837,18 @@ This approach:
 - [x] Ensure back button works from AR mode
 - [x] Added Try-On button to Dashboard overview section
 - [x] Added Try-On tab in Dashboard navigation
+
+
+
+
+## Phase 45: Add Owner-Only AR Mode Analytics (NEW)
+- [ ] Create tRPC procedure to get AR vs Upload usage statistics (admin only)
+- [ ] Create tRPC procedure to get usage trends by date (admin only)
+- [ ] Build AR Analytics component for admin dashboard
+- [ ] Add pie chart showing AR vs Upload usage percentage
+- [ ] Add bar chart showing usage trends over time
+- [ ] Add role-based access control (admin only)
+- [ ] Hide analytics from boutique and customer dashboards
+- [ ] Add conversion metrics for each mode
+- [ ] Test analytics visibility with different user roles
+- [ ] Verify analytics only visible to owner
