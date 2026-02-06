@@ -1828,3 +1828,12 @@ This approach:
 - [x] Update button text to "Save with Watermark"
 - [x] Add visual indicator showing watermark is always applied
 - [x] Update dialog to show watermark section as mandatory
+
+
+## Phase 44: Fix AR Navigation Visibility (NEW)
+- [x] Add "Try-On" link to Dashboard navigation tabs
+- [x] Verify TryOnPage loads correctly when navigating from Dashboard
+- [x] Test AR mode selector displays properly
+- [x] Ensure back button works from AR mode
+- [x] Added Try-On button to Dashboard overview section
+- [x] Added Try-On tab in Dashboard navigation

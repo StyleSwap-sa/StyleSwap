@@ -131,6 +131,13 @@ export default function Dashboard() {
             Overview
           </Button>
           <Button
+            onClick={() => setLocation('/try-on')}
+            variant="outline"
+            className="border-primary/50 text-primary hover:bg-primary/10"
+          >
+            Try-On
+          </Button>
+          <Button
             onClick={() => setActiveTab("history")}
             variant={activeTab === "history" ? "default" : "outline"}
             className={activeTab === "history" ? "premium-button" : ""}
@@ -240,7 +247,6 @@ export default function Dashboard() {
 
 
 
-
           {/* Transaction History Tab */}
           {activeTab === "history" && (
             <Card className="premium-card">
@@ -253,56 +259,27 @@ export default function Dashboard() {
               <CardContent>
                 {transactionsLoading ? (
                   <Loader2 className="w-8 h-8 animate-spin" />
-                ) : transactions && transactions.length > 0 ? (
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {transactions.map((tx) => (
-                      <div
-                        key={tx.id}
-                        className="flex justify-between items-center p-4 bg-secondary/5 rounded-lg border border-border/20 hover:border-border/40 transition-colors"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium capitalize">{tx.type}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {tx.description}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className={`font-bold text-lg ${
-                            tx.type === "purchase" ? "text-primary" : "text-foreground/70"
-                          }`}>
-                            {tx.type === "purchase" ? "+" : "-"}{tx.amount}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(tx.createdAt).toLocaleDateString()}
-                          </p>
+                ) : transactions.length === 0 ? (
+                  <p className="text-muted-foreground">No transactions yet</p>
+                ) : (
+                  <div className="space-y-4">
+                    {transactions.map((tx: any) => (
+                      <div key={tx.id} className="p-4 border border-border/20 rounded-lg">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">{tx.description}</p>
+                            <p className="text-sm text-muted-foreground">{tx.date}</p>
+                          </div>
+                          <p className="font-bold text-primary">{tx.amount}</p>
                         </div>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <p className="text-muted-foreground text-center py-8">
-                    No transactions yet. Buy credits to get started!
-                  </p>
                 )}
               </CardContent>
             </Card>
           )}
         </div>
-
-        {/* Footer CTA */}
-        {credits && credits.remainingCredits < 5 && (
-          <div className="p-6 bg-primary/10 border-t border-primary/20 text-center">
-            <p className="text-sm text-muted-foreground mb-3">
-              You're running low on credits! Get more to continue enjoying StyleSwap.
-            </p>
-            <Button
-              onClick={() => window.location.href = '/pricing'}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Buy More Credits
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
