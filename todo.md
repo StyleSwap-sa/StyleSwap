@@ -1804,3 +1804,27 @@ This approach:
 - [x] Add canvas rendering for image format control
 - [x] Test save to gallery with proper PNG format
 - [x] Verify AR + Upload mode selector still works
+
+
+## Phase 42: Add Watermark Feature to Saved Pictures (NEW)
+- [x] Add watermark toggle option to SaveToGalleryButton dialog
+- [x] Implement watermark text rendering on canvas
+- [x] Add watermark position selector (corner options)
+- [x] Add watermark opacity/transparency control
+- [x] Create watermark utility functions (watermarkUtils.ts)
+- [x] Update SaveOptions interface with watermark config
+- [x] Integrate watermark into saveCanvasToGallery function
+- [x] Integrate watermark into saveImageToGallery function
+- [x] Add Checkbox and Slider components to SaveToGalleryButton
+- [x] Update SaveToGalleryButton UI with watermark controls
+
+
+## Phase 43: Make Watermark Compulsory (NEW)
+- [x] Remove watermark toggle checkbox from SaveToGalleryButton
+- [x] Update SaveToGalleryButton to always apply watermark
+- [x] Simplify UI to show watermark as mandatory feature
+- [x] Keep watermark position and opacity controls
+- [x] Update dialog description to indicate watermark is always applied
+- [x] Update button text to "Save with Watermark"
+- [x] Add visual indicator showing watermark is always applied
+- [x] Update dialog to show watermark section as mandatory

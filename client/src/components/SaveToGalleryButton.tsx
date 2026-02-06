@@ -19,6 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import type { WatermarkPosition } from '@/lib/watermarkUtils';
 
 export interface SaveToGalleryButtonProps {
   imageUrl?: string;
@@ -33,7 +35,7 @@ export interface SaveToGalleryButtonProps {
 
 /**
  * Button component for saving try-on results to phone gallery
- * Supports image URL, canvas, or HTML element
+ * Supports image URL, canvas, or HTML element with compulsory StyleSwap watermark
  */
 export function SaveToGalleryButton({
   imageUrl,
@@ -50,17 +52,36 @@ export function SaveToGalleryButton({
   const [isOpen, setIsOpen] = useState(false);
   const [filename, setFilename] = useState('StyleSwap-TryOn');
   const [format, setFormat] = useState<'png' | 'jpeg'>('png');
+  const [watermarkPosition, setWatermarkPosition] = useState<WatermarkPosition>('bottom-right');
+  const [watermarkOpacity, setWatermarkOpacity] = useState(0.7);
 
   const handleSave = async () => {
     try {
       const fullFilename = `${filename}.${format === 'png' ? 'png' : 'jpg'}`;
+      // Watermark is always applied
+      const watermarkOptions = {
+        position: watermarkPosition,
+        opacity: watermarkOpacity,
+      };
 
       if (imageUrl) {
-        await saveImage(imageUrl, { filename: fullFilename, format });
+        await saveImage(imageUrl, {
+          filename: fullFilename,
+          format,
+          watermark: watermarkOptions,
+        });
       } else if (canvas) {
-        await saveCanvas(canvas, { filename: fullFilename, format });
+        await saveCanvas(canvas, {
+          filename: fullFilename,
+          format,
+          watermark: watermarkOptions,
+        });
       } else if (element) {
-        await saveElement(element, { filename: fullFilename, format });
+        await saveElement(element, {
+          filename: fullFilename,
+          format,
+          watermark: watermarkOptions,
+        });
       }
 
       onSuccess?.();
@@ -140,14 +161,15 @@ export function SaveToGalleryButton({
           Save to Gallery
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Save Try-On to Gallery</DialogTitle>
           <DialogDescription>
-            Choose a filename and format for your try-on result
+            Your image will be saved with the StyleSwap watermark for branding
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {/* Filename */}
           <div className="grid gap-2">
             <Label htmlFor="filename">Filename</Label>
             <Input
@@ -161,6 +183,8 @@ export function SaveToGalleryButton({
               Extension will be added automatically
             </p>
           </div>
+
+          {/* Format */}
           <div className="grid gap-2">
             <Label htmlFor="format">Format</Label>
             <Select value={format} onValueChange={(v) => setFormat(v as 'png' | 'jpeg')}>
@@ -176,7 +200,64 @@ export function SaveToGalleryButton({
               PNG is higher quality, JPEG is smaller file size
             </p>
           </div>
+
+          {/* Watermark Section (Always Enabled) */}
+          <div className="border-t pt-4">
+            <div className="mb-4">
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <span className="inline-block w-2 h-2 bg-primary rounded-full"></span>
+                StyleSwap Watermark (Always Applied)
+              </h3>
+              <p className="text-xs text-muted-foreground mb-4">
+                Every saved image includes the StyleSwap watermark for brand recognition and social sharing.
+              </p>
+            </div>
+
+            <div className="space-y-4 pl-4 border-l-2 border-primary/30">
+              {/* Watermark Position */}
+              <div className="grid gap-2">
+                <Label htmlFor="position">Watermark Position</Label>
+                <Select
+                  value={watermarkPosition}
+                  onValueChange={(v) => setWatermarkPosition(v as WatermarkPosition)}
+                >
+                  <SelectTrigger id="position" disabled={isSaving}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="top-left">Top Left</SelectItem>
+                    <SelectItem value="top-right">Top Right</SelectItem>
+                    <SelectItem value="bottom-left">Bottom Left</SelectItem>
+                    <SelectItem value="bottom-right">Bottom Right</SelectItem>
+                    <SelectItem value="center">Center</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Watermark Opacity */}
+              <div className="grid gap-2">
+                <Label htmlFor="opacity">
+                  Watermark Opacity: {Math.round(watermarkOpacity * 100)}%
+                </Label>
+                <Slider
+                  id="opacity"
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  value={[watermarkOpacity]}
+                  onValueChange={(value) => setWatermarkOpacity(value[0])}
+                  disabled={isSaving}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Adjust visibility of the watermark on your image
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Action Buttons */}
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -195,7 +276,7 @@ export function SaveToGalleryButton({
             ) : (
               <>
                 <Download className="w-4 h-4 mr-2" />
-                Save
+                Save with Watermark
               </>
             )}
           </Button>

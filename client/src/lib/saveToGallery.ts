@@ -3,10 +3,18 @@
  * Supports both mobile and desktop platforms
  */
 
+import type { WatermarkPosition } from './watermarkUtils';
+
+export interface WatermarkConfig {
+  position: WatermarkPosition;
+  opacity: number;
+}
+
 export interface SaveOptions {
   filename?: string;
   format?: 'png' | 'jpeg';
   quality?: number; // 0-1, only for JPEG
+  watermark?: WatermarkConfig;
 }
 
 /**
@@ -88,10 +96,22 @@ export async function saveCanvasToGallery(
     filename = `StyleSwap-${new Date().getTime()}.png`,
     format = 'png',
     quality = 0.95,
+    watermark,
   } = options;
 
   try {
-    const blob = await canvasToBlob(canvas, format, quality);
+    let finalCanvas = canvas;
+
+    // Apply watermark if requested
+    if (watermark) {
+      const { addWatermarkToCanvas } = await import('./watermarkUtils');
+      finalCanvas = addWatermarkToCanvas(canvas, {
+        position: watermark.position,
+        opacity: watermark.opacity,
+      });
+    }
+
+    const blob = await canvasToBlob(finalCanvas, format, quality);
     await downloadImage(blob, filename);
   } catch (error) {
     throw new Error(`Failed to save canvas to gallery: ${error}`);
@@ -109,6 +129,7 @@ export async function saveImageToGallery(
     filename = `StyleSwap-${new Date().getTime()}.png`,
     format = 'png',
     quality = 0.95,
+    watermark,
   } = options;
 
   try {
@@ -139,6 +160,15 @@ export async function saveImageToGallery(
     
     // Clean up
     URL.revokeObjectURL(url);
+    
+    // Apply watermark if requested
+    if (watermark) {
+      const { addWatermarkToCanvas } = await import('./watermarkUtils');
+      addWatermarkToCanvas(canvas, {
+        position: watermark.position,
+        opacity: watermark.opacity,
+      });
+    }
     
     // Convert to desired format
     const outputBlob = await canvasToBlob(canvas, format, quality);
