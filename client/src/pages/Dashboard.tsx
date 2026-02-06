@@ -193,16 +193,22 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <Button
-                      onClick={() => setActiveTab("try-on")}
+                      onClick={() => setLocation('/try-on')}
                       className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
                     >
-                      Start Try-On
+                      Choose Try-On Mode
+                    </Button>
+                    <Button
+                      onClick={() => setActiveTab("try-on")}
+                      className="premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                    >
+                      Classic Upload
                     </Button>
                   <Button
                     onClick={() => window.location.href = '/pricing'}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="bg-foreground/10 text-foreground hover:bg-foreground/20"
                   >
                     Buy More Credits
                   </Button>

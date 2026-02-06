@@ -34,6 +34,8 @@ import TestBoutiquePage from "./pages/TestBoutiquePage";
 import AdminLogin from "./pages/AdminLogin";
 import BoutiqueShop from "./pages/BoutiqueShop";
 import SocialSellerDashboard from "./pages/SocialSellerDashboard";
+import ARTryOn from "./pages/ARTryOn";
+import TryOnPage from "./pages/TryOnPage";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -70,7 +72,9 @@ function Router() {
       <Route path={"/admin-login"} component={AdminLogin} />
       <Route path={"/admin-dashboard"} component={AdminDashboard} />
       <Route path={"/admin"} component={AdminDashboard} />
-      <Route path={"/admin/performance-export"} component={BoutiquePerformanceExport} />
+      <Route path={"admin/performance-export"} component={BoutiquePerformanceExport} />
+      <Route path={"/ar-tryon"} component={ARTryOn} />
+      <Route path={"/try-on"} component={TryOnPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

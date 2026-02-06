@@ -1770,3 +1770,17 @@ This approach:
 - [ ] Test with different image sizes
 - [ ] Create user documentation
 - [ ] Add feature to help/FAQ section
+
+
+## Phase 39: Unified Try-On Mode Selector (NEW)
+- [x] Create TryOnModeSelector component with AR and Upload options
+- [x] Add AR Try-On option with camera icon and description
+- [x] Add Upload Try-On option with upload icon and description
+- [x] Create unified try-on page that displays mode selector
+- [x] Integrate ARTryOn component for AR mode
+- [x] Integrate VirtualTryOnUpload component for Upload mode
+- [x] Add /try-on route to App.tsx
+- [x] Preserve all existing upload workflow and features
+- [x] Add "Choose Try-On Mode" button to Dashboard
+- [x] Add "Classic Upload" button to Dashboard for existing workflow
+- [x] Verify no breaking changes to existing features
