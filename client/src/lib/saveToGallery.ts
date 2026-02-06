@@ -99,7 +99,7 @@ export async function saveCanvasToGallery(
 }
 
 /**
- * Save image URL to gallery
+ * Save image URL to gallery with proper format conversion
  */
 export async function saveImageToGallery(
   imageUrl: string,
@@ -107,11 +107,42 @@ export async function saveImageToGallery(
 ): Promise<void> {
   const {
     filename = `StyleSwap-${new Date().getTime()}.png`,
+    format = 'png',
+    quality = 0.95,
   } = options;
 
   try {
-    const blob = await imageUrlToBlob(imageUrl);
-    await downloadImage(blob, filename);
+    // Fetch the image
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+    
+    const blob = await response.blob();
+    const img = new Image();
+    const url = URL.createObjectURL(blob);
+    
+    // Wait for image to load
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = url;
+    });
+    
+    // Create canvas and draw image
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Failed to get canvas context');
+    ctx.drawImage(img, 0, 0);
+    
+    // Clean up
+    URL.revokeObjectURL(url);
+    
+    // Convert to desired format
+    const outputBlob = await canvasToBlob(canvas, format, quality);
+    await downloadImage(outputBlob, filename);
   } catch (error) {
     throw new Error(`Failed to save image to gallery: ${error}`);
   }

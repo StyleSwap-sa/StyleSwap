@@ -1795,3 +1795,12 @@ This approach:
 - [x] Fix video stream display in ARCamera component
 - [x] Add error handling with video fallback
 - [x] Verify pose detection with live feed
+
+
+## Phase 41: Fix SaveToGalleryButton and AR Mode Selector Issues (NEW)
+- [x] Debug SaveToGalleryButton converting images to .txt format
+- [x] Fix image blob to file conversion in saveImageToGallery
+- [x] Implement proper format conversion (PNG/JPEG) for image URLs
+- [x] Add canvas rendering for image format control
+- [x] Test save to gallery with proper PNG format
+- [x] Verify AR + Upload mode selector still works
