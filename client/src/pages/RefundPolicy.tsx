@@ -111,8 +111,7 @@ export default function RefundPolicy() {
             <div className="p-4 bg-secondary/10 rounded-lg">
               <p className="font-semibold text-foreground">StyleSwap Support Team</p>
               <p className="text-muted-foreground">Email: support@styleswap.co.za</p>
-              <p className="text-muted-foreground">Phone: +27 (0) 123 456 789</p>
-              <p className="text-muted-foreground">Hours: Monday - Friday, 9am - 5pm SAST</p>
+              <p className="text-muted-foreground">Hours: Monday to Friday, 9am - 5pm CAT</p>
             </div>
           </section>
 
