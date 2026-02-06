@@ -1877,3 +1877,25 @@ This approach:
 - [x] Add empty state for when no data is available
 - [x] Add responsive design for mobile and desktop
 - [x] Ensure no changes to existing features
+
+
+## Phase 48: Fix OAuth Configuration Error (NEW)
+- [ ] Check VITE_APP_ID environment variable is set
+- [ ] Verify VITE_OAUTH_PORTAL_URL is configured
+- [ ] Check OAUTH_SERVER_URL on server side
+- [ ] Verify OAuth callback URL matches Manus settings
+- [ ] Test OAuth login on dev server
+- [ ] Verify published site has correct OAuth configuration
+- [ ] Check browser console for OAuth errors
+- [ ] Test OAuth flow end-to-end
+
+
+## Phase 49: Fix AR Navigation Visibility on Mobile (NEW)
+- [x] Check Dashboard navigation tabs mobile layout
+- [x] Optimize Dashboard tabs with grid layout for mobile (2 columns)
+- [x] Reduce button text size on mobile (text-xs)
+- [x] Add responsive padding and spacing
+- [x] Check BoutiqueDashboard mobile layout
+- [x] Optimize mobile navigation for small screens
+- [x] Verify dev server running with mobile optimizations
+- [x] Ensure no existing features are affected

@@ -121,29 +121,31 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2 p-4 sm:p-6 border-b border-border/20 bg-secondary/5">
+        {/* Navigation Tabs - Mobile Optimized Grid */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-row sm:flex-wrap gap-2 p-3 sm:p-6 border-b border-border/20 bg-secondary/5">
           <Button
             onClick={() => setActiveTab("overview")}
             variant={activeTab === "overview" ? "default" : "outline"}
-            className={`${activeTab === "overview" ? "premium-button" : ""} w-full sm:w-auto`}
+            className={`${activeTab === "overview" ? "premium-button" : ""} text-xs sm:text-base px-2 sm:px-4`}
+            size="sm"
           >
             Overview
           </Button>
           <Button
             onClick={() => setLocation('/try-on')}
             variant="outline"
-            className="border-primary/50 text-primary hover:bg-primary/10 w-full sm:w-auto"
+            className="border-primary/50 text-primary hover:bg-primary/10 text-xs sm:text-base px-2 sm:px-4"
+            size="sm"
           >
             Try-On
           </Button>
           <Button
             onClick={() => setActiveTab("history")}
             variant={activeTab === "history" ? "default" : "outline"}
-            className={`${activeTab === "history" ? "premium-button" : ""} w-full sm:w-auto`}
+            className={`${activeTab === "history" ? "premium-button" : ""} text-xs sm:text-base px-2 sm:px-4`}
+            size="sm"
           >
-            <History className="w-4 h-4 mr-2" />
-            History
+            <History className="w-3 h-3 sm:w-4 sm:h-4" />
           </Button>
 
           {/* Admin Dashboard Link - Only visible to owner */}
@@ -151,9 +153,10 @@ export default function Dashboard() {
             <Button
               onClick={() => setLocation('/admin')}
               variant="outline"
-              className="border-primary/50 text-primary hover:bg-primary/10 w-full sm:w-auto sm:ml-auto"
+              className="border-primary/50 text-primary hover:bg-primary/10 text-xs sm:text-base px-2 sm:px-4 col-span-2 sm:col-span-auto sm:ml-auto"
+              size="sm"
             >
-              Platform Analytics
+              Analytics
             </Button>
           )}
         </div>
