@@ -1923,3 +1923,31 @@ This approach:
 - [x] Test hamburger menu on mobile devices
 - [x] Verify all navigation options work
 - [x] Ensure no existing features are affected
+
+
+## Phase 50: Flexible Credit Purchase System (NEW)
+- [ ] Add creditPackages table to database schema (predefined packages: 10, 25, 50, 100, 250, 500 credits)
+- [ ] Add creditPurchases table to database schema (track all credit purchases)
+- [ ] Create tRPC procedures for credit purchase (getAvailablePackages, createCreditPurchase, getPurchaseHistory)
+- [ ] Create CreditPurchaseModal component for customers
+- [ ] Create CreditPurchaseModal component for boutiques
+- [ ] Add "Buy More Credits" button to customer dashboard
+- [ ] Add "Buy More Credits" button to boutique dashboard
+- [ ] Integrate Yoco/Stripe payment for credit purchases
+- [ ] Add low-credit alert (show when credits < 5)
+- [ ] Add credit purchase prompt when credits run out
+- [ ] Test credit purchase flow end-to-end
+- [ ] Save checkpoint with flexible credit system
+
+
+## Phase 51: Flexible Credit Purchase System (COMPLETED)
+- [x] Create CreditPurchaseModal component for customers and boutiques
+- [x] Create LowCreditAlert component for low credit warnings
+- [x] Integrate CreditPurchaseModal into Dashboard (customers)
+- [x] Integrate CreditPurchaseModal into BoutiqueDashboard (boutiques)
+- [x] Add "Buy More Credits" button to customer dashboard
+- [x] Update "Buy Credits" card in boutique dashboard to use modal
+- [x] Create unit tests for CreditPurchaseModal
+- [x] Leverage existing billing system (CREDIT_TIERS, initiatePurchase procedure)
+- [x] No changes to existing features or workflows
+- [x] Customers and boutiques can buy credits instantly without monthly limits

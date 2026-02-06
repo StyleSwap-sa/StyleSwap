@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { MobileNavMenu } from "@/components/MobileNavMenu";
+import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
+import { LowCreditAlert } from "@/components/LowCreditAlert";
 
 
 type DashboardTab = "overview" | "history";
@@ -14,6 +16,7 @@ export default function Dashboard() {
   const { user, isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
+  const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
   // Redirect based on user type (skip for admins testing customer dashboard)
   useEffect(() => {
@@ -230,7 +233,7 @@ export default function Dashboard() {
                       Classic Upload
                     </Button>
                     <Button
-                      onClick={() => window.location.href = '/pricing'}
+                      onClick={() => setIsCreditModalOpen(true)}
                       className="bg-foreground/10 text-foreground hover:bg-foreground/20 w-full"
                     >
                       Buy More Credits
@@ -283,6 +286,16 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Credit Purchase Modal */}
+      <CreditPurchaseModal
+        isOpen={isCreditModalOpen}
+        onClose={() => setIsCreditModalOpen(false)}
+        onPurchaseSuccess={() => {
+          refetchCredits();
+          setIsCreditModalOpen(false);
+        }}
+      />
     </div>
   );
 }

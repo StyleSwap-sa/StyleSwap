@@ -6,10 +6,12 @@ import { trpc } from "@/lib/trpc";
 import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { BatchUploadComponent } from "@/components/BatchUploadComponent";
+import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
 
 export default function BoutiqueDashboard() {
   const [selectedBoutique, setSelectedBoutique] = useState<number | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
   
   // Fetch user's boutiques
   const { data: boutiques, isLoading: boutiquesLoading } =
@@ -210,19 +212,20 @@ export default function BoutiqueDashboard() {
                 </Card>
               </Link>
 
-              <Link href={`/boutique-credits/${selectedBoutique}`}>
-                <Card className="premium-card cursor-pointer hover:shadow-lg transition">
-                  <CardContent className="pt-6">
-                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
-                      <Zap className="w-6 h-6" />
-                    </div>
-                    <h3 className="font-bold mb-2">Buy Credits</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Purchase more try-ons
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
+              <Card
+                className="premium-card cursor-pointer hover:shadow-lg transition"
+                onClick={() => setIsCreditModalOpen(true)}
+              >
+                <CardContent className="pt-6">
+                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
+                    <Zap className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold mb-2">Buy Credits</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Purchase more try-ons instantly
+                  </p>
+                </CardContent>
+              </Card>
 
               <Link href={`/boutique-settings/${selectedBoutique}`}>
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
@@ -378,6 +381,18 @@ export default function BoutiqueDashboard() {
           </>
         )}
       </div>
+
+      {/* Credit Purchase Modal */}
+      {selectedBoutique && (
+        <CreditPurchaseModal
+          isOpen={isCreditModalOpen}
+          onClose={() => setIsCreditModalOpen(false)}
+          boutiqueId={selectedBoutique}
+          onPurchaseSuccess={() => {
+            setIsCreditModalOpen(false);
+          }}
+        />
+      )}
     </DashboardLayout>
   );
 }
