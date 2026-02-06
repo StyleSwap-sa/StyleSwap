@@ -121,9 +121,9 @@ export default function PrivacyPolicy() {
               If you have questions about this Privacy Policy or our privacy practices, please contact us at:
             </p>
             <div className="p-4 bg-secondary/10 rounded-lg">
-              <p className="font-semibold text-foreground">StyleSwap Privacy Team</p>
-              <p className="text-muted-foreground">Email: privacy@styleswap.co.za</p>
-              <p className="text-muted-foreground">Location: Cape Town, South Africa</p>
+              <p className="font-semibold text-foreground">StyleSwap Support Team</p>
+              <p className="text-muted-foreground">Email: support@styleswap.co.za</p>
+              <p className="text-muted-foreground">Location: Johannesburg, South Africa</p>
             </div>
           </section>
 

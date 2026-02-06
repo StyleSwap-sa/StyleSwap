@@ -185,8 +185,8 @@ export default function TermsAndConditions() {
             </p>
             <div className="mt-4 p-4 bg-secondary/10 rounded-lg">
               <p className="font-semibold text-foreground">StyleSwap Support</p>
-              <p className="text-muted-foreground">Email: support@styleswap.com</p>
-              <p className="text-muted-foreground">Website: www.styleswap.com</p>
+              <p className="text-muted-foreground">Email: support@styleswap.co.za</p>
+              <p className="text-muted-foreground">Website: www.styleswap.co.za</p>
             </div>
           </section>
 
