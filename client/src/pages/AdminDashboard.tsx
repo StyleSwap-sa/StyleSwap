@@ -7,6 +7,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { CreditAlertsCard } from "@/components/CreditAlertsCard";
 import { AdvancedAnalyticsCharts } from "@/components/AdvancedAnalyticsCharts";
 import { SchedulerControls } from "@/components/SchedulerControls";
+import { ARAnalyticsPanel } from "@/components/ARAnalyticsPanel";
 
 export default function AdminDashboard() {
   const [selectedBoutiqueId, setSelectedBoutiqueId] = useState<number | null>(null);
@@ -314,6 +315,16 @@ export default function AdminDashboard() {
               </p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* AR Mode Analytics Section */}
+        <div className="mt-8">
+          <ARAnalyticsPanel
+            arUsageCount={0}
+            uploadUsageCount={0}
+            totalUsage={0}
+            arTrendData={[]}
+          />
         </div>
 
         {/* Scheduler Controls Section */}

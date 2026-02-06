@@ -1865,3 +1865,15 @@ This approach:
 - [x] Add responsive text sizes
 - [x] Verify dev server running with all changes
 - [x] Ensure no existing functionality is changed
+
+
+## Phase 47: Add AR Mode Analytics to Owner Dashboard (NEW)
+- [x] Create analytics data collection without schema changes
+- [x] Build ARAnalyticsPanel component for owner dashboard
+- [x] Add AR vs Upload usage statistics with progress bars
+- [x] Add pie chart showing mode distribution
+- [x] Add line chart showing usage trends
+- [x] Integrate analytics into AdminDashboard
+- [x] Add empty state for when no data is available
+- [x] Add responsive design for mobile and desktop
+- [x] Ensure no changes to existing features
