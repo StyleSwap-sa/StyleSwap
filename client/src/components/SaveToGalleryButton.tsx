@@ -161,7 +161,7 @@ export function SaveToGalleryButton({
           Save to Gallery
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
         <DialogHeader>
           <DialogTitle>Save Try-On to Gallery</DialogTitle>
           <DialogDescription>

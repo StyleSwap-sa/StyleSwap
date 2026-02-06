@@ -250,13 +250,13 @@ export function ARCamera({ onPoseDetected, onError, isActive }: ARCameraProps) {
   return (
     <div className="w-full space-y-4">
       {loading && (
-        <div className="flex items-center justify-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-          <span className="text-sm text-blue-700">Initializing AR camera...</span>
+          <span className="text-xs sm:text-sm text-blue-700">Initializing AR camera...</span>
         </div>
       )}
 
-      <div className="relative w-full bg-black rounded-lg overflow-hidden">
+      <div className="relative w-full bg-black rounded-lg overflow-hidden aspect-video">
         {/* Video element (hidden) */}
         <video
           ref={videoRef}
@@ -268,13 +268,12 @@ export function ARCamera({ onPoseDetected, onError, isActive }: ARCameraProps) {
         {/* Canvas for pose visualization */}
         <canvas
           ref={canvasRef}
-          className="w-full h-auto"
-          style={{ aspectRatio: '16 / 9' }}
+          className="w-full h-full object-cover"
         />
 
         {/* Camera indicator */}
-        <div className="absolute top-4 right-4 flex items-center gap-2 bg-black/50 px-3 py-2 rounded-lg">
-          <Camera className="w-4 h-4 text-green-500" />
+        <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex items-center gap-1 sm:gap-2 bg-black/50 px-2 sm:px-3 py-1 sm:py-2 rounded-lg">
+          <Camera className="w-3 sm:w-4 h-3 sm:h-4 text-green-500" />
           <span className="text-xs text-white font-medium">Live</span>
         </div>
       </div>

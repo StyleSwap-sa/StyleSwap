@@ -12,15 +12,15 @@ interface TryOnModeSelectorProps {
 
 export function TryOnModeSelector({ onSelectMode, selectedMode }: TryOnModeSelectorProps) {
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-8">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-3">Choose Your Try-On Experience</h1>
-        <p className="text-lg text-muted-foreground">
+    <div className="w-full max-w-4xl mx-auto px-4 py-6 sm:py-8">
+      <div className="text-center mb-8 sm:mb-12">
+        <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-3">Choose Your Try-On Experience</h1>
+        <p className="text-sm sm:text-lg text-muted-foreground">
           Select how you'd like to virtually try on clothing
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
         {/* AR Try-On Option */}
         <Card
           className={`cursor-pointer transition-all duration-300 ${
@@ -36,7 +36,7 @@ export function TryOnModeSelector({ onSelectMode, selectedMode }: TryOnModeSelec
                 <Camera className="w-8 h-8 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-2xl">AR Try-On</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl">AR Try-On</CardTitle>
             <CardDescription>Real-time virtual fitting</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -81,7 +81,7 @@ export function TryOnModeSelector({ onSelectMode, selectedMode }: TryOnModeSelec
                 <Upload className="w-8 h-8 text-secondary" />
               </div>
             </div>
-            <CardTitle className="text-2xl">Upload Try-On</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl">Upload Try-On</CardTitle>
             <CardDescription>Upload your photos</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

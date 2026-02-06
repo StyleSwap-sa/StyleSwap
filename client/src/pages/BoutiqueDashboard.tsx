@@ -84,21 +84,21 @@ export default function BoutiqueDashboard() {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
-            <h1 className="text-4xl font-bold">Boutique Dashboard</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold">Boutique Dashboard</h1>
             <p className="text-muted-foreground mt-2">
               Welcome back! Manage your products and credits below.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Link href={`/boutique-products/${selectedBoutique}`}>
-              <Button variant="outline" className="cursor-pointer">
+              <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Product
               </Button>
             </Link>
-            <Button variant="outline" className="cursor-pointer">
+            <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>

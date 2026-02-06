@@ -122,25 +122,25 @@ export default function Dashboard() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 p-6 border-b border-border/20 bg-secondary/5">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 p-4 sm:p-6 border-b border-border/20 bg-secondary/5">
           <Button
             onClick={() => setActiveTab("overview")}
             variant={activeTab === "overview" ? "default" : "outline"}
-            className={activeTab === "overview" ? "premium-button" : ""}
+            className={`${activeTab === "overview" ? "premium-button" : ""} w-full sm:w-auto`}
           >
             Overview
           </Button>
           <Button
             onClick={() => setLocation('/try-on')}
             variant="outline"
-            className="border-primary/50 text-primary hover:bg-primary/10"
+            className="border-primary/50 text-primary hover:bg-primary/10 w-full sm:w-auto"
           >
             Try-On
           </Button>
           <Button
             onClick={() => setActiveTab("history")}
             variant={activeTab === "history" ? "default" : "outline"}
-            className={activeTab === "history" ? "premium-button" : ""}
+            className={`${activeTab === "history" ? "premium-button" : ""} w-full sm:w-auto`}
           >
             <History className="w-4 h-4 mr-2" />
             History
@@ -151,7 +151,7 @@ export default function Dashboard() {
             <Button
               onClick={() => setLocation('/admin')}
               variant="outline"
-              className="ml-auto border-primary/50 text-primary hover:bg-primary/10"
+              className="border-primary/50 text-primary hover:bg-primary/10 w-full sm:w-auto sm:ml-auto"
             >
               Platform Analytics
             </Button>
@@ -200,25 +200,25 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <div className="flex flex-col gap-3 pt-4">
                     <Button
                       onClick={() => setLocation('/try-on')}
-                      className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
+                      className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 w-full"
                     >
                       Choose Try-On Mode
                     </Button>
                     <Button
                       onClick={() => setActiveTab("try-on")}
-                      className="premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                      className="premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90 w-full"
                     >
                       Classic Upload
                     </Button>
-                  <Button
-                    onClick={() => window.location.href = '/pricing'}
-                    className="bg-foreground/10 text-foreground hover:bg-foreground/20"
-                  >
-                    Buy More Credits
-                  </Button>
+                    <Button
+                      onClick={() => window.location.href = '/pricing'}
+                      className="bg-foreground/10 text-foreground hover:bg-foreground/20 w-full"
+                    >
+                      Buy More Credits
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
