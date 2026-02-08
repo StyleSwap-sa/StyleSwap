@@ -27,14 +27,17 @@ export default function B2BSignup() {
     address: "",
     city: "",
     country: "South Africa",
+    referralCode: "",
   });
 
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const createBoutiqueMutation = trpc.boutiques.create.useMutation();
+  const validateReferralCodeMutation = trpc.referral.validateCode.useMutation();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [suggestedSlug, setSuggestedSlug] = useState<string | null>(null);
+  const [referralError, setReferralError] = useState("");
 
   if (!isAuthenticated) {
     return (
@@ -113,6 +116,22 @@ export default function B2BSignup() {
           console.warn('Slug check error:', slugErr);
         }
         
+        // Validate referral code if provided
+        if (formData.referralCode) {
+          try {
+            const validationResult = await validateReferralCodeMutation.mutateAsync({
+              code: formData.referralCode,
+            });
+            if (!validationResult.valid) {
+              setReferralError(validationResult.message || "Invalid referral code");
+              return;
+            }
+          } catch (err: any) {
+            setReferralError(err.message || "Error validating referral code");
+            return;
+          }
+        }
+        
         await createBoutiqueMutation.mutateAsync({
           name: formData.businessName,
           slug: finalSlug,
@@ -122,6 +141,7 @@ export default function B2BSignup() {
           tiktokHandle: formData.tiktokHandle || undefined,
           facebookUrl: formData.facebookUrl || undefined,
           whatsappNumber: formData.whatsappNumber || undefined,
+          referralCode: formData.referralCode || undefined,
         });
         setSuccess(true);
         setTimeout(() => {
@@ -423,6 +443,29 @@ export default function B2BSignup() {
                   <p className="text-sm text-blue-800 dark:text-blue-200">
                     💡 <strong>Free Landing Page:</strong> If you don't have a website, we'll create a free landing page for your boutique that you can share on social media!
                   </p>
+                </div>
+
+                <div className="border-t pt-6">
+                  <h3 className="font-semibold mb-4">Referral Code (Optional)</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Have a referral code from another boutique? Enter it below to claim your referral bonus!
+                  </p>
+                  <div>
+                    <Label htmlFor="referralCode">Referral Code</Label>
+                    <Input
+                      id="referralCode"
+                      name="referralCode"
+                      placeholder="e.g., STYLESWAP-BOUTIQUE-ABC123"
+                      value={formData.referralCode}
+                      onChange={handleInputChange}
+                      className="mt-2"
+                    />
+                  </div>
+                  {referralError && (
+                    <div className="mt-2 text-sm text-red-600 dark:text-red-400">
+                      {referralError}
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-lg">

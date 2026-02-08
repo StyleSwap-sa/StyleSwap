@@ -26,6 +26,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { createVerificationToken, sendVerificationEmail } from "../email.verification";
 import { createYocoCharge, processCreditPurchase, getYocoPublicKey } from "../yoco.payment";
+import { awardReferrerCredits } from "../db.referral";
 
 /**
  * Boutique Management Router
@@ -113,6 +114,7 @@ export const boutiquesRouter = router({
         tiktokHandle: z.string().optional(),
         facebookUrl: z.string().optional(),
         whatsappNumber: z.string().optional(),
+        referralCode: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -175,6 +177,25 @@ export const boutiquesRouter = router({
         userId: ctx.user.id,
         role: "owner",
       });
+
+      // Process referral code if provided
+      if (input.referralCode) {
+        try {
+          // Call the applyReferralCode mutation to award credits
+          const referralParts = input.referralCode.split("-");
+          if (referralParts.length === 3 && referralParts[0] === "STYLESWAP" && referralParts[1] === "BOUTIQUE") {
+            const referrerBoutiqueId = parseInt(referralParts[2], 10);
+            if (!isNaN(referrerBoutiqueId)) {
+              // Award 25 credits to referrer
+              await awardReferrerCredits(referrerBoutiqueId, 25);
+              console.log(`[Referral] Awarded 25 credits to boutique ${referrerBoutiqueId} for referring boutique ${boutiqueId}`);
+            }
+          }
+        } catch (error) {
+          console.error('[Referral] Error processing referral code:', error);
+          // Don't fail boutique creation if referral processing fails
+        }
+      }
 
       // Generate and send verification email
       try {
