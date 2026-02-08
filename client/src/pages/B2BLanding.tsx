@@ -315,9 +315,11 @@ export default function B2BLanding() {
             <p className="text-muted-foreground mb-4">
               Need more credits? Contact our sales team for custom packages.
             </p>
-            <Button variant="outline" className="cursor-pointer">
-              Contact Sales
-            </Button>
+            <a href="mailto:sales@styleswap.co.za">
+              <Button variant="outline" className="cursor-pointer">
+                Contact Sales
+              </Button>
+            </a>
           </div>
         </div>
       </section>
