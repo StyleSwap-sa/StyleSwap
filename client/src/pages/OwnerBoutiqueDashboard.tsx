@@ -11,14 +11,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Eye, Settings } from "lucide-react";
+import { Loader2, Eye, Settings, Users } from "lucide-react";
 import BoutiqueDashboard from "./BoutiqueDashboard";
+import BoutiqueOnboardingManager from "@/components/BoutiqueOnboardingManager";
 
 export default function OwnerBoutiqueDashboard() {
   const [selectedBoutiqueId, setSelectedBoutiqueId] = useState<number | null>(
     null
   );
-  const [viewMode, setViewMode] = useState<"list" | "detail">("list");
+  const [viewMode, setViewMode] = useState<"list" | "detail" | "onboarding">("list");
 
   // Get all boutiques
   const { data: boutiques, isLoading } = trpc.boutiques.getAllBoutiques.useQuery(
@@ -30,6 +31,39 @@ export default function OwnerBoutiqueDashboard() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // If viewing onboarding management
+  if (viewMode === "onboarding") {
+    const onboardingBoutiques = boutiques?.map((b) => ({
+      id: b.id,
+      name: b.name,
+      email: b.email || "",
+      businessType: b.businessType || "boutique",
+      status: (b.status as "pending" | "verified" | "rejected") || "pending",
+      createdAt: b.createdAt || new Date().toISOString(),
+      website: b.website,
+    })) || [];
+
+    return (
+      <div>
+        <div className="mb-4 flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setViewMode("list");
+              setSelectedBoutiqueId(null);
+            }}
+          >
+            ← Back to Boutiques List
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Owner Testing Mode: Boutique Onboarding Management
+          </span>
+        </div>
+        <BoutiqueOnboardingManager boutiques={onboardingBoutiques} />
       </div>
     );
   }
@@ -71,7 +105,15 @@ export default function OwnerBoutiqueDashboard() {
             Owner Testing Mode - View and manage all boutiques
           </p>
         </div>
-        <Badge variant="secondary">Owner Mode</Badge>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setViewMode("onboarding")}
+          >
+            Onboarding Management
+          </Button>
+          <Badge variant="secondary">Owner Mode</Badge>
+        </div>
       </div>
 
       {/* Summary Cards */}

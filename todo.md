@@ -2000,3 +2000,14 @@ This approach:
 - [ ] Add owner-specific controls (view boutique details, suspend, etc.)
 - [ ] Test all features in owner dashboard
 - [ ] Verify no existing workflows are changed
+
+
+## Phase 55: Boutique Onboarding Management in Owner Dashboard (IN PROGRESS)
+- [ ] Review current boutique onboarding flow
+- [ ] Create boutique onboarding management component
+- [ ] Add boutique verification and approval workflow
+- [ ] Integrate onboarding features into Owner Dashboard
+- [ ] Display pending boutiques awaiting approval
+- [ ] Show boutique registration details and verification status
+- [ ] Allow owner to approve/reject boutiques
+- [ ] Test boutique onboarding flow in owner view
