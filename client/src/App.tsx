@@ -39,6 +39,7 @@ import TryOnPage from "./pages/TryOnPage";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
+import OwnerBoutiqueDashboard from "./pages/OwnerBoutiqueDashboard";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -78,10 +79,10 @@ function Router() {
       <Route path={"admin/performance-export"} component={BoutiquePerformanceExport} />
       <Route path={"/ar-tryon"} component={ARTryOn} />
       <Route path={"/try-on"} component={TryOnPage} />
+      <Route path={"/owner-boutiques"} component={OwnerBoutiqueDashboard} />
       <Route path={"/terms-and-conditions"} component={TermsAndConditions} />
       <Route path={"/privacy-policy"} component={PrivacyPolicy} />
       <Route path={"/refund-policy"} component={RefundPolicy} />
-      <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
