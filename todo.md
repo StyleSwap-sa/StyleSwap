@@ -2011,3 +2011,11 @@ This approach:
 - [ ] Show boutique registration details and verification status
 - [ ] Allow owner to approve/reject boutiques
 - [ ] Test boutique onboarding flow in owner view
+
+
+## Phase 56: Boutique Landing Page CTA Buttons
+- [x] Fix "Start Virtual Try-On" button to navigate to home page
+- [x] Fix "Learn More" button to navigate to home page
+- [x] Fix "Shop Now" button to open boutique website if available
+- [x] Test all buttons are clickable and functional
+- [x] Verify buttons work on both mobile and desktop
