@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { getDb } from "../db";
-import { transactions, userCredits, users, boutiqueCredits } from "../../drizzle/schema";
+import { transactions, userCredits, users, boutiqueCredits, shopOrders } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { sendEmailNotification } from "../email";
 import { verifyWebhookSignature } from "../yoko-payment";
 import { sendPaymentConfirmationSMS } from "../sms";
+import { processOrderPayout } from "../payout-processor";
 import {
   recordWebhookEvent,
   markWebhookSuccess,
@@ -341,7 +342,7 @@ async function handlePaymentCanceled(data: YokoWebhookPayload["data"]) {
 
 
 /**
- * Handle order payment success (Phase 2)
+ * Handle order payment success (Phase 2 & Phase 3)
  */
 export async function handleOrderPaymentSucceeded(data: YokoWebhookPayload["data"], externalEventId: string) {
   const db = await getDb();
@@ -359,10 +360,21 @@ export async function handleOrderPaymentSucceeded(data: YokoWebhookPayload["data
   }
 
   try {
-    // Import order functions
-    const { shopOrders } = await import("../../drizzle/schema");
+    // 1. Get order details
+    const order = await db
+      .select()
+      .from(shopOrders)
+      .where(eq(shopOrders.orderNumber, orderNumber))
+      .limit(1);
+
+    if (order.length === 0) {
+      throw new Error(`Order not found: ${orderNumber}`);
+    }
+
+    const orderData = order[0];
+    const orderId = orderData.id;
     
-    // Update order status to confirmed
+    // 2. Update order status to confirmed
     await db
       .update(shopOrders)
       .set({ 
@@ -371,7 +383,7 @@ export async function handleOrderPaymentSucceeded(data: YokoWebhookPayload["data
       })
       .where(eq(shopOrders.orderNumber, orderNumber));
 
-    // Record transaction
+    // 3. Record transaction
     await db.insert(transactions).values({
       userId,
       type: "order_payment",
@@ -383,14 +395,48 @@ export async function handleOrderPaymentSucceeded(data: YokoWebhookPayload["data
       status: "completed",
     });
 
-    // Send confirmation email
+    // 4. Process immediate payout to boutique (Phase 3)
+    try {
+      await processOrderPayout(orderId);
+      console.log(`[Yoko Webhook] Payout processed for order: ${orderNumber}`);
+    } catch (payoutError) {
+      console.error(`[Yoko Webhook] Payout processing failed for order ${orderNumber}:`, payoutError);
+      // Don't throw - payout failure shouldn't block order confirmation
+    }
+
+    // 5. Send order confirmation email to customer
     if (userEmail) {
-      const emailHtml = `<html><body style="font-family: Arial, sans-serif;"><h2>Order Confirmation</h2><p>Hi ${userName},</p><p>Thank you for your order! Your order <strong>${orderNumber}</strong> has been confirmed.</p><p>Amount: <strong>R${(data.amount / 100).toFixed(2)}</strong></p><p>You will receive a shipping notification soon.</p><p>Best regards,<br/>StyleSwap Team</p></body></html>`;
+      const emailHtml = `
+        <html>
+          <body style="font-family: Arial, sans-serif; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #FF6B35;">Order Confirmed</h2>
+              <p>Hi ${userName},</p>
+              <p>Thank you for your order! Your order has been confirmed and is being processed.</p>
+              
+              <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <p><strong>Order Number:</strong> ${orderNumber}</p>
+                <p><strong>Order Total:</strong> R${(data.amount / 100).toFixed(2)}</p>
+                <p><strong>Delivery Address:</strong> ${orderData.deliveryAddress || 'To be confirmed'}</p>
+              </div>
+              
+              <p>You will receive a shipping notification with tracking information soon.</p>
+              <p>If you have any questions, please contact us at <a href="mailto:sales@styleswap.co.za">sales@styleswap.co.za</a></p>
+              
+              <p style="margin-top: 30px; color: #666; font-size: 12px;">
+                Best regards,<br/>
+                <strong>StyleSwap Team</strong>
+              </p>
+            </div>
+          </body>
+        </html>
+      `;
+      
       await sendEmailNotification({
         userId,
         type: "order_confirmation",
         recipientEmail: userEmail,
-        subject: "Order Confirmation - StyleSwap",
+        subject: `Order Confirmation - ${orderNumber}`,
         htmlContent: emailHtml,
       });
     }

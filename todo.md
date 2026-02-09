@@ -2057,3 +2057,40 @@ This approach:
 - [ ] Write tests for payout calculation and processing
 - [ ] Test end-to-end payment to payout flow
 - [ ] Verify no existing workflows are changed
+
+
+## Phase 60: Phase 3 - Automated Payout System & Email Notifications (IN PROGRESS)
+
+### Payout System Implementation
+- [x] Review existing payout database schema (boutiqueBankAccounts, payouts, payoutTransactions, payoutAuditLog)
+- [x] Implement payout calculation logic: 92.5% to boutique (after 5% StyleSwap commission + 2.5% Yoco fee)
+- [x] Create payout processor function triggered after successful payment
+- [x] Implement immediate payout execution (not scheduled/weekly)
+- [x] Add payout status tracking (pending, processing, completed, failed)
+- [x] Create payout retry logic for failed transfers
+- [ ] Build boutique bank account registration UI in settings
+- [ ] Create payout dashboard showing earnings and transaction history
+- [x] Add error handling and logging for payout failures
+- [x] Write unit tests for payout calculations
+- [ ] Test end-to-end payment to payout flow
+
+### Email Notification Implementation
+- [x] Create email notification service using built-in Manus API
+- [x] Implement order confirmation email template
+- [x] Add customer email to order checkout form
+- [x] Trigger order confirmation email after successful payment
+- [x] Include order details in email (order number, items, total, delivery address)
+- [ ] Include tracking information in email
+- [x] Test email delivery end-to-end
+- [x] Verify email templates render correctly
+- [x] Add email error handling and retry logic
+
+### Integration & Testing
+- [x] Integrate payout processor into payment webhook handler
+- [x] Verify payout triggers only after successful payment confirmation
+- [ ] Test boutique bank account registration flow
+- [x] Test payout calculations with various order amounts
+- [ ] Verify email notifications are sent correctly
+- [ ] Test with multiple boutiques and orders
+- [ ] Verify no existing workflows are affected
+- [ ] Save checkpoint with Phase 3 complete
