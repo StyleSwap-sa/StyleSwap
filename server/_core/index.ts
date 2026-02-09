@@ -11,6 +11,7 @@ import { serveStatic, setupVite } from "./vite";
 import { handleYokoWebhook } from "../webhooks/yoco";
 import { handleYocoBoutiqueWebhook } from "../webhooks/yoco-boutique";
 import { testYocoBoutiqueWebhook } from "../webhooks/test-webhook";
+import yocoPayoutsRouter from "../webhooks/yoco-payouts";
 import { getFitroomClient } from "./fitroom";
 import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
 import { sdk } from "./sdk";
@@ -259,6 +260,13 @@ export async function startServer() {
   app.post("/api/yoco/webhook", handleYokoWebhook);
   app.post("/api/yoco-boutique/webhook", handleYocoBoutiqueWebhook);
   app.post("/api/test-webhook", testYocoBoutiqueWebhook);
+  app.use("/api/webhooks", yocoPayoutsRouter);
+  
+  console.log("[Server] Webhook endpoints registered:");
+  console.log("  - POST /api/yoco/webhook");
+  console.log("  - POST /api/yoco-boutique/webhook");
+  console.log("  - POST /api/test-webhook");
+  console.log("  - POST /api/webhooks/yoco-payouts");
   
   // tRPC API
   app.use(

@@ -2134,3 +2134,57 @@ This approach:
 - [ ] Verify boutique dashboard displays correct data
 - [ ] Test with multiple boutiques and orders
 - [ ] Verify no existing workflows are affected
+
+
+## Phase 62: Boutique Payout Dashboard UI (COMPLETED)
+
+### Dashboard Component
+- [x] Create BoutiquePayoutDashboard.tsx component
+- [x] Display earnings summary (total, pending, failed)
+- [x] Show bank account details (masked for security)
+- [x] Display payout history with pagination
+- [x] Responsive design (mobile and desktop views)
+- [x] Add payout details modal with full breakdown
+- [x] Show revenue breakdown (Yoco fees, StyleSwap commission, boutique share)
+- [x] Display transaction history within payouts
+- [x] Show audit log of payout status changes
+- [x] Add sync status button to refresh from Yoco
+
+### Integration
+- [x] Add route to App.tsx (/boutique-payouts)
+- [x] Integrate with tRPC payouts router
+- [x] Add date formatting with date-fns
+- [x] Add status badges with color coding
+- [x] Implement pagination for payout history
+- [x] Add loading states and error handling
+
+## Phase 63: Yoco Webhook for Payout Status Updates (COMPLETED)
+
+### Webhook Implementation
+- [x] Create yoco-payouts.ts webhook handler
+- [x] Implement payout.sent event handling
+- [x] Implement payout.paid event handling
+- [x] Implement payout.unpaid event handling
+- [x] Implement payout.failed event handling
+- [x] Map Yoco statuses to internal statuses
+- [x] Update payout records on webhook receipt
+- [x] Log all status changes to audit trail
+- [x] Add failure reason tracking
+- [x] Add health check endpoint
+
+### Server Integration
+- [x] Register webhook route in server index
+- [x] Add webhook logging for debugging
+- [x] Implement error handling and idempotency
+- [x] Add webhook endpoint documentation
+
+### Remaining Tasks
+- [ ] Test Yoco payouts API with test credentials
+- [ ] Test webhook delivery from Yoco
+- [ ] Test payout status updates end-to-end
+- [ ] Test failed payout scenarios
+- [ ] Test boutique dashboard displays correct data
+- [ ] Test with multiple boutiques and orders
+- [ ] Verify no existing workflows are affected
+- [ ] Set up Yoco webhook in production environment
+- [ ] Document webhook setup for Yoco dashboard

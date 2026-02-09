@@ -1,4 +1,5 @@
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
@@ -43,6 +44,7 @@ import OwnerBoutiqueDashboard from "./pages/OwnerBoutiqueDashboard";
 import MyOrders from "./pages/MyOrders";
 import BoutiqueOrderDashboard from "./pages/BoutiqueOrderDashboard";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import BoutiquePayoutDashboard from "./pages/BoutiquePayoutDashboard";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -87,8 +89,9 @@ function Router() {
       <Route path={"/privacy-policy"} component={PrivacyPolicy} />
       <Route path={"/refund-policy"} component={RefundPolicy} />
       <Route path={"/my-orders"} component={MyOrders} />
-      <Route path={"/boutique-orders"} component={BoutiqueOrderDashboard} />
-      <Route path={"/order-confirmation"} component={OrderConfirmation} />
+        <Route path={"boutique-orders"} component={BoutiqueOrderDashboard} />
+      <Route path={"order-confirmation"} component={OrderConfirmation} />
+      <Route path={"boutique-payouts"} component={BoutiquePayoutDashboard} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
@@ -101,6 +104,8 @@ function Router() {
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
+  const { user } = useAuth();
+  
   return (
     <ErrorBoundary>
       <ThemeProvider
