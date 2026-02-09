@@ -424,3 +424,34 @@ export const analyticsSnapshots = mysqlTable("analyticsSnapshots", {
 	index("idx_analytics_snapshots_date").on(table.date),
 	index("idx_analytics_snapshots_created").on(table.createdAt),
 ]);
+
+
+
+
+
+// Phase 1: Simple Order Tracking Table (Isolated)
+export const shopOrders = mysqlTable("shopOrders", {
+	id: int().autoincrement().notNull().primaryKey(),
+	orderNumber: varchar({ length: 50 }).notNull().unique(),
+	customerId: int().notNull().references(() => users.id),
+	boutiqueId: int().notNull().references(() => boutiques.id),
+	productId: int(),
+	quantity: int().default(1).notNull(),
+	size: varchar({ length: 50 }),
+	color: varchar({ length: 50 }),
+	amount: decimal({ precision: 10, scale: 2 }).notNull(),
+	status: mysqlEnum(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']).default('pending').notNull(),
+	deliveryAddress: text(),
+	customerPhone: varchar({ length: 20 }),
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	{ primaryKey: table.id },
+	index("idx_shopOrders_customer").on(table.customerId),
+	index("idx_shopOrders_boutique").on(table.boutiqueId),
+	index("idx_shopOrders_status").on(table.status),
+	index("idx_shopOrders_created").on(table.createdAt),
+	index("idx_shopOrders_number").on(table.orderNumber),
+]);

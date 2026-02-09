@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import { eq, desc, gte, sql } from "drizzle-orm";
-import { InsertUser, users, garments, tryOnResults, InsertTryOnResult, boutiques, boutiqueCredits, boutiqueTransactions } from "../drizzle/schema";
+import { InsertUser, users, garments, tryOnResults, InsertTryOnResult, boutiques, boutiqueCredits, boutiqueTransactions, shopOrders } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -310,3 +310,107 @@ export async function getTopBoutiques(limit = 10) {
 }
 
 // TODO: add feature queries here as your schema grows.
+
+
+// Phase 1: Order Management Functions
+export async function createOrder(order: {
+  orderNumber: string;
+  customerId: number;
+  boutiqueId: number;
+  productId?: number;
+  quantity: number;
+  size?: string;
+  color?: string;
+  amount: number;
+  deliveryAddress?: string;
+  customerPhone?: string;
+  notes?: string;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("[Database] Cannot create order: database not available");
+  }
+
+  try {
+    const result = await db.insert(shopOrders).values(order);
+    return result;
+  } catch (error) {
+    console.error('[Database] Failed to create order:', error);
+    throw error;
+  }
+}
+
+export async function getOrdersByCustomer(customerId: number) {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  try {
+    const orders = await db
+      .select()
+      .from(shopOrders)
+      .where(eq(shopOrders.customerId, customerId))
+      .orderBy(desc(shopOrders.createdAt));
+    return orders;
+  } catch (error) {
+    console.error('[Database] Failed to get customer orders:', error);
+    return [];
+  }
+}
+
+export async function getOrdersByBoutique(boutiqueId: number) {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  try {
+    const orders = await db
+      .select()
+      .from(shopOrders)
+      .where(eq(shopOrders.boutiqueId, boutiqueId))
+      .orderBy(desc(shopOrders.createdAt));
+    return orders;
+  } catch (error) {
+    console.error('[Database] Failed to get boutique orders:', error);
+    return [];
+  }
+}
+
+export async function getOrderById(orderId: number) {
+  const db = await getDb();
+  if (!db) {
+    return null;
+  }
+
+  try {
+    const order = await db
+      .select()
+      .from(shopOrders)
+      .where(eq(shopOrders.id, orderId))
+      .limit(1);
+    return order[0] || null;
+  } catch (error) {
+    console.error('[Database] Failed to get order:', error);
+    return null;
+  }
+}
+
+export async function updateOrderStatus(orderId: number, status: string) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("[Database] Cannot update order: database not available");
+  }
+
+  try {
+    const result = await db
+      .update(shopOrders)
+      .set({ status: status as any })
+      .where(eq(shopOrders.id, orderId));
+    return result;
+  } catch (error) {
+    console.error('[Database] Failed to update order status:', error);
+    throw error;
+  }
+}

@@ -2019,3 +2019,27 @@ This approach:
 - [x] Fix "Shop Now" button to open boutique website if available
 - [x] Test all buttons are clickable and functional
 - [x] Verify buttons work on both mobile and desktop
+
+
+## Phase 58: Boutique Shop Payment Integration & Automated Payout System (IN PROGRESS)
+- [ ] Create database schema for orders, order_items, payments tables
+- [ ] Create database schema for boutique_payouts and boutique_bank_accounts tables
+- [ ] Add bank account registration UI to boutique settings
+- [ ] Build backend tRPC procedures for checkout creation
+- [ ] Build backend tRPC procedures for order management (list, get, update status)
+- [ ] Implement payout calculation logic (5% StyleSwap commission)
+- [ ] Create automated payout scheduler (runs weekly)
+- [ ] Integrate Yoko payment gateway for boutique shop orders
+- [ ] Build checkout page with delivery address form
+- [ ] Build order confirmation page with tracking info
+- [ ] Create boutique payout dashboard showing earnings and payouts
+- [ ] Add "Buy Now" button to boutique shop product cards
+- [ ] Create product checkout modal with size/color/quantity selectors
+- [ ] Implement webhook handler for Yoko payment confirmations
+- [ ] Add email notifications for order confirmations
+- [ ] Add email notifications for payout processing
+- [ ] Write unit tests for payout calculation
+- [ ] Write unit tests for order creation and management
+- [ ] Test end-to-end payment flow (customer → payment → order → payout)
+- [ ] Verify payout calculations are correct (5% commission)
+- [ ] Test boutique bank account registration and verification
