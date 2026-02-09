@@ -117,8 +117,9 @@ export default function ApiDocumentation() {
             <h2 className="text-3xl font-bold mb-6">API Reference</h2>
 
             <Tabs defaultValue="products" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="products">Products</TabsTrigger>
+                <TabsTrigger value="payments">Payments</TabsTrigger>
                 <TabsTrigger value="tryons">Try-Ons</TabsTrigger>
                 <TabsTrigger value="customers">Customers</TabsTrigger>
                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -153,6 +154,95 @@ export default function ApiDocumentation() {
                   <CardContent className="space-y-4">
                     <div className="bg-muted p-3 rounded">
                       <code className="text-sm">GET /api/products?limit=50&offset=0</code>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Payments Endpoints */}
+              <TabsContent value="payments" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Get Payment Packages</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-muted p-3 rounded">
+                      <code className="text-sm">GET /api/payments/packages</code>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">Returns all available credit packages with pricing</p>
+                    <div className="bg-muted p-4 rounded-lg overflow-x-auto">
+                      <pre className="text-sm">{`[
+  {
+    "id": "pkg_10",
+    "name": "Starter",
+    "credits": 10,
+    "price": 45.00,
+    "currency": "ZAR"
+  },
+  {
+    "id": "pkg_50",
+    "name": "Professional",
+    "credits": 50,
+    "price": 150.00,
+    "currency": "ZAR"
+  }
+]`}</pre>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Create Payment Checkout</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-muted p-3 rounded">
+                      <code className="text-sm">POST /api/payments/checkout</code>
+                    </div>
+                    <div className="bg-muted p-4 rounded-lg overflow-x-auto">
+                      <pre className="text-sm">{`Request:
+{
+  "packageId": "pkg_50",
+  "successUrl": "https://yoursite.com/success",
+  "cancelUrl": "https://yoursite.com/cancel"
+}
+
+Response:
+{
+  "id": "checkout_abc123",
+  "status": "pending",
+  "amount": 150.00,
+  "currency": "ZAR",
+  "credits": 50,
+  "checkoutUrl": "https://checkout.yoco.com/abc123"
+}`}</pre>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Confirm Payment</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-muted p-3 rounded">
+                      <code className="text-sm">POST /api/payments/confirm</code>
+                    </div>
+                    <div className="bg-muted p-4 rounded-lg overflow-x-auto">
+                      <pre className="text-sm">{`Request:
+{
+  "paymentIntentId": "checkout_abc123",
+  "packageId": "pkg_50",
+  "credits": 50
+}
+
+Response:
+{
+  "success": true,
+  "credits": 50,
+  "expiresAt": "2026-03-09T00:00:00Z",
+  "message": "Payment successful"
+}`}</pre>
                     </div>
                   </CardContent>
                 </Card>
@@ -328,6 +418,59 @@ print('Try-on result:', result['image_url'])`}</pre>
                 </Card>
               </TabsContent>
             </Tabs>
+          </section>
+
+          {/* Payment Processing */}
+          <section id="payment-processing" className="scroll-mt-20">
+            <h2 className="text-3xl font-bold mb-6">Payment Processing</h2>
+
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Payment Flow Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  StyleSwap uses Yoco as the payment gateway for secure credit card processing in South Africa.
+                </p>
+                <div className="bg-muted p-4 rounded-lg space-y-3">
+                  <div className="font-mono text-sm">
+                    <div className="font-bold text-primary mb-2">Payment Processing Steps:</div>
+                    <div className="space-y-2">
+                      <div>1. Get available packages → GET /api/payments/packages</div>
+                      <div>2. Create checkout → POST /api/payments/checkout</div>
+                      <div>3. Redirect to Yoco → User completes payment</div>
+                      <div>4. Confirm payment → POST /api/payments/confirm</div>
+                      <div>5. Credits added → Boutique can use try-ons</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Webhook Events</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground mb-4">
+                  Real-time payment notifications sent to your webhook endpoint:
+                </p>
+                <div className="space-y-3">
+                  <div className="border-l-4 border-primary pl-4">
+                    <div className="font-mono text-sm font-bold">payment.completed</div>
+                    <p className="text-sm text-muted-foreground mt-1">Triggered when payment is successfully processed and credits are added</p>
+                  </div>
+                  <div className="border-l-4 border-destructive pl-4">
+                    <div className="font-mono text-sm font-bold">payment.failed</div>
+                    <p className="text-sm text-muted-foreground mt-1">Triggered when payment processing fails</p>
+                  </div>
+                  <div className="border-l-4 border-yellow-500 pl-4">
+                    <div className="font-mono text-sm font-bold">payment.pending</div>
+                    <p className="text-sm text-muted-foreground mt-1">Triggered when payment is awaiting confirmation</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </section>
 
           {/* Webhooks */}
