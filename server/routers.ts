@@ -19,6 +19,7 @@ import { batchUploadsRouter } from "./routers/batchUploads";
 import { otpRouter } from "./routers/otp";
 import { referralRouter } from "./routers/referral";
 import { ordersRouter } from "./routers/orders";
+import { payoutsRouter } from "./routers/payouts";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -51,6 +52,7 @@ export const appRouter = router({
   otp: otpRouter,
   referral: referralRouter,
   orders: ordersRouter,
+  payouts: payoutsRouter,
 });
 
 export type AppRouter = typeof appRouter;

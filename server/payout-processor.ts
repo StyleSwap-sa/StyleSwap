@@ -2,6 +2,7 @@ import { getDb } from "./db";
 import { shopOrders, payouts, payoutTransactions, payoutAuditLog, boutiqueBankAccounts } from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { Decimal } from "decimal.js";
+import { createPayout, formatBankAccountType, validateBankAccountDetails } from "./yoco-payouts";
 
 /**
  * Calculate payout amounts based on order total
@@ -139,32 +140,66 @@ export async function processOrderPayout(orderId: number) {
       }),
     });
 
-    // 7. TODO: Integrate with actual payment processor (e.g., Paystack, Flutterwave)
-    // For now, mark as completed (in production, this would call the payment API)
-    await db
-      .update(payouts)
-      .set({
-        status: "completed",
-        updatedAt: new Date(),
-      })
-      .where(eq(payouts.id, payoutId));
+    // 7. Transfer funds to boutique bank account using Yoco Payouts API
+    try {
+      const yocoResponse = await createPayout({
+        amount: Math.round(payoutAmounts.boutiqueShare * 100), // Convert to cents
+        currency: "ZAR",
+        beneficiary: {
+          name: bankAccount[0].accountHolderName,
+          accountNumber: bankAccount[0].accountNumber,
+          bankBranchCode: bankAccount[0].bankBranchCode,
+          bankAccountType: formatBankAccountType(bankAccount[0].accountType),
+        },
+        reference: `PAYOUT-${orderData.orderNumber}`,
+        metadata: {
+          orderId: orderId.toString(),
+          boutiqueId: boutiqueId.toString(),
+          orderNumber: orderData.orderNumber,
+        },
+      });
 
-    // 8. Log completion
+      // Update payout with Yoco reference
+      await db
+        .update(payouts)
+        .set({
+          status: yocoResponse.status === "sent" ? "processing" : yocoResponse.status,
+          yocoPayoutId: yocoResponse.id,
+          updatedAt: new Date(),
+        })
+        .where(eq(payouts.id, payoutId));
+
+      console.log(`[Payout] Yoco payout initiated: ${yocoResponse.id}`);
+    } catch (yocoError) {
+      console.error(`[Payout] Yoco payout failed for order ${orderNumber}:`, yocoError);
+      // Mark as failed but don't throw - we'll retry later
+      await db
+        .update(payouts)
+        .set({
+          status: "failed",
+          updatedAt: new Date(),
+          notes: `Yoco payout failed: ${yocoError instanceof Error ? yocoError.message : "Unknown error"}`,
+        })
+        .where(eq(payouts.id, payoutId));
+    }
+
+    // 8. Log audit entry
     await db.insert(payoutAuditLog).values({
       payoutId,
-      action: "payout_completed",
+      action: "payout_yoco_initiated",
       oldStatus: "processing",
-      newStatus: "completed",
+      newStatus: "processing",
       actorId: null,
       actorType: "system",
       details: JSON.stringify({
-        completedAt: new Date().toISOString(),
+        initiatedAt: new Date().toISOString(),
         bankAccount: bankAccount[0].accountNumber.slice(-4),
+        amount: payoutAmounts.boutiqueShare,
       }),
     });
 
-    console.log(`[Payout] Payout processed successfully: ${payoutId}`);
-    return { payoutId, status: "completed", amount: payoutAmounts.boutiqueShare };
+    console.log(`[Payout] Payout initiated successfully: ${payoutId}`);
+    return { payoutId, status: "processing", amount: payoutAmounts.boutiqueShare };
   } catch (error) {
     console.error("[Payout] Error processing payout:", error);
     throw error;

@@ -2094,3 +2094,43 @@ This approach:
 - [ ] Test with multiple boutiques and orders
 - [ ] Verify no existing workflows are affected
 - [ ] Save checkpoint with Phase 3 complete
+
+
+## Phase 61: Yoco Payouts API Integration (COMPLETED)
+
+### Yoco Payouts API Implementation
+- [x] Create yoco-payouts.ts service for Yoco Payouts API integration
+- [x] Implement createPayout() function to transfer funds to boutique bank accounts
+- [x] Implement getPayout() function to retrieve payout status
+- [x] Implement listPayouts() function to get boutique payout history
+- [x] Add payout status mapping (sent, paid, unpaid, failed)
+- [x] Integrate Yoco payouts into payout processor
+- [x] Add error handling for failed payouts (bank details validation)
+- [x] Create payout retry logic for failed transfers
+- [x] Add logging and audit trail for all payout operations
+- [x] Write unit tests for Yoco payouts integration (13 tests passing)
+
+### Boutique Payout Dashboard
+- [x] Create boutique earnings dashboard tRPC router
+- [x] Implement getPayoutHistory() procedure
+- [x] Implement getEarningsSummary() procedure
+- [x] Implement getBankAccount() procedure
+- [x] Implement getPayoutDetails() procedure
+- [x] Implement syncPayoutStatus() procedure
+- [ ] Create boutique earnings dashboard page UI
+- [ ] Display total earnings, pending payouts, completed payouts
+- [ ] Show payout history with transaction details
+- [ ] Add bank account management UI
+- [ ] Display payout status (sent, paid, failed)
+- [ ] Add payout request button for instant payouts
+- [ ] Show payout fees and net amount
+- [ ] Add export/download payout history feature
+
+### Testing & Validation
+- [ ] Test Yoco payouts API with test credentials
+- [ ] Verify payout calculations match expected amounts
+- [ ] Test payout status updates from Yoco webhooks
+- [ ] Test failed payout scenarios
+- [ ] Verify boutique dashboard displays correct data
+- [ ] Test with multiple boutiques and orders
+- [ ] Verify no existing workflows are affected
