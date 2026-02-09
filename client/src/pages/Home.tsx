@@ -6,12 +6,14 @@ import { getLoginUrl } from "@/const";
 import { useState } from "react";
 import { LoginOptionsModal } from "@/components/LoginOptionsModal";
 import { Footer } from "@/components/Footer";
+import DemoVideoModal from "@/components/DemoVideoModal";
 
 export default function Home() {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLoginOptions, setShowLoginOptions] = useState(false);
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
@@ -293,15 +295,31 @@ export default function Home() {
           <div className="text-center py-20">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome to StyleSwap</h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8">AI-powered virtual try-on for fashion retail</p>
-            <Button 
-              onClick={handleGetStarted}
-              className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-            >
-              Get Started <ArrowRight className="w-4 h-4" />
-            </Button>
+            <div className="flex gap-4 justify-center flex-wrap">
+              <Button 
+                onClick={handleGetStarted}
+                className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+              >
+                Get Started <ArrowRight className="w-4 h-4" />
+              </Button>
+              <Button 
+                onClick={() => setIsDemoOpen(true)}
+                variant="outline"
+                className="premium-button gap-2"
+              >
+                Watch Demo
+              </Button>
+            </div>
           </div>
         </div>
       </main>
+
+      {/* Demo Video Modal */}
+      <DemoVideoModal
+        isOpen={isDemoOpen}
+        onClose={() => setIsDemoOpen(false)}
+        defaultVideoId="customer-demo"
+      />
 
       {/* Footer */}
       <Footer />

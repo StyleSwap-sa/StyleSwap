@@ -71,4 +71,9 @@
 - [x] Create demo video modal component
 - [x] Add Watch Demo button functionality to B2B landing page
 - [x] Integrate video player with demo content
-- [ ] Test demo video modal on dev server
+- [x] Test demo video modal on dev server
+- [x] Add video selector for multiple demo videos
+- [x] Create boutique partner demo video option
+- [x] Create customer demo video option
+- [x] Add Watch Demo button to customer home page with customer-focused video
+- [ ] Test multi-video selector functionality

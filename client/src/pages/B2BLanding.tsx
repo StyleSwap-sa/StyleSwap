@@ -548,7 +548,7 @@ export default function B2BLanding() {
       <DemoVideoModal
         isOpen={isDemoOpen}
         onClose={() => setIsDemoOpen(false)}
-        videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ"
+        defaultVideoId="boutique-demo"
       />
     </div>
   );
