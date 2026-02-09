@@ -3,15 +3,50 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, MapPin, Star, Package, ChevronRight } from "lucide-react";
+import { Search, MapPin, Star, Package, ChevronRight, Check } from "lucide-react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
+
+const PRICING_TIERS = [
+  {
+    id: "pkg_10_credits",
+    name: "10 Try-Ons",
+    price: 45,
+    credits: 10,
+    costPerTryOn: 4.50,
+  },
+  {
+    id: "pkg_20_credits",
+    name: "20 Try-Ons",
+    price: 80,
+    credits: 20,
+    costPerTryOn: 4.00,
+  },
+  {
+    id: "pkg_50_credits",
+    name: "50 Try-Ons",
+    price: 150,
+    credits: 50,
+    costPerTryOn: 3.00,
+  },
+];
 
 export default function BoutiqueDirectory() {
   const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "rating" | "products" | "name">("newest");
   const limit = 12;
+
+  const handlePurchase = (packageId: string) => {
+    if (!isAuthenticated) {
+      window.location.href = getLoginUrl();
+      return;
+    }
+    navigate(`/checkout?package=${packageId}`);
+  };
 
   // Fetch boutiques list
   const { data: boutiquesData, isLoading: isLoadingBoutiques } = trpc.boutiqueDiscovery.getBoutiquesList.useQuery({
@@ -260,6 +295,60 @@ export default function BoutiqueDirectory() {
               )}
             </>
           )}
+        </section>
+
+        {/* Pricing Section */}
+        <section className="py-16 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border border-border/20 mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Get Try-On Credits</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Purchase credits to try on clothing from any boutique. Credits are valid for 30 days.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {PRICING_TIERS.map((tier) => (
+              <Card key={tier.id} className="hover:shadow-lg transition-shadow flex flex-col">
+                <CardHeader>
+                  <div className="text-3xl font-bold text-primary mb-2">R{tier.price}</div>
+                  <CardTitle className="text-lg">{tier.name}</CardTitle>
+                  <div className="text-primary font-semibold text-sm">R{tier.costPerTryOn.toFixed(2)}/try-on</div>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col">
+                  <ul className="space-y-2 mb-6 flex-1">
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-muted-foreground">{tier.credits} virtual try-ons</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-muted-foreground">30-day validity</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-muted-foreground">Email support</span>
+                    </li>
+                  </ul>
+                  <Button
+                    onClick={() => handlePurchase(tier.id)}
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    Buy Now
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/pricing-page")}
+              className="text-primary border-primary hover:bg-primary/10"
+            >
+              View All Plans
+            </Button>
+          </div>
         </section>
       </div>
     </div>

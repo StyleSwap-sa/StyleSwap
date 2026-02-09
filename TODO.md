@@ -29,6 +29,12 @@
 - [ ] Add boutique social media links display
 - [ ] Implement customer reviews system for boutiques
 
+### Pricing Integration
+- [x] Add "Buy Now" button to pricing cards
+- [x] Integrate payment checkout flow for credit purchases
+- [x] Connect pricing cards to Yoco payment system (using existing checkout)
+- [ ] Test pricing purchase flow end-to-end
+
 ### Testing & Validation
 - [ ] Test all boutique discovery APIs
 - [ ] Test search functionality with various queries
@@ -36,6 +42,8 @@
 - [ ] Test sorting options
 - [ ] Test pagination
 - [ ] Test featured and trending boutiques display
+- [ ] Test pricing card "Buy Now" button
+- [ ] Test payment checkout from pricing page
 
 ## Previous Phases (Completed)
 
