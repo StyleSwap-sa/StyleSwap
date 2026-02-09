@@ -325,3 +325,69 @@ export function getPaymentPackage(packageId: string): PaymentPackage | undefined
 export function getAllPaymentPackages(): PaymentPackage[] {
   return PAYMENT_PACKAGES;
 }
+
+
+/**
+ * Create a payment intent for product orders (Phase 2)
+ */
+export async function createOrderPaymentIntent(
+  request: {
+    userId: number;
+    userEmail: string;
+    userName: string;
+    amount: number; // in cents
+    orderNumber: string;
+    productName: string;
+    quantity: number;
+    successUrl: string;
+    cancelUrl: string;
+  }
+): Promise<PaymentIntentResponse> {
+  if (!ENV.yocoSecretKey || !ENV.yocoApiBaseUrl) {
+    throw new Error("Yoco credentials not configured");
+  }
+
+  try {
+    const response = await fetch(`${ENV.yocoApiBaseUrl}/checkouts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${ENV.yocoSecretKey}`,
+      },
+      body: JSON.stringify({
+        amount: request.amount,
+        currency: "ZAR",
+        successUrl: request.successUrl,
+        cancelUrl: request.cancelUrl,
+        metadata: {
+          userId: request.userId.toString(),
+          orderNumber: request.orderNumber,
+          productName: request.productName,
+          quantity: request.quantity.toString(),
+          userName: request.userName,
+          userEmail: request.userEmail,
+        },
+        clientReferenceId: `order-${request.orderNumber}-${Date.now()}`,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Yoko API error: ${error.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    return {
+      id: data.id,
+      clientSecret: "",
+      status: data.status,
+      amount: data.amount,
+      currency: data.currency,
+      checkoutUrl: data.redirectUrl,
+      metadata: data.metadata,
+    };
+  } catch (error) {
+    console.error("[Yoko Payment] Error creating order payment intent:", error);
+    throw error;
+  }
+}

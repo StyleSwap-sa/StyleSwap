@@ -109,4 +109,70 @@ export const ordersRouter = router({
         });
       }
     }),
+
+  // Create checkout session for product order
+  createCheckout: protectedProcedure
+    .input(
+      z.object({
+        boutiqueId: z.number(),
+        productId: z.number().optional(),
+        productName: z.string(),
+        quantity: z.number().min(1),
+        size: z.string().optional(),
+        color: z.string().optional(),
+        amount: z.number().min(0), // in ZAR
+        deliveryAddress: z.string(),
+        customerPhone: z.string(),
+        successUrl: z.string().url(),
+        cancelUrl: z.string().url(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const { createOrderPaymentIntent } = await import("../yoko-payment");
+
+        // Generate order number
+        const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        // Create payment intent with Yoko
+        const paymentIntent = await createOrderPaymentIntent({
+          userId: ctx.user.id,
+          userEmail: ctx.user.email || "",
+          userName: ctx.user.name || "Customer",
+          amount: Math.round(input.amount * 100), // Convert to cents
+          orderNumber,
+          productName: input.productName,
+          quantity: input.quantity,
+          successUrl: input.successUrl,
+          cancelUrl: input.cancelUrl,
+        });
+
+        // Store order in database with pending status
+        const order = await createOrder({
+          orderNumber,
+          boutiqueId: input.boutiqueId,
+          productId: input.productId,
+          quantity: input.quantity,
+          size: input.size,
+          color: input.color,
+          amount: input.amount,
+          deliveryAddress: input.deliveryAddress,
+          customerPhone: input.customerPhone,
+          notes: `Payment Intent ID: ${paymentIntent.id}`,
+        });
+
+        return {
+          success: true,
+          orderNumber,
+          checkoutUrl: paymentIntent.checkoutUrl,
+          paymentIntentId: paymentIntent.id,
+        };
+      } catch (error) {
+        console.error("[Orders] Failed to create checkout:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create checkout session",
+        });
+      }
+    }),
 });

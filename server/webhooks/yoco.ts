@@ -338,3 +338,66 @@ async function handlePaymentCanceled(data: YokoWebhookPayload["data"]) {
     throw error;
   }
 }
+
+
+/**
+ * Handle order payment success (Phase 2)
+ */
+export async function handleOrderPaymentSucceeded(data: YokoWebhookPayload["data"], externalEventId: string) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const userId = data.metadata.userId ? parseInt(data.metadata.userId, 10) : null;
+  const orderNumber = data.metadata.orderNumber;
+  const userEmail = data.metadata.userEmail;
+  const userName = data.metadata.userName;
+
+  if (!userId || !orderNumber) {
+    throw new Error("Missing userId or orderNumber in metadata");
+  }
+
+  try {
+    // Import order functions
+    const { shopOrders } = await import("../../drizzle/schema");
+    
+    // Update order status to confirmed
+    await db
+      .update(shopOrders)
+      .set({ 
+        status: "confirmed",
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(shopOrders.orderNumber, orderNumber));
+
+    // Record transaction
+    await db.insert(transactions).values({
+      userId,
+      type: "order_payment",
+      amount: 1, // Placeholder
+      price: (data.amount / 100).toString(),
+      currency: (data.currency || "ZAR").toUpperCase(),
+      description: `Order payment for ${orderNumber}`,
+      fitRoomOrderId: data.id,
+      status: "completed",
+    });
+
+    // Send confirmation email
+    if (userEmail) {
+      const emailHtml = `<html><body style="font-family: Arial, sans-serif;"><h2>Order Confirmation</h2><p>Hi ${userName},</p><p>Thank you for your order! Your order <strong>${orderNumber}</strong> has been confirmed.</p><p>Amount: <strong>R${(data.amount / 100).toFixed(2)}</strong></p><p>You will receive a shipping notification soon.</p><p>Best regards,<br/>StyleSwap Team</p></body></html>`;
+      await sendEmailNotification({
+        userId,
+        type: "order_confirmation",
+        recipientEmail: userEmail,
+        subject: "Order Confirmation - StyleSwap",
+        htmlContent: emailHtml,
+      });
+    }
+
+    console.log(`[Yoko Webhook] Order payment succeeded: ${orderNumber}`);
+  } catch (error) {
+    console.error("[Yoko Webhook] Error handling order payment:", error);
+    throw error;
+  }
+}
