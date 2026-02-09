@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, AlertCircle } from "lucide-react";
 
 export interface DemoVideo {
   id: string;
@@ -21,26 +21,26 @@ interface DemoVideoModalProps {
 const DEFAULT_VIDEOS: DemoVideo[] = [
   {
     id: "boutique-demo",
-    title: "For Boutique Partners",
-    description: "See how boutique owners use StyleSwap to increase conversions and reduce returns. Learn about the dashboard, analytics, and payout system.",
-    url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    duration: "5:30",
+    title: "Virtual Try-On for Boutique Partners",
+    description: "Watch how StyleSwap's AI-powered virtual try-on technology helps boutique owners increase conversions, reduce returns, and boost customer confidence. See the complete workflow from upload to final try-on result.",
+    url: "",
+    duration: "Coming Soon",
     audience: "boutique",
   },
   {
     id: "customer-demo",
-    title: "For Customers",
-    description: "Experience the customer perspective. Watch how easy it is to upload a photo and try on clothes virtually before making a purchase.",
-    url: "https://www.youtube.com/embed/9bZkp7q19f0",
-    duration: "3:45",
+    title: "Virtual Try-On for Customers",
+    description: "Experience how customers use StyleSwap to virtually try on clothes before purchasing. Upload a photo, select a garment, and see realistic AI-generated try-on results in seconds.",
+    url: "",
+    duration: "Coming Soon",
     audience: "customer",
   },
   {
     id: "full-demo",
-    title: "Complete Platform Overview",
-    description: "Get a comprehensive walkthrough of the entire StyleSwap platform, from boutique setup to customer try-ons to payouts.",
-    url: "https://www.youtube.com/embed/jNQXAC9IVRw",
-    duration: "8:15",
+    title: "Complete Virtual Try-On Workflow",
+    description: "Get a comprehensive walkthrough of the entire StyleSwap virtual try-on process, from image upload and garment selection to AI generation and final result display.",
+    url: "",
+    duration: "Coming Soon",
     audience: "both",
   },
 ];
@@ -57,6 +57,8 @@ export default function DemoVideoModal({
 
   if (!isOpen) return null;
 
+  const hasVideo = selectedVideo.url && selectedVideo.url.trim().length > 0;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="relative w-full max-w-4xl bg-background rounded-lg overflow-hidden shadow-2xl">
@@ -71,29 +73,43 @@ export default function DemoVideoModal({
 
         {/* Video Container */}
         <div className="relative w-full bg-black">
-          <div className="aspect-video">
-            {selectedVideo.url.includes("youtube") ? (
-              <iframe
-                width="100%"
-                height="100%"
-                src={selectedVideo.url}
-                title={selectedVideo.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full"
-              />
+          <div className="aspect-video flex items-center justify-center">
+            {hasVideo ? (
+              selectedVideo.url.includes("youtube") ? (
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={selectedVideo.url}
+                  title={selectedVideo.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              ) : (
+                <video
+                  width="100%"
+                  height="100%"
+                  controls
+                  autoPlay
+                  className="w-full h-full"
+                >
+                  <source src={selectedVideo.url} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              )
             ) : (
-              <video
-                width="100%"
-                height="100%"
-                controls
-                autoPlay
-                className="w-full h-full"
-              >
-                <source src={selectedVideo.url} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+              <div className="flex flex-col items-center justify-center gap-4 p-8 text-center">
+                <AlertCircle className="w-16 h-16 text-muted-foreground" />
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">
+                    Demo Video Coming Soon
+                  </h3>
+                  <p className="text-muted-foreground max-w-md">
+                    We're preparing high-quality virtual try-on demo videos. Check back soon to see how StyleSwap transforms the fashion retail experience.
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         </div>

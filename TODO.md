@@ -76,4 +76,6 @@
 - [x] Create boutique partner demo video option
 - [x] Create customer demo video option
 - [x] Add Watch Demo button to customer home page with customer-focused video
-- [ ] Test multi-video selector functionality
+- [x] Remove placeholder YouTube videos
+- [x] Replace with virtual try-on focused demo placeholders
+- [ ] Upload actual virtual try-on demo videos and update URLs
