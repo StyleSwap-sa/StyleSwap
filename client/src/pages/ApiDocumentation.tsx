@@ -422,25 +422,90 @@ print('Try-on result:', result['image_url'])`}</pre>
 
           {/* Payment Processing */}
           <section id="payment-processing" className="scroll-mt-20">
-            <h2 className="text-3xl font-bold mb-6">Payment Processing</h2>
+            <h2 className="text-3xl font-bold mb-6">Credits & Pricing</h2>
 
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Payment Flow Overview</CardTitle>
+                <CardTitle>How Credits Work</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  StyleSwap uses Yoco as the payment gateway for secure credit card processing in South Africa.
+                  StyleSwap uses a simple credit-based model. Purchase credits and use them to generate try-ons. Each try-on costs 1 credit.
                 </p>
                 <div className="bg-muted p-4 rounded-lg space-y-3">
                   <div className="font-mono text-sm">
-                    <div className="font-bold text-primary mb-2">Payment Processing Steps:</div>
+                    <div className="font-bold text-primary mb-3">Credit Pricing (Volume Discounts):</div>
                     <div className="space-y-2">
-                      <div>1. Get available packages → GET /api/payments/packages</div>
-                      <div>2. Create checkout → POST /api/payments/checkout</div>
-                      <div>3. Redirect to Yoco → User completes payment</div>
-                      <div>4. Confirm payment → POST /api/payments/confirm</div>
-                      <div>5. Credits added → Boutique can use try-ons</div>
+                      <div className="flex justify-between items-center">
+                        <span>100 try-ons</span>
+                        <span className="text-right">
+                          <div className="font-bold">R385.00</div>
+                          <div className="text-xs text-muted-foreground">R3.85/try-on</div>
+                        </span>
+                      </div>
+                      <div className="border-t border-muted-foreground/20"></div>
+                      <div className="flex justify-between items-center">
+                        <span>200 try-ons</span>
+                        <span className="text-right">
+                          <div className="font-bold">R750.00</div>
+                          <div className="text-xs text-muted-foreground">R3.75/try-on</div>
+                        </span>
+                      </div>
+                      <div className="border-t border-muted-foreground/20"></div>
+                      <div className="flex justify-between items-center">
+                        <span>500 try-ons</span>
+                        <span className="text-right">
+                          <div className="font-bold">R1,350.00</div>
+                          <div className="text-xs text-muted-foreground">R2.70/try-on</div>
+                        </span>
+                      </div>
+                      <div className="border-t border-muted-foreground/20"></div>
+                      <div className="flex justify-between items-center">
+                        <span>1,000 try-ons</span>
+                        <span className="text-right">
+                          <div className="font-bold">R2,200.00</div>
+                          <div className="text-xs text-muted-foreground">R2.20/try-on</div>
+                        </span>
+                      </div>
+                      <div className="border-t border-muted-foreground/20"></div>
+                      <div className="flex justify-between items-center">
+                        <span>5,000 try-ons</span>
+                        <span className="text-right">
+                          <div className="font-bold">R6,250.00</div>
+                          <div className="text-xs text-muted-foreground">R1.25/try-on</div>
+                        </span>
+                      </div>
+                      <div className="border-t border-muted-foreground/20"></div>
+                      <div className="flex justify-between items-center bg-primary/10 p-2 rounded">
+                        <span className="font-semibold">20,000 try-ons</span>
+                        <span className="text-right">
+                          <div className="font-bold text-primary">R18,600.00</div>
+                          <div className="text-xs text-muted-foreground">R0.93/try-on</div>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground mt-4">
+                  <strong>Note:</strong> Credits expire 30 days after purchase. Purchase additional credits anytime without restrictions.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Purchase Flow</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-muted p-4 rounded-lg space-y-3">
+                  <div className="font-mono text-sm">
+                    <div className="font-bold text-primary mb-2">Steps to Purchase Credits:</div>
+                    <div className="space-y-2">
+                      <div>1. Call GET /api/billing/getCreditTiers to see available packages</div>
+                      <div>2. Call POST /api/billing/initiatePurchase with desired package</div>
+                      <div>3. Redirect user to Yoco checkout URL</div>
+                      <div>4. After payment, credits are automatically added to account</div>
+                      <div>5. Start generating try-ons immediately</div>
                     </div>
                   </div>
                 </div>
@@ -449,24 +514,24 @@ print('Try-on result:', result['image_url'])`}</pre>
 
             <Card>
               <CardHeader>
-                <CardTitle>Payment Webhook Events</CardTitle>
+                <CardTitle>Credit Webhook Events</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground mb-4">
-                  Real-time payment notifications sent to your webhook endpoint:
+                  Real-time notifications for credit purchases and usage:
                 </p>
                 <div className="space-y-3">
                   <div className="border-l-4 border-primary pl-4">
-                    <div className="font-mono text-sm font-bold">payment.completed</div>
-                    <p className="text-sm text-muted-foreground mt-1">Triggered when payment is successfully processed and credits are added</p>
+                    <div className="font-mono text-sm font-bold">credits.purchased</div>
+                    <p className="text-sm text-muted-foreground mt-1">Triggered when credits are successfully purchased</p>
                   </div>
-                  <div className="border-l-4 border-destructive pl-4">
-                    <div className="font-mono text-sm font-bold">payment.failed</div>
-                    <p className="text-sm text-muted-foreground mt-1">Triggered when payment processing fails</p>
+                  <div className="border-l-4 border-primary pl-4">
+                    <div className="font-mono text-sm font-bold">credits.used</div>
+                    <p className="text-sm text-muted-foreground mt-1">Triggered when credits are used for a try-on</p>
                   </div>
                   <div className="border-l-4 border-yellow-500 pl-4">
-                    <div className="font-mono text-sm font-bold">payment.pending</div>
-                    <p className="text-sm text-muted-foreground mt-1">Triggered when payment is awaiting confirmation</p>
+                    <div className="font-mono text-sm font-bold">credits.expired</div>
+                    <p className="text-sm text-muted-foreground mt-1">Triggered when credits expire (30 days after purchase)</p>
                   </div>
                 </div>
               </CardContent>
