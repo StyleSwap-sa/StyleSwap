@@ -65,3 +65,10 @@
 - [x] Bulk payout management admin dashboard
 - [x] Referral system (10 credits per referral)
 - [x] Order management system with Yoco payment integration
+
+
+### Demo Video Feature
+- [x] Create demo video modal component
+- [x] Add Watch Demo button functionality to B2B landing page
+- [x] Integrate video player with demo content
+- [ ] Test demo video modal on dev server

@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ArrowRight,
@@ -12,8 +13,10 @@ import {
   Globe,
 } from "lucide-react";
 import { Link } from "wouter";
+import DemoVideoModal from "@/components/DemoVideoModal";
 
 export default function B2BLanding() {
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Navigation */}
@@ -69,10 +72,11 @@ export default function B2BLanding() {
             <div className="flex gap-4">
               <Link href="/b2b-signup">
                 <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-8 text-lg cursor-pointer">
-                  Start Free Trial <ArrowRight className="ml-2" />
+                  Get Started <ArrowRight className="ml-2" />
                 </Button>
               </Link>
               <Button
+                onClick={() => setIsDemoOpen(true)}
                 variant="outline"
                 className="premium-button h-14 px-8 text-lg cursor-pointer"
               >
@@ -394,15 +398,9 @@ export default function B2BLanding() {
               <Button
                 className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-14 px-8 text-lg font-bold cursor-pointer"
               >
-                Start Free Trial <ArrowRight className="ml-2" />
+                Get Started <ArrowRight className="ml-2" />
               </Button>
             </Link>
-            <Button
-              variant="outline"
-              className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 h-14 px-8 text-lg font-bold cursor-pointer"
-            >
-              Schedule Demo
-            </Button>
           </div>
         </div>
       </section>
@@ -545,6 +543,13 @@ export default function B2BLanding() {
           </div>
         </div>
       </footer>
+
+      {/* Demo Video Modal */}
+      <DemoVideoModal
+        isOpen={isDemoOpen}
+        onClose={() => setIsDemoOpen(false)}
+        videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ"
+      />
     </div>
   );
 }
