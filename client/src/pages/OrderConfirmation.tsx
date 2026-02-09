@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "wouter";
+import { useSearchParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
@@ -7,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 
 export default function OrderConfirmation() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [orderStatus, setOrderStatus] = useState<"loading" | "success" | "error">("loading");
   const [orderData, setOrderData] = useState<any>(null);
 
@@ -83,12 +83,12 @@ export default function OrderConfirmation() {
               </div>
 
               <div className="space-y-2">
-                <Button onClick={() => navigate("/my-orders")} className="w-full">
+                <Button onClick={() => setLocation("/my-orders")} className="w-full">
                   View My Orders
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => navigate("/")}
+                  onClick={() => setLocation("/")}
                   className="w-full"
                 >
                   Continue Shopping
@@ -102,7 +102,7 @@ export default function OrderConfirmation() {
               <p className="text-center text-muted-foreground">
                 Your payment was cancelled. No charges have been made to your account.
               </p>
-              <Button onClick={() => navigate("/")} className="w-full">
+              <Button onClick={() => setLocation("/")} className="w-full">
                 Return to Home
               </Button>
             </>

@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { Heart, Share2, ShoppingBag, Sparkles, Search, Filter, Loader2, MapPin, Phone, Mail, Instagram, Facebook, MessageCircle } from "lucide-react";
+import { Heart, Share2, ShoppingBag, Sparkles, Search, Filter, Loader2, MapPin, Phone, Mail, Instagram, Facebook, MessageCircle, ShoppingCart } from "lucide-react";
+import { useState } from "react";
+import { OrderCheckoutModal } from "@/components/OrderCheckoutModal";
 
 interface Product {
   id: number;
@@ -25,6 +27,8 @@ export default function BoutiqueShop() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [checkoutProduct, setCheckoutProduct] = useState<Product | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Fetch boutique details
   const { data: boutique, isLoading: boutiqueLoding } = trpc.boutiques.getBoutiqueBySlug.useQuery(
@@ -278,20 +282,51 @@ export default function BoutiqueShop() {
                     <span className="text-lg font-bold">R{product.price.toFixed(2)}</span>
                   </div>
 
-                  {/* Try On Button */}
-                  <Button
-                    onClick={() => handleTryOn(product)}
-                    className="w-full"
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Try On
-                  </Button>
+                  {/* Try On and Buy Now Buttons */}
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleTryOn(product)}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Try On
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          window.location.href = getLoginUrl();
+                          return;
+                        }
+                        setCheckoutProduct(product);
+                        setIsCheckoutOpen(true);
+                      }}
+                      className="flex-1"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Buy Now
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
       </div>
+
+      {/* Checkout Modal */}
+      {checkoutProduct && boutique && (
+        <OrderCheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => {
+            setIsCheckoutOpen(false);
+            setCheckoutProduct(null);
+          }}
+          product={checkoutProduct}
+          boutiqueId={boutique.id}
+          quantity={1}
+        />
+      )}
 
       {/* Footer */}
       <div className="bg-muted/50 border-t mt-12">

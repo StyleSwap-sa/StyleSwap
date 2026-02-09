@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
 
 interface OrderCheckoutModalProps {
   isOpen: boolean;
@@ -29,7 +28,7 @@ export function OrderCheckoutModal({
   boutiqueId,
   quantity = 1,
 }: OrderCheckoutModalProps) {
-  const { toast } = useToast();
+
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     deliveryAddress: "",
@@ -52,20 +51,12 @@ export function OrderCheckoutModal({
   const handleCheckout = async () => {
     // Validate required fields
     if (!formData.deliveryAddress.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a delivery address",
-        variant: "destructive",
-      });
+      alert("Please enter a delivery address");
       return;
     }
 
     if (!formData.customerPhone.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a phone number",
-        variant: "destructive",
-      });
+      alert("Please enter a phone number");
       return;
     }
 
@@ -90,19 +81,12 @@ export function OrderCheckoutModal({
       if (result.checkoutUrl) {
         // Redirect to Yoko checkout
         window.open(result.checkoutUrl, "_blank");
-        toast({
-          title: "Success",
-          description: "Redirecting to payment...",
-        });
+        alert("Redirecting to payment...");
         onClose();
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create checkout. Please try again.",
-        variant: "destructive",
-      });
+        alert("Failed to create checkout. Please try again.");
     } finally {
       setIsLoading(false);
     }

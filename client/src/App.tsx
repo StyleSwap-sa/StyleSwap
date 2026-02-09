@@ -40,6 +40,9 @@ import TermsAndConditions from "./pages/TermsAndConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
 import OwnerBoutiqueDashboard from "./pages/OwnerBoutiqueDashboard";
+import MyOrders from "./pages/MyOrders";
+import BoutiqueOrderDashboard from "./pages/BoutiqueOrderDashboard";
+import OrderConfirmation from "./pages/OrderConfirmation";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -83,6 +86,9 @@ function Router() {
       <Route path={"/terms-and-conditions"} component={TermsAndConditions} />
       <Route path={"/privacy-policy"} component={PrivacyPolicy} />
       <Route path={"/refund-policy"} component={RefundPolicy} />
+      <Route path={"/my-orders"} component={MyOrders} />
+      <Route path={"/boutique-orders"} component={BoutiqueOrderDashboard} />
+      <Route path={"/order-confirmation"} component={OrderConfirmation} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
