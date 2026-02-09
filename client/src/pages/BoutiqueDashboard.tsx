@@ -137,12 +137,12 @@ export default function BoutiqueDashboard() {
               <Card className="premium-card">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Total Spent
+                    Total Credits Purchased
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">
-                    R{(billingSummary?.totalSpending || 0).toFixed(2)}
+                    {billingSummary?.totalCredits || 0}
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
                     All time
@@ -153,15 +153,15 @@ export default function BoutiqueDashboard() {
               <Card className="premium-card">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Average Cost
+                    Credits Used
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">
-                    R{billingSummary?.averageCostPerCredit || 0}
+                    {billingSummary?.usedCredits || 0}
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Per try-on
+                    For try-ons
                   </p>
                 </CardContent>
               </Card>
