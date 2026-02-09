@@ -30,10 +30,10 @@ describe("Referral System", () => {
   });
 
   describe("Referral Rewards", () => {
-    it("referrer should receive 25 credits", () => {
+    it("referrer should receive 10 credits", () => {
       // This is a configuration test
       // The actual credit award is tested in integration tests
-      expect(25).toBe(25);
+      expect(10).toBe(10);
     });
 
     it("referee should receive 0 credits", () => {
@@ -70,23 +70,23 @@ describe("Referral System", () => {
   describe("Referral Statistics", () => {
     it("should have correct reward amounts", () => {
       // Configuration verification
-      const referrerReward = 25;
+      const referrerReward = 10;
       const refereeReward = 0;
       
-      expect(referrerReward).toBe(25);
+      expect(referrerReward).toBe(10);
       expect(refereeReward).toBe(0);
-      expect(referrerReward + refereeReward).toBe(25);
+      expect(referrerReward + refereeReward).toBe(10);
     });
 
     it("should track referral metrics", () => {
       // Mock statistics structure
       const stats = {
         totalReferrals: 5,
-        totalCreditsEarned: 125, // 5 referrals * 25 credits
+        totalCreditsEarned: 50, // 5 referrals * 10 credits
         referralCode: "STYLESWAP-BOUTIQUE-000001",
       };
 
-      expect(stats.totalCreditsEarned).toBe(stats.totalReferrals * 25);
+      expect(stats.totalCreditsEarned).toBe(stats.totalReferrals * 10);
       expect(stats.referralCode).toMatch(/^STYLESWAP-BOUTIQUE-/);
     });
   });
@@ -113,9 +113,9 @@ describe("Referral System", () => {
 
   describe("Referral Transaction Logging", () => {
     it("should log referrer reward transaction", () => {
-      const description = "Referral reward: 25 credits earned";
+      const description = "Referral reward: 10 credits earned";
       expect(description).toContain("Referral reward");
-      expect(description).toContain("25");
+      expect(description).toContain("10");
       expect(description).toContain("credits");
     });
 

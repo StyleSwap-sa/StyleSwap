@@ -87,7 +87,7 @@ export const referralRouter = router({
         }
 
         // Award credits to referrer
-        await awardReferrerCredits(referrerBoutiqueId, 25);
+        await awardReferrerCredits(referrerBoutiqueId, 10);
 
         // Award credits to referee (new boutique)
         await awardRefereeCredits(input.newBoutiqueId, 0);
@@ -95,7 +95,7 @@ export const referralRouter = router({
         return {
           success: true,
           message: "Referral applied successfully!",
-          referrerRewardCredits: 25,
+          referrerRewardCredits: 10,
           refereeRewardCredits: 0,
         };
       } catch (error) {
@@ -132,7 +132,7 @@ export const referralRouter = router({
         referralCode: stats.referralCode,
         totalReferrals: stats.totalReferrals,
         totalCreditsEarned: stats.totalCreditsEarned,
-        referralRewardPerSignup: 25,
+        referralRewardPerSignup: 10,
         newBoutiqueRewardPerSignup: 0,
       };
     } catch (error) {

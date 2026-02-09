@@ -186,9 +186,9 @@ export const boutiquesRouter = router({
           if (referralParts.length === 3 && referralParts[0] === "STYLESWAP" && referralParts[1] === "BOUTIQUE") {
             const referrerBoutiqueId = parseInt(referralParts[2], 10);
             if (!isNaN(referrerBoutiqueId)) {
-              // Award 25 credits to referrer
-              await awardReferrerCredits(referrerBoutiqueId, 25);
-              console.log(`[Referral] Awarded 25 credits to boutique ${referrerBoutiqueId} for referring boutique ${boutiqueId}`);
+              // Award 10 credits to referrer
+              await awardReferrerCredits(referrerBoutiqueId, 10);
+              console.log(`[Referral] Awarded 10 credits to boutique ${referrerBoutiqueId} for referring boutique ${boutiqueId}`);
             }
           }
         } catch (error) {

@@ -17,11 +17,11 @@ export function generateReferralCode(): string {
 
 /**
  * Award referral credits to referrer boutique
- * Referrer gets 25 credits when someone signs up with their code
+ * Referrer gets 10 credits when someone signs up with their code
  */
 export async function awardReferrerCredits(
   referrerBoutiqueId: number,
-  amount: number = 25
+  amount: number = 10
 ): Promise<void> {
   try {
     const db = await getDb();
