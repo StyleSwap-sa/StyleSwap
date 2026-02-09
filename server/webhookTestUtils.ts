@@ -132,7 +132,7 @@ export async function createTestUnmatchedPayment(
 
     await db.insert(paymentReconciliation).values({
       yocoTransactionId: yocoTransactionId,
-      yocoAmount: (amount.toString() as any),
+      yocoAmount: (amount.toFixed(2) as any),
       yocoCurrency: currency,
       yocoStatus: 'completed',
       yocoTimestamp: new Date().toISOString(),

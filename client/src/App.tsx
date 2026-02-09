@@ -49,6 +49,7 @@ import OrderConfirmation from "./pages/OrderConfirmation";
 import BoutiquePayoutDashboard from "./pages/BoutiquePayoutDashboard";
 import AdminPayoutDashboard from "./pages/AdminPayoutDashboard";
 import BoutiqueDirectory from "./pages/BoutiqueDirectory";
+import ApiDocumentation from "./pages/ApiDocumentation";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -100,6 +101,7 @@ function Router() {
       <Route path="/boutiques" component={BoutiqueDirectory} />
       <Route path="/boutique-tutorial" component={BoutiqueTutorial} />
       <Route path="/customer-tutorial" component={CustomerTutorial} />
+      <Route path="/api-docs" component={ApiDocumentation} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

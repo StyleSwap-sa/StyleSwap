@@ -42,6 +42,9 @@ export default function B2BLanding() {
                 {item}
               </a>
             ))}
+            <Link href="/api-docs" className="hover:text-primary transition-colors uppercase tracking-wide">
+              API Docs
+            </Link>
           </div>
           <Link href="/b2b-signup">
             <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 font-bold cursor-pointer">
@@ -480,9 +483,9 @@ export default function B2BLanding() {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-primary transition">
-                    Documentation
-                  </a>
+                  <Link href="/api-docs" className="hover:text-primary transition">
+                    API Documentation
+                  </Link>
                 </li>
               </ul>
             </div>

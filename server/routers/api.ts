@@ -157,7 +157,7 @@ export const apiProductsRouter = router({
     .input(
       z.object({
         page: z.number().default(1),
-        limit: z.number().default(50).max(500),
+        limit: z.number().max(500).default(50),
         category: z.string().optional(),
         is_active: z.boolean().optional(),
         search: z.string().optional(),
@@ -341,7 +341,7 @@ export const apiTryonsRouter = router({
         product_id: z.string().optional(),
         status: z.enum(["processing", "completed", "failed"]).optional(),
         page: z.number().default(1),
-        limit: z.number().default(50).max(500),
+        limit: z.number().max(500).default(50),
       })
     )
     .query(async ({ input }) => {
@@ -518,7 +518,7 @@ export const apiCustomersRouter = router({
     .input(
       z.object({
         page: z.number().default(1),
-        limit: z.number().default(50).max(500),
+        limit: z.number().max(500).default(50),
         country: z.string().optional(),
         search: z.string().optional(),
       })
