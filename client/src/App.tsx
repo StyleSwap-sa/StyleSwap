@@ -29,6 +29,8 @@ import BoutiqueSettings from "./pages/BoutiqueSettings";
 import AdminDashboard from "./pages/AdminDashboard";
 import BoutiquePerformanceExport from "./pages/BoutiquePerformanceExport";
 import BoutiqueFeatures from "./pages/BoutiqueFeatures";
+import BoutiqueTutorial from "./pages/BoutiqueTutorial";
+import CustomerTutorial from "./pages/CustomerTutorial";
 import CustomerTryOn from "./pages/CustomerTryOn";
 import BoutiqueTryOnPage from "./pages/BoutiqueTryOnPage";
 import TestBoutiquePage from "./pages/TestBoutiquePage";
@@ -96,6 +98,8 @@ function Router() {
       <Route path="/boutique/payouts" component={BoutiquePayoutDashboard} />
       <Route path="/admin/payouts" component={AdminPayoutDashboard} />
       <Route path="/boutiques" component={BoutiqueDirectory} />
+      <Route path="/boutique-tutorial" component={BoutiqueTutorial} />
+      <Route path="/customer-tutorial" component={CustomerTutorial} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

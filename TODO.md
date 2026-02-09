@@ -79,3 +79,17 @@
 - [x] Remove placeholder YouTube videos
 - [x] Replace with virtual try-on focused demo placeholders
 - [ ] Upload actual virtual try-on demo videos and update URLs
+
+### Demo Video Production
+- [ ] Create virtual try-on demo video for boutique partners (dashboard, analytics, payouts)
+- [ ] Create virtual try-on demo video for customers (upload, try-on, results)
+- [ ] Create complete platform overview demo video
+- [ ] Upload demo videos to S3
+- [ ] Update DemoVideoModal with S3 video URLs
+
+### Tutorial Content
+- [x] Create tutorial page for boutique partners
+- [x] Create tutorial page for customers
+- [x] Add step-by-step guides for try-on workflow
+- [x] Add FAQ section
+- [x] Integrate tutorials into navigation
