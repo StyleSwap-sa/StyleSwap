@@ -5,6 +5,7 @@ import { payouts, payoutTransactions, payoutAuditLog, boutiqueBankAccounts, bout
 import { eq, and, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getPayout } from "../yoco-payouts";
+import { requestInstantPayout, getInstantPayoutEligibility } from "../instant-payout";
 
 export const payoutsRouter = router({
   /**

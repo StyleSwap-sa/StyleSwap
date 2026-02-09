@@ -2,6 +2,7 @@ import { Router } from "express";
 import { getDb } from "../db";
 import { payouts, payoutAuditLog } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { handlePayoutStatusUpdate } from "../payout-notifications";
 
 const router = Router();
 
@@ -121,16 +122,16 @@ router.post("/yoco-payouts", async (req, res) => {
       `[Yoco Payouts Webhook] Updated payout ${payout.id}: ${oldStatus} → ${newStatus}`
     );
 
-    // Handle specific status changes
+    // Handle specific status changes and send notifications
     if (event.data.status === "paid") {
       console.log(`[Yoco Payouts Webhook] Payout completed: ${payout.id}`);
-      // TODO: Send notification to boutique that payout is complete
-      // TODO: Update boutique earnings display
+      await handlePayoutStatusUpdate(payout.id, "completed");
     } else if (event.data.status === "failed" || event.data.status === "unpaid") {
       console.log(`[Yoco Payouts Webhook] Payout failed: ${payout.id}`);
-      // TODO: Send notification to boutique that payout failed
-      // TODO: Trigger retry logic if applicable
-      // TODO: Alert admin for manual review
+      await handlePayoutStatusUpdate(payout.id, "failed", event.data.failureReason);
+    } else if (event.data.status === "sent") {
+      console.log(`[Yoco Payouts Webhook] Payout sent: ${payout.id}`);
+      await handlePayoutStatusUpdate(payout.id, "processing");
     }
 
     res.json({ acknowledged: true });
