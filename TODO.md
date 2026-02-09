@@ -93,3 +93,11 @@
 - [x] Add step-by-step guides for try-on workflow
 - [x] Add FAQ section
 - [x] Integrate tutorials into navigation
+
+
+### Workflow Infographic Integration
+- [x] Upload workflow infographic to website
+- [x] Add infographic to DemoVideoModal
+- [x] Remove demo video placeholders from DemoVideoModal
+- [ ] Add infographic to customer tutorial page
+- [ ] Add infographic to home page
