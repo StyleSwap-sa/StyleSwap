@@ -2188,3 +2188,57 @@ This approach:
 - [ ] Verify no existing workflows are affected
 - [ ] Set up Yoco webhook in production environment
 - [ ] Document webhook setup for Yoco dashboard
+
+
+## Phase 64: Boutique Directory & Marketplace Discovery
+
+### Backend - Boutique Discovery APIs
+- [ ] Create getBoutiquesList() tRPC procedure with pagination and filtering
+- [ ] Implement boutique search by name, category, location
+- [ ] Add boutique filtering by rating, product count, featured status
+- [ ] Create getFeaturedBoutiques() procedure for homepage showcase
+- [ ] Create getTrendingBoutiques() procedure based on order volume
+- [ ] Create getNewBoutiques() procedure for recently registered boutiques
+- [ ] Implement boutique ratings aggregation (average rating, review count)
+- [ ] Create getBoutiqueDetails() procedure with full profile info
+- [ ] Add boutique statistics (total products, total orders, avg rating)
+- [ ] Write unit tests for boutique discovery procedures
+
+### Frontend - Boutique Directory Page
+- [ ] Create BoutiqueDirectory.tsx component with responsive layout
+- [ ] Implement boutique search bar with real-time search
+- [ ] Add filter sidebar (category, location, rating, price range)
+- [ ] Create boutique card component with profile preview
+- [ ] Display boutique ratings, review count, product count
+- [ ] Add featured boutiques carousel section
+- [ ] Add trending boutiques section
+- [ ] Add new boutiques section
+- [ ] Implement pagination for boutique list
+- [ ] Add sorting options (rating, newest, most products)
+- [ ] Mobile-responsive design for boutique cards
+
+### Frontend - Boutique Discovery Features
+- [ ] Add boutique directory link to main navigation
+- [ ] Create boutique profile preview modal/page
+- [ ] Display boutique featured products
+- [ ] Show boutique reviews and ratings
+- [ ] Add "View Shop" button to access boutique shop
+- [ ] Display boutique contact/social info
+- [ ] Add boutique follow/favorite feature
+- [ ] Show boutique description and specialties
+
+### Database & Schema
+- [ ] Verify boutique ratings table exists and is populated
+- [ ] Ensure boutique featured status column exists
+- [ ] Check boutique statistics are being tracked
+- [ ] Verify boutique category/tags are properly stored
+
+### Testing & Validation
+- [ ] Test boutique search functionality
+- [ ] Test boutique filtering with various criteria
+- [ ] Test pagination with large boutique lists
+- [ ] Verify featured/trending/new boutiques display correctly
+- [ ] Test on mobile and desktop devices
+- [ ] Verify ratings and statistics display accurately
+- [ ] Test with boutiques having different product counts
+- [ ] Ensure no interference with existing workflows (picture uploads, try-on generation)

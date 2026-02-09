@@ -46,6 +46,7 @@ import BoutiqueOrderDashboard from "./pages/BoutiqueOrderDashboard";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import BoutiquePayoutDashboard from "./pages/BoutiquePayoutDashboard";
 import AdminPayoutDashboard from "./pages/AdminPayoutDashboard";
+import BoutiqueDirectory from "./pages/BoutiqueDirectory";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -94,6 +95,7 @@ function Router() {
       <Route path={"order-confirmation"} component={OrderConfirmation} />
       <Route path="/boutique/payouts" component={BoutiquePayoutDashboard} />
       <Route path="/admin/payouts" component={AdminPayoutDashboard} />
+      <Route path="/boutiques" component={BoutiqueDirectory} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
