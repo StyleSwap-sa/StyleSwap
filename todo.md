@@ -2043,3 +2043,17 @@ This approach:
 - [ ] Test end-to-end payment flow (customer → payment → order → payout)
 - [ ] Verify payout calculations are correct (5% commission)
 - [ ] Test boutique bank account registration and verification
+
+## Phase 59: Immediate Boutique Payouts with 5% Commission (IN PROGRESS)
+- [ ] Create boutiqueBankAccounts table for storing bank details
+- [ ] Create payouts table for tracking all payout transactions
+- [ ] Create payoutTransactions table for detailed transaction logs
+- [ ] Build payout calculation logic (5% StyleSwap commission, Yoko 2.5% fee)
+- [ ] Implement immediate payout processor after payment success
+- [ ] Integrate payout trigger into payment webhook handler
+- [ ] Create boutique bank account registration UI
+- [ ] Build boutique payout dashboard with transaction history
+- [ ] Add error handling and retry logic for failed payouts
+- [ ] Write tests for payout calculation and processing
+- [ ] Test end-to-end payment to payout flow
+- [ ] Verify no existing workflows are changed

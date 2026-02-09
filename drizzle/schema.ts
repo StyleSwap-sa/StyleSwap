@@ -455,3 +455,77 @@ export const shopOrders = mysqlTable("shopOrders", {
 	index("idx_shopOrders_created").on(table.createdAt),
 	index("idx_shopOrders_number").on(table.orderNumber),
 ]);
+
+
+// Phase 3: Boutique Bank Accounts and Payouts
+export const boutiqueBankAccounts = mysqlTable("boutiqueBankAccounts", {
+	id: int().autoincrement().notNull().primaryKey(),
+	boutiqueId: int().notNull().unique().references(() => boutiques.id),
+	accountHolderName: varchar({ length: 255 }).notNull(),
+	bankName: varchar({ length: 255 }).notNull(),
+	accountNumber: varchar({ length: 50 }).notNull(),
+	branchCode: varchar({ length: 20 }),
+	accountType: mysqlEnum(['checking', 'savings']).default('checking').notNull(),
+	isVerified: int().default(0).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	{ primaryKey: table.id },
+	index("idx_bank_accounts_boutique").on(table.boutiqueId),
+]);
+
+export const payouts = mysqlTable("payouts", {
+	id: int().autoincrement().notNull().primaryKey(),
+	boutiqueId: int().notNull().references(() => boutiques.id),
+	payoutPeriodStart: varchar({ length: 10 }).notNull(), // YYYY-MM-DD
+	payoutPeriodEnd: varchar({ length: 10 }).notNull(), // YYYY-MM-DD
+	totalRevenue: decimal({ precision: 10, scale: 2 }).default('0').notNull(),
+	yokoFees: decimal({ precision: 10, scale: 2 }).default('0').notNull(),
+	styleswapCommission: decimal({ precision: 10, scale: 2 }).default('0').notNull(),
+	boutiquePayout: decimal({ precision: 10, scale: 2 }).default('0').notNull(),
+	status: mysqlEnum(['pending', 'processing', 'completed', 'failed']).default('pending').notNull(),
+	payoutDate: timestamp({ mode: 'string' }),
+	referenceNumber: varchar({ length: 100 }).unique(),
+	notes: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	{ primaryKey: table.id },
+	index("idx_payouts_boutique_status").on(table.boutiqueId, table.status),
+	index("idx_payouts_date").on(table.payoutDate),
+]);
+
+export const payoutTransactions = mysqlTable("payoutTransactions", {
+	id: int().autoincrement().notNull().primaryKey(),
+	payoutId: int().notNull().references(() => payouts.id),
+	orderId: int().notNull().references(() => shopOrders.id),
+	orderAmount: decimal({ precision: 10, scale: 2 }).notNull(),
+	yokoFee: decimal({ precision: 10, scale: 2 }).notNull(),
+	styleswapCommission: decimal({ precision: 10, scale: 2 }).notNull(),
+	boutiqueShare: decimal({ precision: 10, scale: 2 }).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	{ primaryKey: table.id },
+	index("idx_payout_transactions_payout").on(table.payoutId),
+	index("idx_payout_transactions_order").on(table.orderId),
+]);
+
+export const payoutAuditLog = mysqlTable("payoutAuditLog", {
+	id: int().autoincrement().notNull().primaryKey(),
+	payoutId: int().references(() => payouts.id),
+	action: varchar({ length: 100 }).notNull(),
+	oldStatus: varchar({ length: 50 }),
+	newStatus: varchar({ length: 50 }),
+	actorId: int(),
+	actorType: mysqlEnum(['system', 'admin', 'boutique']).default('system').notNull(),
+	details: text(), // JSON string
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	{ primaryKey: table.id },
+	index("idx_audit_log_payout").on(table.payoutId),
+	index("idx_audit_log_created").on(table.createdAt),
+]);

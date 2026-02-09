@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +7,6 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Heart, Share2, ShoppingBag, Sparkles, Search, Filter, Loader2, MapPin, Phone, Mail, Instagram, Facebook, MessageCircle, ShoppingCart } from "lucide-react";
-import { useState } from "react";
 import { OrderCheckoutModal } from "@/components/OrderCheckoutModal";
 
 interface Product {
