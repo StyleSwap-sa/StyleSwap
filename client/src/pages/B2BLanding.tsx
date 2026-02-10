@@ -45,6 +45,9 @@ export default function B2BLanding() {
             <Link href="/api-docs" className="hover:text-primary transition-colors uppercase tracking-wide">
               API Docs
             </Link>
+            <Link href="/developer" className="hover:text-primary transition-colors uppercase tracking-wide">
+              Developer Portal
+            </Link>
           </div>
           <Link href="/b2b-signup">
             <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 font-bold cursor-pointer">

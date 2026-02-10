@@ -529,3 +529,40 @@ export const payoutAuditLog = mysqlTable("payoutAuditLog", {
 	index("idx_audit_log_payout").on(table.payoutId),
 	index("idx_audit_log_created").on(table.createdAt),
 ]);
+
+
+export const apiKeys = mysqlTable("apiKeys", {
+	id: int().autoincrement().notNull().primaryKey(),
+	boutiqueId: int().notNull().references(() => boutiques.id),
+	name: varchar({ length: 255 }).notNull(),
+	key: varchar({ length: 255 }).notNull().unique(),
+	maskedKey: varchar({ length: 50 }).notNull(),
+	status: mysqlEnum(['active', 'revoked']).default('active').notNull(),
+	requestsCount: int().default(0).notNull(),
+	lastUsedAt: timestamp({ mode: 'string' }),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	revokedAt: timestamp({ mode: 'string' }),
+},
+(table) => [
+	index("idx_api_keys_boutique").on(table.boutiqueId),
+	index("idx_api_keys_key").on(table.key),
+	index("idx_api_keys_status").on(table.status),
+	index("idx_api_keys_created").on(table.createdAt),
+]);
+
+export const apiKeyLogs = mysqlTable("apiKeyLogs", {
+	id: int().autoincrement().notNull().primaryKey(),
+	apiKeyId: int().notNull().references(() => apiKeys.id),
+	method: varchar({ length: 10 }).notNull(),
+	endpoint: varchar({ length: 500 }).notNull(),
+	statusCode: int().notNull(),
+	responseTime: int(),
+	ipAddress: varchar({ length: 45 }),
+	userAgent: text(),
+	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+},
+(table) => [
+	index("idx_api_key_logs_key").on(table.apiKeyId),
+	index("idx_api_key_logs_created").on(table.createdAt),
+	index("idx_api_key_logs_endpoint").on(table.endpoint),
+]);

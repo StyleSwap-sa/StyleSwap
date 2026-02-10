@@ -117,12 +117,9 @@ export default function ApiDocumentation() {
             <h2 className="text-3xl font-bold mb-6">API Reference</h2>
 
             <Tabs defaultValue="products" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="products">Products</TabsTrigger>
-                <TabsTrigger value="payments">Payments</TabsTrigger>
                 <TabsTrigger value="tryons">Try-Ons</TabsTrigger>
-                <TabsTrigger value="customers">Customers</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
               </TabsList>
 
               {/* Products Endpoints */}
@@ -159,94 +156,7 @@ export default function ApiDocumentation() {
                 </Card>
               </TabsContent>
 
-              {/* Payments Endpoints */}
-              <TabsContent value="payments" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Get Payment Packages</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-muted p-3 rounded">
-                      <code className="text-sm">GET /api/payments/packages</code>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">Returns all available credit packages with pricing</p>
-                    <div className="bg-muted p-4 rounded-lg overflow-x-auto">
-                      <pre className="text-sm">{`[
-  {
-    "id": "pkg_10",
-    "name": "Starter",
-    "credits": 10,
-    "price": 45.00,
-    "currency": "ZAR"
-  },
-  {
-    "id": "pkg_50",
-    "name": "Professional",
-    "credits": 50,
-    "price": 150.00,
-    "currency": "ZAR"
-  }
-]`}</pre>
-                    </div>
-                  </CardContent>
-                </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Create Payment Checkout</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-muted p-3 rounded">
-                      <code className="text-sm">POST /api/payments/checkout</code>
-                    </div>
-                    <div className="bg-muted p-4 rounded-lg overflow-x-auto">
-                      <pre className="text-sm">{`Request:
-{
-  "packageId": "pkg_50",
-  "successUrl": "https://yoursite.com/success",
-  "cancelUrl": "https://yoursite.com/cancel"
-}
-
-Response:
-{
-  "id": "checkout_abc123",
-  "status": "pending",
-  "amount": 150.00,
-  "currency": "ZAR",
-  "credits": 50,
-  "checkoutUrl": "https://checkout.yoco.com/abc123"
-}`}</pre>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Confirm Payment</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-muted p-3 rounded">
-                      <code className="text-sm">POST /api/payments/confirm</code>
-                    </div>
-                    <div className="bg-muted p-4 rounded-lg overflow-x-auto">
-                      <pre className="text-sm">{`Request:
-{
-  "paymentIntentId": "checkout_abc123",
-  "packageId": "pkg_50",
-  "credits": 50
-}
-
-Response:
-{
-  "success": true,
-  "credits": 50,
-  "expiresAt": "2026-03-09T00:00:00Z",
-  "message": "Payment successful"
-}`}</pre>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
 
               {/* Try-Ons Endpoints */}
               <TabsContent value="tryons" className="space-y-4">
@@ -281,43 +191,7 @@ Response:
                 </Card>
               </TabsContent>
 
-              {/* Customers Endpoints */}
-              <TabsContent value="customers" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Create Customer</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-muted p-3 rounded">
-                      <code className="text-sm">POST /api/customers</code>
-                    </div>
-                    <div className="bg-muted p-4 rounded-lg overflow-x-auto">
-                      <pre className="text-sm">{`{
-  "email": "customer@example.com",
-  "name": "John Doe",
-  "externalId": "user_123"
-}`}</pre>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
 
-              {/* Analytics Endpoints */}
-              <TabsContent value="analytics" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Get Analytics</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-muted p-3 rounded">
-                      <code className="text-sm">GET /api/analytics?startDate=2026-01-01&endDate=2026-02-09</code>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Returns metrics like total try-ons, conversion rates, and average response times.
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
             </Tabs>
           </section>
 

@@ -50,6 +50,8 @@ import BoutiquePayoutDashboard from "./pages/BoutiquePayoutDashboard";
 import AdminPayoutDashboard from "./pages/AdminPayoutDashboard";
 import BoutiqueDirectory from "./pages/BoutiqueDirectory";
 import ApiDocumentation from "./pages/ApiDocumentation";
+import BoutiqueApiKeys from "./pages/BoutiqueApiKeys";
+import DeveloperPortal from "./pages/DeveloperPortal";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -102,6 +104,8 @@ function Router() {
       <Route path="/boutique-tutorial" component={BoutiqueTutorial} />
       <Route path="/customer-tutorial" component={CustomerTutorial} />
       <Route path="/api-docs" component={ApiDocumentation} />
+      <Route path="/developer" component={DeveloperPortal} />
+      <Route path="/boutique-api-keys/:boutiqueId" component={BoutiqueApiKeys} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
