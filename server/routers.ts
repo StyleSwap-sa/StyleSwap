@@ -23,6 +23,7 @@ import { payoutsRouter } from "./routers/payouts";
 import { instantPayoutRouter } from "./routers/payouts-instant";
 import { boutiqueDiscoveryRouter } from "./routers/boutique-discovery";
 import { apiRouter } from "./routers/api";
+import { apiKeysRouter } from "./routers/boutiques.apikeys";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -59,6 +60,7 @@ export const appRouter = router({
   instantPayouts: instantPayoutRouter,
   boutiqueDiscovery: router(boutiqueDiscoveryRouter),
   api: apiRouter,
+  apiKeys: apiKeysRouter,
 });
 
 export type AppRouter = typeof appRouter;

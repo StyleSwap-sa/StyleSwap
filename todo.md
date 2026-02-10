@@ -2285,3 +2285,8 @@ This approach:
 - [ ] Add export functionality for usage reports
 - [ ] Integrate analytics into Developer Portal
 - [ ] Create vitest tests for analytics components
+
+
+## Bug Fixes
+- [x] Fix broken button links in Developer Portal (Get Started, View Guide buttons)
+- [x] Integrate apiKeysRouter into main routers.ts

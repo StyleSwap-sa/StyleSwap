@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,6 +7,7 @@ import { Code2, Key, Webhook, BookOpen, ArrowRight, CheckCircle2, Zap, Shield } 
 
 export default function DeveloperPortal() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [, navigate] = useRouter();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -17,7 +19,7 @@ export default function DeveloperPortal() {
               <h1 className="text-3xl font-bold text-slate-900">Developer Portal</h1>
               <p className="text-slate-600 mt-1">Integrate StyleSwap's virtual try-on API into your platform</p>
             </div>
-            <Button className="bg-orange-600 hover:bg-orange-700">
+            <Button className="bg-orange-600 hover:bg-orange-700" onClick={() => navigate("/api-docs")}>
               Get Started <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
@@ -228,10 +230,10 @@ export default function DeveloperPortal() {
                 </div>
 
                 <div className="flex gap-3">
-                  <Button className="flex-1 bg-orange-600 hover:bg-orange-700">
+                  <Button className="flex-1 bg-orange-600 hover:bg-orange-700" onClick={() => navigate("/widget-builder")}>
                     Go to Widget Builder
                   </Button>
-                  <Button variant="outline" className="flex-1">
+                  <Button variant="outline" className="flex-1" onClick={() => navigate("/rate-limiting")}>
                     View Rate Limiting Docs
                   </Button>
                 </div>
@@ -252,7 +254,7 @@ export default function DeveloperPortal() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
                     <strong>Note:</strong> You must be logged in as a registered developer to manage API keys. 
-                    <a href="#" className="text-blue-600 hover:underline ml-1">Register your application</a>
+                    <button onClick={() => navigate("/api-keys")} className="text-blue-600 hover:underline ml-1">Register your application</button>
                   </p>
                 </div>
 
@@ -293,7 +295,7 @@ export default function DeveloperPortal() {
                   </div>
                 </div>
 
-                <Button className="bg-orange-600 hover:bg-orange-700">
+                <Button className="bg-orange-600 hover:bg-orange-700" onClick={() => navigate("/api-keys")}>
                   <Key className="w-4 h-4 mr-2" />
                   Generate New Key
                 </Button>
@@ -351,7 +353,7 @@ export default function DeveloperPortal() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
                     <strong>Note:</strong> Webhook management is available in your developer dashboard. 
-                    <a href="#" className="text-blue-600 hover:underline ml-1">Go to dashboard</a>
+                    <button onClick={() => navigate("/api-keys")} className="text-blue-600 hover:underline ml-1">Go to dashboard</button>
                   </p>
                 </div>
 
