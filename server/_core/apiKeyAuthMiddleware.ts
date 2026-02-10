@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { middleware } from "./trpc";
-import { db } from "../db";
+import { getDb } from "../db";
 
 import { apiKeys } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
@@ -49,6 +49,11 @@ export async function validateApiKey(
   }
 
   try {
+    const database = await getDb();
+    if (!database) {
+      return null;
+    }
+
     // Hash the provided key to match stored hash
     const keyHash = crypto
       .createHash("sha256")
@@ -56,7 +61,7 @@ export async function validateApiKey(
       .digest("hex");
 
     // Look up the API key in the database
-    const apiKey = await db
+    const apiKey = await database
       .select()
       .from(apiKeys)
       .where(eq(apiKeys.keyHash, keyHash))
@@ -80,7 +85,7 @@ export async function validateApiKey(
 
     // Update last used timestamp
     try {
-      await db
+      await database
         .update(apiKeys)
         .set({ lastUsedAt: new Date() })
         .where(eq(apiKeys.id, key.id));

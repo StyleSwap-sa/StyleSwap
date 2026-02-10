@@ -60,6 +60,8 @@ import ApiKeyManagement from "./pages/ApiKeyManagement";
 import ApiUsageAnalytics from "./pages/ApiUsageAnalytics";
 import WebhookEventLog from "./pages/WebhookEventLog";
 import AlertConfiguration from "./pages/AlertConfiguration";
+import OnboardingWizard from "./pages/OnboardingWizard";
+import RetailerAnalytics from "./pages/RetailerAnalytics";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -122,6 +124,8 @@ function Router() {
       <Route path="/boutique-api-keys/:boutiqueId" component={BoutiqueApiKeys} />
       <Route path="/webhook-logs" component={WebhookEventLog} />
       <Route path="/alerts" component={AlertConfiguration} />
+      <Route path="/onboarding" component={OnboardingWizard} />
+      <Route path="/retailer-analytics" component={RetailerAnalytics} />
       {/* Final fallback route */}
       <Route path={"*"} component={NotFound} />
     </Switch>
