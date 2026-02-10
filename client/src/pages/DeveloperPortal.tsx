@@ -27,8 +27,9 @@ export default function DeveloperPortal() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="widget">Widget</TabsTrigger>
             <TabsTrigger value="api-keys">API Keys</TabsTrigger>
             <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
             <TabsTrigger value="guides">Guides</TabsTrigger>
@@ -150,6 +151,87 @@ export default function DeveloperPortal() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Widget Tab */}
+          <TabsContent value="widget" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Code2 className="w-5 h-5 text-orange-600" />
+                  StyleSwap Widget
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <p className="text-sm text-orange-900">
+                    <strong>No-Code Solution:</strong> Embed the StyleSwap widget on your website with just a few lines of code. Perfect for Shopify, WooCommerce, and custom sites.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-slate-900">Quick Setup</h3>
+                  <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-auto">
+                    <pre>{`<!-- Add this to your HTML -->
+<div id="styleswap-widget"></div>
+
+<script src="https://styleswap.com/widget.js"><\/script>
+<script>
+  StyleSwapWidget.init({
+    apiKey: "sk_your_api_key",
+    productId: "prod_123",
+    productName: "Your Product",
+    containerId: "styleswap-widget"
+  });
+<\/script>`}</pre>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-slate-900">For Shopify</h4>
+                    <p className="text-sm text-slate-600">Add the embed code to your product template. Works with any Shopify theme.</p>
+                    <Button variant="outline" className="w-full mt-2">View Shopify Guide</Button>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-slate-900">For WooCommerce</h4>
+                    <p className="text-sm text-slate-600">Install as a plugin or add code to your product page template.</p>
+                    <Button variant="outline" className="w-full mt-2">View WooCommerce Guide</Button>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-slate-900">Customization Options</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-slate-900">Custom Colors</p>
+                        <p className="text-sm text-slate-600">Match your brand with custom primary and accent colors</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-slate-900">Responsive Design</p>
+                        <p className="text-sm text-slate-600">Works perfectly on mobile and desktop devices</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-slate-900">Analytics</p>
+                        <p className="text-sm text-slate-600">Track try-on usage and customer engagement</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                  Go to Widget Builder
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* API Keys Tab */}

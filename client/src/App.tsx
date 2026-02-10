@@ -54,6 +54,7 @@ import BoutiqueApiKeys from "./pages/BoutiqueApiKeys";
 import DeveloperPortal from "./pages/DeveloperPortal";
 import WebhookTestingConsole from "./pages/WebhookTestingConsole";
 import RetailerIntegrationGuides from "./pages/RetailerIntegrationGuides";
+import WidgetBuilder from "./pages/WidgetBuilder";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -109,6 +110,7 @@ function Router() {
       <Route path="/developer" component={DeveloperPortal} />
       <Route path="/webhook-testing" component={WebhookTestingConsole} />
       <Route path="/integration-guides" component={RetailerIntegrationGuides} />
+      <Route path="/widget-builder" component={WidgetBuilder} />
       <Route path="/boutique-api-keys/:boutiqueId" component={BoutiqueApiKeys} />
       {/* Final fallback route */}
       <Route component={NotFound} />
