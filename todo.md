@@ -2324,3 +2324,29 @@ This approach:
 - [x] Add route for /api-usage page in App.tsx
 - [ ] Create vitest tests for analytics component
 - [ ] Integrate with actual tRPC procedures for live data
+
+
+## Phase 45: Live Data Integration for Analytics Dashboard
+- [x] Connect ApiUsageAnalytics component to tRPC getApiKeyStats procedure
+- [x] Implement real-time data fetching with useQuery hooks
+- [x] Add fallback to mock data when live data unavailable
+- [x] Integrate all analytics procedures (stats, trends, history, errors, rate limit)
+- [ ] Add loading states and error handling for analytics data
+- [ ] Create data refresh mechanism with configurable intervals
+- [ ] Test analytics dashboard with live data
+
+## Phase 46: Webhook Event Logging UI
+- [ ] Create WebhookEventLog.tsx component for displaying API events
+- [ ] Build event filtering by type (try-on, error, rate-limit)
+- [ ] Add search functionality for events
+- [ ] Implement event detail view with full payload
+- [ ] Create tRPC procedure for fetching webhook events
+- [ ] Add pagination for event history
+
+## Phase 47: API Usage Alerts System
+- [ ] Create alert configuration UI for retailers
+- [ ] Implement email alerts for high error rates (>5%)
+- [ ] Add alerts for rate limit approaching (>80%)
+- [ ] Create in-app notification system for alerts
+- [ ] Build alert history and management page
+- [ ] Create tRPC procedures for alert management
