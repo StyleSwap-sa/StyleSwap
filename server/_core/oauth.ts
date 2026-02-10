@@ -63,7 +63,23 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      res.redirect(302, "/");
+      // Check if there's a return URL in the query params
+      const returnUrl = getQueryParam(req, 'returnUrl');
+      
+      // Determine redirect destination based on user type
+      let redirectPath = "/";
+      if (returnUrl) {
+        // Use the return URL if provided (e.g., from checkout flow)
+        redirectPath = returnUrl;
+      } else if (userInfo.userType === 'merchant') {
+        redirectPath = "/boutique-dashboard";
+      } else if (userInfo.userType === 'admin') {
+        redirectPath = "/admin";
+      } else {
+        redirectPath = "/dashboard";
+      }
+      
+      res.redirect(302, redirectPath);
     } catch (error) {
       console.error("[OAuth] Callback failed:", error instanceof Error ? error.message : String(error));
       console.error("[OAuth] Full error:", error);

@@ -36,7 +36,12 @@ export default function Pricing() {
 
   const handleBuyNow = (tryOns: number) => {
     if (!isAuthenticated) {
-      window.location.href = getLoginUrl();
+      const packageId = getPackageId(tryOns);
+      const returnUrl = `/checkout?package=${packageId}`;
+      const loginUrl = getLoginUrl();
+      const urlObj = new URL(loginUrl);
+      urlObj.searchParams.set('returnUrl', returnUrl);
+      window.location.href = urlObj.toString();
       return;
     }
     const packageId = getPackageId(tryOns);
