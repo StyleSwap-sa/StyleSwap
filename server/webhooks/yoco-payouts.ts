@@ -72,11 +72,11 @@ router.post("/yoco-payouts", async (req, res) => {
       return res.status(503).json({ error: "Database not available" });
     }
 
-    // Find the payout by Yoco payout ID
+    // Find the payout by reference number (Yoco payout ID)
     const existingPayout = await db
       .select()
       .from(payouts)
-      .where(eq(payouts.yocoPayoutId, event.data.id))
+      .where(eq(payouts.referenceNumber, event.data.id))
       .limit(1);
 
     if (existingPayout.length === 0) {
@@ -94,7 +94,7 @@ router.post("/yoco-payouts", async (req, res) => {
       .update(payouts)
       .set({
         status: newStatus,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
         notes: event.data.failureReason
           ? `Yoco payout ${event.data.status}: ${event.data.failureReason}`
           : undefined,
@@ -125,13 +125,13 @@ router.post("/yoco-payouts", async (req, res) => {
     // Handle specific status changes and send notifications
     if (event.data.status === "paid") {
       console.log(`[Yoco Payouts Webhook] Payout completed: ${payout.id}`);
-      await handlePayoutStatusUpdate(payout.id, "completed");
+      await handlePayoutStatusUpdate(payout.id.toString(), "completed");
     } else if (event.data.status === "failed" || event.data.status === "unpaid") {
       console.log(`[Yoco Payouts Webhook] Payout failed: ${payout.id}`);
-      await handlePayoutStatusUpdate(payout.id, "failed", event.data.failureReason);
+      await handlePayoutStatusUpdate(payout.id.toString(), "failed", event.data.failureReason);
     } else if (event.data.status === "sent") {
       console.log(`[Yoco Payouts Webhook] Payout sent: ${payout.id}`);
-      await handlePayoutStatusUpdate(payout.id, "processing");
+      await handlePayoutStatusUpdate(payout.id.toString(), "processing");
     }
 
     res.json({ acknowledged: true });

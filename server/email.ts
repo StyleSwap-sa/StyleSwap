@@ -3,10 +3,10 @@ import { emailNotifications } from "../drizzle/schema";
 import { notifyOwner } from "./_core/notification";
 import { eq } from "drizzle-orm";
 
-export type EmailType = "purchase_confirmation" | "try_on_complete" | "credits_expiring" | "promotional";
+export type EmailType = "purchase_confirmation" | "try_on_complete" | "credits_expiring" | "promotional" | "order_confirmation" | "order_payment" | "verification_submitted" | "verification_approved" | "verification_rejected" | "onboarding_complete" | "fraud_appeal_submitted" | "fraud_appeal_approved" | "fraud_appeal_rejected" | "60_day_reminder" | "30_day_reminder" | "7_day_reminder" | "rate_limit_warning" | "api_key_generated" | "webhook_test_success" | "webhook_test_failed";
 
 interface EmailPayload {
-  userId: number;
+  userId?: number;
   type: EmailType;
   recipientEmail: string;
   subject: string;

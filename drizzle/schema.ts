@@ -226,7 +226,7 @@ export const products = mysqlTable("products", {
 export const transactions = mysqlTable("transactions", {
 	id: int().autoincrement().notNull(),
 	userId: int().notNull().references(() => users.id),
-	type: mysqlEnum(['purchase','usage','refund']).notNull(),
+	type: mysqlEnum(['purchase','usage','refund','adjustment','order_payment','order_confirmation']).notNull(),
 	amount: int().notNull(),
 	price: decimal({ precision: 10, scale: 2 }),
 	currency: varchar({ length: 3 }).default('ZAR'),

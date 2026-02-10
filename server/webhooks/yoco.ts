@@ -351,9 +351,9 @@ export async function handleOrderPaymentSucceeded(data: YokoWebhookPayload["data
   }
 
   const userId = data.metadata.userId ? parseInt(data.metadata.userId, 10) : null;
-  const orderNumber = data.metadata.orderNumber;
-  const userEmail = data.metadata.userEmail;
-  const userName = data.metadata.userName;
+  const orderNumber = data.metadata.orderNumber || `ORDER-${Date.now()}`;
+  const userEmail = data.metadata.userEmail || "";
+  const userName = data.metadata.userName || "Customer";
 
   if (!userId || !orderNumber) {
     throw new Error("Missing userId or orderNumber in metadata");
