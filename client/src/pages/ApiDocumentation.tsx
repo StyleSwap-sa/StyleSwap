@@ -504,6 +504,48 @@ print('Try-on result:', result['image_url'])`}</pre>
             <div className="grid md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
+                  <CardTitle>Error Codes & Troubleshooting</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Complete reference for HTTP status codes, error handling, and retry strategies.
+                  </p>
+                  <Button asChild>
+                    <a href="/error-codes">View Error Codes</a>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Webhook Events & Payloads</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Webhook event types, payload examples, and signature verification.
+                  </p>
+                  <Button asChild>
+                    <a href="/webhook-payloads">View Webhooks</a>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>SDK Installation & Integration</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Official SDKs for Node.js, Python, and integration examples.
+                  </p>
+                  <Button asChild>
+                    <a href="/sdk-guide">View SDK Guide</a>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
                   <CardTitle>API Key Management</CardTitle>
                 </CardHeader>
                 <CardContent>

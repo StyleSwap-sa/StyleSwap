@@ -142,27 +142,42 @@
         const userImageBase64 = results[0];
         const garmentImageBase64 = results[1];
 
-        return fetch('/api/trpc/protectedApi.generateTryOn', {
+        return fetch('/api/trpc?batch=1', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiKey: config.apiKey,
-            productId: config.productId,
-            productName: config.productName,
-            userImage: userImageBase64,
-            garmentImage: garmentImageBase64,
-          }),
+          credentials: 'include',
+          body: JSON.stringify([{
+            0: {
+              jsonrpc: '2.0',
+              method: 'mutation',
+              params: {
+                path: 'protectedApi.generateTryOn',
+                input: {
+                  apiKey: config.apiKey,
+                  productId: config.productId,
+                  productName: config.productName,
+                  userImage: userImageBase64,
+                  garmentImage: garmentImageBase64,
+                },
+              },
+            },
+          }]),
         }).then(function(response) {
           return response.json();
         }).then(function(data) {
-          if (data.result && data.result.success) {
-            preview.style.display = 'block';
-            preview.querySelector('#styleswap-result-img').src = data.result.data.imageUrl;
-            if (config.onTryOnComplete) {
-              config.onTryOnComplete(data.result);
+          if (Array.isArray(data) && data[0]) {
+            const result = data[0];
+            if (result.result && result.result.data && result.result.data.imageUrl) {
+              preview.style.display = 'block';
+              preview.querySelector('#styleswap-result-img').src = result.result.data.imageUrl;
+              if (config.onTryOnComplete) {
+                config.onTryOnComplete(result.result);
+              }
+            } else {
+              throw new Error(result.error ? result.error.message : 'Failed to generate try-on');
             }
           } else {
-            throw new Error(data.result && data.result.error ? data.result.error : 'Failed to generate try-on');
+            throw new Error('Invalid response format from server');
           }
         });
       }).catch(function(error) {

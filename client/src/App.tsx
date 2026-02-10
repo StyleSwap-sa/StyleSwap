@@ -64,6 +64,9 @@ import OnboardingWizard from "./pages/OnboardingWizard";
 import RetailerAnalytics from "./pages/RetailerAnalytics";
 import WebhookTester from "./pages/WebhookTester";
 import ApiUsageMonitoring from "./pages/ApiUsageMonitoring";
+import ErrorCodesReference from "./pages/ErrorCodesReference";
+import WebhookPayloads from "./pages/WebhookPayloads";
+import SDKGuide from "./pages/SDKGuide";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -130,6 +133,9 @@ function Router() {
       <Route path="/alerts" component={AlertConfiguration} />
       <Route path="/onboarding" component={OnboardingWizard} />
       <Route path="/retailer-analytics" component={RetailerAnalytics} />
+      <Route path="/error-codes" component={ErrorCodesReference} />
+      <Route path="/webhook-payloads" component={WebhookPayloads} />
+      <Route path="/sdk-guide" component={SDKGuide} />
       {/* Final fallback route */}
       <Route path={"*"} component={NotFound} />
     </Switch>
