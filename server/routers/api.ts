@@ -665,6 +665,130 @@ export const apiAnalyticsRouter = router({
 });
 
 // ============================================================================
+// API KEYS MANAGEMENT ENDPOINTS
+// ============================================================================
+
+export const apiKeysRouter = router({
+  /**
+   * GET /api/keys
+   * List all API keys for the authenticated developer
+   */
+  list: publicProcedure
+    .input(
+      z.object({
+        developerId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = getDb();
+      // In production, validate developer authentication
+      // For now, return mock data
+      return [
+        {
+          id: "key_1",
+          name: "Production API Key",
+          key: "sk_live_...",
+          maskedKey: "sk_live_...abc123",
+          status: "active",
+          requestsCount: 1250,
+          lastUsedAt: new Date().toISOString(),
+          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: "key_2",
+          name: "Development API Key",
+          key: "sk_test_...",
+          maskedKey: "sk_test_...xyz789",
+          status: "active",
+          requestsCount: 450,
+          lastUsedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+      ];
+    }),
+
+  /**
+   * POST /api/keys
+   * Create a new API key
+   */
+  create: publicProcedure
+    .input(
+      z.object({
+        developerId: z.string(),
+        name: z.string().min(1).max(255),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // In production, generate a secure random key
+      const key = `sk_live_${Math.random().toString(36).substr(2, 24)}`;
+      const maskedKey = `${key.substring(0, 8)}...${key.substring(key.length - 4)}`;
+
+      return {
+        id: `key_${Date.now()}`,
+        name: input.name,
+        key: key,
+        maskedKey: maskedKey,
+        status: "active",
+        requestsCount: 0,
+        lastUsedAt: null,
+        createdAt: new Date().toISOString(),
+      };
+    }),
+
+  /**
+   * POST /api/keys/:keyId/revoke
+   * Revoke an API key
+   */
+  revoke: publicProcedure
+    .input(
+      z.object({
+        developerId: z.string(),
+        keyId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      return {
+        success: true,
+        message: `API key ${input.keyId} has been revoked`,
+        revokedAt: new Date().toISOString(),
+      };
+    }),
+
+  /**
+   * GET /api/keys/:keyId/usage
+   * Get usage statistics for an API key
+   */
+  getUsage: publicProcedure
+    .input(
+      z.object({
+        developerId: z.string(),
+        keyId: z.string(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      return {
+        keyId: input.keyId,
+        totalRequests: 1250,
+        requestsByEndpoint: {
+          "POST /api/tryons/generate": 850,
+          "GET /api/products": 250,
+          "POST /api/products": 100,
+          "GET /api/tryons/:id": 50,
+        },
+        requestsByDay: [
+          { date: "2026-02-08", count: 120 },
+          { date: "2026-02-09", count: 150 },
+          { date: "2026-02-10", count: 180 },
+        ],
+        averageResponseTime: 245,
+        errorRate: 0.2,
+      };
+    }),
+});
+
+// ============================================================================
 // MAIN API ROUTER
 // ============================================================================
 
@@ -674,4 +798,5 @@ export const apiRouter = router({
   tryons: apiTryonsRouter,
   customers: apiCustomersRouter,
   analytics: apiAnalyticsRouter,
+  keys: apiKeysRouter,
 });

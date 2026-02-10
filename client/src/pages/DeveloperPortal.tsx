@@ -312,6 +312,13 @@ export default function DeveloperPortal() {
 
           {/* Guides Tab */}
           <TabsContent value="guides" className="space-y-6">
+            <div className="mb-6">
+              <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                <a href="/integration-guides">
+                  View Complete Integration Guides <ArrowRight className="ml-2 w-4 h-4" />
+                </a>
+              </Button>
+            </div>
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardHeader>
@@ -379,8 +386,10 @@ export default function DeveloperPortal() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-slate-600 mb-4">Test webhook deliveries and debug integration issues</p>
-                  <Button variant="outline" className="w-full">
-                    Test Webhooks <ArrowRight className="ml-2 w-4 h-4" />
+                  <Button variant="outline" className="w-full" asChild>
+                    <a href="/webhook-testing">
+                      Test Webhooks <ArrowRight className="ml-2 w-4 h-4" />
+                    </a>
                   </Button>
                 </CardContent>
               </Card>
