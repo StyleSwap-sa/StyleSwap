@@ -460,7 +460,7 @@ print('Try-on result:', result['image_url'])`}</pre>
                     Generate, manage, and revoke API keys from your dashboard.
                   </p>
                   <Button asChild>
-                    <a href="/api-keys">Manage API Keys</a>
+                    <a href="/developer">Manage API Keys</a>
                   </Button>
                 </CardContent>
               </Card>
