@@ -2533,3 +2533,62 @@ This approach:
 ✅ Real-time analytics dashboard
 ✅ Onboarding progress tracking
 ✅ API usage monitoring
+
+
+## Phase 61: Boutique Verification System (NEW)
+
+### Database Schema & Trust Scoring
+- [ ] Add boutique_verifications table with status (pending, approved, rejected, suspended)
+- [ ] Add boutique_documents table for storing uploaded verification documents
+- [ ] Add verification_checks table for tracking individual verification steps
+- [ ] Add fraud_flags table for tracking suspicious activities
+- [ ] Create trust_score calculation system (0-100 scale)
+- [ ] Add verification_history table for audit trail
+
+### Identity Verification Procedures
+- [ ] Create ID verification procedure (government ID, passport, driver's license)
+- [ ] Create business registration verification (business license, tax ID)
+- [ ] Create address verification (utility bill, lease agreement)
+- [ ] Create bank account verification for payouts
+- [ ] Implement document upload and storage system
+- [ ] Add document validation and OCR integration
+
+### Admin Verification Dashboard
+- [ ] Create BoutiqueVerificationAdmin.tsx component
+- [ ] Build verification queue showing pending boutiques
+- [ ] Add document review interface with zoom/download
+- [ ] Create approval/rejection workflow with comments
+- [ ] Add bulk actions for batch approvals
+- [ ] Build verification analytics and metrics
+
+### Retailer Verification Status UI
+- [ ] Create BoutiqueVerificationStatus.tsx component
+- [ ] Show verification progress and required documents
+- [ ] Display document upload interface
+- [ ] Show verification status timeline
+- [ ] Add support contact for verification issues
+- [ ] Create verification completion checklist
+
+### Fraud Detection & Risk Scoring
+- [ ] Implement velocity checks (multiple accounts from same IP/email)
+- [ ] Add behavioral analysis (unusual activity patterns)
+- [ ] Create chargeback/dispute monitoring
+- [ ] Build refund rate analysis
+- [ ] Implement customer complaint tracking
+- [ ] Create risk scoring algorithm with weighted factors
+
+### Verification Workflows & Notifications
+- [ ] Create verification request email workflow
+- [ ] Build approval/rejection notification emails
+- [ ] Add document request reminders
+- [ ] Create suspension/warning notifications
+- [ ] Implement verification expiration (annual re-verification)
+- [ ] Add admin notification for high-risk boutiques
+
+### Testing & Quality Assurance
+- [ ] Write tests for trust score calculation
+- [ ] Test fraud detection algorithms
+- [ ] Test verification workflow state transitions
+- [ ] Test document upload and validation
+- [ ] Test email notifications
+- [ ] Create integration tests for full verification flow
