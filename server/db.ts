@@ -2,22 +2,46 @@ import { drizzle } from "drizzle-orm/mysql2";
 import { eq, desc, gte, sql } from "drizzle-orm";
 import { InsertUser, users, garments, tryOnResults, InsertTryOnResult, boutiques, boutiqueCredits, boutiqueTransactions, shopOrders } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import * as mysql from 'mysql2/promise';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _initPromise: Promise<ReturnType<typeof drizzle> | null> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
+// Initialize database connection with proper error handling
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  // Return cached instance if already initialized
+  if (_db) {
+    return _db;
+  }
+
+  // Return existing promise if initialization is in progress
+  if (_initPromise) {
+    return _initPromise;
+  }
+
+  // Start initialization
+  _initPromise = (async () => {
+    if (!process.env.DATABASE_URL) {
+      console.error("[Database] DATABASE_URL environment variable is not set");
+      return null;
+    }
+
     try {
-      const mysql = require('mysql2/promise');
+      console.log("[Database] Initializing connection pool...");
       const poolConnection = await mysql.createPool(process.env.DATABASE_URL);
       _db = drizzle(poolConnection);
+      console.log("[Database] ✓ Connection pool initialized successfully");
+      return _db;
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("[Database] ✗ Failed to initialize connection pool:", errorMsg);
       _db = null;
+      _initPromise = null;
+      return null;
     }
-  }
-  return _db;
+  })();
+
+  return _initPromise;
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
@@ -27,8 +51,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
+    throw new Error("[Database] Database connection not available");
   }
 
   try {
@@ -82,8 +105,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
+    throw new Error("[Database] Database connection not available");
   }
 
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
@@ -94,8 +116,7 @@ export async function getUserByOpenId(openId: string) {
 export async function getUserByEmail(email: string) {
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
+    throw new Error("[Database] Database connection not available");
   }
 
   const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
