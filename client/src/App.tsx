@@ -57,6 +57,7 @@ import RetailerIntegrationGuides from "./pages/RetailerIntegrationGuides";
 import WidgetBuilder from "./pages/WidgetBuilder";
 import RateLimitingDocs from "./pages/RateLimitingDocs";
 import ApiKeyManagement from "./pages/ApiKeyManagement";
+import ApiUsageAnalytics from "./pages/ApiUsageAnalytics";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -115,6 +116,7 @@ function Router() {
       <Route path="/widget-builder" component={WidgetBuilder} />
       <Route path="/rate-limiting" component={RateLimitingDocs} />
       <Route path="/api-keys" component={ApiKeyManagement} />
+      <Route path="/api-usage" component={ApiUsageAnalytics} />
       <Route path="/boutique-api-keys/:boutiqueId" component={BoutiqueApiKeys} />
       {/* Final fallback route */}
       <Route component={NotFound} />

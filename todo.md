@@ -2315,11 +2315,12 @@ This approach:
 - [ ] Document API authentication in Developer Portal
 
 ## Phase 44: API Usage Analytics Dashboard
-- [ ] Create ApiUsageAnalytics.tsx component with tabs
-- [ ] Build real-time usage statistics display (requests, errors, response times)
-- [ ] Create charts for usage trends over time
-- [ ] Add request history table with filtering and sorting
-- [ ] Implement rate limit status visualization
-- [ ] Add export functionality for usage reports (CSV, PDF)
+- [x] Create ApiUsageAnalytics.tsx component with tabs
+- [x] Build real-time usage statistics display (requests, errors, response times)
+- [x] Create charts for usage trends over time (line chart)
+- [x] Add request history table with filtering and sorting
+- [x] Implement rate limit status visualization with progress bar
+- [x] Add export functionality for usage reports (CSV, PDF) - placeholder
+- [x] Add route for /api-usage page in App.tsx
 - [ ] Create vitest tests for analytics component
-- [ ] Add route for /api-analytics page in App.tsx
+- [ ] Integrate with actual tRPC procedures for live data
