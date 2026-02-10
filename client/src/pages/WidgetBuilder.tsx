@@ -16,7 +16,7 @@ export default function WidgetBuilder() {
   const embedCode = `<!-- StyleSwap Widget Embed -->
 <div id="styleswap-widget-container"></div>
 
-<script src="https://styleswap.com/widget.js"></script>
+<script src="/widget.js"><\/script>
 <script>
   StyleSwapWidget.init({
     apiKey: "${apiKey}",
@@ -30,7 +30,7 @@ export default function WidgetBuilder() {
       // Handle try-on result
     }
   });
-</script>`;
+<\/script>`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(embedCode);

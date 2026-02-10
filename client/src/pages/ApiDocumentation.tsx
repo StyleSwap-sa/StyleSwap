@@ -166,26 +166,77 @@ export default function ApiDocumentation() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="bg-muted p-3 rounded">
-                      <code className="text-sm">POST /api/tryons/generate</code>
+                      <code className="text-sm">POST /api/trpc/protectedApi.generateTryOn</code>
                     </div>
-                    <div className="bg-muted p-4 rounded-lg overflow-x-auto">
-                      <pre className="text-sm">{`{
-  "customerId": "cust_123",
-  "productId": "prod_456",
-  "photoUrl": "https://...",
-  "type": "top"
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">Request Body:</p>
+                      <div className="bg-muted p-4 rounded-lg overflow-x-auto">
+                        <pre className="text-sm">{`{
+  "apiKey": "sk_live_xxxxx",
+  "productId": "prod_123",
+  "productName": "Blue Dress",
+  "userImage": "https://example.com/user.jpg",
+  "garmentImage": "https://example.com/garment.jpg"
 }`}</pre>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">Response (Success):</p>
+                      <div className="bg-muted p-4 rounded-lg overflow-x-auto">
+                        <pre className="text-sm">{`{
+  "success": true,
+  "statusCode": 200,
+  "data": {
+    "tryOnId": "tryon_1234567890",
+    "imageUrl": "https://cdn.styleswap.com/tryons/...",
+    "generatedAt": "2026-02-10T12:30:00Z",
+    "processingTime": 2500
+  },
+  "rateLimit": {
+    "limit": 100,
+    "remaining": 87,
+    "reset": 1644495600
+  }
+}`}</pre>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">Rate Limit:</p>
+                      <p className="text-sm text-muted-foreground">100 requests per minute. Returns 429 if exceeded.</p>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Get Try-On Status</CardTitle>
+                    <CardTitle className="text-lg">Get API Usage Statistics</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="bg-muted p-3 rounded">
-                      <code className="text-sm">GET /api/tryons/{'{tryonId}'}</code>
+                      <code className="text-sm">GET /api/trpc/protectedApi.getUsageStats</code>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">Query Parameters:</p>
+                      <div className="bg-muted p-4 rounded-lg">
+                        <pre className="text-sm">apiKey: sk_live_xxxxx
+period: 24h (1h, 24h, 7d, 30d)</pre>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">Response:</p>
+                      <div className="bg-muted p-4 rounded-lg overflow-x-auto">
+                        <pre className="text-sm">{`{
+  "success": true,
+  "data": {
+    "totalRequests": 1250,
+    "successfulRequests": 1200,
+    "failedRequests": 50,
+    "averageResponseTime": 2400,
+    "quotaUsed": 1200,
+    "quotaLimit": 5000
+  }
+}`}</pre>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

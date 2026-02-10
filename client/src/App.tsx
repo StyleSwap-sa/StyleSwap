@@ -62,6 +62,8 @@ import WebhookEventLog from "./pages/WebhookEventLog";
 import AlertConfiguration from "./pages/AlertConfiguration";
 import OnboardingWizard from "./pages/OnboardingWizard";
 import RetailerAnalytics from "./pages/RetailerAnalytics";
+import WebhookTester from "./pages/WebhookTester";
+import ApiUsageMonitoring from "./pages/ApiUsageMonitoring";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -116,11 +118,13 @@ function Router() {
       <Route path="/api-docs" component={ApiDocumentation} />
       <Route path="/developer" component={DeveloperPortal} />
       <Route path="/webhook-testing" component={WebhookTestingConsole} />
+      <Route path="/webhook-tester" component={WebhookTester} />
       <Route path="/integration-guides" component={RetailerIntegrationGuides} />
       <Route path="/widget-builder" component={WidgetBuilder} />
       <Route path="/rate-limiting" component={RateLimitingDocs} />
       <Route path="/api-keys" component={ApiKeyManagement} />
       <Route path="/api-usage" component={ApiUsageAnalytics} />
+      <Route path="/api-monitoring" component={ApiUsageMonitoring} />
       <Route path="/boutique-api-keys/:boutiqueId" component={BoutiqueApiKeys} />
       <Route path="/webhook-logs" component={WebhookEventLog} />
       <Route path="/alerts" component={AlertConfiguration} />

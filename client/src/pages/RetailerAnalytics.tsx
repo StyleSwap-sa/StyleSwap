@@ -25,7 +25,12 @@ import { trpc } from "@/lib/trpc";
  */
 
 export default function RetailerAnalytics() {
+  const { user } = useAuth();
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("30d");
+  const { data: usageStats, isLoading: statsLoading } = trpc.protectedApi.getUsageStats.useQuery(
+    { period: timeRange === "7d" ? "7d" : timeRange === "30d" ? "30d" : "90d" },
+    { enabled: !!user }
+  );
 
   // Mock data for demonstration
   const quotaData = {
