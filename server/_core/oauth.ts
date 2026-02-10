@@ -31,14 +31,22 @@ export function registerOAuthRoutes(app: Express) {
       }
 
       // Upsert user in database
-      const user = await db.upsertUser({
+      await db.upsertUser({
         openId: userInfo.openId,
         email: userInfo.email || "",
         name: userInfo.name || "",
-        userType: userInfo.userType || "user",
       });
 
-      console.log("[OAuth] User upserted:", user.id);
+      // Fetch the user after upsert to get the ID
+      const user = await db.getUserByOpenId(userInfo.openId);
+      
+      if (!user || !user.id) {
+        console.error("[OAuth] User not found after upsert:", userInfo.openId);
+        res.status(500).json({ error: "Failed to create or retrieve user" });
+        return;
+      }
+
+      console.log("[OAuth] User upserted and retrieved:", user.id);
 
       const COOKIE_NAME = "session";
       const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -53,11 +61,9 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      // Determine redirect destination based on user type
+      // Determine redirect destination based on user role
       let redirectPath = "/";
-      if (userInfo.userType === 'merchant') {
-        redirectPath = "/boutique-dashboard";
-      } else if (userInfo.userType === 'admin') {
+      if (user.role === 'admin') {
         redirectPath = "/admin";
       } else {
         redirectPath = "/dashboard";

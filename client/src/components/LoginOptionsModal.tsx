@@ -20,11 +20,15 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
 
   const handleCustomerLogin = () => {
     setLoading(true);
+    // Store the dashboard URL in localStorage so OAuth callback can redirect there
+    localStorage.setItem('oauth_return_url', '/dashboard');
     window.location.href = getLoginUrl();
   };
 
   const handleBoutiqueSignup = () => {
     setLoading(true);
+    // Store the boutique dashboard URL in localStorage so OAuth callback can redirect there
+    localStorage.setItem('oauth_return_url', '/boutique-dashboard');
     window.location.href = getBoutiqueSignupUrl();
   };
 
