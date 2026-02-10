@@ -482,7 +482,6 @@ export const payouts = mysqlTable("payouts", {
 	payoutPeriodEnd: varchar({ length: 10 }).notNull(), // YYYY-MM-DD
 	totalRevenue: decimal({ precision: 10, scale: 2 }).default('0').notNull(),
 	yokoFees: decimal({ precision: 10, scale: 2 }).default('0').notNull(),
-	styleswapCommission: decimal({ precision: 10, scale: 2 }).default('0').notNull(),
 	boutiquePayout: decimal({ precision: 10, scale: 2 }).default('0').notNull(),
 	status: mysqlEnum(['pending', 'processing', 'completed', 'failed']).default('pending').notNull(),
 	payoutDate: timestamp({ mode: 'string' }),
@@ -503,7 +502,6 @@ export const payoutTransactions = mysqlTable("payoutTransactions", {
 	orderId: int().notNull().references(() => shopOrders.id),
 	orderAmount: decimal({ precision: 10, scale: 2 }).notNull(),
 	yokoFee: decimal({ precision: 10, scale: 2 }).notNull(),
-	styleswapCommission: decimal({ precision: 10, scale: 2 }).notNull(),
 	boutiqueShare: decimal({ precision: 10, scale: 2 }).notNull(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 },

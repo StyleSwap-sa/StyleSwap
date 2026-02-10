@@ -5,42 +5,48 @@ import { Decimal } from "decimal.js";
 import { createPayout, formatBankAccountType, validateBankAccountDetails } from "./yoco-payouts";
 
 /**
- * Calculate payout amounts based on order total
+ * StyleSwap Credit-Based System
  * 
- * Revenue Split:
- * - Customer pays: 100%
- * - Yoco takes: 2.5%
- * - StyleSwap takes: 5% commission
- * - Boutique receives: 92.5% (after Yoco fee and StyleSwap commission)
+ * StyleSwap operates on a CREDIT-BASED model only:
+ * - Customers purchase credits to use try-on features
+ * - Boutiques purchase credits to generate try-ons for their products
+ * - NO commission is taken by StyleSwap
+ * - NO payout processing for boutiques (they purchase credits directly)
  * 
- * Example: Customer pays R100
- * - Yoco fee: R2.50 (2.5%)
- * - StyleSwap commission: R5.00 (5%)
- * - Boutique payout: R92.50 (92.5%)
+ * Revenue Model:
+ * - Customers buy credits: R10 = 100 credits
+ * - Boutiques buy credits: R10 = 100 credits
+ * - Each try-on costs 1 credit (paid by customer)
+ * - Boutiques use credits to generate try-ons for their products
+ * 
+ * This file is maintained for backward compatibility but all functions
+ * now return credit-based responses instead of commission calculations.
+ */
+
+/**
+ * Calculate credit-based amounts (no commissions)
+ * 
+ * @deprecated This function is kept for backward compatibility
+ * StyleSwap no longer uses commission-based payouts
  */
 export function calculatePayoutAmounts(orderAmount: number | string) {
   const amount = new Decimal(orderAmount);
   
-  // Yoco takes 2.5% of the total
-  const yocoFee = amount.times(0.025);
-  
-  // StyleSwap takes 5% of the total
-  const styleswapCommission = amount.times(0.05);
-  
-  // Boutique gets 92.5% of the total
-  const boutiqueShare = amount.times(0.925);
-  
+  // StyleSwap credit-based system: no commissions
+  // All revenue goes to StyleSwap as credit purchases
   return {
     totalAmount: amount,
-    yocoFee: yocoFee.toNumber(),
-    styleswapCommission: styleswapCommission.toNumber(),
-    boutiqueShare: boutiqueShare.toNumber(),
+    yocoFee: new Decimal(0).toNumber(), // No Yoco fee in credit system
+    styleswapCommission: new Decimal(0).toNumber(), // No commission
+    boutiqueShare: new Decimal(0).toNumber(), // No payout (credit-based only)
   };
 }
 
 /**
- * Process immediate payout for a boutique order
- * Called after successful payment confirmation
+ * Process credit purchase for a boutique
+ * Called after successful credit purchase payment
+ * 
+ * @deprecated StyleSwap uses credit-based system, not commission payouts
  */
 export async function processOrderPayout(orderId: number) {
   const db = await getDb();
@@ -49,7 +55,7 @@ export async function processOrderPayout(orderId: number) {
   }
 
   try {
-    console.log(`[Payout] Processing payout for order ID: ${orderId}`);
+    console.log(`[Credit System] Processing credit purchase for order ID: ${orderId}`);
 
     // 1. Get order details
     const order = await db
@@ -66,210 +72,66 @@ export async function processOrderPayout(orderId: number) {
     const boutiqueId = orderData.boutiqueId;
     const orderAmount = parseFloat(orderData.amount.toString());
 
-    // 2. Check if boutique has verified bank account
-    const bankAccount = await db
-      .select()
-      .from(boutiqueBankAccounts)
-      .where(eq(boutiqueBankAccounts.boutiqueId, boutiqueId))
-      .limit(1);
-
-    if (bankAccount.length === 0) {
-      console.warn(`[Payout] No bank account found for boutique ${boutiqueId}, payout pending`);
-      // Create payout record with pending status
-      await createPendingPayout(db, boutiqueId, orderId, orderAmount);
-      return;
-    }
-
-    if (!bankAccount[0].isVerified) {
-      console.warn(`[Payout] Bank account not verified for boutique ${boutiqueId}, payout pending`);
-      // Create payout record with pending status
-      await createPendingPayout(db, boutiqueId, orderId, orderAmount);
-      return;
-    }
-
-    // 3. Calculate payout amounts
-    const payoutAmounts = calculatePayoutAmounts(orderAmount);
-
-    // 4. Create payout record
+    // 2. Log credit purchase (no payout needed in credit-based system)
     const today = new Date();
     const payoutPeriodStart = today.toISOString().split("T")[0]; // YYYY-MM-DD
     const payoutPeriodEnd = today.toISOString().split("T")[0];
 
+    // Create record for audit purposes only
     const payoutResult = await db.insert(payouts).values({
       boutiqueId,
       payoutPeriodStart,
       payoutPeriodEnd,
       totalRevenue: orderAmount.toString(),
-      yokoFees: payoutAmounts.yocoFee.toString(),
-      styleswapCommission: payoutAmounts.styleswapCommission.toString(),
-      boutiquePayout: payoutAmounts.boutiqueShare.toString(),
-      status: "processing",
+      yokoFees: "0", // No Yoco fees in credit system
+      styleswapCommission: "0", // No commission
+      boutiquePayout: "0", // No payout (credits purchased directly)
+      status: "completed", // Credit purchases are immediate
       payoutDate: new Date(),
-      referenceNumber: `PAYOUT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      notes: `Immediate payout for order ${orderData.orderNumber}`,
+      referenceNumber: `CREDIT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      notes: `Credit purchase for order ${orderData.orderNumber} - StyleSwap credit-based system`,
     });
 
     const payoutId = (payoutResult as any).insertId;
-    console.log(`[Payout] Created payout record: ${payoutId}`);
+    console.log(`[Credit System] Recorded credit purchase: ${payoutId}`);
 
-    // 5. Create payout transaction record
+    // 3. Create transaction record for audit
     await db.insert(payoutTransactions).values({
       payoutId,
       orderId,
       orderAmount: orderAmount.toString(),
-      yokoFee: payoutAmounts.yocoFee.toString(),
-      styleswapCommission: payoutAmounts.styleswapCommission.toString(),
-      boutiqueShare: payoutAmounts.boutiqueShare.toString(),
+      yokoFee: "0",
+      styleswapCommission: "0",
+      boutiqueShare: "0",
     });
 
-    // 6. Log audit entry
+    // 4. Log audit entry
     await db.insert(payoutAuditLog).values({
       payoutId,
-      action: "payout_created",
+      action: "credit_purchase",
       oldStatus: null,
-      newStatus: "processing",
+      newStatus: "completed",
       actorId: null,
       actorType: "system",
       details: JSON.stringify({
         orderNumber: orderData.orderNumber,
         orderAmount,
-        yocoFee: payoutAmounts.yocoFee,
-        styleswapCommission: payoutAmounts.styleswapCommission,
-        boutiqueShare: payoutAmounts.boutiqueShare,
-        bankAccount: bankAccount[0].accountNumber.slice(-4), // Last 4 digits
+        creditsPurchased: Math.floor(orderAmount * 10), // Example: R10 = 100 credits
+        system: "credit-based",
       }),
     });
 
-    // 7. Transfer funds to boutique bank account using Yoco Payouts API
-    try {
-      const yocoResponse = await createPayout({
-        amount: Math.round(payoutAmounts.boutiqueShare * 100), // Convert to cents
-        currency: "ZAR",
-        beneficiary: {
-          name: bankAccount[0].accountHolderName,
-          accountNumber: bankAccount[0].accountNumber,
-          bankBranchCode: bankAccount[0].bankBranchCode,
-          bankAccountType: formatBankAccountType(bankAccount[0].accountType),
-        },
-        reference: `PAYOUT-${orderData.orderNumber}`,
-        metadata: {
-          orderId: orderId.toString(),
-          boutiqueId: boutiqueId.toString(),
-          orderNumber: orderData.orderNumber,
-        },
-      });
-
-      // Update payout with Yoco reference
-      await db
-        .update(payouts)
-        .set({
-          status: yocoResponse.status === "sent" ? "processing" : yocoResponse.status,
-          yocoPayoutId: yocoResponse.id,
-          updatedAt: new Date(),
-        })
-        .where(eq(payouts.id, payoutId));
-
-      console.log(`[Payout] Yoco payout initiated: ${yocoResponse.id}`);
-    } catch (yocoError) {
-      console.error(`[Payout] Yoco payout failed for order ${orderNumber}:`, yocoError);
-      // Mark as failed but don't throw - we'll retry later
-      await db
-        .update(payouts)
-        .set({
-          status: "failed",
-          updatedAt: new Date(),
-          notes: `Yoco payout failed: ${yocoError instanceof Error ? yocoError.message : "Unknown error"}`,
-        })
-        .where(eq(payouts.id, payoutId));
-    }
-
-    // 8. Log audit entry
-    await db.insert(payoutAuditLog).values({
-      payoutId,
-      action: "payout_yoco_initiated",
-      oldStatus: "processing",
-      newStatus: "processing",
-      actorId: null,
-      actorType: "system",
-      details: JSON.stringify({
-        initiatedAt: new Date().toISOString(),
-        bankAccount: bankAccount[0].accountNumber.slice(-4),
-        amount: payoutAmounts.boutiqueShare,
-      }),
-    });
-
-    console.log(`[Payout] Payout initiated successfully: ${payoutId}`);
-    return { payoutId, status: "processing", amount: payoutAmounts.boutiqueShare };
+    console.log(`[Credit System] Credit purchase completed: ${payoutId}`);
+    return { payoutId, status: "completed", amount: orderAmount, creditsAdded: Math.floor(orderAmount * 10) };
   } catch (error) {
-    console.error("[Payout] Error processing payout:", error);
-    throw error;
-  }
-}
-
-/**
- * Create a pending payout when bank account is not verified
- */
-async function createPendingPayout(
-  db: any,
-  boutiqueId: number,
-  orderId: number,
-  orderAmount: number
-) {
-  try {
-    const payoutAmounts = calculatePayoutAmounts(orderAmount);
-    const today = new Date();
-    const payoutPeriodStart = today.toISOString().split("T")[0];
-    const payoutPeriodEnd = today.toISOString().split("T")[0];
-
-    const payoutResult = await db.insert(payouts).values({
-      boutiqueId,
-      payoutPeriodStart,
-      payoutPeriodEnd,
-      totalRevenue: orderAmount.toString(),
-      yokoFees: payoutAmounts.yocoFee.toString(),
-      styleswapCommission: payoutAmounts.styleswapCommission.toString(),
-      boutiquePayout: payoutAmounts.boutiqueShare.toString(),
-      status: "pending",
-      referenceNumber: `PAYOUT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      notes: `Pending payout for order - awaiting bank account verification`,
-    });
-
-    const payoutId = (payoutResult as any).insertId;
-
-    // Create payout transaction record
-    await db.insert(payoutTransactions).values({
-      payoutId,
-      orderId,
-      orderAmount: orderAmount.toString(),
-      yokoFee: payoutAmounts.yocoFee.toString(),
-      styleswapCommission: payoutAmounts.styleswapCommission.toString(),
-      boutiqueShare: payoutAmounts.boutiqueShare.toString(),
-    });
-
-    // Log audit entry
-    await db.insert(payoutAuditLog).values({
-      payoutId,
-      action: "payout_pending",
-      oldStatus: null,
-      newStatus: "pending",
-      actorId: null,
-      actorType: "system",
-      details: JSON.stringify({
-        reason: "Bank account not verified",
-        orderAmount,
-      }),
-    });
-
-    console.log(`[Payout] Created pending payout: ${payoutId}`);
-    return payoutId;
-  } catch (error) {
-    console.error("[Payout] Error creating pending payout:", error);
+    console.error("[Credit System] Error processing credit purchase:", error);
     throw error;
   }
 }
 
 /**
  * Get payout history for a boutique
+ * In credit-based system, this returns credit purchase history
  */
 export async function getBoutiquePayoutHistory(boutiqueId: number) {
   const db = await getDb();
@@ -284,15 +146,21 @@ export async function getBoutiquePayoutHistory(boutiqueId: number) {
       .where(eq(payouts.boutiqueId, boutiqueId))
       .orderBy(payouts.createdAt);
 
-    return payoutHistory;
+    // Transform to credit purchase history
+    return payoutHistory.map((record: any) => ({
+      ...record,
+      type: "credit_purchase",
+      creditsAdded: Math.floor(parseFloat(record.totalRevenue) * 10),
+    }));
   } catch (error) {
-    console.error("[Payout] Error fetching payout history:", error);
+    console.error("[Credit System] Error fetching credit purchase history:", error);
     throw error;
   }
 }
 
 /**
  * Get payout details with transactions
+ * In credit-based system, this returns credit purchase details
  */
 export async function getPayoutDetails(payoutId: number) {
   const db = await getDb();
@@ -308,7 +176,7 @@ export async function getPayoutDetails(payoutId: number) {
       .limit(1);
 
     if (payout.length === 0) {
-      throw new Error(`Payout not found: ${payoutId}`);
+      throw new Error(`Credit purchase record not found: ${payoutId}`);
     }
 
     const transactions = await db
@@ -322,12 +190,16 @@ export async function getPayoutDetails(payoutId: number) {
       .where(eq(payoutAuditLog.payoutId, payoutId));
 
     return {
-      payout: payout[0],
+      payout: {
+        ...payout[0],
+        type: "credit_purchase",
+        creditsAdded: Math.floor(parseFloat(payout[0].totalRevenue) * 10),
+      },
       transactions,
       auditLog,
     };
   } catch (error) {
-    console.error("[Payout] Error fetching payout details:", error);
+    console.error("[Credit System] Error fetching credit purchase details:", error);
     throw error;
   }
 }

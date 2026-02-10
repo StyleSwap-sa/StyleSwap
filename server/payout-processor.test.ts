@@ -1,90 +1,70 @@
-import { describe, it, expect } from "vitest";
 import { calculatePayoutAmounts } from "./payout-processor";
 
-describe("Payout Processor", () => {
+describe("Credit-Based System (No Commissions)", () => {
   describe("calculatePayoutAmounts", () => {
-    it("should calculate correct amounts for R100 order", () => {
+    it("should return zero amounts for credit-based system", () => {
       const result = calculatePayoutAmounts(100);
       
       expect(result.totalAmount.toNumber()).toBe(100);
-      expect(result.yocoFee).toBeCloseTo(2.5, 2); // 2.5%
-      expect(result.styleswapCommission).toBeCloseTo(5, 2); // 5%
-      expect(result.boutiqueShare).toBeCloseTo(92.5, 2); // 92.5%
+      expect(result.yocoFee).toBe(0); // No Yoco fee
+      expect(result.styleswapCommission).toBe(0); // No commission
+      expect(result.boutiqueShare).toBe(0); // No payout (credit-based)
     });
 
-    it("should calculate correct amounts for R1000 order", () => {
+    it("should return zero amounts for any order amount", () => {
       const result = calculatePayoutAmounts(1000);
       
       expect(result.totalAmount.toNumber()).toBe(1000);
-      expect(result.yocoFee).toBeCloseTo(25, 2); // 2.5%
-      expect(result.styleswapCommission).toBeCloseTo(50, 2); // 5%
-      expect(result.boutiqueShare).toBeCloseTo(925, 2); // 92.5%
+      expect(result.yocoFee).toBe(0);
+      expect(result.styleswapCommission).toBe(0);
+      expect(result.boutiqueShare).toBe(0);
     });
 
-    it("should calculate correct amounts for R299.99 order", () => {
+    it("should handle decimal amounts", () => {
       const result = calculatePayoutAmounts(299.99);
       
       expect(result.totalAmount.toNumber()).toBeCloseTo(299.99, 2);
-      expect(result.yocoFee).toBeCloseTo(7.50, 2); // 2.5%
-      expect(result.styleswapCommission).toBeCloseTo(15.00, 2); // 5%
-      expect(result.boutiqueShare).toBeCloseTo(277.49, 2); // 92.5%
+      expect(result.yocoFee).toBe(0);
+      expect(result.styleswapCommission).toBe(0);
+      expect(result.boutiqueShare).toBe(0);
     });
 
     it("should handle string input", () => {
       const result = calculatePayoutAmounts("500.50");
       
       expect(result.totalAmount.toNumber()).toBeCloseTo(500.50, 2);
-      expect(result.yocoFee).toBeCloseTo(12.51, 1);
-      expect(result.styleswapCommission).toBeCloseTo(25.03, 1);
-      expect(result.boutiqueShare).toBeCloseTo(462.96, 1);
+      expect(result.yocoFee).toBe(0);
+      expect(result.styleswapCommission).toBe(0);
+      expect(result.boutiqueShare).toBe(0);
     });
 
-    it("should ensure amounts sum to total", () => {
+    it("should ensure all fees are zero in credit-based system", () => {
       const testAmounts = [100, 500, 1000, 299.99, 50.25];
       
       testAmounts.forEach(amount => {
         const result = calculatePayoutAmounts(amount);
-        const sum = result.yocoFee + result.styleswapCommission + result.boutiqueShare;
-        expect(sum).toBeCloseTo(amount, 1);
+        expect(result.yocoFee).toBe(0);
+        expect(result.styleswapCommission).toBe(0);
+        expect(result.boutiqueShare).toBe(0);
       });
     });
+  });
 
-    it("should maintain percentage ratios", () => {
-      const result = calculatePayoutAmounts(1000);
-      
-      // Verify percentages
-      const yocoPercent = (result.yocoFee / 1000) * 100;
-      const styleswapPercent = (result.styleswapCommission / 1000) * 100;
-      const boutiquePercent = (result.boutiqueShare / 1000) * 100;
-      
-      expect(yocoPercent).toBeCloseTo(2.5, 1);
-      expect(styleswapPercent).toBeCloseTo(5, 1);
-      expect(boutiquePercent).toBeCloseTo(92.5, 1);
-    });
+  describe("Credit-Based System", () => {
+    it("should confirm StyleSwap uses credit-based model only", () => {
+      // StyleSwap operates on a credit-based system:
+      // - Customers purchase credits (e.g., R10 = 100 credits)
+      // - Boutiques purchase credits (e.g., R10 = 100 credits)
+      // - Each try-on costs 1 credit (paid by customer)
+      // - NO commission is taken
+      // - NO payout processing for boutiques
 
-    it("should handle very small amounts", () => {
-      const result = calculatePayoutAmounts(0.50);
-      
-      expect(result.totalAmount.toNumber()).toBeCloseTo(0.50, 2);
-      expect(result.yocoFee).toBeCloseTo(0.0125, 4); // 2.5%
-      expect(result.styleswapCommission).toBeCloseTo(0.025, 4); // 5%
-      expect(result.boutiqueShare).toBeCloseTo(0.4625, 4); // 92.5%
-    });
+      const creditRate = 10; // 1 credit = R0.10 (R10 = 100 credits)
+      const customerPurchase = 100; // R100
+      const creditsAdded = customerPurchase * creditRate; // 1000 credits
 
-    it("should handle large amounts", () => {
-      const result = calculatePayoutAmounts(50000);
-      
-      expect(result.totalAmount.toNumber()).toBe(50000);
-      expect(result.yocoFee).toBeCloseTo(1250, 2); // 2.5%
-      expect(result.styleswapCommission).toBeCloseTo(2500, 2); // 5%
-      expect(result.boutiqueShare).toBeCloseTo(46250, 2); // 92.5%
-    });
-
-    it("should maintain precision with decimal amounts", () => {
-      const result = calculatePayoutAmounts(123.45);
-      
-      const sum = result.yocoFee + result.styleswapCommission + result.boutiqueShare;
-      expect(sum).toBeCloseTo(123.45, 1);
+      expect(creditsAdded).toBe(1000);
+      expect(customerPurchase).toBe(100); // Full amount goes to StyleSwap as credit purchase
     });
   });
 });

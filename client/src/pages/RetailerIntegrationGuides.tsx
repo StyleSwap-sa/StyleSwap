@@ -35,7 +35,7 @@ export default function RetailerIntegrationGuides() {
       description: 'Authentic fashion and lifestyle marketplace',
       difficulty: 'Intermediate',
       estimatedTime: '2-3 hours',
-      features: ['Seller Integration', 'Product Verification', 'Multi-Seller Support', 'Commission Tracking'],
+      features: ['Seller Integration', 'Product Verification', 'Multi-Seller Support', 'Credit-Based Payments'],
     },
   ];
 
@@ -401,7 +401,7 @@ function handleTryOnFailed(data) {
                   <ul className="space-y-1 text-sm">
                     <li>• Multi-seller product catalog</li>
                     <li>• Seller verification and authentication</li>
-                    <li>• Commission tracking per seller</li>
+                    <li>• Credit-based payment system</li>
                     <li>• Seller analytics and reporting</li>
                     <li>• Marketplace webhook routing</li>
                   </ul>
