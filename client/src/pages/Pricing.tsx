@@ -38,10 +38,8 @@ export default function Pricing() {
     if (!isAuthenticated) {
       const packageId = getPackageId(tryOns);
       const returnUrl = `/checkout?package=${packageId}`;
-      const loginUrl = getLoginUrl();
-      const urlObj = new URL(loginUrl);
-      urlObj.searchParams.set('returnUrl', returnUrl);
-      window.location.href = urlObj.toString();
+      localStorage.setItem('oauth_return_url', returnUrl);
+      window.location.href = getLoginUrl();
       return;
     }
     const packageId = getPackageId(tryOns);

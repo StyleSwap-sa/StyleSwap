@@ -1,4 +1,3 @@
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Express, Request, Response } from "express";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
@@ -31,31 +30,22 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
-      // Check if email already exists with a different role
-      if (userInfo.email) {
-        const existingUser = await db.getUserByEmail(userInfo.email);
-        const requestedUserType = getQueryParam(req, "userType") || "customer";
-        
-        if (existingUser && existingUser.userType !== requestedUserType) {
-          const currentRole = existingUser.userType === "merchant" ? "boutique owner" : "customer";
-          const requestedRole = requestedUserType === "merchant" ? "boutique owner" : "customer";
-          res.status(400).json({
-            error: `This email is already registered as a ${currentRole}. Cannot use same email for ${requestedRole}.`,
-            code: "EMAIL_ALREADY_REGISTERED_AS_DIFFERENT_ROLE",
-          });
-          return;
-        }
-      }
-
-      await db.upsertUser({
+      // Upsert user in database
+      const user = await db.upsertUser({
         openId: userInfo.openId,
-        name: userInfo.name || null,
-        email: userInfo.email ?? null,
-        loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-        lastSignedIn: new Date(),
+        email: userInfo.email || "",
+        name: userInfo.name || "",
+        userType: userInfo.userType || "user",
       });
 
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
+      console.log("[OAuth] User upserted:", user.id);
+
+      const COOKIE_NAME = "session";
+      const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+
+      const sessionToken = await sdk.createSessionToken({
+        userId: user.id.toString(),
+        email: userInfo.email || "",
         name: userInfo.name || "",
         expiresInMs: ONE_YEAR_MS,
       });
@@ -63,15 +53,9 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      // Check if there's a return URL in the query params
-      const returnUrl = getQueryParam(req, 'returnUrl');
-      
       // Determine redirect destination based on user type
       let redirectPath = "/";
-      if (returnUrl) {
-        // Use the return URL if provided (e.g., from checkout flow)
-        redirectPath = returnUrl;
-      } else if (userInfo.userType === 'merchant') {
+      if (userInfo.userType === 'merchant') {
         redirectPath = "/boutique-dashboard";
       } else if (userInfo.userType === 'admin') {
         redirectPath = "/admin";
@@ -79,7 +63,27 @@ export function registerOAuthRoutes(app: Express) {
         redirectPath = "/dashboard";
       }
       
-      res.redirect(302, redirectPath);
+      // Send HTML that checks localStorage for returnUrl and redirects appropriately
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Redirecting...</title>
+          </head>
+          <body>
+            <script>
+              const returnUrl = localStorage.getItem('oauth_return_url');
+              if (returnUrl) {
+                localStorage.removeItem('oauth_return_url');
+                window.location.href = returnUrl;
+              } else {
+                window.location.href = '${redirectPath}';
+              }
+            </script>
+          </body>
+        </html>
+      `;
+      res.send(html);
     } catch (error) {
       console.error("[OAuth] Callback failed:", error instanceof Error ? error.message : String(error));
       console.error("[OAuth] Full error:", error);
