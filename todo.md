@@ -2242,3 +2242,18 @@ This approach:
 - [ ] Verify ratings and statistics display accurately
 - [ ] Test with boutiques having different product counts
 - [ ] Ensure no interference with existing workflows (picture uploads, try-on generation)
+
+
+## Phase 40: Rate Limiting & Quotas System
+- [x] Create API rate limiting middleware (100 req/min per API key)
+- [x] Add rate limit tracking to database (apiKeyLogs table)
+- [x] Implement sliding window rate limiter algorithm
+- [x] Add rate limit headers to API responses (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
+- [x] Create rate limit error responses (429 Too Many Requests)
+- [x] Add rate limit configuration to environment variables
+- [x] Create tRPC middleware for rate limit enforcement
+- [x] Create comprehensive rate limiting documentation page
+- [x] Add rate limit documentation link to Developer Portal
+- [ ] Test rate limiting with concurrent requests
+- [ ] Test quota enforcement for different API key tiers
+- [ ] Integrate rate limiting into API endpoints

@@ -227,9 +227,14 @@ export default function DeveloperPortal() {
                   </div>
                 </div>
 
-                <Button className="w-full bg-orange-600 hover:bg-orange-700">
-                  Go to Widget Builder
-                </Button>
+                <div className="flex gap-3">
+                  <Button className="flex-1 bg-orange-600 hover:bg-orange-700">
+                    Go to Widget Builder
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    View Rate Limiting Docs
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

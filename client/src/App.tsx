@@ -55,6 +55,7 @@ import DeveloperPortal from "./pages/DeveloperPortal";
 import WebhookTestingConsole from "./pages/WebhookTestingConsole";
 import RetailerIntegrationGuides from "./pages/RetailerIntegrationGuides";
 import WidgetBuilder from "./pages/WidgetBuilder";
+import RateLimitingDocs from "./pages/RateLimitingDocs";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -111,6 +112,7 @@ function Router() {
       <Route path="/webhook-testing" component={WebhookTestingConsole} />
       <Route path="/integration-guides" component={RetailerIntegrationGuides} />
       <Route path="/widget-builder" component={WidgetBuilder} />
+      <Route path="/rate-limiting" component={RateLimitingDocs} />
       <Route path="/boutique-api-keys/:boutiqueId" component={BoutiqueApiKeys} />
       {/* Final fallback route */}
       <Route component={NotFound} />
