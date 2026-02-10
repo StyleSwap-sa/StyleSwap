@@ -58,6 +58,8 @@ import WidgetBuilder from "./pages/WidgetBuilder";
 import RateLimitingDocs from "./pages/RateLimitingDocs";
 import ApiKeyManagement from "./pages/ApiKeyManagement";
 import ApiUsageAnalytics from "./pages/ApiUsageAnalytics";
+import WebhookEventLog from "./pages/WebhookEventLog";
+import AlertConfiguration from "./pages/AlertConfiguration";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -118,8 +120,10 @@ function Router() {
       <Route path="/api-keys" component={ApiKeyManagement} />
       <Route path="/api-usage" component={ApiUsageAnalytics} />
       <Route path="/boutique-api-keys/:boutiqueId" component={BoutiqueApiKeys} />
+      <Route path="/webhook-logs" component={WebhookEventLog} />
+      <Route path="/alerts" component={AlertConfiguration} />
       {/* Final fallback route */}
-      <Route component={NotFound} />
+      <Route path={"*"} component={NotFound} />
     </Switch>
   );
 }

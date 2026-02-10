@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
+import { AnalyticsSkeleton } from "@/components/AnalyticsSkeleton";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import {
   BarChart,
   Bar,
