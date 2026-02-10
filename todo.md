@@ -2257,3 +2257,31 @@ This approach:
 - [ ] Test rate limiting with concurrent requests
 - [ ] Test quota enforcement for different API key tiers
 - [ ] Integrate rate limiting into API endpoints
+
+
+## Phase 41: API Key Management tRPC Procedures
+- [x] Create database helper functions for API key operations (server/db.apikeys.ts)
+- [x] Create tRPC procedure for generating new API keys
+- [x] Create tRPC procedure for listing API keys for a boutique
+- [x] Create tRPC procedure for revoking API keys
+- [x] Create tRPC procedure for updating API key metadata (name, description)
+- [x] Create tRPC router for API key management (server/routers/boutiques.apikeys.ts)
+- [x] Create vitest tests for API key management procedures (13 tests passing)
+- [ ] Integrate API key procedures into main routers.ts
+
+## Phase 42: Rate Limiting Middleware Integration
+- [ ] Add rate limiting middleware to API endpoints
+- [ ] Integrate checkRateLimit and logApiRequest into API procedures
+- [ ] Add rate limit headers to API responses
+- [ ] Create error handling for rate limit exceeded scenarios
+- [ ] Test rate limiting with concurrent requests
+- [ ] Document rate limiting behavior for API consumers
+
+## Phase 43: API Usage Analytics Dashboard
+- [ ] Create API usage statistics page component
+- [ ] Add charts for request volume, response times, and error rates
+- [ ] Implement real-time usage tracking display
+- [ ] Create request history table with filtering
+- [ ] Add export functionality for usage reports
+- [ ] Integrate analytics into Developer Portal
+- [ ] Create vitest tests for analytics components

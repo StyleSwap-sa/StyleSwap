@@ -27,6 +27,15 @@ import { TRPCError } from "@trpc/server";
 import { createVerificationToken, sendVerificationEmail } from "../email.verification";
 import { createYocoCharge, processCreditPurchase, getYocoPublicKey } from "../yoco.payment";
 import { awardReferrerCredits } from "../db.referral";
+import {
+  createApiKey,
+  getApiKeysByBoutique,
+  getApiKeyById,
+  updateApiKeyName,
+  revokeApiKey,
+  getApiKeyStats,
+} from "../db.apikeys";
+import { z } from "zod";
 
 /**
  * Boutique Management Router
