@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Express } from "express";
 const app = express();
 import { createServer } from "http";
 import net from "net";
@@ -98,107 +98,52 @@ export async function startServer() {
 
       const modelImageBuffer = modelImageFiles[0].buffer;
       let clothImageBuffer: Buffer;
-      let lowerClothImageBuffer: Buffer | null = null;
       
-      if ((clothType === "combo" || clothType === "upper") && upperClothImageFiles && upperClothImageFiles[0]) {
+      // Handle different cloth image sources based on clothType
+      if (clothType === "combo") {
+        if (!upperClothImageFiles || !upperClothImageFiles[0]) {
+          return res.status(400).json({ error: "Upper cloth image is required for combo" });
+        }
+        if (!lowerClothImageFiles || !lowerClothImageFiles[0]) {
+          return res.status(400).json({ error: "Lower cloth image is required for combo" });
+        }
         clothImageBuffer = upperClothImageFiles[0].buffer;
-        if (lowerClothImageFiles && lowerClothImageFiles[0]) {
-          lowerClothImageBuffer = lowerClothImageFiles[0].buffer;
-        } else {
-          lowerClothImageBuffer = clothImageBuffer;
-        }
-      } else if (clothImageFiles && clothImageFiles[0]) {
-        clothImageBuffer = clothImageFiles[0].buffer;
       } else {
-        return res.status(400).json({ error: "Clothing image is required" });
-      }
-
-      console.log(`[Try-On Upload] Model image size: ${modelImageBuffer.length} bytes`);
-      console.log(`[Try-On Upload] Cloth image size: ${clothImageBuffer.length} bytes`);
-
-      // Validate image types using magic bytes (file signatures)
-      const validateImageType = (buffer: Buffer): { valid: boolean; format?: string; error?: string } => {
-        // Check for JPEG (FFD8FF)
-        if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
-          return { valid: true, format: 'JPEG' };
+        if (!clothImageFiles || !clothImageFiles[0]) {
+          return res.status(400).json({ error: "Cloth image is required" });
         }
-        // Check for PNG (89504E47)
-        if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
-          return { valid: true, format: 'PNG' };
-        }
-        // Check for WebP (RIFF...WEBP)
-        if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
-            buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50) {
-          return { valid: true, format: 'WebP' };
-        }
-        return { valid: false, error: 'Unsupported image format. Please use JPEG, PNG, or WebP.' };
-      };
-
-      const modelValidation = validateImageType(modelImageBuffer);
-      if (!modelValidation.valid) {
-        return res.status(400).json({ error: `Model image: ${modelValidation.error}` });
-      }
-      console.log(`[Try-On Upload] Model image format: ${modelValidation.format}`);
-
-      const clothValidation = validateImageType(clothImageBuffer);
-      if (!clothValidation.valid) {
-        return res.status(400).json({ error: `Clothing image: ${clothValidation.error}` });
-      }
-      console.log(`[Try-On Upload] Clothing image format: ${clothValidation.format}`);
-
-      // Convert WebP to JPEG if needed (Fitroom only supports JPEG and PNG)
-      let finalModelBuffer = modelImageBuffer;
-      let finalClothBuffer = clothImageBuffer;
-
-      // Convert all images to JPEG for Fitroom compatibility
-      if (modelValidation.format !== 'JPEG') {
-        console.log(`[Try-On Upload] Converting model from ${modelValidation.format} to JPEG`);
-        finalModelBuffer = await sharp(modelImageBuffer).jpeg({ quality: 95 }).toBuffer();
-      }
-
-      if (clothValidation.format !== 'JPEG') {
-        console.log(`[Try-On Upload] Converting cloth from ${clothValidation.format} to JPEG`);
-        finalClothBuffer = await sharp(clothImageBuffer).jpeg({ quality: 95 }).toBuffer();
-      }
-
-      // Convert buffers to base64
-      const modelImageBase64 = finalModelBuffer.toString('base64');
-      const clothImageBase64 = finalClothBuffer.toString('base64');
-      
-      console.log(`[Try-On Upload] Model image base64 size: ${modelImageBase64.length} bytes`);
-      console.log(`[Try-On Upload] Cloth image base64 size: ${clothImageBase64.length} bytes`);
-
-      // Check credits (skip in test mode)
-      if (!testMode) {
-        const credits = await getUserCredits(userId);
-        if (credits.remainingCredits < 1) {
-          return res.status(402).json({ error: "Insufficient credits" });
-        }
-      }
-
-      // Save buffers to temporary files for multipart upload
-      const tempDir = path.join('/tmp', `tryon-${Date.now()}`);
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
+        clothImageBuffer = clothImageFiles[0].buffer;
       }
       
-      const modelPath = path.join(tempDir, 'model.jpg');
-      const clothPath = path.join(tempDir, 'cloth.jpg');
+      // Create temp directory for processing
+      tempDir = path.join("/tmp", `tryon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+      fs.mkdirSync(tempDir, { recursive: true });
+      console.log(`[Try-On Upload] Created temp directory: ${tempDir}`);
       
-      fs.writeFileSync(modelPath, finalModelBuffer);
-      fs.writeFileSync(clothPath, finalClothBuffer);
-      console.log(`[Try-On Upload] Saved temp files: ${modelPath}, ${clothPath}`);
+      // Process and save model image
+      const modelPath = path.join(tempDir, "model.jpg");
+      const processedModelBuffer = await sharp(modelImageBuffer)
+        .jpeg({ quality: 95, progressive: true })
+        .toBuffer();
+      fs.writeFileSync(modelPath, processedModelBuffer);
+      console.log(`[Try-On Upload] Saved model temp file: ${modelPath}`);
       
-      let lowerClothPath: string | undefined;
-      if ((clothType === "combo" || clothType === "upper") && lowerClothImageBuffer) {
-        lowerClothPath = path.join(tempDir, 'lower_cloth.jpg');
-        let finalLowerClothBuffer = lowerClothImageBuffer;
-        const lowerClothValidation = validateImageType(lowerClothImageBuffer);
-        if (lowerClothValidation.format !== 'JPEG') {
-          console.log(`[Try-On Upload] Converting lower cloth to JPEG`);
-          finalLowerClothBuffer = await sharp(lowerClothImageBuffer).jpeg({ quality: 95 }).toBuffer();
-        }
-        fs.writeFileSync(lowerClothPath, finalLowerClothBuffer);
+      // Process and save cloth image
+      const clothPath = path.join(tempDir, "cloth.jpg");
+      const processedClothBuffer = await sharp(clothImageBuffer)
+        .jpeg({ quality: 95, progressive: true })
+        .toBuffer();
+      fs.writeFileSync(clothPath, processedClothBuffer);
+      console.log(`[Try-On Upload] Saved cloth temp file: ${clothPath}`);
+      
+      // Process and save lower cloth image if provided
+      let lowerClothPath: string | undefined = undefined;
+      if (lowerClothImageFiles && lowerClothImageFiles[0]) {
+        lowerClothPath = path.join(tempDir, "lower-cloth.jpg");
+        const processedLowerClothBuffer = await sharp(lowerClothImageFiles[0].buffer)
+          .jpeg({ quality: 95, progressive: true })
+          .toBuffer();
+        fs.writeFileSync(lowerClothPath, processedLowerClothBuffer);
         console.log(`[Try-On Upload] Saved lower cloth temp file: ${lowerClothPath}`);
       }
       
@@ -279,8 +224,10 @@ export async function startServer() {
       createContext,
     })
   );
+  console.log("[Server] tRPC API configured");
   
-  // development mode uses Vite, production mode uses static files
+  // Setup static files and Vite AFTER API routes
+  // This ensures that API routes take precedence over static file serving
   console.log("[Server] NODE_ENV:", process.env.NODE_ENV);
   if (process.env.NODE_ENV === "development") {
     console.log("[Server] Setting up Vite for development...");
@@ -328,8 +275,7 @@ startServer()
   .then(({ port }) => {
     console.log("[Server] Server started successfully on port", port);
   })
-  .catch((err) => {
-    console.error("[Server] Failed to start server:", err);
-    console.error("[Server] Stack trace:", err instanceof Error ? err.stack : "");
+  .catch((error) => {
+    console.error("[Server] Failed to start server:", error);
     process.exit(1);
   });
