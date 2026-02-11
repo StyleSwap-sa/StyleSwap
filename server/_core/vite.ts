@@ -60,23 +60,36 @@ export async function setupVite(app: Express, server: Server) {
 
 export function serveStatic(app: Express) {
   // In production, the dist folder is bundled with the server code
-  // Use process.cwd() to get the working directory which is reliable in both dev and prod
-  // The dist/public folder should be in the same directory as where the server is running
-  const distPath = path.resolve(process.cwd(), "dist/public");
-  console.log("[Static] Serving static files from:", distPath);
+  // Try multiple possible paths to find the dist/public folder
+  let distPath = "";
+  const possiblePaths = [
+    path.resolve(process.cwd(), "dist/public"),
+    path.resolve(import.meta.dirname, "../../dist/public"),
+    path.resolve(import.meta.dirname, "../dist/public"),
+    path.resolve(import.meta.dirname, "../../../dist/public"),
+    "/app/dist/public",
+    "/home/ubuntu/fitroom-ai-research/dist/public",
+  ];
+  
+  console.log("[Static] Searching for dist/public folder...");
   console.log("[Static] process.cwd():", process.cwd());
   console.log("[Static] import.meta.dirname:", import.meta.dirname);
   
-  if (!fs.existsSync(distPath)) {
-    console.error(
-      `[Static] ERROR: Could not find the build directory: ${distPath}`
-    );
-    console.error("[Static] Available directories:", fs.readdirSync(process.cwd()).slice(0, 20));
-    // Try alternative paths
-    const altPath1 = path.resolve(import.meta.dirname, "../../dist/public");
-    const altPath2 = path.resolve(import.meta.dirname, "../dist/public");
-    console.error("[Static] Trying alternative path 1:", altPath1, "exists:", fs.existsSync(altPath1));
-    console.error("[Static] Trying alternative path 2:", altPath2, "exists:", fs.existsSync(altPath2));
+  for (const possiblePath of possiblePaths) {
+    console.log("[Static] Checking:", possiblePath, "exists:", fs.existsSync(possiblePath));
+    if (fs.existsSync(possiblePath)) {
+      distPath = possiblePath;
+      console.log("[Static] Found dist/public at:", distPath);
+      break;
+    }
+  }
+  
+  if (!distPath) {
+    console.error("[Static] ERROR: Could not find dist/public in any of the expected locations");
+    console.error("[Static] Possible paths checked:", possiblePaths);
+    console.error("[Static] Current working directory contents:", fs.readdirSync(process.cwd()).slice(0, 30));
+    // Fallback to the first path anyway
+    distPath = possiblePaths[0];
   } else {
     console.log("[Static] Build directory found successfully");
   }
@@ -89,16 +102,26 @@ export function serveStatic(app: Express) {
 
   // fall through to index.html if the file doesn't exist
   // Only for HTML pages, not for static assets that don't exist
-  app.use("*", async (req, res) => {
-    // Don't serve index.html for API routes or health checks
-    if (req.path.startsWith("/api/") || req.path.startsWith("/health")) {
-      res.status(404).send("Not Found");
-      return;
+  app.use("*", async (req, res, next) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+    
+    // Don't serve index.html for health checks - let them fall through
+    if (req.path === "/health") {
+      return next();
     }
 
     try {
       const indexPath = path.resolve(distPath, "index.html");
       console.log("[Static] Attempting to serve index.html from:", indexPath);
+      
+      if (!fs.existsSync(indexPath)) {
+        console.error("[Static] index.html not found at:", indexPath);
+        return res.status(404).send("index.html not found");
+      }
+      
       let html = await fs.promises.readFile(indexPath, "utf-8");
       console.log("[Static] Successfully read index.html, size:", html.length, "bytes");
       
