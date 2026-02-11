@@ -60,13 +60,25 @@ export async function setupVite(app: Express, server: Server) {
 
 export function serveStatic(app: Express) {
   // In production, the dist folder is bundled with the server code
-  // In development, it's in the project root
-  const distPath = path.resolve(import.meta.dirname, "../../dist/public");
+  // Use process.cwd() to get the working directory which is reliable in both dev and prod
+  // The dist/public folder should be in the same directory as where the server is running
+  const distPath = path.resolve(process.cwd(), "dist/public");
+  console.log("[Static] Serving static files from:", distPath);
+  console.log("[Static] process.cwd():", process.cwd());
+  console.log("[Static] import.meta.dirname:", import.meta.dirname);
+  
   if (!fs.existsSync(distPath)) {
     console.error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
+      `[Static] ERROR: Could not find the build directory: ${distPath}`
     );
-    console.error(`Current directory: ${import.meta.dirname}`);
+    console.error("[Static] Available directories:", fs.readdirSync(process.cwd()).slice(0, 20));
+    // Try alternative paths
+    const altPath1 = path.resolve(import.meta.dirname, "../../dist/public");
+    const altPath2 = path.resolve(import.meta.dirname, "../dist/public");
+    console.error("[Static] Trying alternative path 1:", altPath1, "exists:", fs.existsSync(altPath1));
+    console.error("[Static] Trying alternative path 2:", altPath2, "exists:", fs.existsSync(altPath2));
+  } else {
+    console.log("[Static] Build directory found successfully");
   }
 
   // Serve static files (assets, public files, etc.) with proper cache headers
@@ -86,7 +98,9 @@ export function serveStatic(app: Express) {
 
     try {
       const indexPath = path.resolve(distPath, "index.html");
+      console.log("[Static] Attempting to serve index.html from:", indexPath);
       let html = await fs.promises.readFile(indexPath, "utf-8");
+      console.log("[Static] Successfully read index.html, size:", html.length, "bytes");
       
       // Inject environment variables as global window variables
       const envScript = `
@@ -99,7 +113,8 @@ export function serveStatic(app: Express) {
       
       res.set({ "Content-Type": "text/html" }).send(html);
     } catch (error) {
-      console.error("Error serving index.html:", error);
+      console.error("[Static] Error serving index.html:", error);
+      console.error("[Static] Error details:", error instanceof Error ? error.message : String(error));
       res.status(500).send("Internal Server Error");
     }
   });
