@@ -17,7 +17,7 @@ export default function OnboardingWizard() {
   const [generatedApiKey, setGeneratedApiKey] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
 
-  const createApiKeyMutation = trpc.apiKeys.createApiKey.useMutation();
+  const createApiKeyMutation = trpc.apiKeys.createOnboardingApiKey.useMutation();
   const verifyApiKeyMutation = trpc.protectedApi.verifyApiKeyMutation.useMutation();
 
   const handleGenerateApiKey = async () => {
@@ -25,7 +25,6 @@ export default function OnboardingWizard() {
       // Generate API key through tRPC
       const result = await createApiKeyMutation.mutateAsync({
         name: apiKeyName,
-        description: "Generated during onboarding",
       });
 
       if (result && typeof result === "object" && "key" in result) {
