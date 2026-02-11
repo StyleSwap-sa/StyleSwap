@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Code2, Key, Webhook, BookOpen, ArrowRight, CheckCircle2, Zap, Shield } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Code2, Key, Webhook, BookOpen, ArrowRight, CheckCircle2, Zap, Shield, X } from "lucide-react";
 
 export default function DeveloperPortal() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [showGetStartedModal, setShowGetStartedModal] = useState(false);
+  const [, navigate] = useLocation();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -18,11 +21,12 @@ export default function DeveloperPortal() {
               <h1 className="text-3xl font-bold text-slate-900">Developer Portal</h1>
               <p className="text-slate-600 mt-1">Integrate StyleSwap's virtual try-on API into your platform</p>
             </div>
-            <Link href="/api-docs">
-              <Button className="bg-orange-600 hover:bg-orange-700">
-                Get Started <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
+            <Button 
+              onClick={() => setShowGetStartedModal(true)}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              Get Started <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
           </div>
         </div>
       </div>
@@ -502,15 +506,110 @@ export default function DeveloperPortal() {
             Join hundreds of retailers using StyleSwap to increase conversion rates and reduce returns
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-white text-orange-600 hover:bg-orange-50 font-semibold">
+            <Button 
+              onClick={() => navigate("/register-app")}
+              className="bg-white text-orange-600 hover:bg-orange-50 font-semibold"
+            >
               Register Your App
             </Button>
-            <Button variant="outline" className="border-white text-white hover:bg-orange-700">
+            <Button 
+              onClick={() => navigate("/api-docs")}
+              variant="outline" 
+              className="border-white text-white hover:bg-orange-700"
+            >
               View Documentation
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Get Started Modal */}
+      <Dialog open={showGetStartedModal} onOpenChange={setShowGetStartedModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Get Started with StyleSwap API</DialogTitle>
+            <DialogDescription>
+              Follow these steps to integrate StyleSwap into your platform
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Step 1 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-600 text-white font-bold text-sm">1</div>
+                <h3 className="font-semibold text-lg text-slate-900">Register Your Application</h3>
+              </div>
+              <p className="text-slate-600 ml-11">Create a developer account and register your application to get started. You'll receive API credentials immediately.</p>
+              <Button 
+                onClick={() => {
+                  setShowGetStartedModal(false);
+                  navigate("/register-app");
+                }}
+                className="ml-11 bg-orange-600 hover:bg-orange-700"
+              >
+                Register Now <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Step 2 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-600 text-white font-bold text-sm">2</div>
+                <h3 className="font-semibold text-lg text-slate-900">Review API Documentation</h3>
+              </div>
+              <p className="text-slate-600 ml-11">Read our comprehensive API documentation to understand endpoints, authentication, and integration patterns.</p>
+              <Button 
+                onClick={() => {
+                  setShowGetStartedModal(false);
+                  navigate("/api-docs");
+                }}
+                variant="outline"
+                className="ml-11"
+              >
+                View Documentation <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Step 3 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-600 text-white font-bold text-sm">3</div>
+                <h3 className="font-semibold text-lg text-slate-900">Integrate into Your Platform</h3>
+              </div>
+              <p className="text-slate-600 ml-11">Use our SDKs and code examples to integrate StyleSwap into your application. Support for Node.js, Python, JavaScript, and more.</p>
+              <Button 
+                onClick={() => {
+                  setShowGetStartedModal(false);
+                  navigate("/integration-guides");
+                }}
+                variant="outline"
+                className="ml-11"
+              >
+                View Integration Guides <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Step 4 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-600 text-white font-bold text-sm">4</div>
+                <h3 className="font-semibold text-lg text-slate-900">Test and Deploy</h3>
+              </div>
+              <p className="text-slate-600 ml-11">Use our sandbox environment to test your integration thoroughly before deploying to production.</p>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t">
+            <Button 
+              onClick={() => setShowGetStartedModal(false)}
+              variant="outline"
+            >
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -67,6 +67,8 @@ import ApiUsageMonitoring from "./pages/ApiUsageMonitoring";
 import ErrorCodesReference from "./pages/ErrorCodesReference";
 import WebhookPayloads from "./pages/WebhookPayloads";
 import SDKGuide from "./pages/SDKGuide";
+import ApiDocs from "./pages/ApiDocs";
+import RegisterApp from "./pages/RegisterApp";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -118,8 +120,9 @@ function Router() {
       <Route path="/boutiques" component={BoutiqueDirectory} />
       <Route path="/boutique-tutorial" component={BoutiqueTutorial} />
       <Route path="/customer-tutorial" component={CustomerTutorial} />
-      <Route path="/api-docs" component={ApiDocumentation} />
-      <Route path="/developer" component={DeveloperPortal} />
+      <Route path="/api-docs" component={ApiDocs} />
+      <Route path="/register-app" component={RegisterApp} />
+      <Route path="/developer-portal" component={DeveloperPortal} />
       <Route path="/webhook-testing" component={WebhookTestingConsole} />
       <Route path="/webhook-tester" component={WebhookTester} />
       <Route path="/integration-guides" component={RetailerIntegrationGuides} />

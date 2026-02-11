@@ -1,0 +1,303 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Code2, Copy, Check, ArrowRight } from "lucide-react";
+
+export default function ApiDocs() {
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  const copyToClipboard = (code: string, id: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(id);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      {/* Header */}
+      <div className="border-b border-slate-200 bg-white sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">API Documentation</h1>
+              <p className="text-slate-600 mt-1">Complete reference for StyleSwap's virtual try-on API</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-4 gap-8">
+          {/* Sidebar Navigation */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-20 space-y-2">
+              <div className="text-sm font-semibold text-slate-900 mb-4">Documentation</div>
+              <nav className="space-y-2">
+                <a href="#authentication" className="block text-sm text-slate-600 hover:text-orange-600 transition">Authentication</a>
+                <a href="#endpoints" className="block text-sm text-slate-600 hover:text-orange-600 transition">Endpoints</a>
+                <a href="#try-on" className="block text-sm text-slate-600 hover:text-orange-600 transition">Create Try-On</a>
+                <a href="#billing" className="block text-sm text-slate-600 hover:text-orange-600 transition">Billing</a>
+                <a href="#webhooks" className="block text-sm text-slate-600 hover:text-orange-600 transition">Webhooks</a>
+                <a href="#errors" className="block text-sm text-slate-600 hover:text-orange-600 transition">Error Handling</a>
+              </nav>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-3 space-y-12">
+            {/* Authentication */}
+            <section id="authentication" className="scroll-mt-20">
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">Authentication</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <p className="text-slate-600">All API requests require authentication using your API key. Include it in the request header:</p>
+                  <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-auto relative group">
+                    <pre>{`Authorization: Bearer sk_your_api_key`}</pre>
+                    <button
+                      onClick={() => copyToClipboard("Authorization: Bearer sk_your_api_key", "auth")}
+                      className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded opacity-0 group-hover:opacity-100 transition"
+                    >
+                      {copiedCode === "auth" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <p className="text-sm text-slate-600">Get your API key from the <a href="/developer-portal" className="text-orange-600 hover:underline">Developer Portal</a></p>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Base URL */}
+            <section className="scroll-mt-20">
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Base URL</h3>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-auto">
+                    <pre>https://api.styleswap.com/v1</pre>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Endpoints */}
+            <section id="endpoints" className="scroll-mt-20">
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">API Endpoints</h2>
+              
+              {/* Create Try-On */}
+              <div className="space-y-4 mb-8">
+                <div>
+                  <h3 id="try-on" className="text-lg font-semibold text-slate-900 mb-2">Create Virtual Try-On</h3>
+                  <p className="text-slate-600 mb-4">Generate a virtual try-on image for a product</p>
+                </div>
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <div className="space-y-2">
+                      <p className="font-mono text-sm bg-slate-100 p-3 rounded">POST /try-ons/create</p>
+                      <p className="text-sm text-slate-600">Create a new virtual try-on</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-slate-900">Request Body</h4>
+                      <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-auto relative group">
+                        <pre>{`{
+  "userPhotoUrl": "https://...",
+  "garmentImageUrl": "https://...",
+  "garmentType": "shirt",
+  "size": "M"
+}`}</pre>
+                        <button
+                          onClick={() => copyToClipboard('{\n  "userPhotoUrl": "https://...",\n  "garmentImageUrl": "https://...",\n  "garmentType": "shirt",\n  "size": "M"\n}', "req1")}
+                          className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded opacity-0 group-hover:opacity-100 transition"
+                        >
+                          {copiedCode === "req1" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-slate-900">Response</h4>
+                      <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-auto relative group">
+                        <pre>{`{
+  "id": "tryon_123abc",
+  "status": "processing",
+  "resultUrl": null,
+  "createdAt": "2026-02-11T10:30:00Z"
+}`}</pre>
+                        <button
+                          onClick={() => copyToClipboard('{\n  "id": "tryon_123abc",\n  "status": "processing",\n  "resultUrl": null,\n  "createdAt": "2026-02-11T10:30:00Z"\n}', "res1")}
+                          className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded opacity-0 group-hover:opacity-100 transition"
+                        >
+                          {copiedCode === "res1" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Get Try-On Status */}
+              <div className="space-y-4 mb-8">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">Get Try-On Status</h3>
+                  <p className="text-slate-600 mb-4">Check the status of a virtual try-on request</p>
+                </div>
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <div className="space-y-2">
+                      <p className="font-mono text-sm bg-slate-100 p-3 rounded">GET /try-ons/{'{id}'}</p>
+                      <p className="text-sm text-slate-600">Retrieve try-on status and result</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-slate-900">Response</h4>
+                      <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-auto relative group">
+                        <pre>{`{
+  "id": "tryon_123abc",
+  "status": "completed",
+  "resultUrl": "https://cdn.styleswap.com/results/...",
+  "createdAt": "2026-02-11T10:30:00Z",
+  "completedAt": "2026-02-11T10:31:45Z"
+}`}</pre>
+                        <button
+                          onClick={() => copyToClipboard('{\n  "id": "tryon_123abc",\n  "status": "completed",\n  "resultUrl": "https://cdn.styleswap.com/results/...",\n  "createdAt": "2026-02-11T10:30:00Z",\n  "completedAt": "2026-02-11T10:31:45Z"\n}', "res2")}
+                          className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded opacity-0 group-hover:opacity-100 transition"
+                        >
+                          {copiedCode === "res2" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Billing */}
+              <div className="space-y-4 mb-8">
+                <div>
+                  <h3 id="billing" className="text-lg font-semibold text-slate-900 mb-2">Purchase Credits</h3>
+                  <p className="text-slate-600 mb-4">Initiate a credit purchase for your account</p>
+                </div>
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <div className="space-y-2">
+                      <p className="font-mono text-sm bg-slate-100 p-3 rounded">POST /billing/initiatePurchase</p>
+                      <p className="text-sm text-slate-600">Start a credit purchase transaction</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-slate-900">Request Body</h4>
+                      <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-auto relative group">
+                        <pre>{`{
+  "packageId": "pkg_100_tryon",
+  "quantity": 1
+}`}</pre>
+                        <button
+                          onClick={() => copyToClipboard('{\n  "packageId": "pkg_100_tryon",\n  "quantity": 1\n}', "req2")}
+                          className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded opacity-0 group-hover:opacity-100 transition"
+                        >
+                          {copiedCode === "req2" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
+
+            {/* Webhooks */}
+            <section id="webhooks" className="scroll-mt-20">
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">Webhooks</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <p className="text-slate-600">StyleSwap sends webhook events for important actions. Configure your webhook URL in the Developer Portal.</p>
+                  
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-slate-900">Event Types</h4>
+                    <ul className="space-y-2 text-slate-600">
+                      <li className="flex items-start gap-2">
+                        <span className="text-orange-600 font-bold">•</span>
+                        <span><strong>tryon.completed</strong> - Virtual try-on is ready</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-orange-600 font-bold">•</span>
+                        <span><strong>tryon.failed</strong> - Try-on generation failed</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-orange-600 font-bold">•</span>
+                        <span><strong>credit.purchased</strong> - Credits were purchased</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-orange-600 font-bold">•</span>
+                        <span><strong>credit.expired</strong> - Credits have expired</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-slate-900">Webhook Payload Example</h4>
+                    <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-auto relative group">
+                      <pre>{`{
+  "event": "tryon.completed",
+  "timestamp": "2026-02-11T10:31:45Z",
+  "data": {
+    "id": "tryon_123abc",
+    "resultUrl": "https://cdn.styleswap.com/results/...",
+    "processingTime": 105
+  }
+}`}</pre>
+                      <button
+                        onClick={() => copyToClipboard('{\n  "event": "tryon.completed",\n  "timestamp": "2026-02-11T10:31:45Z",\n  "data": {\n    "id": "tryon_123abc",\n    "resultUrl": "https://cdn.styleswap.com/results/...",\n    "processingTime": 105\n  }\n}', "webhook")}
+                        className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded opacity-0 group-hover:opacity-100 transition"
+                      >
+                        {copiedCode === "webhook" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* Error Handling */}
+            <section id="errors" className="scroll-mt-20">
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">Error Handling</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <p className="text-slate-600">The API returns standard HTTP status codes. Errors include a detailed error message:</p>
+                  
+                  <div className="space-y-3">
+                    <div className="border-l-4 border-red-500 pl-4 py-2">
+                      <p className="font-semibold text-slate-900">400 Bad Request</p>
+                      <p className="text-sm text-slate-600">Invalid request parameters</p>
+                    </div>
+                    <div className="border-l-4 border-red-500 pl-4 py-2">
+                      <p className="font-semibold text-slate-900">401 Unauthorized</p>
+                      <p className="text-sm text-slate-600">Invalid or missing API key</p>
+                    </div>
+                    <div className="border-l-4 border-red-500 pl-4 py-2">
+                      <p className="font-semibold text-slate-900">429 Too Many Requests</p>
+                      <p className="text-sm text-slate-600">Rate limit exceeded</p>
+                    </div>
+                    <div className="border-l-4 border-red-500 pl-4 py-2">
+                      <p className="font-semibold text-slate-900">500 Internal Server Error</p>
+                      <p className="text-sm text-slate-600">Server error - please retry</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* CTA */}
+            <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white p-8 rounded-lg">
+              <h3 className="text-xl font-bold mb-2">Ready to Integrate?</h3>
+              <p className="text-orange-100 mb-4">Start building with StyleSwap API today</p>
+              <a href="/register-app">
+                <Button className="bg-white text-orange-600 hover:bg-orange-50 font-semibold">
+                  Register Your App <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
