@@ -32,6 +32,7 @@ import { initializeWebhookJobs } from "../webhookRetryService";
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 export async function startServer() {
+  console.log("[Server] Starting initialization...");
   const app = express();
   const server = createServer(app);
 
@@ -40,7 +41,9 @@ export async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   // Register OAuth routes
+  console.log("[Server] Registering OAuth routes...");
   registerOAuthRoutes(app);
+  console.log("[Server] OAuth routes registered successfully");
 
   // Health check
   app.get("/health", (req, res) => {
@@ -278,22 +281,31 @@ export async function startServer() {
   );
   
   // development mode uses Vite, production mode uses static files
+  console.log("[Server] NODE_ENV:", process.env.NODE_ENV);
   if (process.env.NODE_ENV === "development") {
+    console.log("[Server] Setting up Vite for development...");
     await setupVite(app, server);
+    console.log("[Server] Vite setup completed");
   } else {
+    console.log("[Server] Setting up static file serving for production...");
     serveStatic(app);
+    console.log("[Server] Static file serving configured");
   }
 
   const preferredPort = parseInt(process.env.PORT || "3000");
+  console.log("[Server] Finding available port starting from:", preferredPort);
   const port = await findAvailablePort(preferredPort);
 
   server.listen(port, "0.0.0.0", () => {
-    console.log(`[Server] Listening on port ${port}`);
+    console.log(`[Server] Server listening on port ${port}`);
   });
 
   // Initialize webhook retry service
+  console.log("[Server] Initializing webhook retry service...");
   initializeWebhookJobs();
+  console.log("[Server] Webhook retry service initialized");
 
+  console.log("[Server] Server initialization complete");
   return { app, server, port };
 }
 
@@ -311,7 +323,13 @@ async function findAvailablePort(preferredPort: number): Promise<number> {
 }
 
 // Start the server
-startServer().catch((err) => {
-  console.error("Failed to start server:", err);
-  process.exit(1);
-});
+console.log("[Server] Attempting to start server...");
+startServer()
+  .then(({ port }) => {
+    console.log("[Server] Server started successfully on port", port);
+  })
+  .catch((err) => {
+    console.error("[Server] Failed to start server:", err);
+    console.error("[Server] Stack trace:", err instanceof Error ? err.stack : "");
+    process.exit(1);
+  });

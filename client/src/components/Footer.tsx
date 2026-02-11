@@ -28,13 +28,13 @@ export function Footer() {
             <h4 className="font-bold mb-4 text-sm uppercase tracking-wider">Product</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href="/pricing">
-                  <a className="hover:text-primary transition">Pricing</a>
+                <Link href="/pricing" className="hover:text-primary transition">
+                  Pricing
                 </Link>
               </li>
               <li>
-                <Link href="/try-on">
-                  <a className="hover:text-primary transition">Try Now</a>
+                <Link href="/try-on" className="hover:text-primary transition">
+                  Try Now
                 </Link>
               </li>
               <li>
@@ -60,8 +60,8 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <Link href="/contact">
-                  <a className="hover:text-primary transition">Contact</a>
+                <Link href="/contact" className="hover:text-primary transition">
+                  Contact
                 </Link>
               </li>
               <li>
@@ -70,8 +70,8 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <Link href="/b2b">
-                  <a className="hover:text-primary transition">For Boutiques</a>
+                <Link href="/b2b" className="hover:text-primary transition">
+                  For Boutiques
                 </Link>
               </li>
             </ul>
@@ -82,18 +82,18 @@ export function Footer() {
             <h4 className="font-bold mb-4 text-sm uppercase tracking-wider">Legal</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href="/terms-and-conditions">
-                  <a className="hover:text-primary transition">Terms & Conditions</a>
+                <Link href="/terms-and-conditions" className="hover:text-primary transition">
+                  Terms & Conditions
                 </Link>
               </li>
               <li>
-                <Link href="/privacy-policy">
-                  <a className="hover:text-primary transition">Privacy Policy</a>
+                <Link href="/privacy-policy" className="hover:text-primary transition">
+                  Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/refund-policy">
-                  <a className="hover:text-primary transition">Refund Policy</a>
+                <Link href="/refund-policy" className="hover:text-primary transition">
+                  Refund Policy
                 </Link>
               </li>
               <li>
