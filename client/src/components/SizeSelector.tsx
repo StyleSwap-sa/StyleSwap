@@ -1,25 +1,16 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Info } from "lucide-react";
 
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-
-const SIZE_DESCRIPTIONS: Record<string, string> = {
-  XS: "Extra Small (15% smaller)",
-  S: "Small (8% smaller)",
-  M: "Medium (baseline)",
-  L: "Large (8% larger)",
-  XL: "Extra Large (15% larger)",
-  XXL: "2X Large (22% larger)",
-  XXXL: "3X Large (25% larger)",
-};
 
 interface SizeSelectorProps {
   selectedSize: string;
   onSizeChange: (size: string) => void;
   disabled?: boolean;
   showDisclaimer?: boolean;
+  isMandatory?: boolean;
 }
 
 export function SizeSelector({
@@ -27,13 +18,17 @@ export function SizeSelector({
   onSizeChange,
   disabled = false,
   showDisclaimer = true,
+  isMandatory = true,
 }: SizeSelectorProps) {
   const [hoveredSize, setHoveredSize] = useState<string | null>(null);
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-lg">Select Size</CardTitle>
+        <CardTitle className="text-lg flex items-center gap-2">
+          Select Size
+          {isMandatory && <span className="text-red-500 text-sm font-normal">(Required)</span>}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Size Grid */}
@@ -63,23 +58,22 @@ export function SizeSelector({
           ))}
         </div>
 
-        {/* Size Description */}
-        {selectedSize && (
-          <div className="mt-4 p-3 bg-secondary/10 rounded-lg border border-secondary/30">
-            <p className="text-sm text-foreground font-medium">
-              {SIZE_DESCRIPTIONS[selectedSize]}
-            </p>
-          </div>
-        )}
-
-        {/* Disclaimers */}
+        {/* Legal Compliance Wording */}
         {showDisclaimer && (
-          <div className="space-y-3">
+          <div className="space-y-3 mt-6">
+            {/* Main Legal Wording */}
+            <div className="flex gap-3 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                <strong>StyleSwap uses AI to visually simulate clothing on your photo.</strong> Fit appearance may vary depending on brand, fabric, and cut. Always select the size you usually wear and use the try-on as a visual guide.
+              </p>
+            </div>
+
             {/* Fit Accuracy Disclaimer */}
             <div className="flex gap-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
               <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-amber-900 dark:text-amber-100">
-                <strong>Fit preview is a visual guide</strong> and may vary from real-life fit. Actual fit depends on fabric, cut, and personal body shape.
+                <strong>Visual guide only:</strong> This try-on is a visual simulation and may not represent the exact fit. Actual fit depends on fabric, cut, brand sizing, and your body shape.
               </p>
             </div>
 
@@ -87,7 +81,7 @@ export function SizeSelector({
             <div className="flex gap-3 p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800">
               <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-orange-900 dark:text-orange-100">
-                <strong>AI-generated preview:</strong> The virtual try-on is created by artificial intelligence and may appear disoriented, distorted, or unrealistic in some cases. This is a limitation of current AI technology and does not reflect the actual product quality.
+                <strong>AI-generated preview:</strong> The virtual try-on is created by artificial intelligence and may appear disoriented, distorted, or unrealistic in some cases. This is a limitation of current AI technology.
               </p>
             </div>
           </div>

@@ -2592,3 +2592,15 @@ This approach:
 - [ ] Test document upload and validation
 - [ ] Test email notifications
 - [ ] Create integration tests for full verification flow
+
+
+## Phase 31: Hybrid Size Confidence Model Implementation (PRIORITY)
+
+- [ ] Remove all auto-size guessing functionality from try-on page
+- [ ] Remove all AI size prediction and estimation language
+- [ ] Implement mandatory size selector UI (XS, S, M, L, XL, XXL, XXXL)
+- [ ] Block try-on rendering until size is manually selected
+- [ ] Add legal compliance wording about visual simulation
+- [ ] Implement optional size comparison feature (switch between sizes)
+- [ ] Test complete workflow with manual size selection
+- [ ] Verify photo upload and try-on generation features still work
