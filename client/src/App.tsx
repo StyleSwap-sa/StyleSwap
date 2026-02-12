@@ -1,173 +1,135 @@
-import { Toaster } from "@/components/ui/toaster";
+import { Suspense, lazy } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { Loader2 } from "lucide-react";
+
+// Eagerly load homepage and auth pages
 import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import Pricing from "./pages/Pricing";
-import Profile from "./pages/Profile";
-import DemoTryOn from "./pages/DemoTryOn";
-import Checkout from "./pages/Checkout";
-import Analytics from "./pages/Analytics";
-import Overview from "./pages/Overview";
-import Technology from "./pages/Technology";
-import Market from "./pages/Market";
-import PricingPage from "./pages/PricingPage";
-import ROI from "./pages/ROI";
-import CaseStudiesPage from "./pages/CaseStudiesPage";
-import ContactPage from "./pages/ContactPage";
-import B2BLanding from "./pages/B2BLanding";
-import B2BSignup from "./pages/B2BSignup";
-import BoutiqueDashboard from "./pages/BoutiqueDashboard";
-import BoutiqueLandingPage from "./pages/BoutiqueLandingPage";
-import ProductManagement from "./pages/ProductManagement";
-import BoutiqueCredits from "./pages/BoutiqueCredits";
-import BoutiqueSettings from "./pages/BoutiqueSettings";
-import AdminDashboard from "./pages/AdminDashboard";
-import BoutiquePerformanceExport from "./pages/BoutiquePerformanceExport";
-import BoutiqueFeatures from "./pages/BoutiqueFeatures";
-import BoutiqueTutorial from "./pages/BoutiqueTutorial";
-import CustomerTutorial from "./pages/CustomerTutorial";
-import CustomerTryOn from "./pages/CustomerTryOn";
-import BoutiqueTryOnPage from "./pages/BoutiqueTryOnPage";
-import TestBoutiquePage from "./pages/TestBoutiquePage";
 import AdminLogin from "./pages/AdminLogin";
-import BoutiqueShop from "./pages/BoutiqueShop";
-import SocialSellerDashboard from "./pages/SocialSellerDashboard";
-import ARTryOn from "./pages/ARTryOn";
-import TryOnPage from "./pages/TryOnPage";
-import TermsAndConditions from "./pages/TermsAndConditions";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import RefundPolicy from "./pages/RefundPolicy";
-import OwnerBoutiqueDashboard from "./pages/OwnerBoutiqueDashboard";
-import MyOrders from "./pages/MyOrders";
-import BoutiqueOrderDashboard from "./pages/BoutiqueOrderDashboard";
-import OrderConfirmation from "./pages/OrderConfirmation";
-import BoutiquePayoutDashboard from "./pages/BoutiquePayoutDashboard";
-import AdminPayoutDashboard from "./pages/AdminPayoutDashboard";
-import BoutiqueDirectory from "./pages/BoutiqueDirectory";
-import ApiDocumentation from "./pages/ApiDocumentation";
-import BoutiqueApiKeys from "./pages/BoutiqueApiKeys";
-import DeveloperPortal from "./pages/DeveloperPortal";
-import WebhookTestingConsole from "./pages/WebhookTestingConsole";
-import RetailerIntegrationGuides from "./pages/RetailerIntegrationGuides";
-import WidgetBuilder from "./pages/WidgetBuilder";
-import RateLimitingDocs from "./pages/RateLimitingDocs";
-import ApiKeyManagement from "./pages/ApiKeyManagement";
-import ApiUsageAnalytics from "./pages/ApiUsageAnalytics";
-import WebhookEventLog from "./pages/WebhookEventLog";
-import AlertConfiguration from "./pages/AlertConfiguration";
-import OnboardingWizard from "./pages/OnboardingWizard";
-import RetailerAnalytics from "./pages/RetailerAnalytics";
-import WebhookTester from "./pages/WebhookTester";
-import ApiUsageMonitoring from "./pages/ApiUsageMonitoring";
-import ErrorCodesReference from "./pages/ErrorCodesReference";
-import WebhookPayloads from "./pages/WebhookPayloads";
-import SDKGuide from "./pages/SDKGuide";
-import ApiDocs from "./pages/ApiDocs";
-import RegisterApp from "./pages/RegisterApp";
-import AdminCredits from "./pages/AdminCredits";
 
-function Router() {
+// Lazy load all other pages
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Profile = lazy(() => import("./pages/Profile"));
+const DemoTryOn = lazy(() => import("./pages/DemoTryOn"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const Overview = lazy(() => import("./pages/Overview"));
+const Technology = lazy(() => import("./pages/Technology"));
+const Market = lazy(() => import("./pages/Market"));
+const PricingPage = lazy(() => import("./pages/PricingPage"));
+const ROI = lazy(() => import("./pages/ROI"));
+const CaseStudiesPage = lazy(() => import("./pages/CaseStudiesPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const B2BLanding = lazy(() => import("./pages/B2BLanding"));
+const B2BSignup = lazy(() => import("./pages/B2BSignup"));
+const BoutiqueDashboard = lazy(() => import("./pages/BoutiqueDashboard"));
+const BoutiqueLandingPage = lazy(() => import("./pages/BoutiqueLandingPage"));
+const ProductManagement = lazy(() => import("./pages/ProductManagement"));
+const BoutiqueCredits = lazy(() => import("./pages/BoutiqueCredits"));
+const BoutiqueSettings = lazy(() => import("./pages/BoutiqueSettings"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const BoutiquePerformanceExport = lazy(() => import("./pages/BoutiquePerformanceExport"));
+const BoutiqueFeatures = lazy(() => import("./pages/BoutiqueFeatures"));
+const BoutiqueTutorial = lazy(() => import("./pages/BoutiqueTutorial"));
+const CustomerTutorial = lazy(() => import("./pages/CustomerTutorial"));
+const CustomerTryOn = lazy(() => import("./pages/CustomerTryOn"));
+const BoutiqueTryOnPage = lazy(() => import("./pages/BoutiqueTryOnPage"));
+const TestBoutiquePage = lazy(() => import("./pages/TestBoutiquePage"));
+const BoutiqueShop = lazy(() => import("./pages/BoutiqueShop"));
+const SocialSellerDashboard = lazy(() => import("./pages/SocialSellerDashboard"));
+const ARTryOn = lazy(() => import("./pages/ARTryOn"));
+const TryOnPage = lazy(() => import("./pages/TryOnPage"));
+const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
+const OwnerBoutiqueDashboard = lazy(() => import("./pages/OwnerBoutiqueDashboard"));
+const MyOrders = lazy(() => import("./pages/MyOrders"));
+const BoutiqueOrderDashboard = lazy(() => import("./pages/BoutiqueOrderDashboard"));
+const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
+const BoutiquePayoutDashboard = lazy(() => import("./pages/BoutiquePayoutDashboard"));
+const AdminPayoutDashboard = lazy(() => import("./pages/AdminPayoutDashboard"));
+const AdminCredits = lazy(() => import("./pages/AdminCredits"));
+
+// Loading fallback component
+function LoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
   // make sure to consider if you need authentication for certain routes
+  let { user, loading, error, isAuthenticated, logout } = useAuth();
+
+  if (loading) {
+    return <LoadingFallback />;
+  }
+
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/overview"} component={Overview} />
-      <Route path={"/technology"} component={Technology} />
-      <Route path={"/market"} component={Market} />
-      <Route path={"/pricing-page"} component={PricingPage} />
-      <Route path={"/roi"} component={ROI} />
-      <Route path={"/case-studies"} component={CaseStudiesPage} />
-      <Route path={"/contact"} component={ContactPage} />
-      <Route path={"/dashboard"} component={Dashboard} />
-      <Route path={"/pricing"} component={Pricing} />
-      <Route path={"/profile"} component={Profile} />
-       <Route path={"/demo"} component={DemoTryOn} />
-      <Route path={"/customer-try-on"} component={CustomerTryOn} />
-      <Route path={"/checkout"} component={Checkout} />
-      <Route path={"/analytics"} component={Analytics} />
-      <Route path={"/b2b"} component={B2BLanding} />
-      <Route path={"/b2b-signup"} component={B2BSignup} />
-      <Route path={"/for-boutiques"} component={BoutiqueFeatures} />
-      <Route path={"/boutique-dashboard"} component={BoutiqueDashboard} />
-      <Route path={"/boutique/:slug"} component={(props: any) => <BoutiqueLandingPage slug={props.params.slug} />} />
-      <Route path={"/boutique-products/:boutiqueId"} component={ProductManagement} />
-      <Route path={"/boutique-credits/:boutiqueId"} component={BoutiqueCredits} />
-      <Route path={"/boutique-settings/:boutiqueId"} component={BoutiqueSettings} />
-      <Route path={"products"} component={ProductManagement} />
-      <Route path={"/boutique/:slug/shop"} component={(props: any) => <BoutiqueShop slug={props.params.slug} />} />
-      <Route path={"/social-seller-dashboard"} component={SocialSellerDashboard} />
-      <Route path={"/boutique-try-on"} component={BoutiqueTryOnPage} />
-      <Route path={"/test-boutique"} component={TestBoutiquePage} />
-      <Route path={"/admin-login"} component={AdminLogin} />
-      <Route path={"/admin-dashboard"} component={AdminDashboard} />
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/credits" component={AdminCredits} />
-      <Route path={"admin/performance-export"} component={BoutiquePerformanceExport} />
-      <Route path={"/ar-tryon"} component={ARTryOn} />
-      <Route path={"/try-on"} component={TryOnPage} />
-      <Route path={"/owner-boutiques"} component={OwnerBoutiqueDashboard} />
-      <Route path={"/terms-and-conditions"} component={TermsAndConditions} />
-      <Route path={"/privacy-policy"} component={PrivacyPolicy} />
-      <Route path={"/refund-policy"} component={RefundPolicy} />
-      <Route path={"/my-orders"} component={MyOrders} />
-        <Route path={"boutique-orders"} component={BoutiqueOrderDashboard} />
-      <Route path={"order-confirmation"} component={OrderConfirmation} />
-      <Route path="/boutique/payouts" component={BoutiquePayoutDashboard} />
-      <Route path="/admin/payouts" component={AdminPayoutDashboard} />
-      <Route path="/boutiques" component={BoutiqueDirectory} />
-      <Route path="/boutique-tutorial" component={BoutiqueTutorial} />
-      <Route path="/customer-tutorial" component={CustomerTutorial} />
-      <Route path="/api-docs" component={ApiDocs} />
-      <Route path="/register-app" component={RegisterApp} />
-      <Route path="/developer-portal" component={DeveloperPortal} />
-      <Route path="/webhook-testing" component={WebhookTestingConsole} />
-      <Route path="/webhook-tester" component={WebhookTester} />
-      <Route path="/integration-guides" component={RetailerIntegrationGuides} />
-      <Route path="/widget-builder" component={WidgetBuilder} />
-      <Route path="/rate-limiting" component={RateLimitingDocs} />
-      <Route path="/api-keys" component={ApiKeyManagement} />
-      <Route path="/api-usage" component={ApiUsageAnalytics} />
-      <Route path="/api-monitoring" component={ApiUsageMonitoring} />
-      <Route path="/boutique-api-keys/:boutiqueId" component={BoutiqueApiKeys} />
-      <Route path="/webhook-logs" component={WebhookEventLog} />
-      <Route path="/alerts" component={AlertConfiguration} />
-      <Route path="/onboarding" component={OnboardingWizard} />
-      <Route path="/retailer-analytics" component={RetailerAnalytics} />
-      <Route path="/error-codes" component={ErrorCodesReference} />
-      <Route path="/webhook-payloads" component={WebhookPayloads} />
-      <Route path="/sdk-guide" component={SDKGuide} />
-      {/* Final fallback route */}
-      <Route path={"*"} component={NotFound} />
-    </Switch>
+    <ThemeProvider defaultTheme="light">
+      <TooltipProvider>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingFallback />}>
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/admin/login" component={AdminLogin} />
+              <Route path="/dashboard" component={Dashboard} />
+              <Route path="/pricing" component={Pricing} />
+              <Route path="/profile" component={Profile} />
+              <Route path="/demo" component={DemoTryOn} />
+              <Route path="/checkout" component={Checkout} />
+              <Route path="/analytics" component={Analytics} />
+              <Route path="/overview" component={Overview} />
+              <Route path="/technology" component={Technology} />
+              <Route path="/market" component={Market} />
+              <Route path="/pricing-page" component={PricingPage} />
+              <Route path="/roi" component={ROI} />
+              <Route path="/case-studies" component={CaseStudiesPage} />
+              <Route path="/contact" component={ContactPage} />
+              <Route path="/b2b" component={B2BLanding} />
+              <Route path="/b2b/signup" component={B2BSignup} />
+              <Route path="/boutique/dashboard" component={BoutiqueDashboard} />
+              <Route path="/boutique/landing" component={BoutiqueLandingPage} />
+              <Route path="/boutique/products" component={ProductManagement} />
+              <Route path="/boutique/credits" component={BoutiqueCredits} />
+              <Route path="/boutique/settings" component={BoutiqueSettings} />
+              <Route path="/admin/dashboard" component={AdminDashboard} />
+              <Route path="/boutique/performance" component={BoutiquePerformanceExport} />
+              <Route path="/boutique/features" component={BoutiqueFeatures} />
+              <Route path="/boutique/tutorial" component={BoutiqueTutorial} />
+              <Route path="/customer/tutorial" component={CustomerTutorial} />
+              <Route path="/customer/tryon" component={CustomerTryOn} />
+              <Route path="/boutique/tryon" component={BoutiqueTryOnPage} />
+              <Route path="/test-boutique" component={TestBoutiquePage} />
+              <Route path="/boutique/shop" component={BoutiqueShop} />
+              <Route path="/social-seller" component={SocialSellerDashboard} />
+              <Route path="/ar-tryon" component={ARTryOn} />
+              <Route path="/tryon" component={TryOnPage} />
+              <Route path="/terms" component={TermsAndConditions} />
+              <Route path="/privacy" component={PrivacyPolicy} />
+              <Route path="/refund" component={RefundPolicy} />
+              <Route path="/owner/boutique" component={OwnerBoutiqueDashboard} />
+              <Route path="/orders" component={MyOrders} />
+              <Route path="/boutique/orders" component={BoutiqueOrderDashboard} />
+              <Route path="/order/confirmation" component={OrderConfirmation} />
+              <Route path="/boutique/payouts" component={BoutiquePayoutDashboard} />
+              <Route path="/admin/payouts" component={AdminPayoutDashboard} />
+              <Route path="/admin/credits" component={AdminCredits} />
+              <Route component={NotFound} />
+            </Switch>
+          </Suspense>
+        </ErrorBoundary>
+      </TooltipProvider>
+    </ThemeProvider>
   );
 }
-
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
-function App() {
-  const { user } = useAuth();
-  
-  return (
-    <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
-  );
-}
-
-export default App;

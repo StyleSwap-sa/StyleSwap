@@ -25,27 +25,23 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
     // Performance optimizations
-    sourcemap: false, // Disable source maps in production
-    minify: 'terser', // Minify JavaScript
-    // Code splitting for better caching and performance
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        passes: 2,
+      },
+      mangle: true,
+    },
+    chunkSizeWarningLimit: 1000,
+    // Simple, effective code splitting
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor libraries - separate chunk for better caching
-          'vendor': [
-            'react',
-            'react-dom',
-          ],
-          // tRPC and React Query
-          'trpc': [
-            '@tanstack/react-query',
-            '@trpc/client',
-            '@trpc/react-query',
-          ],
-          // UI libraries
-          'ui': [
-            'lucide-react',
-          ],
+          'vendor': ['react', 'react-dom', 'wouter'],
+          'trpc': ['@tanstack/react-query', '@trpc/client', '@trpc/react-query'],
+          'ui': ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
         },
       },
     },
