@@ -28,6 +28,7 @@ import { webhookEventsRouter } from "./routers/webhookEvents";
 import { protectedApiRouter } from "./routers/protectedApi";
 import { verificationRouter } from "./routers/verification";
 import { adminCreditsRouter } from "./routers/admin-credits";
+import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -69,6 +70,25 @@ export const appRouter = router({
   webhookEvents: webhookEventsRouter,
   protectedApi: protectedApiRouter,
   verification: verificationRouter,
+  fitroom: router({
+    getCredits: publicProcedure.mutation(async ({ input }: any) => {
+      try {
+        const credits = await getFitroomCredits(input.apiKey);
+        if (!credits) {
+          return { success: false, error: "Could not fetch Fitroom credits" };
+        }
+        return {
+          success: true,
+          credits,
+          isLow: isCreditsLow(credits),
+          isCritical: isCreditsCritical(credits),
+        };
+      } catch (error) {
+        console.error("[Fitroom] Error fetching credits:", error);
+        return { success: false, error: "Failed to fetch Fitroom credits" };
+      }
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

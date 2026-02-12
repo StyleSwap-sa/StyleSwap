@@ -7,6 +7,7 @@ import { useState } from "react";
 import { LoginOptionsModal } from "@/components/LoginOptionsModal";
 import { Footer } from "@/components/Footer";
 import DemoVideoModal from "@/components/DemoVideoModal";
+import { FitroomCreditsWidget } from "@/components/FitroomCreditsWidget";
 
 export default function Home() {
   const { user, isAuthenticated, logout, loading } = useAuth();
@@ -128,6 +129,11 @@ export default function Home() {
               </>
             )}
           </div>
+
+          {/* Fitroom Credits Widget */}
+          {isAuthenticated && (
+            <FitroomCreditsWidget apiKey="744af8dfea9f4b04bc2ba36082c255049928648390bb4586a8fb157a2116e483" />
+          )}
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
