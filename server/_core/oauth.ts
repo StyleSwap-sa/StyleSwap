@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
+import { COOKIE_NAME } from "@shared/const";
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -46,20 +47,21 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
-      console.log("[OAuth] User upserted and retrieved:", user.id);
+      console.log("[OAuth] User upserted and retrieved:", user.id, "openId:", userInfo.openId);
 
-      const COOKIE_NAME = "session";
       const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
-      const sessionToken = await sdk.createSessionToken({
-        userId: user.id.toString(),
-        email: userInfo.email || "",
-        name: userInfo.name || "",
-        expiresInMs: ONE_YEAR_MS,
-      });
+      const sessionToken = await sdk.createSessionToken(
+        userInfo.openId,
+        {
+          name: userInfo.name || "",
+          expiresInMs: ONE_YEAR_MS,
+        }
+      );
 
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      console.log("[OAuth] Session cookie set with name:", COOKIE_NAME);
 
       // Determine redirect destination based on user role
       let redirectPath = "/";

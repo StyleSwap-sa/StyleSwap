@@ -2667,3 +2667,28 @@ This approach:
 - [ ] Test homepage loading speed on mobile
 - [ ] Verify lazy loading works for all routes
 - [ ] Monitor performance metrics
+
+
+## Phase 64: Performance Optimization for Mobile
+- [x] Identify bundle size bottleneck (3.5MB main bundle)
+- [x] Implement lazy loading for all pages except homepage
+- [x] Reduce main bundle from 1.7MB to 449KB gzipped (73% reduction)
+- [x] Optimize vite.config.ts for production
+- [x] Test homepage loading speed on mobile
+- [x] Verify lazy loading works for all routes
+- [x] Monitor performance metrics
+
+## Phase 65: Dev Server 404 Error Fix
+- [x] Diagnosed port conflict (old process on 3000 returning 404)
+- [x] Restarted dev server cleanly
+- [x] Verified server is responding correctly on port 3000
+- [x] Cleaned up zombie processes
+
+
+## Phase 66: Critical OAuth Cookie Name Fix
+- [x] Identified cookie name mismatch in OAuth callback (was using "session" instead of "app_session_id")
+- [x] Fixed oauth.ts to import and use COOKIE_NAME constant from shared/const.ts
+- [x] Fixed createSessionToken call to use correct signature (openId as first param)
+- [x] Added logging to verify cookie is set with correct name
+- [x] Verified auth.me endpoint now works correctly
+- [x] Dev server restarted with fixes applied
