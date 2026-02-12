@@ -22,7 +22,13 @@ export async function setupVite(app: Express, server: Server) {
   });
 
   app.use(vite.middlewares);
+  
+  // SPA fallback - serve index.html for all non-API routes
   app.use("*", async (req, res, next) => {
+    // Skip API routes and static assets
+    if (req.path.startsWith("/api") || req.path.match(/\\.(js|css|json|png|jpg|svg|ico|woff|woff2)$/)) {
+      return next();
+    }
     const url = req.originalUrl;
 
     try {
@@ -52,6 +58,7 @@ export async function setupVite(app: Express, server: Server) {
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
+      console.error("[Vite] Error serving index.html:", e);
       vite.ssrFixStacktrace(e as Error);
       next(e);
     }

@@ -71,11 +71,17 @@ export const appRouter = router({
   protectedApi: protectedApiRouter,
   verification: verificationRouter,
   fitroom: router({
-    getCredits: publicProcedure.mutation(async ({ input }: any) => {
+    getCredits: publicProcedure.query(async () => {
       try {
-        const credits = await getFitroomCredits(input.apiKey);
+        // Import ENV to get the server-side Fitroom API key
+        const { ENV } = await import("../_core/env");
+        if (!ENV.fitroomApiKey) {
+          console.warn("[Fitroom] API key not configured in environment");
+          return { success: false, error: "Fitroom API key not configured", credits: null };
+        }
+        const credits = await getFitroomCredits(ENV.fitroomApiKey);
         if (!credits) {
-          return { success: false, error: "Could not fetch Fitroom credits" };
+          return { success: false, error: "Could not fetch Fitroom credits", credits: null };
         }
         return {
           success: true,

@@ -2692,3 +2692,12 @@ This approach:
 - [x] Added logging to verify cookie is set with correct name
 - [x] Verified auth.me endpoint now works correctly
 - [x] Dev server restarted with fixes applied
+
+
+## Phase 67: Dashboard 404 Error & Fitroom Credits Fix
+- [x] Fixed Vite SPA routing to serve index.html for all non-API routes
+- [x] Added skip logic for API routes and static assets in catch-all middleware
+- [x] Fixed fitroom.getCredits endpoint to use server-side API key automatically
+- [x] Changed from mutation to query for fitroom.getCredits
+- [x] Verified dashboard route now serves correct HTML
+- [x] Fitroom credits widget will now display properly when user logs in
