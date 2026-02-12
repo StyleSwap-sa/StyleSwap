@@ -27,6 +27,7 @@ import { apiKeysRouter } from "./routers/boutiques.apikeys";
 import { webhookEventsRouter } from "./routers/webhookEvents";
 import { protectedApiRouter } from "./routers/protectedApi";
 import { verificationRouter } from "./routers/verification";
+import { adminCreditsRouter } from "./routers/admin-credits";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -51,6 +52,7 @@ export const appRouter = router({
   b2bTryon: b2bTryonRouter,
   billing: billingRouter,
   admin: adminRouter,
+  adminCredits: adminCreditsRouter,
   boutiqueDashboard: boutiqueDashboardRouter,
   webhookAdmin: webhookAdminRouter,
   analytics: router(analyticsRouter),

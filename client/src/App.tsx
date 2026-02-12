@@ -69,6 +69,7 @@ import WebhookPayloads from "./pages/WebhookPayloads";
 import SDKGuide from "./pages/SDKGuide";
 import ApiDocs from "./pages/ApiDocs";
 import RegisterApp from "./pages/RegisterApp";
+import AdminCredits from "./pages/AdminCredits";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -104,7 +105,8 @@ function Router() {
       <Route path={"/test-boutique"} component={TestBoutiquePage} />
       <Route path={"/admin-login"} component={AdminLogin} />
       <Route path={"/admin-dashboard"} component={AdminDashboard} />
-      <Route path={"/admin"} component={AdminDashboard} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/credits" component={AdminCredits} />
       <Route path={"admin/performance-export"} component={BoutiquePerformanceExport} />
       <Route path={"/ar-tryon"} component={ARTryOn} />
       <Route path={"/try-on"} component={TryOnPage} />

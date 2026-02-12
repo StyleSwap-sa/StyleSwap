@@ -2604,3 +2604,21 @@ This approach:
 - [ ] Implement optional size comparison feature (switch between sizes)
 - [ ] Test complete workflow with manual size selection
 - [ ] Verify photo upload and try-on generation features still work
+
+
+## Phase 60: Admin Credit Management System (NEW)
+- [x] Create database helpers for credit operations (add, deduct, refund)
+- [x] Create user search functionality for admin
+- [x] Implement transaction history tracking
+- [x] Create tRPC admin procedures (protected, admin-only)
+- [x] Build Admin Credits Dashboard UI component
+- [x] Add customer search with real-time results
+- [x] Add credit adjustment interface (add/deduct)
+- [x] Add transaction history display
+- [x] Add platform statistics dashboard
+- [x] Implement admin-only access control
+- [x] Register admin credits router in main app
+- [x] Add route to App.tsx (/admin/credits)
+- [ ] Test admin credit management end-to-end
+- [ ] Test custom package creation for retail clients
+- [ ] Verify audit trail logging

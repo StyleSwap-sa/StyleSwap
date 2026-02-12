@@ -170,3 +170,131 @@ export async function getUserTransactions(userId: number, limit: number = 50) {
     .orderBy((t) => t.createdAt)
     .limit(limit);
 }
+
+/**
+ * Add credits to a user's account (admin operation for custom packages)
+ * Used when a retail client requests a custom credit tier
+ */
+export async function addCreditsAdmin(
+  userId: number,
+  creditsToAdd: number,
+  reason: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const credits = await getUserCredits(userId);
+  const newTotal = credits.totalCredits + creditsToAdd;
+  const newRemaining = credits.remainingCredits + creditsToAdd;
+
+  // Update credits
+  await db
+    .update(userCredits)
+    .set({
+      totalCredits: newTotal,
+      remainingCredits: newRemaining,
+      updatedAt: new Date(),
+    })
+    .where(eq(userCredits.userId, userId));
+
+  // Log transaction with admin note
+  await db.insert(transactions).values({
+    userId,
+    type: "adjustment",
+    amount: creditsToAdd,
+    currency: "ZAR",
+    description: `Admin adjustment: ${reason}`,
+    status: "completed",
+  });
+
+  return { totalCredits: newTotal, remainingCredits: newRemaining };
+}
+
+/**
+ * Search users by email or name (for admin panel)
+ */
+export async function searchUsersForAdmin(query: string, limit: number = 20) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const { users: usersTable } = await import("../drizzle/schema");
+  const searchQuery = `%${query}%`;
+
+  return await db
+    .select({
+      id: usersTable.id,
+      name: usersTable.name,
+      email: usersTable.email,
+      userType: usersTable.userType,
+      createdAt: usersTable.createdAt,
+    })
+    .from(usersTable)
+    .where(
+      or(
+        like(usersTable.email, searchQuery),
+        like(usersTable.name, searchQuery)
+      )
+    )
+    .limit(limit);
+}
+
+/**
+ * Get all transactions for a user (for admin audit)
+ */
+export async function getUserTransactionHistoryAdmin(
+  userId: number,
+  limit: number = 100
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return await db
+    .select()
+    .from(transactions)
+    .where(eq(transactions.userId, userId))
+    .orderBy((t) => t.createdAt)
+    .limit(limit);
+}
+
+/**
+ * Deduct credits manually (admin operation for corrections)
+ */
+export async function deductCreditsAdmin(
+  userId: number,
+  creditsToDeduct: number,
+  reason: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const credits = await getUserCredits(userId);
+
+  if (credits.remainingCredits < creditsToDeduct) {
+    throw new Error("Insufficient credits to deduct");
+  }
+
+  const newRemaining = credits.remainingCredits - creditsToDeduct;
+  const newUsed = credits.usedCredits + creditsToDeduct;
+
+  // Update credits
+  await db
+    .update(userCredits)
+    .set({
+      usedCredits: newUsed,
+      remainingCredits: newRemaining,
+      updatedAt: new Date(),
+    })
+    .where(eq(userCredits.userId, userId));
+
+  // Log transaction
+  await db.insert(transactions).values({
+    userId,
+    type: "adjustment",
+    amount: -creditsToDeduct,
+    currency: "ZAR",
+    description: `Admin deduction: ${reason}`,
+    status: "completed",
+  });
+
+  return { remainingCredits: newRemaining, usedCredits: newUsed };
+}
