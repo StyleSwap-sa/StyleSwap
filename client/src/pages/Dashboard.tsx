@@ -21,17 +21,22 @@ export default function Dashboard() {
 
   // Redirect based on user type (skip for admins testing customer dashboard)
   useEffect(() => {
-    if (isAuthenticated && user) {
-      const params = new URLSearchParams(window.location.search);
-      const isTestingCustomer = params.get('test') === 'customer';
-      
-      if (!isTestingCustomer) {
-        if (user.userType === 'admin' || user.role === 'admin') {
-          setLocation('/admin');
-        } else if (user.userType === 'merchant') {
-          setLocation('/boutique-dashboard');
-        }
-      }
+    if (!isAuthenticated || !user) return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const isTestingCustomer = params.get('test') === 'customer';
+    
+    // If test=customer is set, don't redirect - show customer dashboard
+    if (isTestingCustomer) return;
+    
+    // Redirect based on user type
+    const isAdmin = user.userType === 'admin' || user.role === 'admin';
+    const isMerchant = user.userType === 'merchant';
+    
+    if (isAdmin) {
+      setLocation('/admin');
+    } else if (isMerchant) {
+      setLocation('/boutique-dashboard');
     }
   }, [isAuthenticated, user, setLocation]);
 

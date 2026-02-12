@@ -2701,3 +2701,9 @@ This approach:
 - [x] Changed from mutation to query for fitroom.getCredits
 - [x] Verified dashboard route now serves correct HTML
 - [x] Fitroom credits widget will now display properly when user logs in
+
+
+## Phase 68: Dashboard Redirect Fix for Admin Users
+- [x] Fixed redirect logic to properly check for ?test=customer parameter
+- [x] Admins can now view customer dashboard with ?test=customer parameter
+- [x] Fitroom credits display working on customer dashboard
