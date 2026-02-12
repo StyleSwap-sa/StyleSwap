@@ -2622,3 +2622,20 @@ This approach:
 - [ ] Test admin credit management end-to-end
 - [ ] Test custom package creation for retail clients
 - [ ] Verify audit trail logging
+
+
+## Phase 61: Admin Credit Management Enhancements
+- [x] Add bulk credit operations backend (CSV import support)
+- [x] Create CSV upload component for admin dashboard
+- [x] Implement credit validation for bulk operations
+- [x] Add transaction logging for bulk operations
+- [x] Optimize admin dashboard layout for mobile devices
+- [x] Add responsive grid system for mobile view
+- [x] Implement touch-friendly buttons and inputs
+- [x] Add credit expiration date field to database
+- [x] Create expiration date management UI
+- [x] Implement expiration notification system
+- [x] Add expiration date to transaction history
+- [ ] Test bulk operations end-to-end
+- [ ] Test mobile responsiveness on various devices
+- [ ] Test credit expiration workflow

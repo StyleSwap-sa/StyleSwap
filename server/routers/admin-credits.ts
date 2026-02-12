@@ -9,8 +9,8 @@ import {
   searchUsersForAdmin,
 } from "../db.credits";
 import { getDb } from "../db";
-import { users, userCredits } from "../../drizzle/schema";
-import { eq, sql } from "drizzle-orm";
+import { users, userCredits, transactions } from "../../drizzle/schema";
+import { eq, sql, gt, lte, and } from "drizzle-orm";
 
 /**
  * Admin Credit Management Router
@@ -295,4 +295,204 @@ export const adminCreditsRouter = router({
       });
     }
   }),
+
+  /**
+   * Bulk add credits from CSV
+   * Expected CSV format: email,credits,reason
+   * Example: john@example.com,500,Retail partnership
+   */
+  bulkAddCredits: protectedProcedure
+    .input(
+      z.object({
+        csvData: z.string().describe("CSV content with email,credits,reason format"),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can perform bulk operations",
+        });
+      }
+
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
+
+      const lines = input.csvData.trim().split("\n");
+      const results = {
+        success: 0,
+        failed: 0,
+        errors: [] as string[],
+      };
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const [email, creditsStr, reason] = line.split(",").map((s) => s.trim());
+
+        if (!email || !creditsStr || !reason) {
+          results.errors.push(`Row ${i + 1}: Missing required fields`);
+          results.failed++;
+          continue;
+        }
+
+        const credits = parseInt(creditsStr);
+        if (isNaN(credits) || credits <= 0) {
+          results.errors.push(`Row ${i + 1}: Invalid credits amount`);
+          results.failed++;
+          continue;
+        }
+
+        try {
+          const user = await db.query.users.findFirst({
+            where: eq(users.email, email),
+          });
+
+          if (!user) {
+            results.errors.push(`Row ${i + 1}: User not found (${email})`);
+            results.failed++;
+            continue;
+          }
+
+          await addCreditsAdmin(user.id, credits, reason, ctx.user.id);
+          results.success++;
+        } catch (error) {
+          results.errors.push(
+            `Row ${i + 1}: ${error instanceof Error ? error.message : "Unknown error"}`
+          );
+          results.failed++;
+        }
+      }
+
+      return results;
+    }),
+
+  /**
+   * Get customers with expiring credits (within 7 days)
+   */
+  getExpiringCredits: protectedProcedure
+    .input(
+      z.object({
+        daysUntilExpiry: z.number().default(7),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can view this data",
+        });
+      }
+
+      try {
+        const db = await getDb();
+        if (!db) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
+        }
+
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + input.daysUntilExpiry);
+
+        const result = await db.query.userCredits.findMany({
+          where: and(
+            gt(userCredits.expiresAt, new Date()),
+            lte(userCredits.expiresAt, expiryDate)
+          ),
+          with: {
+            user: {
+              columns: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        });
+
+        return result;
+      } catch (error) {
+        console.error("[Admin Credits] Get expiring credits error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch expiring credits",
+        });
+      }
+    }),
+
+  /**
+   * Extend credit expiration date
+   */
+  extendCreditExpiry: protectedProcedure
+    .input(
+      z.object({
+        userId: z.number(),
+        newExpiryDate: z.date(),
+        reason: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can extend credit expiry",
+        });
+      }
+
+      try {
+        const db = await getDb();
+        if (!db) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
+        }
+
+        const creditRecord = await db.query.userCredits.findFirst({
+          where: eq(userCredits.userId, input.userId),
+        });
+
+        if (!creditRecord) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "No credit record found for this user",
+          });
+        }
+
+        await db
+          .update(userCredits)
+          .set({
+            expiresAt: input.newExpiryDate,
+            updatedAt: new Date(),
+          })
+          .where(eq(userCredits.userId, input.userId));
+
+        // Log transaction
+        await db.insert(transactions).values({
+          userId: input.userId,
+          type: "expiry_extension",
+          amount: 0,
+          description: `Credit expiry extended to ${input.newExpiryDate.toLocaleDateString()}. Reason: ${input.reason}`,
+          adminId: ctx.user.id,
+          createdAt: new Date(),
+        });
+
+        return { success: true };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        console.error("[Admin Credits] Extend expiry error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to extend credit expiry",
+        });
+      }
+    }),
 });
