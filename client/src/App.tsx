@@ -57,6 +57,7 @@ const AdminCredits = lazy(() => import("./pages/AdminCredits"));
 const ApiDocs = lazy(() => import("./pages/ApiDocs"));
 const ForBoutiques = lazy(() => import("./pages/B2BLanding"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
+const BodyModels = lazy(() => import("./pages/BodyModels"));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -132,6 +133,7 @@ export default function App() {
               <Route path="/for-boutiques" component={ForBoutiques} />
               <Route path="/customer-try-on" component={CustomerTryOn} />
               <Route path="/developer" component={DeveloperPortal} />
+              <Route path="/body-models" component={BodyModels} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>
