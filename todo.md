@@ -2648,3 +2648,12 @@ This approach:
 - [ ] Ensure proper routing for all navigation items
 - [ ] Test navigation on mobile and desktop
 - [ ] Verify all dashboard links are functional
+
+- [x] Fix missing imports in admin credits search (or, like functions)
+- [x] Add missing getBoutiquesListPaginated procedure to admin router
+- [x] Fix boutique names visibility in admin dashboard boutiques list
+- [x] Verify boutique data is loading correctly from database
+- [ ] Make top navigation links (OVERVIEW, TECHNOLOGY, MARKET, etc.) fully clickable on mobile
+- [ ] Ensure navigation routing works smoothly on all pages
+- [ ] Test all navigation links on mobile and desktop
+- [ ] Ensure responsive design for navigation on small screens

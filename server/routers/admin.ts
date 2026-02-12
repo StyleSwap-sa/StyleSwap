@@ -289,6 +289,60 @@ export const adminRouter = router({
     }),
 
   /**
+   * Get paginated boutiques list with credits info
+   */
+  getBoutiquesListPaginated: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().optional().default(20),
+        offset: z.number().optional().default(0),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can view boutiques list",
+        });
+      }
+
+      try {
+        const db = getDb();
+        const boutiquesData = await db
+          .select({
+            id: boutiques.id,
+            name: boutiques.name,
+            status: boutiques.status,
+            createdAt: boutiques.createdAt,
+            totalCredits: sql`COALESCE(SUM(${boutiqueCredits.totalCredits}), 0)`,
+            usedCredits: sql`COALESCE(SUM(${boutiqueCredits.usedCredits}), 0)`,
+            remainingCredits: sql`COALESCE(SUM(${boutiqueCredits.remainingCredits}), 0)`,
+          })
+          .from(boutiques)
+          .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
+          .groupBy(boutiques.id)
+          .limit(input.limit)
+          .offset(input.offset);
+
+        return boutiquesData.map((b) => ({
+          id: b.id,
+          name: b.name,
+          status: b.status,
+          createdAt: b.createdAt,
+          totalCredits: Number(b.totalCredits) || 0,
+          usedCredits: Number(b.usedCredits) || 0,
+          remainingCredits: Number(b.remainingCredits) || 0,
+        }));
+      } catch (error) {
+        console.error("[Admin] Failed to get boutiques list:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch boutiques list",
+        });
+      }
+    }),
+
+  /**
    * Payout management sub-router
    */
   payouts: adminPayoutsRouter,
