@@ -49,7 +49,7 @@ export default function B2BLanding() {
               Developer Portal
             </Link>
           </div>
-          <Link href="/b2b-signup">
+          <Link href="/b2b/signup">
             <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 font-bold cursor-pointer">
               Get Started
             </Button>
@@ -76,7 +76,7 @@ export default function B2BLanding() {
               StyleSwap's AI-powered try-on technology.
             </p>
             <div className="flex gap-4">
-              <Link href="/b2b-signup">
+              <Link href="/b2b/signup">
                 <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-8 text-lg cursor-pointer">
                   Get Started <ArrowRight className="ml-2" />
                 </Button>
