@@ -2,6 +2,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getFitroomClient } from "../_core/fitroom";
 import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
+import { enforceSubscriptionCheck } from "../middleware/subscriptionValidation";
 import { TRPCError } from "@trpc/server";
 import { storagePut, storageGet } from "../storage";
 import fs from "fs";
@@ -41,6 +42,11 @@ export const tryonRouter = router({
     .mutation(async ({ ctx, input }) => {
       let tempDir: string | null = null;
       try {
+        // Check if user's boutique has an active paid subscription
+        if (!input.testMode) {
+          await enforceSubscriptionCheck(ctx.user.id);
+        }
+
         // Skip credit check in test mode
         if (!input.testMode) {
           const credits = await getUserCredits(ctx.user.id);
