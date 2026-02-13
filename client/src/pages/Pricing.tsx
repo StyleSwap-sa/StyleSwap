@@ -97,11 +97,41 @@ export default function Pricing() {
     }
   };
 
-  // Individual Plans
+  // Individual Plans with detailed features
   const individualPlans = [
-    { tryOns: 10, price: 45, costPerTryOn: 4.50 },
-    { tryOns: 20, price: 80, costPerTryOn: 4.00 },
-    { tryOns: 50, price: 150, costPerTryOn: 3.00 },
+    { 
+      tryOns: 10, 
+      price: 45, 
+      costPerTryOn: 4.50,
+      features: [
+        "10 Virtual Try-Ons",
+        "30-day validity",
+        "Standard support",
+        "Effective rate: R4.50 per try-on"
+      ]
+    },
+    { 
+      tryOns: 20, 
+      price: 80, 
+      costPerTryOn: 4.00,
+      features: [
+        "20 Virtual Try-Ons",
+        "30-day validity",
+        "Standard support",
+        "Effective rate: R4.00 per try-on"
+      ]
+    },
+    { 
+      tryOns: 50, 
+      price: 150, 
+      costPerTryOn: 3.00,
+      features: [
+        "50 Virtual Try-Ons",
+        "30-day validity",
+        "Standard support",
+        "Effective rate: R3.00 per try-on"
+      ]
+    },
   ];
 
   // Business Plans with exact wording from API Docs
@@ -192,21 +222,31 @@ export default function Pricing() {
           <h2 className="text-3xl font-bold mb-8 text-center">Individual Try-On Credits</h2>
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             {individualPlans.map((plan) => (
-              <Card key={plan.tryOns} className="flex flex-col">
-                <CardHeader>
-                  <h3 className="text-2xl font-bold">{plan.tryOns} Try-Ons</h3>
-                  <p className="text-3xl font-bold text-primary mt-2">R{plan.price}</p>
-                  <p className="text-sm text-muted-foreground">R{plan.costPerTryOn} per try-on</p>
-                </CardHeader>
-                <CardContent className="flex-grow flex flex-col justify-between">
+              <div key={plan.tryOns} className="flex flex-col border-0 shadow-lg overflow-hidden rounded-lg bg-white">
+                {/* Orange Header with Title and Price */}
+                <div className="bg-orange-600 text-white p-6">
+                  <h3 className="text-lg font-bold mb-2">{plan.tryOns} Try-Ons</h3>
+                  <p className="text-3xl font-bold">R{plan.price}</p>
+                  <p className="text-sm mt-1 opacity-90">R{plan.costPerTryOn}/try-on</p>
+                </div>
+                <div className="flex-grow flex flex-col justify-between p-6">
+                  {/* All features list */}
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <Check className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-slate-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
                   <Button 
                     onClick={() => handleBuyNow(plan.tryOns)}
-                    className="w-full bg-primary hover:bg-primary/90"
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3"
                   >
                     Buy Now
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </div>
