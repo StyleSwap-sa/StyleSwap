@@ -137,12 +137,12 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
     }
   };
 
-  const displayPlans = compact ? businessPlans.slice(0, 3) : businessPlans;
+  const displayPlans = businessPlans; // Always show all plans
 
   return (
     <div className="w-full">
       {/* Billing Toggle */}
-      {!compact && (
+      {true && (
         <div className="flex justify-center items-center gap-4 mb-12">
           <span className={`font-medium ${billingPeriod === 'monthly' ? 'text-foreground' : 'text-muted-foreground'}`}>
             Monthly
@@ -171,7 +171,7 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
       )}
 
       {/* Pricing Cards Grid */}
-      <div className={`grid gap-6 ${compact ? 'grid-cols-1' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+      <div className={`grid gap-6 ${compact ? 'grid-cols-1 sm:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
         {displayPlans.map((plan) => {
           const monthlyPrice = plan.price;
           const annualPrice = getAnnualPrice(monthlyPrice);
@@ -209,8 +209,7 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
                 <Button
                   onClick={() => handleSubscribe(plan.name, monthlyPrice)}
                   disabled={loadingPackage === plan.name}
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-semibold"
-                >
+                  className={`w-full bg-primary hover:bg-primary/90 text-white font-semibold text-sm`}               >
                   {loadingPackage === plan.name ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -229,7 +228,7 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
       {compact && (
         <div className="mt-6 text-center">
           <Button variant="outline" onClick={() => setLocation('/pricing')} className="w-full">
-            View All Plans
+            View All Plans on Pricing Page
           </Button>
         </div>
       )}

@@ -10,6 +10,7 @@ import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import { users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { sendPurchaseConfirmationEmail } from "../email";
 
 export const paymentRouter = router({
   /**
@@ -142,6 +143,24 @@ export const paymentRouter = router({
           packageId: input.packageId,
           credits: input.credits,
         });
+
+        // Send purchase confirmation email
+        const pkg = getPaymentPackage(input.packageId);
+        if (pkg && ctx.user.email) {
+          try {
+            await sendPurchaseConfirmationEmail(
+              ctx.user.id,
+              ctx.user.name || "User",
+              ctx.user.email,
+              input.credits,
+              (pkg.price / 100).toString(), // Convert cents to ZAR
+              pkg.currency
+            );
+          } catch (emailError) {
+            console.error("[Payment Router] Error sending confirmation email:", emailError);
+            // Don't throw error - payment was successful, just log email failure
+          }
+        }
 
         return {
           success: true,
