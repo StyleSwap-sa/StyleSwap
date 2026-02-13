@@ -2742,3 +2742,11 @@ This approach:
 - [x] Update API Docs with exact package names and features from document
 - [x] Verify all prices match document (R385, R750, R1,350, R2,200, R6,250, R18,600)
 - [x] Test pricing displays and Yoco buttons
+
+
+## Phase 74: Update Pricing Page Business Section to Match API Docs Format
+- [x] Review current Pricing page business packages section
+- [x] Update all 6 packages to use same detailed wording as API Docs
+- [x] Include all features with bullet points for each package
+- [x] Add effective rates (R3.85, R3.75, R2.70, R2.20, R1.25, R0.93 per simulation)
+- [x] Test pricing page displays correctly on mobile and desktop

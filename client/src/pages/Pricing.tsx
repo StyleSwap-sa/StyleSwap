@@ -73,7 +73,7 @@ export default function Pricing() {
     { tryOns: 50, price: 150, costPerTryOn: 3.00 },
   ];
 
-  // Business Plans with exact wording from document
+  // Business Plans with exact wording from API Docs
   const businessPlans = [
     { 
       name: "Boutique Starter",
@@ -185,23 +185,25 @@ export default function Pricing() {
           <h2 className="text-3xl font-bold mb-8 text-center">Business Plans (Monthly Subscription)</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {businessPlans.map((plan) => (
-              <Card key={plan.name} className="flex flex-col">
-                <CardHeader>
-                  <h3 className="text-2xl font-bold">{plan.name}</h3>
-                  <p className="text-3xl font-bold text-primary mt-2">R{plan.price.toLocaleString()} / month</p>
-                </CardHeader>
-                <CardContent className="flex-grow flex flex-col justify-between">
+              <Card key={plan.name} className="flex flex-col border-0 shadow-lg overflow-hidden">
+                {/* Orange Header */}
+                <div className="bg-orange-600 text-white p-6">
+                  <p className="text-4xl font-bold">R{plan.price.toLocaleString()}</p>
+                  <p className="text-sm mt-1 opacity-90">/month</p>
+                </div>
+                <CardContent className="flex-grow flex flex-col justify-between p-6">
+                  {/* All features list */}
                   <ul className="space-y-2 mb-6">
                     {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
+                      <li key={idx} className="flex items-start gap-3">
+                        <Check className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-slate-700">{feature}</span>
                       </li>
                     ))}
                   </ul>
                   <Button 
                     onClick={() => handleSubscribe(plan.name, plan.price)}
-                    className="w-full bg-primary hover:bg-primary/90"
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3"
                   >
                     Subscribe Now
                   </Button>
@@ -211,12 +213,12 @@ export default function Pricing() {
           </div>
 
           {/* Additional Info */}
-          <div className="mt-12 bg-secondary/10 p-6 rounded-lg">
-            <p className="text-center text-sm text-muted-foreground mb-2">
-              <strong>Additional simulations billed at plan rate.</strong>
+          <div className="mt-12 bg-slate-50 border border-slate-200 p-6 rounded-lg">
+            <p className="text-center text-sm text-slate-700 mb-3 font-semibold">
+              Additional simulations billed at plan rate.
             </p>
-            <p className="text-center text-sm text-muted-foreground">
-              <strong>Seamless integration via widget, API, or social selling landing page.</strong>
+            <p className="text-center text-sm text-slate-700 font-semibold">
+              Seamless integration via widget, API, or social selling landing page.
             </p>
           </div>
         </div>
