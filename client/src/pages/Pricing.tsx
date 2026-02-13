@@ -84,7 +84,7 @@ export default function Pricing() {
 
       if (result && result.checkoutUrl) {
         console.log('[Pricing] Opening checkout URL:', result.checkoutUrl);
-        window.open(result.checkoutUrl, '_blank');
+        window.location.href = result.checkoutUrl;  // Use direct redirect like Individual buttons
       } else {
         console.error('[Pricing] No checkout URL in response:', result);
         alert('Failed to create checkout session. Please try again.');
