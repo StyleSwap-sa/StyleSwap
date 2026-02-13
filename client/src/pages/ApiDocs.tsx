@@ -38,7 +38,7 @@ export default function ApiDocs() {
                 <a href="#authentication" className="block text-sm text-slate-600 hover:text-orange-600 transition">Authentication</a>
                 <a href="#endpoints" className="block text-sm text-slate-600 hover:text-orange-600 transition">Endpoints</a>
                 <a href="#try-on" className="block text-sm text-slate-600 hover:text-orange-600 transition">Create Try-On</a>
-                <a href="#billing" className="block text-sm text-slate-600 hover:text-orange-600 transition">Billing</a>
+                <a href="#billing" className="block text-sm text-slate-600 hover:text-orange-600 transition">Pricing</a>
                 <a href="#webhooks" className="block text-sm text-slate-600 hover:text-orange-600 transition">Webhooks</a>
                 <a href="#errors" className="block text-sm text-slate-600 hover:text-orange-600 transition">Error Handling</a>
               </nav>
@@ -173,30 +173,80 @@ export default function ApiDocs() {
               {/* Billing */}
               <div className="space-y-4 mb-8">
                 <div>
-                  <h3 id="billing" className="text-lg font-semibold text-slate-900 mb-2">Purchase Credits</h3>
-                  <p className="text-slate-600 mb-4">Initiate a credit purchase for your account</p>
+                  <h3 id="billing" className="text-lg font-semibold text-slate-900 mb-2">Pricing & Credits</h3>
+                  <p className="text-slate-600 mb-4">StyleSwap uses a credit-based billing model. Each virtual try-on costs 1 credit.</p>
                 </div>
                 <Card>
-                  <CardContent className="pt-6 space-y-4">
-                    <div className="space-y-2">
-                      <p className="font-mono text-sm bg-slate-100 p-3 rounded">POST /billing/initiatePurchase</p>
-                      <p className="text-sm text-slate-600">Start a credit purchase transaction</p>
+                  <CardContent className="pt-6 space-y-6">
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-slate-900">Individual Plans (Pay-as-you-go)</h4>
+                      <div className="space-y-2 text-sm text-slate-600">
+                        <div className="flex justify-between p-2 bg-slate-50 rounded">
+                          <span>10 try-ons</span>
+                          <span className="font-semibold">R45 (R4.50/try-on)</span>
+                        </div>
+                        <div className="flex justify-between p-2 bg-slate-50 rounded">
+                          <span>20 try-ons</span>
+                          <span className="font-semibold">R80 (R4.00/try-on)</span>
+                        </div>
+                        <div className="flex justify-between p-2 bg-slate-50 rounded">
+                          <span>50 try-ons</span>
+                          <span className="font-semibold">R150 (R3.00/try-on)</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-slate-900">Request Body</h4>
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-slate-900">Business Plans (Monthly Subscription)</h4>
+                      <p className="text-sm text-slate-600">Reduce Returns. Increase Conversions. Let customers try before they buy.</p>
+                      <div className="space-y-2 text-sm text-slate-600">
+                        <div className="flex justify-between p-2 bg-slate-50 rounded">
+                          <span>Boutique Starter - 100 try-ons</span>
+                          <span className="font-semibold">R385/month</span>
+                        </div>
+                        <div className="flex justify-between p-2 bg-slate-50 rounded">
+                          <span>Boutique Growth - 200 try-ons</span>
+                          <span className="font-semibold">R750/month</span>
+                        </div>
+                        <div className="flex justify-between p-2 bg-slate-50 rounded">
+                          <span>Store Pro - 500 try-ons</span>
+                          <span className="font-semibold">R1,350/month</span>
+                        </div>
+                        <div className="flex justify-between p-2 bg-slate-50 rounded">
+                          <span>Store Scale - 1,000 try-ons</span>
+                          <span className="font-semibold">R2,200/month</span>
+                        </div>
+                        <div className="flex justify-between p-2 bg-slate-50 rounded">
+                          <span>Retailer Pro - 5,000 try-ons</span>
+                          <span className="font-semibold">R6,250/month</span>
+                        </div>
+                        <div className="flex justify-between p-2 bg-slate-50 rounded">
+                          <span>Enterprise Retail - 20,000 try-ons</span>
+                          <span className="font-semibold">R18,600/month</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4 space-y-2">
+                      <h4 className="font-semibold text-slate-900">Purchase Credits via Yoco</h4>
+                      <p className="text-sm text-slate-600">Initiate a credit purchase for your account</p>
+                      <p className="font-mono text-sm bg-slate-100 p-3 rounded">POST /billing/initiatePurchase</p>
                       <div className="bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-auto relative group">
                         <pre>{`{
-  "packageId": "pkg_100_tryon",
+  "packageId": "pkg_100_credits",
   "quantity": 1
 }`}</pre>
                         <button
-                          onClick={() => copyToClipboard('{\n  "packageId": "pkg_100_tryon",\n  "quantity": 1\n}', "req2")}
+                          onClick={() => copyToClipboard('{\n  "packageId": "pkg_100_credits",\n  "quantity": 1\n}', "req2")}
                           className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded opacity-0 group-hover:opacity-100 transition"
                         >
                           {copiedCode === "req2" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                         </button>
                       </div>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 p-4 rounded text-sm text-slate-600">
+                      <p><strong>Note:</strong> All credits are valid for 30 days from purchase. Credits are non-refundable once purchased. Additional simulations billed at plan rate.</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -288,12 +338,19 @@ export default function ApiDocs() {
             {/* CTA */}
             <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white p-8 rounded-lg">
               <h3 className="text-xl font-bold mb-2">Ready to Integrate?</h3>
-              <p className="text-orange-100 mb-4">Start building with StyleSwap API today</p>
-              <a href="/register-app">
-                <Button className="bg-white text-orange-600 hover:bg-orange-50 font-semibold">
-                  Register Your App <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </a>
+              <p className="text-orange-100 mb-4">Start building with StyleSwap API today. Purchase credits via Yoco to get started.</p>
+              <div className="flex gap-4 flex-wrap">
+                <a href="/pricing">
+                  <Button className="bg-white text-orange-600 hover:bg-orange-50 font-semibold">
+                    View Pricing <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </a>
+                <a href="/register-app">
+                  <Button className="bg-orange-500 text-white hover:bg-orange-400 font-semibold">
+                    Register Your App <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </a>
+              </div>
             </div>
           </div>
         </div>

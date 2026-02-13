@@ -420,6 +420,14 @@
 - [ ] Test product creation with browser console open
 
 
+## Phase 71: Update Pricing with Business Packages
+- [x] Add business packages to pricing page (Boutique Starter, Growth, Store Pro, Scale, Retailer Pro, Enterprise)
+- [x] Keep individual try-on credit prices visible
+- [x] Integrate Yoco subscribe button links for each package
+- [x] Update API documentation with pricing information
+- [x] Test all subscribe buttons and payment links
+- [x] Verify pricing displays correctly on all pages
+
 ## Phase 30: Product Creation Error Fix (TODAY)
 
 ### Issues Fixed
