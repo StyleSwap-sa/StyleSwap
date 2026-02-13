@@ -186,9 +186,10 @@ export default function Pricing() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {businessPlans.map((plan) => (
               <Card key={plan.name} className="flex flex-col border-0 shadow-lg overflow-hidden">
-                {/* Orange Header */}
+                {/* Orange Header with Title and Price */}
                 <div className="bg-orange-600 text-white p-6">
-                  <p className="text-4xl font-bold">R{plan.price.toLocaleString()}</p>
+                  <h3 className="text-lg font-bold mb-2">{plan.name}</h3>
+                  <p className="text-3xl font-bold">R{plan.price.toLocaleString()}</p>
                   <p className="text-sm mt-1 opacity-90">/month</p>
                 </div>
                 <CardContent className="flex-grow flex flex-col justify-between p-6">
