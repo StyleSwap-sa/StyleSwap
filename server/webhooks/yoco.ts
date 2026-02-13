@@ -6,6 +6,7 @@ import { sendEmailNotification } from "../email";
 import { verifyWebhookSignature } from "../yoko-payment";
 import { sendPaymentConfirmationSMS } from "../sms";
 import { processOrderPayout } from "../payout-processor";
+import { reactivateSubscription } from "../middleware/subscriptionValidation";
 import {
   recordWebhookEvent,
   markWebhookSuccess,
@@ -262,6 +263,14 @@ async function handleBoutiqueCreditPurchase(
     }
 
     // TODO: Record boutique transaction in a separate boutique_transactions table
+
+    // Reactivate subscription if it was suspended
+    try {
+      await reactivateSubscription(boutiqueId);
+      console.log(`[Yoko Webhook] Subscription reactivated for boutique ${boutiqueId}`);
+    } catch (error) {
+      console.warn(`[Yoko Webhook] Could not reactivate subscription for boutique ${boutiqueId}:`, error);
+    }
 
     console.log(
       `[Yoko Webhook] Payment succeeded for boutique ${boutiqueId}: +${credits} credits`
