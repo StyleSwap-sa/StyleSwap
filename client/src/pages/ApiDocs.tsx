@@ -199,30 +199,87 @@ export default function ApiDocs() {
                     <div className="space-y-3">
                       <h4 className="font-semibold text-slate-900">Business Plans (Monthly Subscription)</h4>
                       <p className="text-sm text-slate-600">Reduce Returns. Increase Conversions. Let customers try before they buy.</p>
-                      <div className="space-y-2 text-sm text-slate-600">
-                        <div className="flex justify-between p-2 bg-slate-50 rounded">
-                          <span>Boutique Starter - 100 try-ons</span>
-                          <span className="font-semibold">R385/month</span>
+                      <div className="space-y-4 text-sm text-slate-600">
+                        <div className="border rounded-lg p-4 bg-slate-50">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-semibold">Boutique Starter</span>
+                            <span className="font-bold text-lg">R385/month</span>
+                          </div>
+                          <ul className="space-y-1 text-xs">
+                            <li>• 100 Virtual Try-Ons</li>
+                            <li>• Widget integration</li>
+                            <li>• Social media landing page</li>
+                            <li>• Basic dashboard access</li>
+                            <li>• Effective rate: R3.85 per simulation</li>
+                          </ul>
                         </div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded">
-                          <span>Boutique Growth - 200 try-ons</span>
-                          <span className="font-semibold">R750/month</span>
+                        <div className="border rounded-lg p-4 bg-slate-50">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-semibold">Boutique Growth</span>
+                            <span className="font-bold text-lg">R750/month</span>
+                          </div>
+                          <ul className="space-y-1 text-xs">
+                            <li>• 200 Virtual Try-Ons</li>
+                            <li>• Widget + API access</li>
+                            <li>• Social media landing page</li>
+                            <li>• Usage analytics</li>
+                            <li>• Effective rate: R3.75 per simulation</li>
+                          </ul>
                         </div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded">
-                          <span>Store Pro - 500 try-ons</span>
-                          <span className="font-semibold">R1,350/month</span>
+                        <div className="border rounded-lg p-4 bg-slate-50">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-semibold">Store Pro</span>
+                            <span className="font-bold text-lg">R1,350/month</span>
+                          </div>
+                          <ul className="space-y-1 text-xs">
+                            <li>• 500 Virtual Try-Ons</li>
+                            <li>• Full API access/widget integration</li>
+                            <li>• Branded try-on experience</li>
+                            <li>• Conversion tracking</li>
+                            <li>• Effective rate: R2.70 per simulation</li>
+                          </ul>
                         </div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded">
-                          <span>Store Scale - 1,000 try-ons</span>
-                          <span className="font-semibold">R2,200/month</span>
+                        <div className="border rounded-lg p-4 bg-slate-50">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-semibold">Store Scale</span>
+                            <span className="font-bold text-lg">R2,200/month</span>
+                          </div>
+                          <ul className="space-y-1 text-xs">
+                            <li>• 1,000 Virtual Try-Ons</li>
+                            <li>• Advanced analytics</li>
+                            <li>• Full API access</li>
+                            <li>• Priority support</li>
+                            <li>• Branded try-on experience</li>
+                            <li>• Effective rate: R2.20 per simulation</li>
+                          </ul>
                         </div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded">
-                          <span>Retailer Pro - 5,000 try-ons</span>
-                          <span className="font-semibold">R6,250/month</span>
+                        <div className="border rounded-lg p-4 bg-slate-50">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-semibold">Retailer Pro</span>
+                            <span className="font-bold text-lg">R6,250/month</span>
+                          </div>
+                          <ul className="space-y-1 text-xs">
+                            <li>• 5,000 Virtual Try-Ons</li>
+                            <li>• API + Custom integration</li>
+                            <li>• Dedicated onboarding</li>
+                            <li>• Performance reporting</li>
+                            <li>• White label option</li>
+                            <li>• Effective rate: R1.25 per simulation</li>
+                          </ul>
                         </div>
-                        <div className="flex justify-between p-2 bg-slate-50 rounded">
-                          <span>Enterprise Retail - 20,000 try-ons</span>
-                          <span className="font-semibold">R18,600/month</span>
+                        <div className="border rounded-lg p-4 bg-slate-50">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-semibold">Enterprise Retail</span>
+                            <span className="font-bold text-lg">R18,600/month</span>
+                          </div>
+                          <ul className="space-y-1 text-xs">
+                            <li>• 20,000 Virtual Try-Ons</li>
+                            <li>• Full API integration</li>
+                            <li>• White-label option</li>
+                            <li>• Dedicated support</li>
+                            <li>• Custom SLA</li>
+                            <li>• Effective rate: R0.93 per simulation</li>
+                          </ul>
                         </div>
                       </div>
                     </div>

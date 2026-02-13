@@ -73,7 +73,7 @@ export default function Pricing() {
     { tryOns: 50, price: 150, costPerTryOn: 3.00 },
   ];
 
-  // Business Plans with package names
+  // Business Plans with complete features from document
   const businessPlans = [
     { 
       name: "Boutique Starter",
@@ -85,7 +85,7 @@ export default function Pricing() {
         "Widget integration",
         "Social media landing page",
         "Basic dashboard access",
-        "30-day validity"
+        "Effective rate: R3.85 per simulation"
       ]
     },
     { 
@@ -98,7 +98,7 @@ export default function Pricing() {
         "Widget + API access",
         "Social media landing page",
         "Usage analytics",
-        "30-day validity"
+        "Effective rate: R3.75 per simulation"
       ]
     },
     { 
@@ -111,7 +111,7 @@ export default function Pricing() {
         "Full API access/widget integration",
         "Branded try-on experience",
         "Conversion tracking",
-        "30-day validity"
+        "Effective rate: R2.70 per simulation"
       ]
     },
     { 
@@ -124,7 +124,9 @@ export default function Pricing() {
         "Advanced analytics",
         "Full API access",
         "Priority support",
-        "Branded try-on experience"
+        "Branded try-on experience",
+        "Lower per-use rate",
+        "Effective rate: R2.20 per simulation"
       ]
     },
     { 
@@ -137,7 +139,8 @@ export default function Pricing() {
         "API + Custom integration",
         "Dedicated onboarding",
         "Performance reporting",
-        "White label option"
+        "White label option",
+        "Effective rate: R1.25 per simulation"
       ]
     },
     { 
@@ -150,7 +153,8 @@ export default function Pricing() {
         "Full API integration",
         "White-label option",
         "Dedicated support",
-        "Custom SLA"
+        "Custom SLA",
+        "Effective rate: R0.93 per simulation"
       ]
     },
   ];
@@ -240,9 +244,6 @@ export default function Pricing() {
                     <div className="text-4xl font-bold">R{plan.price}</div>
                     <div className="text-lg font-medium text-muted-foreground">
                       / month
-                    </div>
-                    <div className="text-sm font-semibold text-primary">
-                      Effective rate: R{plan.costPerTryOn.toFixed(2)}/simulation
                     </div>
                   </div>
                 </CardHeader>
