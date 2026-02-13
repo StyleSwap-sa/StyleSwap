@@ -73,13 +73,11 @@ export default function Pricing() {
     { tryOns: 50, price: 150, costPerTryOn: 3.00 },
   ];
 
-  // Business Plans with complete features from document
+  // Business Plans with exact wording from document
   const businessPlans = [
     { 
       name: "Boutique Starter",
-      tryOns: 100, 
-      price: 385, 
-      costPerTryOn: 3.85,
+      price: 385,
       features: [
         "100 Virtual Try-Ons",
         "Widget integration",
@@ -90,9 +88,7 @@ export default function Pricing() {
     },
     { 
       name: "Boutique Growth",
-      tryOns: 200, 
-      price: 750, 
-      costPerTryOn: 3.75,
+      price: 750,
       features: [
         "200 Virtual Try-Ons",
         "Widget + API access",
@@ -103,9 +99,7 @@ export default function Pricing() {
     },
     { 
       name: "Store Pro",
-      tryOns: 500, 
-      price: 1350, 
-      costPerTryOn: 2.70,
+      price: 1350,
       features: [
         "500 Virtual Try-Ons",
         "Full API access/widget integration",
@@ -116,9 +110,7 @@ export default function Pricing() {
     },
     { 
       name: "Store Scale",
-      tryOns: 1000, 
-      price: 2200, 
-      costPerTryOn: 2.20,
+      price: 2200,
       features: [
         "1,000 Virtual Try-Ons",
         "Advanced analytics",
@@ -131,9 +123,7 @@ export default function Pricing() {
     },
     { 
       name: "Retailer Pro",
-      tryOns: 5000, 
-      price: 6250, 
-      costPerTryOn: 1.25,
+      price: 6250,
       features: [
         "5,000 Virtual Try-Ons",
         "API + Custom integration",
@@ -145,9 +135,7 @@ export default function Pricing() {
     },
     { 
       name: "Enterprise Retail",
-      tryOns: 20000, 
-      price: 18600, 
-      costPerTryOn: 0.93,
+      price: 18600,
       features: [
         "20,000 Virtual Try-Ons",
         "Full API integration",
@@ -156,68 +144,33 @@ export default function Pricing() {
         "Custom SLA",
         "Effective rate: R0.93 per simulation"
       ]
-    },
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <div className="border-b border-border/20 py-6">
-        <div className="container mx-auto flex items-center justify-between">
-          <button
-            onClick={() => setLocation("/")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Home
-          </button>
-          <h1 className="text-3xl font-bold">Pricing Plans</h1>
-          <div className="w-20" />
+    <div className="min-h-screen bg-background py-12">
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">StyleSwap Retailer Pricing Packages</h1>
+          <p className="text-xl text-muted-foreground">Reduce Returns. Increase Conversions. Let customers try before they buy.</p>
         </div>
-      </div>
 
-      {/* Pricing Content */}
-      <div className="container mx-auto py-12 space-y-12">
-        {/* Individual Plans */}
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">Individual</h2>
-            <p className="text-muted-foreground">
-              Pay-as-you-go plans for personal use
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Individual Plans Section */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold mb-8 text-center">Individual Try-On Credits</h2>
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
             {individualPlans.map((plan) => (
-              <Card key={`individual-${plan.tryOns}`}>
+              <Card key={plan.tryOns} className="flex flex-col">
                 <CardHeader>
-                  <div className="space-y-3">
-                    <div className="text-4xl font-bold">R{plan.price}</div>
-                    <div className="text-lg font-medium text-muted-foreground">
-                      {plan.tryOns} try-ons
-                    </div>
-                    <div className="text-sm font-semibold text-primary">
-                      R{plan.costPerTryOn.toFixed(2)}/try-on
-                    </div>
-                  </div>
+                  <h3 className="text-2xl font-bold">{plan.tryOns} Try-Ons</h3>
+                  <p className="text-3xl font-bold text-primary mt-2">R{plan.price}</p>
+                  <p className="text-sm text-muted-foreground">R{plan.costPerTryOn} per try-on</p>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <ul className="space-y-3">
-                    <li className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                      <span className="text-sm">{plan.tryOns} virtual try-ons</span>
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                      <span className="text-sm">30-day validity</span>
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-primary flex-shrink-0" />
-                      <span className="text-sm">Email support</span>
-                    </li>
-                  </ul>
-                  <Button
+                <CardContent className="flex-grow flex flex-col justify-between">
+                  <Button 
                     onClick={() => handleBuyNow(plan.tryOns)}
-                    className="w-full"
+                    className="w-full bg-primary hover:bg-primary/90"
                   >
                     Buy Now
                   </Button>
@@ -227,38 +180,28 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Business Plans */}
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">Business</h2>
-            <p className="text-muted-foreground">
-              Subscription plans for businesses and retailers. Reduce Returns. Increase Conversions. Let customers try before they buy.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Business Plans Section */}
+        <div>
+          <h2 className="text-3xl font-bold mb-8 text-center">Business Plans (Monthly Subscription)</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {businessPlans.map((plan) => (
-              <Card key={`business-${plan.tryOns}`} className="flex flex-col">
+              <Card key={plan.name} className="flex flex-col">
                 <CardHeader>
-                  <div className="space-y-3">
-                    <div className="text-2xl font-bold">{plan.name}</div>
-                    <div className="text-4xl font-bold">R{plan.price}</div>
-                    <div className="text-lg font-medium text-muted-foreground">
-                      / month
-                    </div>
-                  </div>
+                  <h3 className="text-2xl font-bold">{plan.name}</h3>
+                  <p className="text-3xl font-bold text-primary mt-2">R{plan.price.toLocaleString()} / month</p>
                 </CardHeader>
-                <CardContent className="space-y-6 flex-1 flex flex-col">
-                  <ul className="space-y-3">
+                <CardContent className="flex-grow flex flex-col justify-between">
+                  <ul className="space-y-2 mb-6">
                     {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-3">
+                      <li key={idx} className="flex items-start gap-2">
                         <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                         <span className="text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button
+                  <Button 
                     onClick={() => handleSubscribe(plan.name, plan.price)}
-                    className="w-full mt-auto"
+                    className="w-full bg-primary hover:bg-primary/90"
                   >
                     Subscribe Now
                   </Button>
@@ -266,60 +209,15 @@ export default function Pricing() {
               </Card>
             ))}
           </div>
-          
-          {/* Additional Info */}
-          <div className="mt-8 p-6 bg-secondary/10 border border-secondary/20 rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              <strong>Additional simulations billed at plan rate.</strong> Seamless integration via widget, API, or social selling landing page.
-            </p>
-          </div>
-        </div>
 
-        {/* FAQ Section */}
-        <div className="space-y-6 pt-12 border-t border-border/20">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">Frequently Asked Questions</h2>
-            <p className="text-muted-foreground">
-              Have questions about our pricing? We're here to help.
+          {/* Additional Info */}
+          <div className="mt-12 bg-secondary/10 p-6 rounded-lg">
+            <p className="text-center text-sm text-muted-foreground mb-2">
+              <strong>Additional simulations billed at plan rate.</strong>
             </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-3">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Zap className="w-5 h-5 text-primary" />
-                How long are credits valid?
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                All credits are valid for 30 days from the date of purchase. Unused credits will expire after this period.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Zap className="w-5 h-5 text-primary" />
-                Can I upgrade my plan?
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Yes, you can purchase additional credits at any time. Your existing credits will not expire when you upgrade.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Zap className="w-5 h-5 text-primary" />
-                What payment methods do you accept?
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                We accept all major credit cards, debit cards, and digital payment methods through our secure Yoco payment gateway.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Zap className="w-5 h-5 text-primary" />
-                What is your refund policy?
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                All credit purchases are final and non-refundable. Credits are issued immediately upon successful payment and cannot be returned or exchanged for cash or other services.
-              </p>
-            </div>
+            <p className="text-center text-sm text-muted-foreground">
+              <strong>Seamless integration via widget, API, or social selling landing page.</strong>
+            </p>
           </div>
         </div>
       </div>

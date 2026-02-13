@@ -202,8 +202,7 @@ export default function ApiDocs() {
                       <div className="space-y-4 text-sm text-slate-600">
                         <div className="border rounded-lg p-4 bg-slate-50">
                           <div className="flex justify-between items-start mb-2">
-                            <span className="font-semibold">Boutique Starter</span>
-                            <span className="font-bold text-lg">R385/month</span>
+                            <span className="font-semibold">Boutique Starter – R385 / month</span>
                           </div>
                           <ul className="space-y-1 text-xs">
                             <li>• 100 Virtual Try-Ons</li>
@@ -215,8 +214,7 @@ export default function ApiDocs() {
                         </div>
                         <div className="border rounded-lg p-4 bg-slate-50">
                           <div className="flex justify-between items-start mb-2">
-                            <span className="font-semibold">Boutique Growth</span>
-                            <span className="font-bold text-lg">R750/month</span>
+                            <span className="font-semibold">Boutique Growth – R750 / month</span>
                           </div>
                           <ul className="space-y-1 text-xs">
                             <li>• 200 Virtual Try-Ons</li>
@@ -228,8 +226,7 @@ export default function ApiDocs() {
                         </div>
                         <div className="border rounded-lg p-4 bg-slate-50">
                           <div className="flex justify-between items-start mb-2">
-                            <span className="font-semibold">Store Pro</span>
-                            <span className="font-bold text-lg">R1,350/month</span>
+                            <span className="font-semibold">Store Pro – R1,350 / month</span>
                           </div>
                           <ul className="space-y-1 text-xs">
                             <li>• 500 Virtual Try-Ons</li>
@@ -241,8 +238,7 @@ export default function ApiDocs() {
                         </div>
                         <div className="border rounded-lg p-4 bg-slate-50">
                           <div className="flex justify-between items-start mb-2">
-                            <span className="font-semibold">Store Scale</span>
-                            <span className="font-bold text-lg">R2,200/month</span>
+                            <span className="font-semibold">Store Scale – R2,200 / month</span>
                           </div>
                           <ul className="space-y-1 text-xs">
                             <li>• 1,000 Virtual Try-Ons</li>
@@ -250,13 +246,13 @@ export default function ApiDocs() {
                             <li>• Full API access</li>
                             <li>• Priority support</li>
                             <li>• Branded try-on experience</li>
+                            <li>• Lower per-use rate</li>
                             <li>• Effective rate: R2.20 per simulation</li>
                           </ul>
                         </div>
                         <div className="border rounded-lg p-4 bg-slate-50">
                           <div className="flex justify-between items-start mb-2">
-                            <span className="font-semibold">Retailer Pro</span>
-                            <span className="font-bold text-lg">R6,250/month</span>
+                            <span className="font-semibold">Retailer Pro – R6,250 / month</span>
                           </div>
                           <ul className="space-y-1 text-xs">
                             <li>• 5,000 Virtual Try-Ons</li>
@@ -269,8 +265,7 @@ export default function ApiDocs() {
                         </div>
                         <div className="border rounded-lg p-4 bg-slate-50">
                           <div className="flex justify-between items-start mb-2">
-                            <span className="font-semibold">Enterprise Retail</span>
-                            <span className="font-bold text-lg">R18,600/month</span>
+                            <span className="font-semibold">Enterprise Retail – R18,600 / month</span>
                           </div>
                           <ul className="space-y-1 text-xs">
                             <li>• 20,000 Virtual Try-Ons</li>
@@ -280,6 +275,10 @@ export default function ApiDocs() {
                             <li>• Custom SLA</li>
                             <li>• Effective rate: R0.93 per simulation</li>
                           </ul>
+                        </div>
+                        <div className="border-t pt-4 mt-4">
+                          <p className="text-xs font-semibold">Additional simulations billed at plan rate.</p>
+                          <p className="text-xs font-semibold mt-2">Seamless integration via widget, API, or social selling landing page.</p>
                         </div>
                       </div>
                     </div>

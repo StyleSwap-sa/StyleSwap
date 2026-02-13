@@ -2735,3 +2735,10 @@ This approach:
 - [x] Update Pricing page with complete features for each package
 - [x] Update API Docs with package descriptions
 - [x] Test all pricing displays with complete information
+
+
+## Phase 73: Update Pricing with Exact Document Wording
+- [x] Update Pricing page with exact package names and features from document
+- [x] Update API Docs with exact package names and features from document
+- [x] Verify all prices match document (R385, R750, R1,350, R2,200, R6,250, R18,600)
+- [x] Test pricing displays and Yoco buttons
