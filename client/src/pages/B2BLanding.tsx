@@ -311,7 +311,7 @@ export default function B2BLanding() {
                       <span>24/7 support</span>
                     </li>
                   </ul>
-                  <Link href="/b2b-signup">
+                  <Link href="/b2b/signup">
                     <Button className="w-full cursor-pointer">
                       Get Started
                     </Button>
@@ -400,7 +400,7 @@ export default function B2BLanding() {
             conversions and reduce returns.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link href="/b2b-signup">
+            <Link href="/b2b/signup">
               <Button
                 className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-14 px-8 text-lg font-bold cursor-pointer"
               >

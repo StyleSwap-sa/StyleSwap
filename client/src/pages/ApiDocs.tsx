@@ -62,7 +62,7 @@ export default function ApiDocs() {
                       {copiedCode === "auth" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
-                  <p className="text-sm text-slate-600">Get your API key from the <a href="/developer-portal" className="text-orange-600 hover:underline">Developer Portal</a></p>
+                  <p className="text-sm text-slate-600">Get your API key from the <a href="/developer" className="text-orange-600 hover:underline">Developer Portal</a></p>
                 </CardContent>
               </Card>
             </section>

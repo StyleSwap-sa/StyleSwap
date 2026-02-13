@@ -34,9 +34,9 @@ export default function Dashboard() {
     const isMerchant = user.userType === 'merchant';
     
     if (isAdmin) {
-      setLocation('/admin');
+      setLocation('/admin/dashboard');
     } else if (isMerchant) {
-      setLocation('/boutique-dashboard');
+      setLocation('/boutique/dashboard');
     }
   }, [isAuthenticated, user, setLocation]);
 
@@ -163,7 +163,7 @@ export default function Dashboard() {
             {/* Admin Dashboard Link - Only visible to owner */}
             {(user?.role === 'admin' || user?.userType === 'admin') && (
               <Button
-                onClick={() => setLocation('/admin')}
+                onClick={() => setLocation('/admin/dashboard')}
                 variant="outline"
                 className="border-primary/50 text-primary hover:bg-primary/10 text-xs sm:text-base px-2 sm:px-4 ml-auto"
                 size="sm"
@@ -178,7 +178,7 @@ export default function Dashboard() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onTryOnClick={() => setLocation('/try-on')}
-            onAdminClick={() => setLocation('/admin')}
+            onAdminClick={() => setLocation('/admin/dashboard')}
             isAdmin={user?.role === 'admin' || user?.userType === 'admin'}
           />
         </div>

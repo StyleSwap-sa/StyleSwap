@@ -17,7 +17,7 @@ export default function AdminLogin() {
         // Store admin session token
         localStorage.setItem("adminToken", data.token);
         localStorage.setItem("adminLoginTime", new Date().toISOString());
-        setLocation("/admin-dashboard");
+        setLocation("/admin/dashboard");
       } else {
         setError("Invalid password");
       }

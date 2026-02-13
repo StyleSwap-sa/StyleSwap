@@ -67,7 +67,7 @@ export default function BoutiqueDashboard() {
                   your customers
                 </p>
               </div>
-              <Link href="/b2b-signup">
+              <Link href="/b2b/signup">
                 <Button className="cursor-pointer">
                   <Plus className="w-4 h-4 mr-2" />
                   Register Boutique

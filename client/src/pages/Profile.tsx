@@ -163,7 +163,7 @@ export default function Profile() {
               {/* Admin Dashboard Link - Only visible to owner */}
               {(user?.role === 'admin' || user?.userType === 'admin') && (
                 <Button
-                  onClick={() => setLocation('/admin')}
+                  onClick={() => setLocation('/admin/dashboard')}
                   className="w-full gap-2 bg-primary/20 text-primary hover:bg-primary/30 mb-3 h-9 text-sm"
                 >
                   Platform Analytics
