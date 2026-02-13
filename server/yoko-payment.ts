@@ -156,13 +156,18 @@ export async function createPaymentIntent(
     }
 
     const data = await response.json();
+    console.log('[Yoko Payment] API Response:', JSON.stringify(data, null, 2));
+    
+    // Yoco might return the URL in different fields
+    const redirectUrl = data.redirectUrl || data.checkout_url || data.url || `https://checkout.yoco.com/${data.id}`;
+    
     return {
       id: data.id,
       clientSecret: "", // Yoco doesn't use client secrets
       status: data.status,
       amount: data.amount,
       currency: data.currency,
-      checkoutUrl: data.redirectUrl, // Yoco returns redirectUrl
+      checkoutUrl: redirectUrl,
       metadata: data.metadata,
     };
   } catch (error) {
