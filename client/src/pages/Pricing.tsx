@@ -53,12 +53,12 @@ export default function Pricing() {
 
 
   const packageNameToId: Record<string, string> = {
-    "Boutique Starter": "boutique_starter_monthly",
-    "Boutique Growth": "boutique_growth_monthly",
-    "Store Pro": "store_pro_monthly",
-    "Store Scale": "store_scale_monthly",
-    "Retailer Pro": "retailer_pro_monthly",
-    "Enterprise Retail": "enterprise_retail_monthly",
+    "Boutique Starter": "pkg_100_credits",
+    "Boutique Growth": "pkg_200_credits",
+    "Store Pro": "pkg_500_credits",
+    "Store Scale": "pkg_1000_credits",
+    "Retailer Pro": "pkg_5000_credits",
+    "Enterprise Retail": "pkg_20000_credits",
   };
 
   const handleSubscribe = async (packageName: string, price: number) => {

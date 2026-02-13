@@ -2758,3 +2758,11 @@ This approach:
 - [x] Display all 6 business packages with features and effective rates
 - [x] Ensure mobile responsive display in hamburger menu
 - [x] Test on mobile and desktop
+
+
+## Phase 76: Fix Business Plan Subscribe Button
+- [x] Check browser console and server logs for errors
+- [x] Diagnose why Yoco checkout is not opening
+- [x] Fix the payment endpoint or Subscribe button flow
+- [x] Test Subscribe button works for all business packages
+- [x] Verify Yoco checkout opens with correct payment amounts
