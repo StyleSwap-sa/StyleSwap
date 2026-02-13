@@ -72,6 +72,7 @@ export default function Pricing() {
     try {
       setLoadingPackage(packageName);
       const packageId = packageNameToId[packageName];
+      console.log('[Pricing] Attempting checkout for:', { packageName, packageId, price });
       
       const result = await createCheckout.mutateAsync({
         packageId,
@@ -79,13 +80,18 @@ export default function Pricing() {
         cancelUrl: `${window.location.origin}/pricing?cancelled=true`,
       });
 
-      if (result.checkoutUrl) {
+      console.log('[Pricing] Checkout result:', result);
+
+      if (result && result.checkoutUrl) {
+        console.log('[Pricing] Opening checkout URL:', result.checkoutUrl);
         window.open(result.checkoutUrl, '_blank');
       } else {
-        console.error('Failed to create checkout session');
+        console.error('[Pricing] No checkout URL in response:', result);
+        alert('Failed to create checkout session. Please try again.');
       }
     } catch (error: any) {
-      console.error('Checkout error:', error.message);
+      console.error('[Pricing] Checkout error:', error);
+      alert('Error: ' + (error.message || 'Failed to create checkout'));
     } finally {
       setLoadingPackage(null);
     }
