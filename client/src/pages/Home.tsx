@@ -20,9 +20,9 @@ export default function Home() {
     if (isAuthenticated) {
       // Redirect based on user type
       if (user?.userType === 'admin' || user?.role === 'admin') {
-        setLocation('/admin');
+        setLocation('/admin/dashboard');
       } else if (user?.userType === 'merchant') {
-        setLocation('/boutique-dashboard');
+        setLocation('/boutique/dashboard');
       } else {
         setLocation('/dashboard');
       }
@@ -33,9 +33,9 @@ export default function Home() {
 
   const getDashboardPath = () => {
     if (user?.userType === 'admin' || user?.role === 'admin') {
-      return '/admin';
+      return '/admin/dashboard';
     } else if (user?.userType === 'merchant') {
-      return '/boutique-dashboard';
+      return '/boutique/dashboard';
     } else {
       return '/dashboard';
     }
