@@ -423,6 +423,13 @@
 ## Phase 71: Update Pricing with Business Packages
 - [x] Add business packages to pricing page (Boutique Starter, Growth, Store Pro, Scale, Retailer Pro, Enterprise)
 - [x] Keep individual try-on credit prices visible
+
+## Phase 72: Annual Billing Option with 10% Discount
+- [ ] Add billing period toggle (Monthly/Annual) to Pricing page
+- [ ] Create pricing calculation logic with 10% discount for annual plans
+- [ ] Update Subscribe buttons to pass billing period and discounted price to checkout
+- [ ] Update Yoco checkout handler to apply discount before payment
+- [ ] Test annual billing flow end-to-end
 - [x] Integrate Yoco subscribe button links for each package
 - [x] Update API documentation with pricing information
 - [x] Test all subscribe buttons and payment links

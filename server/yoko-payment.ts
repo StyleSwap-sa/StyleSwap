@@ -96,6 +96,8 @@ export interface CreatePaymentIntentRequest {
   userName: string;
   successUrl: string;
   cancelUrl: string;
+  amount?: number; // Custom amount for annual billing (10% discount)
+  billingPeriod?: 'monthly' | 'annual'; // Track billing period
 }
 
 export interface PaymentIntentResponse {
@@ -128,6 +130,9 @@ export async function createPaymentIntent(
   }
 
   try {
+    const finalAmount = request.amount || pkg.price;
+    const billingPeriod = request.billingPeriod || 'monthly';
+    
     const response = await fetch(`${ENV.yocoApiBaseUrl}/checkouts`, {
       method: "POST",
       headers: {
@@ -135,7 +140,7 @@ export async function createPaymentIntent(
         Authorization: `Bearer ${ENV.yocoSecretKey}`,
       },
       body: JSON.stringify({
-        amount: pkg.price,
+        amount: finalAmount,
         currency: pkg.currency,
         successUrl: request.successUrl,
         cancelUrl: request.cancelUrl,
@@ -145,6 +150,8 @@ export async function createPaymentIntent(
           credits: pkg.credits,
           userName: request.userName,
           userEmail: request.userEmail,
+          billingPeriod: billingPeriod,
+          discountApplied: billingPeriod === 'annual' ? '10%' : 'none',
         },
         clientReferenceId: `${request.userId}-${request.packageId}-${Date.now()}`,
       }),

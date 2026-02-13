@@ -11,7 +11,13 @@ export default function Pricing() {
   const { isAuthenticated, user } = useAuth();
   const [, setLocation] = useLocation();
   const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   const createCheckout = trpc.payment.createCheckout.useMutation();
+
+  // Calculate discounted price for annual billing (10% off)
+  const getAnnualPrice = (monthlyPrice: number) => {
+    return Math.round(monthlyPrice * 12 * 0.9); // 12 months with 10% discount
+  };
 
   const getPackageId = (tryOns: number): string => {
     switch (tryOns) {
@@ -61,7 +67,7 @@ export default function Pricing() {
     "Enterprise Retail": "pkg_20000_credits",
   };
 
-  const handleSubscribe = async (packageName: string, price: number) => {
+  const handleSubscribe = async (packageName: string, monthlyPrice: number) => {
     if (!isAuthenticated) {
       const returnUrl = `/pricing`;
       localStorage.setItem('oauth_return_url', returnUrl);
@@ -72,12 +78,17 @@ export default function Pricing() {
     try {
       setLoadingPackage(packageName);
       const packageId = packageNameToId[packageName];
-      console.log('[Pricing] Attempting checkout for:', { packageName, packageId, price });
+      const finalPrice = billingPeriod === 'annual' ? getAnnualPrice(monthlyPrice) : monthlyPrice;
+      const billingLabel = billingPeriod === 'annual' ? 'annual' : 'monthly';
+      
+      console.log('[Pricing] Attempting checkout for:', { packageName, packageId, monthlyPrice, finalPrice, billingPeriod: billingLabel });
       
       const result = await createCheckout.mutateAsync({
         packageId,
         successUrl: `${window.location.origin}/pricing?success=true`,
         cancelUrl: `${window.location.origin}/pricing?cancelled=true`,
+        amount: finalPrice,
+        billingPeriod: billingLabel,
       });
 
       console.log('[Pricing] Checkout result:', result);
@@ -253,15 +264,42 @@ export default function Pricing() {
 
         {/* Business Plans Section */}
         <div>
-          <h2 className="text-3xl font-bold mb-8 text-center">Business Plans (Monthly Subscription)</h2>
+          <div className="flex justify-center items-center gap-4 mb-8">
+            <h2 className="text-3xl font-bold text-center">Business Plans</h2>
+          </div>
+          
+          {/* Billing Period Toggle */}
+          <div className="flex justify-center items-center gap-4 mb-12">
+            <span className={`text-lg font-semibold ${billingPeriod === 'monthly' ? 'text-slate-900' : 'text-slate-500'}`}>
+              Monthly
+            </span>
+            <button
+              onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
+              className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors ${
+                billingPeriod === 'annual' ? 'bg-orange-600' : 'bg-slate-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                  billingPeriod === 'annual' ? 'translate-x-9' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`text-lg font-semibold ${billingPeriod === 'annual' ? 'text-slate-900' : 'text-slate-500'}`}>
+              Annual
+            </span>
+            {billingPeriod === 'annual' && (
+              <span className="ml-2 inline-block bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">
+                Save 10%
+              </span>
+            )}
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {businessPlans.map((plan) => (
               <div key={plan.name} className="flex flex-col border-0 shadow-lg overflow-hidden rounded-lg bg-white">
                 {/* Orange Header with Title and Price */}
                 <div className="bg-orange-600 text-white p-6">
                   <h3 className="text-lg font-bold mb-2">{plan.name}</h3>
-                  <p className="text-3xl font-bold">R{plan.price.toLocaleString()}</p>
-                  <p className="text-sm mt-1 opacity-90">/month</p>
                 </div>
                 <div className="flex-grow flex flex-col justify-between p-6">
                   {/* All features list */}
@@ -273,20 +311,35 @@ export default function Pricing() {
                       </li>
                     ))}
                   </ul>
-                  <Button 
-                    onClick={() => handleSubscribe(plan.name, plan.price)}
-                    disabled={loadingPackage === plan.name}
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 disabled:opacity-50"
-                  >
-                    {loadingPackage === plan.name ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      'Subscribe Now'
-                    )}
-                  </Button>
+                  <div className="space-y-2">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-orange-600">
+                        R{(billingPeriod === 'annual' ? getAnnualPrice(plan.price) : plan.price).toLocaleString()}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {billingPeriod === 'annual' ? '/year' : '/month'}
+                      </p>
+                      {billingPeriod === 'annual' && (
+                        <p className="text-xs text-green-600 font-semibold mt-1">
+                          Save R{Math.round(plan.price * 12 * 0.1).toLocaleString()}/year
+                        </p>
+                      )}
+                    </div>
+                    <Button 
+                      onClick={() => handleSubscribe(plan.name, plan.price)}
+                      disabled={loadingPackage === plan.name}
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 disabled:opacity-50"
+                    >
+                      {loadingPackage === plan.name ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        `Subscribe ${billingPeriod === 'annual' ? '(Annual)' : '(Monthly)'}`
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
