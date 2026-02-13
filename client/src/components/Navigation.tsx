@@ -191,18 +191,22 @@ export default function Navigation() {
                         </p>
                         
                         {businessPlans.map((plan) => (
-                          <div key={plan.name} className="border rounded-lg p-3 bg-slate-50">
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="font-semibold text-sm">{plan.name} – R{plan.price.toLocaleString()} / month</span>
+                          <div key={plan.name} className="border border-orange-200 rounded-lg overflow-hidden bg-white">
+                            <div className="bg-orange-600 text-white p-3">
+                              <h4 className="font-bold text-sm mb-1">{plan.name}</h4>
+                              <p className="text-2xl font-bold">R{plan.price.toLocaleString()}</p>
+                              <p className="text-xs opacity-90">/month</p>
                             </div>
-                            <ul className="space-y-1 text-xs text-slate-700">
-                              {plan.features.map((feature, idx) => (
-                                <li key={idx} className="flex items-start gap-2">
-                                  <Check className="w-3 h-3 text-orange-600 flex-shrink-0 mt-0.5" />
-                                  <span>{feature}</span>
-                                </li>
-                              ))}
-                            </ul>
+                            <div className="p-3">
+                                <ul className="space-y-1 text-xs text-slate-700">
+                                  {plan.features.map((feature, idx) => (
+                                    <li key={idx} className="flex items-start gap-2">
+                                      <Check className="w-3 h-3 text-orange-600 flex-shrink-0 mt-0.5" />
+                                      <span>{feature}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                            </div>
                           </div>
                         ))}
                         

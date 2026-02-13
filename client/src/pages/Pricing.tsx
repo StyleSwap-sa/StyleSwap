@@ -3,11 +3,15 @@ import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Check, Zap, ArrowLeft } from "lucide-react";
+import { Check, Zap, ArrowLeft, Loader2 } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { useState } from "react";
 
 export default function Pricing() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [, setLocation] = useLocation();
+  const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
+  const createCheckout = trpc.payment.createCheckout.useMutation();
 
   const getPackageId = (tryOns: number): string => {
     switch (tryOns) {
@@ -46,24 +50,45 @@ export default function Pricing() {
     setLocation(`/checkout?package=${packageId}`);
   };
 
-  // Yoco payment links for business plans
-  const getYocoCheckoutLink = (packageName: string, price: number): string => {
-    // Map package names to Yoco checkout links
-    // In production, these would be actual Yoco checkout links
-    const yocoLinks: Record<string, string> = {
-      "Boutique Starter": `https://checkout.yoco.com/pay?amount=${price * 100}&description=Boutique+Starter+Plan+-+100+Try-ons`,
-      "Boutique Growth": `https://checkout.yoco.com/pay?amount=${price * 100}&description=Boutique+Growth+Plan+-+200+Try-ons`,
-      "Store Pro": `https://checkout.yoco.com/pay?amount=${price * 100}&description=Store+Pro+Plan+-+500+Try-ons`,
-      "Store Scale": `https://checkout.yoco.com/pay?amount=${price * 100}&description=Store+Scale+Plan+-+1000+Try-ons`,
-      "Retailer Pro": `https://checkout.yoco.com/pay?amount=${price * 100}&description=Retailer+Pro+Plan+-+5000+Try-ons`,
-      "Enterprise Retail": `https://checkout.yoco.com/pay?amount=${price * 100}&description=Enterprise+Retail+Plan+-+20000+Try-ons`,
-    };
-    return yocoLinks[packageName] || "#";
+
+
+  const packageNameToId: Record<string, string> = {
+    "Boutique Starter": "boutique_starter_monthly",
+    "Boutique Growth": "boutique_growth_monthly",
+    "Store Pro": "store_pro_monthly",
+    "Store Scale": "store_scale_monthly",
+    "Retailer Pro": "retailer_pro_monthly",
+    "Enterprise Retail": "enterprise_retail_monthly",
   };
 
-  const handleSubscribe = (packageName: string, price: number) => {
-    const yocoLink = getYocoCheckoutLink(packageName, price);
-    window.open(yocoLink, '_blank');
+  const handleSubscribe = async (packageName: string, price: number) => {
+    if (!isAuthenticated) {
+      const returnUrl = `/pricing`;
+      localStorage.setItem('oauth_return_url', returnUrl);
+      window.location.href = getLoginUrl();
+      return;
+    }
+
+    try {
+      setLoadingPackage(packageName);
+      const packageId = packageNameToId[packageName];
+      
+      const result = await createCheckout.mutateAsync({
+        packageId,
+        successUrl: `${window.location.origin}/pricing?success=true`,
+        cancelUrl: `${window.location.origin}/pricing?cancelled=true`,
+      });
+
+      if (result.checkoutUrl) {
+        window.open(result.checkoutUrl, '_blank');
+      } else {
+        console.error('Failed to create checkout session');
+      }
+    } catch (error: any) {
+      console.error('Checkout error:', error.message);
+    } finally {
+      setLoadingPackage(null);
+    }
   };
 
   // Individual Plans
@@ -185,14 +210,14 @@ export default function Pricing() {
           <h2 className="text-3xl font-bold mb-8 text-center">Business Plans (Monthly Subscription)</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {businessPlans.map((plan) => (
-              <Card key={plan.name} className="flex flex-col border-0 shadow-lg overflow-hidden">
+              <div key={plan.name} className="flex flex-col border-0 shadow-lg overflow-hidden rounded-lg bg-white">
                 {/* Orange Header with Title and Price */}
                 <div className="bg-orange-600 text-white p-6">
                   <h3 className="text-lg font-bold mb-2">{plan.name}</h3>
                   <p className="text-3xl font-bold">R{plan.price.toLocaleString()}</p>
                   <p className="text-sm mt-1 opacity-90">/month</p>
                 </div>
-                <CardContent className="flex-grow flex flex-col justify-between p-6">
+                <div className="flex-grow flex flex-col justify-between p-6">
                   {/* All features list */}
                   <ul className="space-y-2 mb-6">
                     {plan.features.map((feature, idx) => (
@@ -204,12 +229,20 @@ export default function Pricing() {
                   </ul>
                   <Button 
                     onClick={() => handleSubscribe(plan.name, plan.price)}
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3"
+                    disabled={loadingPackage === plan.name}
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 disabled:opacity-50"
                   >
-                    Subscribe Now
+                    {loadingPackage === plan.name ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      'Subscribe Now'
+                    )}
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
 
