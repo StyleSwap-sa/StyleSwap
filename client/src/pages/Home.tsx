@@ -8,6 +8,7 @@ import { LoginOptionsModal } from "@/components/LoginOptionsModal";
 import { Footer } from "@/components/Footer";
 import DemoVideoModal from "@/components/DemoVideoModal";
 import { FitroomCreditsWidget } from "@/components/FitroomCreditsWidget";
+import { BusinessPricingSection } from "@/components/BusinessPricingSection";
 
 export default function Home() {
   const { user, isAuthenticated, logout, loading } = useAuth();
@@ -320,6 +321,9 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* Business Pricing Section */}
+      <BusinessPricingSection />
 
       {/* Demo Video Modal */}
       <DemoVideoModal
