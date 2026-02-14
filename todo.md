@@ -2773,3 +2773,17 @@ This approach:
 - [x] Fix the payment endpoint or Subscribe button flow
 - [x] Test Subscribe button works for all business packages
 - [x] Verify Yoco checkout opens with correct payment amounts
+
+
+## Phase 78: Pricing Sections Audit & Yoco Integration Verification
+
+- [ ] Audit all pricing sections on website (personal credits, business plans, hamburger menu)
+- [ ] Verify all pricing sections have proper titles
+- [ ] Verify all pricing sections have feature lists
+- [ ] Verify monthly/yearly toggle functionality in all sections
+- [ ] Test Yoco payment integration for all pricing tiers
+- [ ] Verify all payment button links work correctly
+- [ ] Test checkout process and payment flow
+- [ ] Verify credits are allocated immediately after payment
+- [ ] Fix any issues found
+- [ ] Create comprehensive pricing audit report

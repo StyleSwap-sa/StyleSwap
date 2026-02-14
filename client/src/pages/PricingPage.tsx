@@ -1,22 +1,20 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
-import { getLoginUrl } from "@/const";
 import Navigation from "@/components/Navigation";
+import { BusinessPricingComponent } from "@/components/BusinessPricingComponent";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Check } from "lucide-react";
+import { useLocation } from "wouter";
+import { getLoginUrl } from "@/const";
 
-const PRICING_TIERS = [
-  // Individual Plans
+const INDIVIDUAL_PLANS = [
   {
     id: "pkg_10_credits",
     name: "10 Try-Ons",
     price: 45,
     credits: 10,
     costPerTryOn: 4.50,
-    category: "Individual",
     features: ["10 virtual try-ons", "30-day validity", "Email support"],
-    buttonText: "Buy Now",
   },
   {
     id: "pkg_20_credits",
@@ -24,9 +22,7 @@ const PRICING_TIERS = [
     price: 80,
     credits: 20,
     costPerTryOn: 4.00,
-    category: "Individual",
     features: ["20 virtual try-ons", "30-day validity", "Email support"],
-    buttonText: "Buy Now",
   },
   {
     id: "pkg_50_credits",
@@ -34,70 +30,7 @@ const PRICING_TIERS = [
     price: 150,
     credits: 50,
     costPerTryOn: 3.00,
-    category: "Individual",
     features: ["50 virtual try-ons", "30-day validity", "Email support"],
-    buttonText: "Buy Now",
-  },
-  // Business Plans
-  {
-    id: "pkg_100_credits",
-    name: "100 Try-Ons",
-    price: 385,
-    credits: 100,
-    costPerTryOn: 3.85,
-    category: "Business",
-    features: ["100 virtual try-ons", "30-day validity", "Priority support"],
-    buttonText: "Subscribe Now",
-  },
-  {
-    id: "pkg_200_credits",
-    name: "200 Try-Ons",
-    price: 750,
-    credits: 200,
-    costPerTryOn: 3.75,
-    category: "Business",
-    features: ["200 virtual try-ons", "30-day validity", "Priority support"],
-    buttonText: "Subscribe Now",
-  },
-  {
-    id: "pkg_500_credits",
-    name: "500 Try-Ons",
-    price: 1350,
-    credits: 500,
-    costPerTryOn: 2.70,
-    category: "Business",
-    features: ["500 virtual try-ons", "30-day validity", "Priority support"],
-    buttonText: "Subscribe Now",
-  },
-  {
-    id: "pkg_1000_credits",
-    name: "1000 Try-Ons",
-    price: 2200,
-    credits: 1000,
-    costPerTryOn: 2.20,
-    category: "Business",
-    features: ["1000 virtual try-ons", "30-day validity", "Priority support"],
-    buttonText: "Subscribe Now",
-  },
-  {
-    id: "pkg_5000_credits",
-    name: "5000 Try-Ons",
-    price: 6250,
-    credits: 5000,
-    costPerTryOn: 1.25,
-    category: "Business",
-    features: ["5000 virtual try-ons", "30-day validity", "Priority support"],
-    buttonText: "Subscribe Now",
-  },
-  {
-    id: "pkg_20000_credits",
-    name: "20000 Try-Ons",
-    price: 18600,
-    credits: 20000,
-    costPerTryOn: 0.93,
-    category: "Business",
-    features: ["20000 virtual try-ons", "30-day validity", "Priority support"],
-    buttonText: "Subscribe Now",
   },
 ];
 
@@ -113,9 +46,6 @@ export default function PricingPage() {
     setLocation(`/checkout?package=${packageId}`);
   };
 
-  const individualPlans = PRICING_TIERS.filter(p => p.category === "Individual");
-  const businessPlans = PRICING_TIERS.filter(p => p.category === "Business");
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navigation />
@@ -127,14 +57,14 @@ export default function PricingPage() {
           <h3 className="text-3xl font-bold mb-4">Individual</h3>
           <p className="text-muted-foreground mb-12">Pay-as-you-go plans for personal use</p>
           <div className="grid md:grid-cols-3 gap-8">
-            {individualPlans.map((plan) => (
+            {INDIVIDUAL_PLANS.map((plan) => (
               <Card key={plan.id} className="premium-card hover:shadow-2xl transition-all duration-300 flex flex-col">
-                <CardHeader>
-                  <div className="text-4xl font-bold text-primary mb-2">R{plan.price}</div>
-                  <div className="text-muted-foreground mb-2">{plan.credits} try-ons</div>
-                  <div className="text-primary font-semibold">R{plan.costPerTryOn.toFixed(2)}/try-on</div>
+                <CardHeader className="bg-primary text-white pb-4">
+                  <div className="text-4xl font-bold mb-2">R{plan.price}</div>
+                  <div className="text-sm opacity-90 mb-2">{plan.credits} try-ons</div>
+                  <div className="text-sm opacity-90 font-semibold">R{plan.costPerTryOn.toFixed(2)}/try-on</div>
                 </CardHeader>
-                <CardContent className="flex-1 flex flex-col">
+                <CardContent className="flex-1 flex flex-col pt-6 pb-6">
                   <ul className="space-y-3 mb-8 flex-1">
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-center gap-3">
@@ -145,9 +75,9 @@ export default function PricingPage() {
                   </ul>
                   <Button 
                     onClick={() => handlePurchase(plan.id)}
-                    className="w-full premium-button bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="w-full bg-primary text-white hover:bg-primary/90 font-semibold"
                   >
-                    {plan.buttonText}
+                    Buy Now
                   </Button>
                 </CardContent>
               </Card>
@@ -155,37 +85,11 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Business Plans */}
+        {/* Business Plans - Using BusinessPricingComponent */}
         <div className="mb-20">
           <h3 className="text-3xl font-bold mb-4">Business</h3>
           <p className="text-muted-foreground mb-12">Subscription plans for businesses and retailers</p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {businessPlans.map((plan) => (
-              <Card key={plan.id} className="premium-card hover:shadow-2xl transition-all duration-300 flex flex-col">
-                <CardHeader>
-                  <div className="text-4xl font-bold text-primary mb-2">R{plan.price.toLocaleString()}</div>
-                  <div className="text-muted-foreground mb-2">{plan.credits.toLocaleString()} try-ons</div>
-                  <div className="text-primary font-semibold">R{plan.costPerTryOn.toFixed(2)}/try-on</div>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col">
-                  <ul className="space-y-3 mb-8 flex-1">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-3">
-                        <Check className="w-4 h-4 text-primary" />
-                        <span className="text-sm text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    onClick={() => handlePurchase(plan.id)}
-                    className="w-full premium-button bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    {plan.buttonText}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <BusinessPricingComponent />
         </div>
 
         {/* FAQ */}
@@ -203,7 +107,7 @@ export default function PricingPage() {
               },
               {
                 q: "What payment methods do you accept?",
-                a: "We accept all major credit cards, debit cards, and digital payment methods through our secure Yoko payment gateway."
+                a: "We accept all major credit cards, debit cards, and digital payment methods through our secure Yoco payment gateway."
               },
               {
                 q: "What is your refund policy?",
