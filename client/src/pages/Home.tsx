@@ -301,8 +301,9 @@ export default function Home() {
       <main className="pt-20 pb-20">
         <div className="container mx-auto px-4 md:px-0">
           <div className="text-center py-20">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome to StyleSwap</h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8">AI-powered virtual try-on for fashion retail</p>
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to StyleSwap</h1>
+            <p className="text-lg md:text-xl text-muted-foreground mb-2">AI-powered virtual try-on for fashion retail</p>
+            <p className="text-sm md:text-base text-muted-foreground/80 mb-8">Transform how customers shop with realistic virtual clothing simulations</p>
             <div className="flex gap-4 justify-center flex-wrap">
               <Button 
                 onClick={handleGetStarted}
