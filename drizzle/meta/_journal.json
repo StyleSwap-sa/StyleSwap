@@ -43,6 +43,13 @@
       "when": 1769682768921,
       "tag": "0005_majestic_morg",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1771251390010,
+      "tag": "0006_stale_marauders",
+      "breakpoints": true
     }
   ]
 }

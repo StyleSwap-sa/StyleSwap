@@ -8,6 +8,8 @@ import { LoginOptionsModal } from "@/components/LoginOptionsModal";
 import { Footer } from "@/components/Footer";
 import DemoVideoModal from "@/components/DemoVideoModal";
 import { FitroomCreditsWidget } from "@/components/FitroomCreditsWidget";
+import { FreeTrialWelcomeModal } from "@/components/FreeTrialWelcomeModal";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 
 export default function Home() {
@@ -78,6 +80,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      {/* Free Trial Welcome Modal */}
+      {isAuthenticated && <FreeTrialWelcomeModal />}
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/20">
         <div className="container mx-auto py-4 flex justify-between items-center px-4 md:px-0">

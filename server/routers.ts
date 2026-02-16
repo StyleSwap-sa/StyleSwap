@@ -29,6 +29,7 @@ import { protectedApiRouter } from "./routers/protectedApi";
 import { verificationRouter } from "./routers/verification";
 import { adminCreditsRouter } from "./routers/admin-credits";
 import { subscriptionAdminRouter } from "./routers/subscriptionAdmin";
+import { freeTrialRouter } from "./routers/freetrial";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
 
 export const appRouter = router({
@@ -72,6 +73,7 @@ export const appRouter = router({
   webhookEvents: webhookEventsRouter,
   protectedApi: protectedApiRouter,
   verification: verificationRouter,
+  freeTrial: freeTrialRouter,
   fitroom: router({
     getCredits: publicProcedure.query(async () => {
       try {

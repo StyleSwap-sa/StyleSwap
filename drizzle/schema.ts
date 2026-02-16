@@ -295,6 +295,9 @@ export const users = mysqlTable("users", {
 	phone: varchar({ length: 20 }),
 	userType: mysqlEnum(['customer','merchant','admin']).default('customer').notNull(),
 	currentBoutiqueId: int(),
+	freeTrialUsed: int().default(0).notNull(),
+	freeTrialUsedAt: timestamp({ mode: 'string' }),
+	freeTrialExpiresAt: timestamp({ mode: 'string' }),
 },
 	(table) => [
 		index("users_openId_unique").on(table.openId),
