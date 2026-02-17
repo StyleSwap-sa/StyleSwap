@@ -4,7 +4,8 @@ import { createServer } from "http";
 import net from "net";
 import multer from "multer";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
+// import { registerOAuthRoutes } from "./oauth";
+import { ClerkExpressWithAuth } from "@clerk/express";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -40,10 +41,10 @@ export async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // Register OAuth routes
-  console.log("[Server] Registering OAuth routes...");
-  registerOAuthRoutes(app);
-  console.log("[Server] OAuth routes registered successfully");
+  // Register Clerk middleware for authentication
+  console.log("[Server] Registering Clerk authentication...");
+  app.use(ClerkExpressWithAuth());
+  console.log("[Server] Clerk authentication registered successfully");
 
   // Health check
   app.get("/health", (req, res) => {
@@ -62,10 +63,19 @@ export async function startServer() {
       console.log("[Try-On Upload] Received request");
       console.log("[Try-On Upload] Cookie header:", req.headers.cookie ? "present" : "missing");
       
-      // Authenticate the user using the same method as tRPC
+      // Authenticate the user using Clerk
       let user;
       try {
-        user = await sdk.authenticateRequest(req);
+        const auth = (req as any).auth;
+        if (!auth?.userId) {
+          return res.status(401).json({ error: "Unauthorized: No authentication token" });
+        }
+        // Get user from database using Clerk ID
+        const { getAuthUser } = await import("./auth-clerk");
+        user = await getAuthUser(req);
+        if (!user) {
+          return res.status(401).json({ error: "Unauthorized: User not found" });
+        }
         console.log("[Try-On Upload] Authentication successful for user:", user.id);
       } catch (authError) {
         console.error("[Try-On Upload] Authentication failed:", authError);

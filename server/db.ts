@@ -44,7 +44,7 @@ export async function getDb() {
   return _initPromise;
 }
 
-export async function upsertUser(user: Partial<InsertUser> & { openId: string }): Promise<void> {
+export async function upsertUser(user: Partial<InsertUser> & { openId: string }): Promise<User | undefined> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
   }
@@ -117,6 +117,62 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+// Clerk-based user queries
+export async function getUserByClerkId(clerkId: string) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("[Database] Database connection not available");
+  }
+
+  const result = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function upsertUserWithClerk(data: {
+  clerkId: string;
+  email: string;
+  name?: string;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("[Database] Database connection not available");
+  }
+
+  try {
+    const existing = await getUserByClerkId(data.clerkId);
+    
+    if (existing) {
+      // Update existing user
+      await db.update(users)
+        .set({
+          email: data.email,
+          name: data.name || existing.name,
+          lastSignedIn: new Date(),
+        })
+        .where(eq(users.clerkId, data.clerkId));
+      
+      return existing;
+    }
+    
+    // Create new user
+    const newUser = {
+      clerkId: data.clerkId,
+      email: data.email,
+      name: data.name || data.email,
+      role: data.clerkId === ENV.ownerOpenId ? 'admin' : 'user',
+      lastSignedIn: new Date(),
+      freeTrialUsed: 0,
+    } as InsertUser;
+    
+    await db.insert(users).values(newUser);
+    return await getUserByClerkId(data.clerkId);
+  } catch (error) {
+    console.error('[Database] Error upserting user with Clerk:', error);
+    throw error;
+  }
 }
 
 export async function getUserByEmail(email: string) {
