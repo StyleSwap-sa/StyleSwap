@@ -349,10 +349,11 @@ export class FitroomClient {
   }
 }
 
-export function getFitroomClient(): FitroomClient {
+export function getFitroomClient(): FitroomClient | null {
   const apiKey = process.env.FITROOM_API_KEY;
   if (!apiKey) {
-    throw new Error("FITROOM_API_KEY environment variable is not set");
+    console.warn("[Fitroom] FITROOM_API_KEY environment variable is not set - Fitroom features will be unavailable");
+    return null;
   }
   return new FitroomClient(apiKey);
 }

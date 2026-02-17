@@ -10,8 +10,9 @@ export function FreeTrialWelcomeModal() {
   const [, setLocation] = useLocation();
   
   // Check free trial status
-  const { data: freeTrialStatus, isLoading } = trpc.freeTrial.getStatus.useQuery(undefined, {
+  const { data: freeTrialStatus, isLoading, error } = trpc.freeTrial.getStatus.useQuery(undefined, {
     enabled: true,
+    retry: 2,
   });
 
   // Claim free trial mutation
@@ -19,25 +20,49 @@ export function FreeTrialWelcomeModal() {
 
   // Show modal if user has free trial available
   useEffect(() => {
-    if (freeTrialStatus?.hasFreeTrial && !isLoading) {
-      setIsOpen(true);
+    console.log("[FreeTrialModal] Query state:", { 
+      freeTrialStatus, 
+      isLoading, 
+      error,
+      hasFreeTrial: freeTrialStatus?.hasFreeTrial 
+    });
+    
+    if (!isLoading && freeTrialStatus) {
+      if (freeTrialStatus.hasFreeTrial === true) {
+        console.log("[FreeTrialModal] Opening modal - user has free trial");
+        setIsOpen(true);
+      } else {
+        console.log("[FreeTrialModal] Free trial already used or expired");
+      }
     }
-  }, [freeTrialStatus, isLoading]);
+  }, [freeTrialStatus, isLoading, error]);
 
   const handleClaimAndStart = async () => {
     try {
-      await claimFreeTrial.mutateAsync();
+      console.log("[FreeTrialModal] Claiming free trial...");
+      const result = await claimFreeTrial.mutateAsync();
+      console.log("[FreeTrialModal] Free trial claimed:", result);
       setIsOpen(false);
       // Redirect to try-on page
       setLocation("/try-on");
     } catch (error) {
-      console.error("Failed to claim free trial:", error);
+      console.error("[FreeTrialModal] Failed to claim free trial:", error);
     }
   };
 
   const handleLater = () => {
+    console.log("[FreeTrialModal] User clicked Maybe Later");
     setIsOpen(false);
   };
+
+  // Don't render if still loading or no data
+  if (isLoading) {
+    return null;
+  }
+
+  if (!freeTrialStatus) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

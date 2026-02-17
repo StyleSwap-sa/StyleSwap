@@ -9,7 +9,6 @@ import { Footer } from "@/components/Footer";
 import DemoVideoModal from "@/components/DemoVideoModal";
 import { FitroomCreditsWidget } from "@/components/FitroomCreditsWidget";
 import { FreeTrialWelcomeModal } from "@/components/FreeTrialWelcomeModal";
-import { useAuth } from "@/_core/hooks/useAuth";
 
 
 export default function Home() {

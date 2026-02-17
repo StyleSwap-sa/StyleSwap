@@ -44,7 +44,7 @@ export async function getDb() {
   return _initPromise;
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
+export async function upsertUser(user: Partial<InsertUser> & { openId: string }): Promise<void> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
   }
@@ -88,6 +88,12 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (!values.lastSignedIn) {
       values.lastSignedIn = new Date();
     }
+
+    // Ensure free trial fields have defaults for new users
+    if (!values.freeTrialUsed) {
+      values.freeTrialUsed = 0;
+    }
+    // Don't update freeTrialUsedAt and freeTrialExpiresAt on duplicate - only on first insert
 
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = new Date();

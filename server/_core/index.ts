@@ -156,6 +156,10 @@ export async function startServer() {
       
       // Create try-on task with Fitroom using multipart form data (like the website)
       const fitroomClient = getFitroomClient();
+      if (!fitroomClient) {
+        console.error('[Try-On Upload] Fitroom API key not configured');
+        return res.status(503).json({ error: "Fitroom service is not available. Please try again later." });
+      }
       console.log('[Try-On Upload] Sending to Fitroom API using multipart form data');
       const taskResult = await fitroomClient.createTryOn({
         modelImagePath: modelPath,
