@@ -13,7 +13,7 @@ vi.mock("@/lib/trpc", () => ({
             {
               id: 1,
               name: "Production",
-              key: "sk_live_1234567890abcdef1234567890abcdef",
+              key: "sk_live_test_key_placeholder",
               maskedKey: "sk_live_••••••••••••••••",
               description: "Production API key",
               createdAt: new Date("2026-02-10"),
