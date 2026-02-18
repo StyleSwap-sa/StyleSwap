@@ -219,6 +219,17 @@ export const boutiquesRouter = router({
         console.error('Error sending verification email:', error);
       }
 
+      // Send notification to owner about new boutique signup
+      try {
+        const { notifyOwner } = await import("../db.notifications");
+        await notifyOwner({
+          title: `New Boutique Signup: ${input.name}`,
+          content: `A new boutique has signed up!\n\nBoutique: ${input.name}\nSlug: ${finalSlug}\nOwner Email: ${ctx.user.email}\n\nVerify this boutique in the admin dashboard.`,
+        });
+      } catch (error) {
+        console.error('[Notification] Error sending boutique signup notification:', error);
+      }
+
       return { id: boutiqueId, name: input.name, slug: finalSlug, description: input.description, logoUrl: input.logoUrl, websiteUrl: input.websiteUrl, isVerified: false };
     }),
 
