@@ -569,3 +569,33 @@ export const apiKeyLogs = mysqlTable("apiKeyLogs", {
 	index("idx_api_key_logs_created").on(table.createdAt),
 	index("idx_api_key_logs_endpoint").on(table.endpoint),
 ]);
+
+
+export const widgets = mysqlTable("widgets", {
+	id: varchar({ length: 255 }).notNull().primaryKey(),
+	boutiqueId: varchar({ length: 255 }).notNull().references(() => boutiques.id),
+	name: varchar({ length: 255 }).notNull(),
+	isActive: int().default(1).notNull(),
+	primaryColor: varchar({ length: 7 }).default('#FF6B35').notNull(),
+	accentColor: varchar({ length: 7 }).default('#004E89').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
+},
+(table) => [
+	index("idx_widgets_boutique").on(table.boutiqueId),
+	index("idx_widgets_active").on(table.isActive),
+	index("idx_widgets_created").on(table.createdAt),
+]);
+
+export const widgetAnalytics = mysqlTable("widgetAnalytics", {
+	id: varchar({ length: 255 }).notNull().primaryKey(),
+	widgetId: varchar({ length: 255 }).notNull().references(() => widgets.id),
+	eventType: varchar({ length: 50 }).notNull(),
+	data: text(),
+	timestamp: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+},
+(table) => [
+	index("idx_widget_analytics_widget").on(table.widgetId),
+	index("idx_widget_analytics_event").on(table.eventType),
+	index("idx_widget_analytics_timestamp").on(table.timestamp),
+]);

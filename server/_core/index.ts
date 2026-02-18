@@ -5,7 +5,7 @@ import net from "net";
 import multer from "multer";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 // import { registerOAuthRoutes } from "./oauth";
-import { ClerkExpressWithAuth } from "@clerk/express";
+// Clerk middleware removed - using Manus OAuth instead
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -41,10 +41,7 @@ export async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // Register Clerk middleware for authentication
-  console.log("[Server] Registering Clerk authentication...");
-  app.use(ClerkExpressWithAuth());
-  console.log("[Server] Clerk authentication registered successfully");
+  // Authentication handled by Manus OAuth in context.ts
 
   // Health check
   app.get("/health", (req, res) => {

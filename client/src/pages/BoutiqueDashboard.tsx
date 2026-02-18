@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles } from "lucide-react";
+import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles, Code2 } from "lucide-react";
 import { Link } from "wouter";
 import { BatchUploadComponent } from "@/components/BatchUploadComponent";
 import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
@@ -229,6 +229,20 @@ export default function BoutiqueDashboard() {
               </Card>
 
 
+
+              <Link href={`/boutique/${selectedBoutique}/widget`}>
+                <Card className="premium-card cursor-pointer hover:shadow-lg transition">
+                  <CardContent className="pt-6">
+                    <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
+                      <Code2 className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-bold mb-2">Widget</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Embed try-on on your website
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
 
               <Link href={`/boutique-settings/${selectedBoutique}`}>
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
