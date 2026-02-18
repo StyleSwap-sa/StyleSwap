@@ -68,7 +68,7 @@ export const appRouter = router({
   orders: ordersRouter,
   payouts: payoutsRouter,
   instantPayouts: instantPayoutRouter,
-  boutiqueDiscovery: router(boutiqueDiscoveryRouter),
+  boutiqueDiscovery: boutiqueDiscoveryRouter,
   api: apiRouter,
   apiKeys: apiKeysRouter,
   webhookEvents: webhookEventsRouter,
@@ -80,7 +80,7 @@ export const appRouter = router({
     getCredits: publicProcedure.query(async () => {
       try {
         // Import ENV to get the server-side Fitroom API key
-        const { ENV } = await import("../_core/env");
+        const { ENV } = await import("./_core/env");
         if (!ENV.fitroomApiKey) {
           console.warn("[Fitroom] API key not configured in environment");
           return { success: false, error: "Fitroom API key not configured", credits: null };

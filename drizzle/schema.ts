@@ -327,7 +327,7 @@ export const webhookAlerts = mysqlTable("webhookAlerts", {
 });
 
 export const webhookEvents = mysqlTable("webhookEvents", {
-	id: int().autoincrement().notNull(),
+	id: int().autoincrement().primaryKey().notNull(),
 	source: varchar({ length: 50 }).notNull(),
 	eventType: varchar({ length: 100 }).notNull(),
 	externalEventId: varchar({ length: 255 }).notNull(),
@@ -342,9 +342,10 @@ export const webhookEvents = mysqlTable("webhookEvents", {
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 },
-(table) => [
-	index("webhookEvents_externalEventId_unique").on(table.externalEventId),
-]);
+	(table) => [
+		primaryKey({ columns: [table.id] }),
+		index("webhookEvents_externalEventId_unique").on(table.externalEventId),
+	]);
 
 // Customer Reviews Table
 export const reviews = mysqlTable("reviews", {

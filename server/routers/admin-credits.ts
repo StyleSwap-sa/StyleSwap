@@ -471,7 +471,7 @@ export const adminCreditsRouter = router({
           .update(userCredits)
           .set({
             expiresAt: input.newExpiryDate,
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
           })
           .where(eq(userCredits.userId, input.userId));
 
@@ -482,7 +482,7 @@ export const adminCreditsRouter = router({
           amount: 0,
           description: `Credit expiry extended to ${input.newExpiryDate.toLocaleDateString()}. Reason: ${input.reason}`,
           adminId: ctx.user.id,
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
         });
 
         return { success: true };

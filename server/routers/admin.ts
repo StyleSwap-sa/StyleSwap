@@ -12,7 +12,7 @@ import { getDb, getPlatformMetrics, getBoutiquesList, getMonthlyCreditsUsage, ge
 import { boutiqueTransactions, tryOnResults, boutiques, boutiqueCredits } from "../../drizzle/schema";
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
-import { COOKIE_NAME } from "../_core/cookies";
+import { COOKIE_NAME } from "../../shared/const";
 import { adminPayoutsRouter } from "./admin-payouts";
 
 /**
