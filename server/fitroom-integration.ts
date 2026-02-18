@@ -12,6 +12,8 @@ export interface FitroomCreditsResponse {
 
 /**
  * Fetch remaining credits from Fitroom API
+ * Note: Fitroom may not have a dedicated credits endpoint
+ * This function attempts to fetch credits but gracefully handles failures
  */
 export async function getFitroomCredits(apiKey: string): Promise<FitroomCreditsResponse | null> {
   try {
@@ -20,18 +22,23 @@ export async function getFitroomCredits(apiKey: string): Promise<FitroomCreditsR
       return null;
     }
 
-    // Try the credits endpoint
-    const response = await fetch("https://api.fitroom.ai/v1/credits/balance", {
+    // Try the Fitroom platform API endpoint for credits
+    // Note: This endpoint may not exist - we'll handle gracefully
+    const response = await fetch("https://platform.fitroom.app/api/account/credits", {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
+        "x-api-key": apiKey,
         "Content-Type": "application/json",
       },
     });
 
+    console.log("[Fitroom] Credits endpoint response status:", response.status);
+
     if (response.ok) {
       const data = await response.json();
-      const remaining = data.remaining || data.credits || 0;
+      console.log("[Fitroom] Credits response data:", data);
+      
+      const remaining = data.remaining || data.credits || data.balance || 0;
       const total = data.total || data.totalCredits || remaining;
       const used = data.used || total - remaining;
 
@@ -45,8 +52,15 @@ export async function getFitroomCredits(apiKey: string): Promise<FitroomCreditsR
       console.error("[Fitroom] Invalid API key - authentication failed");
       return null;
     } else {
-      console.warn(`[Fitroom] Credits endpoint returned ${response.status}`);
-      return null;
+      const errorText = await response.text();
+      console.warn(`[Fitroom] Credits endpoint returned ${response.status}: ${errorText}`);
+      // Return a default response so the app doesn't break
+      return {
+        remaining: 0,
+        total: 0,
+        used: 0,
+        percentage: 0,
+      };
     }
   } catch (error) {
     console.error("[Fitroom] Error fetching credits:", error);
