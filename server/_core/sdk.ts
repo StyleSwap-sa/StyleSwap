@@ -45,13 +45,16 @@ class OAuthService {
 
   async getTokenByCode(
     code: string,
-    state: string
+    state: string,
+    redirectUri?: string
   ): Promise<ExchangeTokenResponse> {
+    // Use provided redirectUri if available, otherwise decode from state
+    const finalRedirectUri = redirectUri || this.decodeState(state);
     const payload: ExchangeTokenRequest = {
       clientId: ENV.appId,
       grantType: "authorization_code",
       code,
-      redirectUri: this.decodeState(state),
+      redirectUri: finalRedirectUri,
     };
 
     const { data } = await this.client.post<ExchangeTokenResponse>(
@@ -116,13 +119,14 @@ class SDKServer {
   /**
    * Exchange OAuth authorization code for access token
    * @example
-   * const tokenResponse = await sdk.exchangeCodeForToken(code, state);
+   * const tokenResponse = await sdk.exchangeCodeForToken(code, state, redirectUri);
    */
   async exchangeCodeForToken(
     code: string,
-    state: string
+    state: string,
+    redirectUri?: string
   ): Promise<ExchangeTokenResponse> {
-    return this.oauthService.getTokenByCode(code, state);
+    return this.oauthService.getTokenByCode(code, state, redirectUri);
   }
 
   /**

@@ -55,7 +55,9 @@ export function registerOAuthRoutes(app: Express) {
       console.log("[OAuth] Current callback URL:", origin + "/api/oauth/callback");
       console.log("[OAuth] Match:", decodedState === origin + "/api/oauth/callback" ? "✓ YES" : "✗ NO");
       
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
+      // Pass the current callback URL as the redirect URI for token exchange
+      const redirectUri = origin + "/api/oauth/callback";
+      const tokenResponse = await sdk.exchangeCodeForToken(code, state, redirectUri);
       console.log("[OAuth] ✓ Token exchange successful");
       const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
       console.log("[OAuth] ✓ Got user info, openId:", userInfo.openId);
