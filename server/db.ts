@@ -55,8 +55,9 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
   }
 
   try {
-    const values: InsertUser = {
+    const values: any = {
       openId: user.openId,
+      clerkId: null, // OAuth users don't have Clerk ID
     };
     const updateSet: Record<string, unknown> = {};
 

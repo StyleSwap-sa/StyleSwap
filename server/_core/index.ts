@@ -4,7 +4,7 @@ import { createServer } from "http";
 import net from "net";
 import multer from "multer";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-// import { registerOAuthRoutes } from "./oauth";
+import { registerOAuthRoutes } from "./oauth";
 // Clerk middleware removed - using Manus OAuth instead
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -47,6 +47,14 @@ export async function startServer() {
   app.get("/health", (req, res) => {
     res.json({ status: "ok" });
   });
+  
+  // OAuth routes MUST be registered FIRST, before any other middleware
+  // This ensures they take precedence over Vite SPA fallback
+  console.log("[Server] Registering OAuth routes...");
+  registerOAuthRoutes(app);
+  console.log("[Server] OAuth routes registered:");
+  console.log("  - GET /api/oauth/callback");
+  console.log("  - GET /api/oauth/debug");
 
   // Try-on upload endpoint with file upload support
   app.post("/api/tryon/upload", createUploadRateLimiter(), upload.fields([

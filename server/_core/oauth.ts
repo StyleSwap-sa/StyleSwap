@@ -10,21 +10,55 @@ function getQueryParam(req: Request, key: string): string | undefined {
 }
 
 export function registerOAuthRoutes(app: Express) {
+  console.log("[OAuth] Registering OAuth routes...");
+  
+  // Test endpoint to debug OAuth configuration
+  app.get("/api/oauth/debug", (req: Request, res: Response) => {
+    console.log("[OAuth] DEBUG endpoint called!");
+    const { ENV } = require("./env");
+    res.json({
+      appId: ENV.appId,
+      oAuthServerUrl: ENV.oAuthServerUrl,
+      cookieSecret: ENV.cookieSecret ? "***set***" : "NOT SET",
+      databaseUrl: ENV.databaseUrl ? "***set***" : "NOT SET",
+      currentOrigin: req.get("origin") || req.get("host"),
+      expectedCallbackUrl: `${req.protocol}://${req.get("host")}/api/oauth/callback`,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
+    const origin = req.protocol + "://" + req.get("host");
+
+    console.log("\n========== OAUTH CALLBACK DEBUG START ==========");
+    console.log("[OAuth] Callback received");
+    console.log("[OAuth] Code:", code?.substring(0, 20) + "...");
+    console.log("[OAuth] State:", state?.substring(0, 20) + "...");
+    console.log("[OAuth] Request origin:", origin);
+    console.log("[OAuth] Request host:", req.get("host"));
+    console.log("[OAuth] Request protocol:", req.protocol);
 
     if (!code || !state) {
+      console.error("[OAuth] Missing code or state");
       res.status(400).json({ error: "code and state are required" });
       return;
     }
 
     try {
-      console.log("[OAuth] Starting callback with code:", code?.substring(0, 10), "state:", state?.substring(0, 10));
+      console.log("[OAuth] Starting token exchange...");
+      
+      // Decode state to see what redirect URI is expected
+      const decodedState = Buffer.from(state, 'base64').toString('utf-8');
+      console.log("[OAuth] Decoded state (expected redirect URI):", decodedState);
+      console.log("[OAuth] Current callback URL:", origin + "/api/oauth/callback");
+      console.log("[OAuth] Match:", decodedState === origin + "/api/oauth/callback" ? "✓ YES" : "✗ NO");
+      
       const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      console.log("[OAuth] Got token response");
+      console.log("[OAuth] ✓ Token exchange successful");
       const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
-      console.log("[OAuth] Got user info:", userInfo.openId);
+      console.log("[OAuth] ✓ Got user info, openId:", userInfo.openId);
 
       if (!userInfo.openId) {
         res.status(400).json({ error: "openId missing from user info" });
@@ -32,6 +66,7 @@ export function registerOAuthRoutes(app: Express) {
       }
 
       // Upsert user in database
+      console.log("[OAuth] Upserting user...");
       await db.upsertUser({
         openId: userInfo.openId,
         email: userInfo.email || "",
@@ -42,15 +77,16 @@ export function registerOAuthRoutes(app: Express) {
       const user = await db.getUserByOpenId(userInfo.openId);
       
       if (!user || !user.id) {
-        console.error("[OAuth] User not found after upsert:", userInfo.openId);
+        console.error("[OAuth] ✗ User not found after upsert:", userInfo.openId);
         res.status(500).json({ error: "Failed to create or retrieve user" });
         return;
       }
 
-      console.log("[OAuth] User upserted and retrieved:", user.id, "openId:", userInfo.openId);
+      console.log("[OAuth] ✓ User upserted and retrieved, userId:", user.id);
 
       const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
+      console.log("[OAuth] Creating session token...");
       const sessionToken = await sdk.createSessionToken(
         userInfo.openId,
         {
@@ -61,7 +97,7 @@ export function registerOAuthRoutes(app: Express) {
 
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      console.log("[OAuth] Session cookie set with name:", COOKIE_NAME);
+      console.log("[OAuth] ✓ Session cookie set");
 
       // Determine redirect destination based on user role
       let redirectPath = "/";
@@ -70,6 +106,9 @@ export function registerOAuthRoutes(app: Express) {
       } else {
         redirectPath = "/dashboard";
       }
+      
+      console.log("[OAuth] ✓ OAuth callback completed successfully");
+      console.log("========== OAUTH CALLBACK DEBUG END ==========");
       
       // Send HTML that checks localStorage for returnUrl and redirects appropriately
       const html = `
@@ -93,8 +132,16 @@ export function registerOAuthRoutes(app: Express) {
       `;
       res.send(html);
     } catch (error) {
-      console.error("[OAuth] Callback failed:", error instanceof Error ? error.message : String(error));
+      console.error("\n========== OAUTH CALLBACK ERROR ==========");
+      console.error("[OAuth] ✗ Callback failed:", error instanceof Error ? error.message : String(error));
+      if (error instanceof Error && error.message.includes("401")) {
+        console.error("[OAuth] ERROR TYPE: Token exchange rejected by OAuth server");
+        console.error("[OAuth] LIKELY CAUSE: Redirect URI mismatch or invalid authorization code");
+        console.error("[OAuth] EXPECTED REDIRECT URI:", Buffer.from(getQueryParam(req, "state") || "", 'base64').toString('utf-8'));
+        console.error("[OAuth] ACTUAL CALLBACK URL:", origin + "/api/oauth/callback");
+      }
       console.error("[OAuth] Full error:", error);
+      console.error("========== OAUTH CALLBACK ERROR END ==========");
       res.status(500).json({ error: "OAuth callback failed", details: error instanceof Error ? error.message : String(error) });
     }
   });

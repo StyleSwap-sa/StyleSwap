@@ -21,12 +21,25 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
-  app.use(vite.middlewares);
+  // Apply Vite middleware but skip API routes
+  app.use((req, res, next) => {
+    // Skip Vite middleware for API routes
+    if (req.path.startsWith("/api")) {
+      return next();
+    }
+    vite.middlewares(req, res, next);
+  });
   
   // SPA fallback - serve index.html for all non-API routes
   app.use("*", async (req, res, next) => {
     // Skip API routes and static assets
-    if (req.path.startsWith("/api") || req.path.match(/\\.(js|css|json|png|jpg|svg|ico|woff|woff2)$/)) {
+    console.log("[Vite SPA] Received request:", req.path);
+    if (req.path.startsWith("/api")) {
+      console.log("[Vite SPA] Skipping API route:", req.path);
+      return next();
+    }
+    if (req.path.match(/\\.(js|css|json|png|jpg|svg|ico|woff|woff2)$/)) {
+      console.log("[Vite SPA] Skipping static asset:", req.path);
       return next();
     }
     const url = req.originalUrl;
