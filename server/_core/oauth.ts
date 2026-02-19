@@ -49,14 +49,12 @@ export function registerOAuthRoutes(app: Express) {
     try {
       console.log("[OAuth] Starting token exchange...");
       
-      // Decode state to see what redirect URI is expected
-      const decodedState = Buffer.from(state, 'base64').toString('utf-8');
-      console.log("[OAuth] Decoded state (expected redirect URI):", decodedState);
-      console.log("[OAuth] Current callback URL:", origin + "/api/oauth/callback");
-      console.log("[OAuth] Match:", decodedState === origin + "/api/oauth/callback" ? "✓ YES" : "✗ NO");
+      // Decode state to get the redirect URI that was sent from frontend
+      const redirectUri = Buffer.from(state, 'base64').toString('utf-8');
+      console.log("[OAuth] Decoded redirect URI from state:", redirectUri);
+      console.log("[OAuth] Current request origin:", origin);
       
-      // Pass the current callback URL as the redirect URI for token exchange
-      const redirectUri = origin + "/api/oauth/callback";
+      // Use the decoded redirect URI from state (this is what the frontend sent)
       const tokenResponse = await sdk.exchangeCodeForToken(code, state, redirectUri);
       console.log("[OAuth] ✓ Token exchange successful");
       const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
