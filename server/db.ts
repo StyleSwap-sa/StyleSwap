@@ -57,7 +57,7 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
   try {
     const values: any = {
       openId: user.openId,
-      clerkId: null, // OAuth users don't have Clerk ID
+      // Don't include clerkId for OAuth users - the column doesn't exist
     };
     const updateSet: Record<string, unknown> = {};
 

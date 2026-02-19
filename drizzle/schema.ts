@@ -285,7 +285,6 @@ export const userCredits = mysqlTable("userCredits", {
 export const users = mysqlTable("users", {
 	id: int().autoincrement().notNull(),
 	openId: varchar({ length: 64 }),
-	clerkId: varchar({ length: 255 }),
 	name: text(),
 	email: varchar({ length: 320 }),
 	loginMethod: varchar({ length: 64 }),
@@ -302,7 +301,6 @@ export const users = mysqlTable("users", {
 },
 	(table) => [
 		index("users_openId_unique").on(table.openId),
-		index("users_clerkId_unique").on(table.clerkId),
 		index("users_email_unique").on(table.email),
 	]);
 
