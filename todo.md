@@ -2826,3 +2826,18 @@ This approach:
 - [x] Configure analytics and feature tracking
 - [x] Implement SEO optimization
 - [x] Set up performance monitoring and alerts
+
+
+## Phase XX: User-Facing Cancel Subscription Feature (NEW)
+- [x] Create backend cancelSubscription procedure for boutique owners/managers
+- [x] Add authorization checks (owner/manager only)
+- [x] Add cancellation reason tracking
+- [x] Add audit logging for cancellations
+- [x] Create frontend CancelSubscriptionDialog component
+- [x] Add confirmation dialog with warning message
+- [x] Add reason input field (optional)
+- [x] Create SubscriptionSettings component with cancel button
+- [x] Add success/error notifications
+- [x] Write unit tests for cancel subscription
+- [ ] Test end-to-end cancellation flow
+- [ ] Verify mobile and desktop accessibility

@@ -29,6 +29,7 @@ import { protectedApiRouter } from "./routers/protectedApi";
 import { verificationRouter } from "./routers/verification";
 import { adminCreditsRouter } from "./routers/admin-credits";
 import { subscriptionAdminRouter } from "./routers/subscriptionAdmin";
+import { subscriptionRouter } from "./routers/subscription";
 import { freeTrialRouter } from "./routers/freetrial";
 import { widgetRouter } from "./routers/widget";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
@@ -58,6 +59,7 @@ export const appRouter = router({
   admin: adminRouter,
   adminCredits: adminCreditsRouter,
   subscriptionAdmin: subscriptionAdminRouter,
+  subscription: subscriptionRouter,
   boutiqueDashboard: boutiqueDashboardRouter,
   webhookAdmin: webhookAdminRouter,
   analytics: router(analyticsRouter),
