@@ -100,6 +100,16 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
       updateSet.lastSignedIn = new Date();
     }
 
+    // Check if email already exists with a different openId
+    if (values.email) {
+      const existingByEmail = await db.select().from(users).where(eq(users.email, values.email)).limit(1);
+      if (existingByEmail.length > 0 && existingByEmail[0].openId !== user.openId) {
+        // Email exists with different openId - update that user instead
+        await db.update(users).set(updateSet).where(eq(users.id, existingByEmail[0].id));
+        return existingByEmail[0];
+      }
+    }
+
     await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
     });
