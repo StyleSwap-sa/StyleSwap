@@ -1,13 +1,25 @@
 import type { Request } from 'express';
 import * as db from '../db';
 import type { User } from '../../drizzle/schema';
+import { sdk } from './sdk';
+import { COOKIE_NAME } from '@shared/const';
 
 /**
- * Extract authenticated user from Clerk request
- * Clerk middleware adds auth info to req.auth
+ * Extract authenticated user from JWT session cookie or Clerk request
  */
 export async function getAuthUser(req: Request): Promise<User | null> {
   try {
+    // First, try to verify JWT session cookie
+    const sessionCookie = req.cookies?.[COOKIE_NAME];
+    if (sessionCookie) {
+      const session = await sdk.verifySession(sessionCookie);
+      if (session?.openId) {
+        const user = await db.getUserByOpenId(session.openId);
+        if (user) return user;
+      }
+    }
+
+    // Fall back to Clerk authentication
     const auth = (req as any).auth;
     if (!auth?.userId) return null;
     

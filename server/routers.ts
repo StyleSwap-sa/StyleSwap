@@ -1,7 +1,9 @@
-import { getSessionCookieOptions } from "./_core/cookies";
 import { COOKIE_NAME } from "../shared/const";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+import * as db from "./db";
+import { sdk } from "./_core/sdk";
+import { getSessionCookieOptions } from "./_core/cookies";
 import { tryonRouter } from "./routers/tryon";
 import { garmentsRouter } from "./routers/garments";
 import { sharingRouter } from "./routers/sharing";
@@ -47,9 +49,10 @@ export const appRouter = router({
       } as const;
     }),
     testLogin: publicProcedure.mutation(async ({ ctx }) => {
+      const timestamp = Date.now();
       const testUser = {
-        openId: "test-" + Date.now(),
-        email: "test@styleswap.co.za",
+        openId: "test-" + timestamp,
+        email: `test-${timestamp}@styleswap.co.za`,
         name: "Test User",
       };
       await db.upsertUser(testUser);
