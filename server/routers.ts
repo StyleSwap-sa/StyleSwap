@@ -46,6 +46,21 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+    testLogin: publicProcedure.mutation(async ({ ctx }) => {
+      const testUser = {
+        openId: "test-" + Date.now(),
+        email: "test@styleswap.co.za",
+        name: "Test User",
+      };
+      await db.upsertUser(testUser);
+      const user = await db.getUserByOpenId(testUser.openId);
+      if (!user || !user.id) throw new Error("Failed to create user");
+      const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+      const sessionToken = await sdk.createSessionToken(testUser.openId, { name: testUser.name, expiresInMs: ONE_YEAR_MS });
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      return { success: true, user };
+    }),
   }),
 
   tryon: tryonRouter,

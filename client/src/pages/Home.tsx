@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, Menu, X } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 import { LoginOptionsModal } from "@/components/LoginOptionsModal";
 import { Footer } from "@/components/Footer";
 import DemoVideoModal from "@/components/DemoVideoModal";
@@ -17,6 +18,15 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLoginOptions, setShowLoginOptions] = useState(false);
   const [isDemoOpen, setIsDemoOpen] = useState(false);
+  const testLoginMutation = trpc.auth.testLogin.useMutation();
+  const handleTestLogin = async () => {
+    try {
+      await testLoginMutation.mutateAsync();
+      setLocation("/dashboard");
+    } catch (error) {
+      console.error("Test login failed:", error);
+    }
+  };
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
@@ -320,6 +330,14 @@ export default function Home() {
                 className="premium-button gap-2"
               >
                 Watch Demo
+              </Button>
+              <Button 
+                onClick={handleTestLogin}
+                disabled={testLoginMutation.isPending}
+                variant="outline"
+                className="premium-button gap-2 text-xs"
+              >
+                {testLoginMutation.isPending ? "Logging in..." : "Test Login"}
               </Button>
             </div>
           </div>
