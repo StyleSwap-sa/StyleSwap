@@ -3,7 +3,7 @@ services:
     name: styleswap-backend
     runtime: node
     plan: standard
-    buildCommand: pnpm install && pnpm build
+    buildCommand: pnpm install --no-frozen-lockfile && pnpm build
     startCommand: NODE_ENV=production node dist/index.js
     envVars:
       - key: NODE_ENV
