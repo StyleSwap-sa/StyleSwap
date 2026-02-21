@@ -1,8 +1,8 @@
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { eq, desc, gte, sql } from "drizzle-orm";
 import { InsertUser, users, garments, tryOnResults, InsertTryOnResult, boutiques, boutiqueCredits, boutiqueTransactions, shopOrders } from "../drizzle/schema";
 import { ENV } from './_core/env';
-import * as mysql from 'mysql2/promise';
+import postgres from 'postgres';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _initPromise: Promise<ReturnType<typeof drizzle> | null> | null = null;
@@ -27,10 +27,10 @@ export async function getDb() {
     }
 
     try {
-      console.log("[Database] Initializing connection pool...");
-      const poolConnection = await mysql.createPool(process.env.DATABASE_URL);
-      _db = drizzle(poolConnection);
-      console.log("[Database] ✓ Connection pool initialized successfully");
+      console.log("[Database] Initializing PostgreSQL connection...");
+      const client = postgres(process.env.DATABASE_URL);
+      _db = drizzle(client);
+      console.log("[Database] ✓ PostgreSQL connection initialized successfully");
       return _db;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
