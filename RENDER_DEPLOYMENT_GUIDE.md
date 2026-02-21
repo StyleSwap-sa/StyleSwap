@@ -1,143 +1,212 @@
 # StyleSwap - Render Deployment Guide
 
 ## Overview
-This guide will help you deploy StyleSwap to Render in 15 minutes.
+This guide walks you through deploying StyleSwap to Render with PostgreSQL, independent of Manus infrastructure.
 
 ## Prerequisites
-- GitHub account (free)
-- Render account (free tier available)
-- Your Fitroom API key: `b419554294f044339b165910d5bd62b167f4a4dd8ea8655e1e982adcd16fa1a7`
+- ✅ Render account (created)
+- ✅ PostgreSQL database on Render (created)
+- ✅ GitHub repository (connected)
+- ✅ API keys ready:
+  - Yoco API Key & Secret
+  - Fitroom API Key
+  - AWS S3 credentials
+  - JWT Secret
 
-## Step 1: Push Code to GitHub
+## Step 1: Prepare Your PostgreSQL Database
 
-### 1.1 Create a GitHub Repository
-1. Go to https://github.com/new
-2. Create a new repository named `styleswap`
-3. Choose "Private" (recommended for security)
-4. Click "Create repository"
+### Get Your Connection String
+1. Go to **Render Dashboard** → **Databases**
+2. Click your `styleswap-db` database
+3. Copy the **External Database URL** (looks like: `postgresql://user:password@host:port/database`)
 
-### 1.2 Push Code to GitHub
-```bash
-cd /home/ubuntu/fitroom-ai-research
+### Create Database Schema
+Run this SQL to create the necessary tables:
 
-# Initialize git if not already done
-git init
+```sql
+-- Users table
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  openId VARCHAR(64) UNIQUE NOT NULL,
+  clerkId VARCHAR(255),
+  email VARCHAR(320) UNIQUE NOT NULL,
+  name TEXT,
+  loginMethod VARCHAR(64),
+  role VARCHAR(50) DEFAULT 'user',
+  phone VARCHAR(20),
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  lastSignedIn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-# Add all files
-git add .
+-- Try-on results table
+CREATE TABLE tryOnResults (
+  id SERIAL PRIMARY KEY,
+  userId INT NOT NULL REFERENCES users(id),
+  modelImageUrl TEXT,
+  clothImageUrl TEXT,
+  resultImageUrl TEXT,
+  status VARCHAR(50) DEFAULT 'pending',
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES users(id)
+);
 
-# Commit
-git commit -m "Initial StyleSwap deployment"
+-- Orders table (for Yoco payments)
+CREATE TABLE orders (
+  id SERIAL PRIMARY KEY,
+  userId INT NOT NULL REFERENCES users(id),
+  yocoTransactionId VARCHAR(255) UNIQUE,
+  amount DECIMAL(10, 2),
+  currency VARCHAR(3) DEFAULT 'ZAR',
+  status VARCHAR(50) DEFAULT 'pending',
+  metadata JSONB,
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES users(id)
+);
 
-# Add remote (replace YOUR_USERNAME with your GitHub username)
-git remote add origin https://github.com/YOUR_USERNAME/styleswap.git
-
-# Push to main branch
-git branch -M main
-git push -u origin main
+-- Garments table
+CREATE TABLE garments (
+  id SERIAL PRIMARY KEY,
+  userId INT NOT NULL REFERENCES users(id),
+  name TEXT,
+  imageUrl TEXT,
+  category VARCHAR(100),
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES users(id)
+);
 ```
 
-## Step 2: Deploy to Render
+## Step 2: Set Up Environment Variables on Render
 
-### 2.1 Create Render Account
-1. Go to https://render.com
-2. Sign up with GitHub (easiest option)
-3. Authorize Render to access your GitHub account
+1. Go to **Render Dashboard** → **Web Services** → **styleswap-backend**
+2. Click **Environment** tab
+3. Add these variables:
 
-### 2.2 Create New Web Service
-1. Go to https://dashboard.render.com
-2. Click "New +" → "Web Service"
-3. Select your `styleswap` repository
-4. Configure:
-   - **Name:** styleswap
-   - **Environment:** Node
+| Key | Value | Notes |
+|-----|-------|-------|
+| `NODE_ENV` | `production` | Already set |
+| `DATABASE_URL` | Your PostgreSQL connection string | From Step 1 |
+| `JWT_SECRET` | Generate a random string (32+ chars) | Use: `openssl rand -base64 32` |
+| `YOCO_API_KEY` | Your Yoco API key | From Yoco dashboard |
+| `YOCO_SECRET_KEY` | Your Yoco secret key | From Yoco dashboard |
+| `FITROOM_API_KEY` | Your Fitroom API key | From Fitroom dashboard |
+| `AWS_ACCESS_KEY_ID` | Your AWS access key | From AWS IAM |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS secret key | From AWS IAM |
+| `AWS_S3_BUCKET` | Your S3 bucket name | e.g., `styleswap-uploads` |
+| `AWS_REGION` | `us-east-1` | Or your preferred region |
+
+## Step 3: Deploy to Render
+
+### Option A: Automatic Deployment (Recommended)
+1. Push your code to GitHub:
+   ```bash
+   git add .
+   git commit -m "Prepare for Render deployment"
+   git push origin main
+   ```
+
+2. Render will automatically detect `render.yaml` and deploy
+
+### Option B: Manual Deployment
+1. Go to **Render Dashboard** → **New** → **Web Service**
+2. Connect your GitHub repository
+3. Configure:
+   - **Name:** `styleswap-backend`
+   - **Runtime:** Node
    - **Build Command:** `pnpm install && pnpm build`
-   - **Start Command:** `node dist/index.js`
-   - **Plan:** Free (or Starter for better performance)
+   - **Start Command:** `NODE_ENV=production node dist/index.js`
+   - **Plan:** Standard (minimum for production)
+4. Add environment variables from Step 2
+5. Click **Create Web Service**
 
-### 2.3 Add Environment Variables
-In Render dashboard, go to Environment section and add:
+## Step 4: Verify Deployment
 
-```
-DATABASE_URL=your_database_url
-JWT_SECRET=your_jwt_secret
-VITE_APP_ID=your_app_id
-OAUTH_SERVER_URL=your_oauth_url
-VITE_OAUTH_PORTAL_URL=your_oauth_portal_url
-OWNER_OPEN_ID=your_owner_id
-OWNER_NAME=your_name
-BUILT_IN_FORGE_API_URL=your_forge_api_url
-BUILT_IN_FORGE_API_KEY=your_forge_api_key
-VITE_FRONTEND_FORGE_API_KEY=your_frontend_key
-VITE_FRONTEND_FORGE_API_URL=your_frontend_url
-FITROOM_API_KEY=b419554294f044339b165910d5bd62b167f4a4dd8ea8655e1e982adcd16fa1a7
-VITE_APP_TITLE=StyleSwap
-NODE_ENV=production
+### Check Health
+```bash
+curl https://your-render-url.onrender.com/health
 ```
 
-### 2.4 Deploy
-1. Click "Create Web Service"
-2. Render will automatically deploy your app
-3. Wait for the deployment to complete (5-10 minutes)
-4. Your app will be live at: `https://styleswap.onrender.com` (or similar)
+Expected response:
+```json
+{ "status": "ok" }
+```
 
-## Step 3: Configure Database
+### Check Database Connection
+```bash
+curl https://your-render-url.onrender.com/api/trpc/auth.me
+```
 
-If you need a database:
+## Step 5: Migrate Data from Manus (Optional)
 
-### 3.1 Create PostgreSQL Database on Render
-1. In Render dashboard, click "New +" → "PostgreSQL"
-2. Configure:
-   - **Name:** styleswap-db
-   - **Database:** styleswap
-   - **User:** styleswap_user
-   - **Region:** Same as your web service
-   - **Plan:** Free
+If you want to migrate existing user data from Manus:
 
-### 3.2 Connect Database to Web Service
-1. Copy the database connection string from Render
-2. Add it as `DATABASE_URL` environment variable in your web service
-3. Redeploy the web service
+### Export from Manus
+```bash
+# Connect to Manus MySQL database
+mysql -h $MANUS_HOST -u $MANUS_USER -p$MANUS_PASSWORD $MANUS_DB \
+  -e "SELECT * FROM users;" > users_export.sql
+```
 
-## Step 4: Test Your Deployment
-
-1. Visit your Render URL: `https://styleswap.onrender.com`
-2. Test the following:
-   - ✅ Homepage loads
-   - ✅ Navigation works
-   - ✅ Try-on feature works
-   - ✅ Boutique signup works
-   - ✅ Dashboard loads
-
-## Troubleshooting
-
-### Build Fails
-- Check build logs in Render dashboard
-- Ensure all dependencies are in package.json
-- Run `pnpm install` locally to verify
-
-### App Crashes After Deploy
-- Check logs in Render dashboard
-- Verify all environment variables are set
-- Check database connection string
-
-### Fitroom API Not Working
-- Verify `FITROOM_API_KEY` is set correctly
-- Check that the key is active in your Fitroom account
-- Test the API key locally first
-
-## Next Steps
-
-1. **Custom Domain:** Add your own domain in Render settings
-2. **SSL Certificate:** Automatically provided by Render
-3. **Auto-deploy:** Render will auto-deploy on git push
-4. **Monitoring:** Set up alerts in Render dashboard
-
-## Support
-
-For Render support: https://render.com/docs
-For StyleSwap issues: Check the logs in Render dashboard
+### Import to PostgreSQL
+```bash
+# Connect to your Render PostgreSQL
+psql $DATABASE_URL < users_export.sql
+```
 
 ---
 
-**Deployment Status:** Ready to deploy! 🚀
+## Step 6: Set Up Frontend (Next.js on Vercel)
+
+1. Go to **Vercel** → **New Project**
+2. Import your GitHub repository
+3. Configure:
+   - **Framework:** Next.js
+   - **Root Directory:** `./client`
+   - **Build Command:** `pnpm build`
+   - **Output Directory:** `.next`
+4. Add environment variables:
+   - `NEXT_PUBLIC_API_URL`: `https://your-render-url.onrender.com`
+5. Deploy
+
+---
+
+## Troubleshooting
+
+### 502 Error on Render
+**Cause:** Build failed or start command incorrect
+**Fix:**
+1. Check build logs: Render Dashboard → Logs
+2. Verify `dist/index.js` exists after build
+3. Ensure all environment variables are set
+
+### Database Connection Refused
+**Cause:** DATABASE_URL not set or incorrect
+**Fix:**
+1. Verify connection string format: `postgresql://user:password@host:port/database`
+2. Check firewall allows Render IP
+3. Test connection locally: `psql $DATABASE_URL`
+
+### Port Already in Use
+**Cause:** Port 3000 is hardcoded
+**Fix:**
+- Render sets `PORT` env var automatically
+- Ensure your server listens to `process.env.PORT || 3000`
+
+## Next Steps
+
+1. ✅ Deploy backend to Render
+2. ✅ Deploy frontend to Vercel
+3. ✅ Test payment flow with Yoco
+4. ✅ Test virtual try-on with Fitroom API
+5. ✅ Set up monitoring & logging
+6. ✅ Configure custom domain
+
+---
+
+## Support
+
+- **Render Docs:** https://render.com/docs
+- **PostgreSQL Docs:** https://www.postgresql.org/docs/
+- **Yoco Integration:** https://yoco.com/docs
+- **Fitroom API:** Contact Fitroom support
