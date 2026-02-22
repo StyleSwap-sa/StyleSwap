@@ -7,10 +7,19 @@ import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime()];
+// Only use Manus runtime plugin in development/preview mode
+const plugins = [
+  react(),
+  tailwindcss(),
+  jsxLocPlugin(),
+  ...(process.env.NODE_ENV === 'production' ? [] : [vitePluginManusRuntime()]),
+];
 
 export default defineConfig({
-  plugins,
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+  },
+  plugins: plugins,
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -20,8 +29,13 @@ export default defineConfig({
   },
   envDir: path.resolve(import.meta.dirname),
   root: path.resolve(import.meta.dirname, "client"),
+  // Ensure script tags are properly included in production
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+  },
   publicDir: path.resolve(import.meta.dirname, "client", "public"),
   build: {
+    // Ensure HTML includes script tags
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
     // Performance optimizations
@@ -37,6 +51,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     // Simple, effective code splitting
     rollupOptions: {
+      input: path.resolve(import.meta.dirname, "client", "index.html"),
       output: {
         manualChunks: {
           'vendor': ['react', 'react-dom', 'wouter'],
