@@ -8,7 +8,9 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
+console.log('[Main] Initializing QueryClient...');
 const queryClient = new QueryClient();
+console.log('[Main] QueryClient initialized');
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
@@ -37,6 +39,7 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+console.log('[Main] Creating tRPC client...');
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
@@ -52,7 +55,14 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-createRoot(document.getElementById("root")!).render(
+console.log('[Main] Creating React root...');
+const rootElement = document.getElementById("root");
+console.log('[Main] Root element:', rootElement);
+if (!rootElement) {
+  console.error('[Main] Root element not found!');
+  throw new Error('Root element not found');
+}
+createRoot(rootElement).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
       <App />
