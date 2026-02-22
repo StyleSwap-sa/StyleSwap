@@ -60,12 +60,21 @@ const rootElement = document.getElementById("root");
 console.log('[Main] Root element:', rootElement);
 if (!rootElement) {
   console.error('[Main] Root element not found!');
+  document.body.innerHTML = '<div style="padding: 20px; font-family: sans-serif; background: #f5f5f5;"><h1>Error: Root element not found</h1><p>The application failed to initialize.</p></div>';
   throw new Error('Root element not found');
 }
-createRoot(rootElement).render(
+
+try {
+  console.log('[Main] Rendering React app...');
+  createRoot(rootElement).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
       <App />
     </QueryClientProvider>
   </trpc.Provider>
-);
+  );
+  console.log('[Main] React app rendered successfully');
+} catch (error) {
+  console.error('[Main] Failed to render React app:', error);
+  document.body.innerHTML = '<div style="padding: 20px; font-family: sans-serif; background: #fff3cd;"><h1>Application Error</h1><p>' + (error instanceof Error ? error.message : String(error)) + '</p><p>Check the browser console for more details.</p></div>';
+}
