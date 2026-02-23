@@ -144,3 +144,4 @@ export default function App() {
     </ThemeProvider>
   );
 }
+// Force rebuild - Mon Feb 23 00:26:54 EST 2026
