@@ -36,6 +36,20 @@
     </div>
     <script>
       console.log('[Page Load] Page loaded, waiting for React...');
+      window.addEventListener('error', (event) => {
+        console.error('[Global Error]', event.error);
+        const root = document.getElementById('root');
+        if (root) {
+          root.innerHTML = '<div style="padding: 20px; font-family: monospace; background: #ffcccc; color: #cc0000; white-space: pre-wrap; overflow: auto; max-height: 100vh;"><strong>ERROR:</strong> ' + (event.error?.message || String(event.error)) + '</div>';
+        }
+      });
+      window.addEventListener('unhandledrejection', (event) => {
+        console.error('[Unhandled Rejection]', event.reason);
+        const root = document.getElementById('root');
+        if (root) {
+          root.innerHTML = '<div style="padding: 20px; font-family: monospace; background: #ffcccc; color: #cc0000; white-space: pre-wrap; overflow: auto; max-height: 100vh;"><strong>UNHANDLED REJECTION:</strong> ' + (event.reason?.message || String(event.reason)) + '</div>';
+        }
+      });
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <script
