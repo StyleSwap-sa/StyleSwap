@@ -285,7 +285,7 @@ export const tryOnResults = pgTable("tryOnResults", {
 	fitRoomTaskId: varchar({ length: 255 }),
 	fitRoomRequestId: varchar({ length: 255 }),
 	flowType: flowTypeEnum('flow_type').default('b2c').notNull(),
-	selectedSize: productSizeEnum,
+		selectedSize: productSizeEnum('product_size').default('M'),
 	sizeScalingFactor: decimal({ precision: 3, scale: 2 }).default('1.00'),
 },
 (table) => [

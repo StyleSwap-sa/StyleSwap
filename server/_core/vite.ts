@@ -54,26 +54,66 @@ export async function setupVite(app: Express, server: Server) {
 
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`
-      );
+      
+      // Only replace the script tag if it exists (for development with React)
+      if (template.includes(`src="/src/main.tsx"`)) {
+        template = template.replace(
+          `src="/src/main.tsx"`,
+          `src="/src/main.tsx?v=${nanoid()}"`
+        );
+      }
       
       // Inject environment variables as global window variables
       const envScript = `
         <script>
           window.__VITE_OAUTH_PORTAL_URL = "${ENV.oAuthPortalUrl || "https://manus.im"}";
-          window.__VITE_APP_ID = "${ENV.appId || ""}";
+          window.__VITE_APP_ID = "${ENV.appId || ""}";  
         </script>
       `;
-      template = template.replace("<body>", `<body>${envScript}`);
+      // Try to inject before </head>, then </body>, then just append
+      if (template.includes("</head>")) {
+        template = template.replace("</head>", `${envScript}</head>`);
+      } else if (template.includes("<body>")) {
+        template = template.replace("<body>", `<body>${envScript}`);
+      } else {
+        template += envScript;
+      }
       
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
       console.error("[Vite] Error serving index.html:", e);
       vite.ssrFixStacktrace(e as Error);
-      next(e);
+      // Serve a fallback error page instead of passing to next middleware
+      const fallbackHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Loading...</title>
+            <style>
+              body { margin: 0; padding: 20px; font-family: sans-serif; background: #f5f5f5; }
+              .error { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 50px auto; }
+              h1 { color: #333; margin-top: 0; }
+              p { color: #666; line-height: 1.6; }
+              code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+            </style>
+          </head>
+          <body>
+            <div class="error">
+              <h1>⚠️ Application Loading</h1>
+              <p>The application is initializing. If you see this message for more than a few seconds, please refresh the page.</p>
+              <p>Error details: <code>${e instanceof Error ? e.message : String(e)}</code></p>
+            </div>
+            <script>
+              // Auto-refresh after 3 seconds
+              setTimeout(() => { location.reload(); }, 3000);
+            </script>
+          </body>
+        </html>
+      `;
+      res.status(200).set({ "Content-Type": "text/html" }).send(fallbackHtml);
     }
   });
 }
@@ -186,7 +226,36 @@ export function serveStatic(app: Express) {
         if (fs.existsSync(distPath)) {
           console.error("[Static] Contents of distPath:", fs.readdirSync(distPath));
         }
-        return res.status(404).send("index.html not found");
+        // Serve a helpful error page instead of 404
+        const errorHtml = `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>Build Error</title>
+              <style>
+                body { margin: 0; padding: 20px; font-family: sans-serif; background: #f5f5f5; }
+                .error { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 50px auto; }
+                h1 { color: #d32f2f; margin-top: 0; }
+                p { color: #666; line-height: 1.6; }
+                code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+                .path { background: #fff3cd; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 12px; }
+              </style>
+            </head>
+            <body>
+              <div class="error">
+                <h1>❌ Build Output Not Found</h1>
+                <p>The application has not been built yet. Please run <code>npm run build</code> to create the production build.</p>
+                <p><strong>Looking for:</strong></p>
+                <div class="path">${indexPath}</div>
+                <p><strong>Available paths:</strong></p>
+                <div class="path">${distPath}</div>
+              </div>
+            </body>
+          </html>
+        `;
+        return res.status(200).set({ "Content-Type": "text/html" }).send(errorHtml);
       }
       
       let html = await fs.promises.readFile(indexPath, "utf-8");
@@ -196,16 +265,49 @@ export function serveStatic(app: Express) {
       const envScript = `
         <script>
           window.__VITE_OAUTH_PORTAL_URL = "${ENV.oAuthPortalUrl || "https://manus.im"}";
-          window.__VITE_APP_ID = "${ENV.appId || ""}";
+          window.__VITE_APP_ID = "${ENV.appId || ""}";  
         </script>
       `;
-      html = html.replace("<body>", `<body>${envScript}`);
+      // Try to inject before </head>, then </body>, then just append
+      if (html.includes("</head>")) {
+        html = html.replace("</head>", `${envScript}</head>`);
+      } else if (html.includes("<body>")) {
+        html = html.replace("<body>", `<body>${envScript}`);
+      } else {
+        html += envScript;
+      }
       
       res.set({ "Content-Type": "text/html" }).send(html);
     } catch (error) {
       console.error("[Static] Error serving index.html:", error);
       console.error("[Static] Error details:", error instanceof Error ? error.message : String(error));
-      res.status(500).send("Internal Server Error");
+      // Serve a helpful error page instead of 500
+      const errorHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Server Error</title>
+            <style>
+              body { margin: 0; padding: 20px; font-family: sans-serif; background: #f5f5f5; }
+              .error { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 50px auto; }
+              h1 { color: #d32f2f; margin-top: 0; }
+              p { color: #666; line-height: 1.6; }
+              code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+            </style>
+          </head>
+          <body>
+            <div class="error">
+              <h1>⚠️ Server Error</h1>
+              <p>An error occurred while serving the application.</p>
+              <p><strong>Error:</strong> <code>${error instanceof Error ? error.message : String(error)}</code></p>
+              <p>Please try refreshing the page.</p>
+            </div>
+          </body>
+        </html>
+      `;
+      res.status(200).set({ "Content-Type": "text/html" }).send(errorHtml);
     }
   });
 }
