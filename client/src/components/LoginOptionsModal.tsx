@@ -7,8 +7,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Store, User } from "lucide-react";
-import { getLoginUrl, getBoutiqueSignupUrl } from "@/const";
+import { Store, User, AlertCircle } from "lucide-react";
+import { getLoginUrl, getBoutiqueSignupUrl, isOAuthConfigured } from "@/const";
 
 interface LoginOptionsModalProps {
   open: boolean;
@@ -17,8 +17,13 @@ interface LoginOptionsModalProps {
 
 export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps) {
   const [loading, setLoading] = useState(false);
+  const oauthConfigured = isOAuthConfigured();
 
   const handleCustomerLogin = () => {
+    if (!oauthConfigured) {
+      alert('OAuth is not configured yet. Please contact support or check back later.');
+      return;
+    }
     setLoading(true);
     // Store the dashboard URL in localStorage so OAuth callback can redirect there
     localStorage.setItem('oauth_return_url', '/dashboard');
@@ -26,6 +31,10 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
   };
 
   const handleBoutiqueSignup = () => {
+    if (!oauthConfigured) {
+      alert('OAuth is not configured yet. Please contact support or check back later.');
+      return;
+    }
     setLoading(true);
     // Store the boutique dashboard URL in localStorage so OAuth callback can redirect there
     localStorage.setItem('oauth_return_url', '/boutique-dashboard');
@@ -42,12 +51,21 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
           </DialogDescription>
         </DialogHeader>
 
+        {!oauthConfigured && (
+          <div className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+            <p className="text-sm text-yellow-800">
+              Authentication is being set up. Please try again in a few moments.
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-6">
           {/* Customer Login */}
           <button
             onClick={handleCustomerLogin}
-            disabled={loading}
-            className="flex flex-col items-center justify-center gap-3 p-6 rounded-lg border-2 border-border hover:border-primary hover:bg-primary/5 transition-all disabled:opacity-50"
+            disabled={loading || !oauthConfigured}
+            className="flex flex-col items-center justify-center gap-3 p-6 rounded-lg border-2 border-border hover:border-primary hover:bg-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <User className="w-8 h-8 text-primary" />
             <div className="text-center">
@@ -61,8 +79,8 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
           {/* Boutique Signup */}
           <button
             onClick={handleBoutiqueSignup}
-            disabled={loading}
-            className="flex flex-col items-center justify-center gap-3 p-6 rounded-lg border-2 border-border hover:border-secondary hover:bg-secondary/5 transition-all disabled:opacity-50"
+            disabled={loading || !oauthConfigured}
+            className="flex flex-col items-center justify-center gap-3 p-6 rounded-lg border-2 border-border hover:border-secondary hover:bg-secondary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Store className="w-8 h-8 text-secondary" />
             <div className="text-center">
