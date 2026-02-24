@@ -6,9 +6,10 @@ export const getLoginUrl = () => {
   const oauthPortalUrl = (window as any).__VITE_OAUTH_PORTAL_URL || "https://manus.im";
   const appId = (window as any).__VITE_APP_ID || "";
   
+  // If OAuth is not configured, return a placeholder URL
   if (!appId) {
-    console.error("[OAuth] VITE_APP_ID is not configured");
-    throw new Error("OAuth configuration missing: VITE_APP_ID");
+    console.warn("[OAuth] VITE_APP_ID is not configured. OAuth features will be disabled.");
+    return "#oauth-not-configured";
   }
   
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
@@ -29,9 +30,10 @@ export const getBoutiqueSignupUrl = () => {
   const oauthPortalUrl = (window as any).__VITE_OAUTH_PORTAL_URL || "https://manus.im";
   const appId = (window as any).__VITE_APP_ID || "";
   
+  // If OAuth is not configured, return a placeholder URL
   if (!appId) {
-    console.error("[OAuth] VITE_APP_ID is not configured");
-    throw new Error("OAuth configuration missing: VITE_APP_ID");
+    console.warn("[OAuth] VITE_APP_ID is not configured. OAuth features will be disabled.");
+    return "#oauth-not-configured";
   }
   
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
