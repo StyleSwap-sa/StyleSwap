@@ -225,6 +225,26 @@ export async function startServer() {
     }
   });
   
+  // Client error logging endpoint
+  app.post("/api/client-error", express.json(), (req, res) => {
+    try {
+      const { context, message, stack, componentStack, url, timestamp } = req.body;
+      console.error(`[Client Error] ${context}:`, {
+        message,
+        url,
+        timestamp,
+        stack: stack ? stack.substring(0, 500) : 'N/A',
+        componentStack: componentStack ? componentStack.substring(0, 500) : 'N/A',
+      });
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[Client Error] Failed to log error:', error);
+      res.status(500).json({ error: 'Failed to log error' });
+    }
+  });
+  console.log("[Server] Client error logging endpoint registered:");
+  console.log("  - POST /api/client-error");
+  
   // Webhook endpoints
   app.post("/api/yoco/webhook", handleYokoWebhook);
   app.post("/api/yoco-boutique/webhook", handleYocoBoutiqueWebhook);
