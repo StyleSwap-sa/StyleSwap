@@ -1,11 +1,5 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
-// Check if OAuth is properly configured
-export const isOAuthConfigured = () => {
-  const appId = (window as any).__VITE_APP_ID || "";
-  return Boolean(appId);
-};
-
 // Generate login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = () => {
   // Get values from window object injected by server
