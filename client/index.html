@@ -3,69 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Static Test Page</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .container {
-        background: white;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        text-align: center;
-        max-width: 500px;
-      }
-      h1 {
-        color: #667eea;
-        margin: 0 0 20px 0;
-        font-size: 32px;
-      }
-      p {
-        color: #666;
-        margin: 10px 0;
-        line-height: 1.6;
-      }
-      .success {
-        color: #22c55e;
-        font-weight: bold;
-        font-size: 18px;
-      }
-      .timestamp {
-        color: #999;
-        font-size: 12px;
-        margin-top: 20px;
-        border-top: 1px solid #eee;
-        padding-top: 20px;
-      }
-    </style>
+    <title>Fitroom AI - Virtual Fitting Room</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <script type="module" src="/src/main.tsx"></script>
   </head>
   <body>
-    <div class="container">
-      <h1>✅ Static Page Works!</h1>
-      <p class="success">If you see this page, the server can serve static HTML.</p>
-      <p>This is a completely static page with NO JavaScript.</p>
-      <p>If you can see this, it means:</p>
-      <ul style="text-align: left; display: inline-block;">
-        <li>✅ Render is serving files correctly</li>
-        <li>✅ The server is running</li>
-        <li>✅ Static content works</li>
-      </ul>
-      <div class="timestamp">
-        <p>Rendered at: <strong id="time"></strong></p>
-        <p>This proves the server is working!</p>
-      </div>
-    </div>
-    <script>
-      // This script just shows the time - proves JavaScript can run
-      document.getElementById('time').textContent = new Date().toLocaleString();
-    </script>
+    <div id="root"></div>
   </body>
 </html>
