@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Store, User, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import { getLoginUrl, getBoutiqueSignupUrl, isOAuthConfigured } from "@/const";
 
 interface LoginOptionsModalProps {
@@ -21,7 +22,10 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
 
   const handleCustomerLogin = () => {
     if (!oauthConfigured) {
-      alert('OAuth is not configured yet. Please contact support or check back later.');
+      toast.error('Authentication Setup in Progress', {
+        description: 'OAuth is being configured. Please try again in a few moments.',
+        duration: 4000,
+      });
       return;
     }
     setLoading(true);
@@ -32,7 +36,10 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
 
   const handleBoutiqueSignup = () => {
     if (!oauthConfigured) {
-      alert('OAuth is not configured yet. Please contact support or check back later.');
+      toast.error('Authentication Setup in Progress', {
+        description: 'OAuth is being configured. Please try again in a few moments.',
+        duration: 4000,
+      });
       return;
     }
     setLoading(true);
