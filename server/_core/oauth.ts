@@ -3,6 +3,7 @@ import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import { COOKIE_NAME } from "@shared/const";
+import { ENV } from "./env";
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -11,6 +12,15 @@ function getQueryParam(req: Request, key: string): string | undefined {
 
 export function registerOAuthRoutes(app: Express) {
   console.log("[OAuth] Registering OAuth routes...");
+  
+  // OAuth configuration endpoint - returns appId and portalUrl
+  app.get("/api/oauth/config", (req: Request, res: Response) => {
+    console.log("[OAuth] Config endpoint called");
+    res.json({
+      appId: ENV.appId,
+      portalUrl: ENV.oAuthPortalUrl,
+    });
+  });
   
   // Test endpoint to debug OAuth configuration
   app.get("/api/oauth/debug", (req: Request, res: Response) => {

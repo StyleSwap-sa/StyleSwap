@@ -7,6 +7,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <!-- OAuth Configuration - Injected by server -->
+    <script>
+      // This will be replaced by the server with actual values
+      window.__VITE_OAUTH_PORTAL_URL = "https://manus.im";
+      window.__VITE_APP_ID = "";
+      console.log('[HTML] OAuth config loaded:', {
+        appId: window.__VITE_APP_ID,
+        portalUrl: window.__VITE_OAUTH_PORTAL_URL
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </head>
   <body>

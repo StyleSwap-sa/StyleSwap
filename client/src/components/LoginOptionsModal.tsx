@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Store, User } from "lucide-react";
 import { getLoginUrl, getBoutiqueSignupUrl } from "@/const";
+import { toast } from "sonner";
 
 interface LoginOptionsModalProps {
   open: boolean;
@@ -18,18 +19,32 @@ interface LoginOptionsModalProps {
 export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps) {
   const [loading, setLoading] = useState(false);
 
-  const handleCustomerLogin = () => {
+  const handleCustomerLogin = async () => {
     setLoading(true);
-    // Store the dashboard URL in localStorage so OAuth callback can redirect there
-    localStorage.setItem('oauth_return_url', '/dashboard');
-    window.location.href = getLoginUrl();
+    try {
+      // Store the dashboard URL in localStorage so OAuth callback can redirect there
+      localStorage.setItem('oauth_return_url', '/dashboard');
+      const loginUrl = await getLoginUrl();
+      window.location.href = loginUrl;
+    } catch (error) {
+      console.error("[LoginModal] Error getting login URL:", error);
+      toast.error("Failed to initialize login. Please try again.");
+      setLoading(false);
+    }
   };
 
-  const handleBoutiqueSignup = () => {
+  const handleBoutiqueSignup = async () => {
     setLoading(true);
-    // Store the boutique dashboard URL in localStorage so OAuth callback can redirect there
-    localStorage.setItem('oauth_return_url', '/boutique-dashboard');
-    window.location.href = getBoutiqueSignupUrl();
+    try {
+      // Store the boutique dashboard URL in localStorage so OAuth callback can redirect there
+      localStorage.setItem('oauth_return_url', '/boutique-dashboard');
+      const signupUrl = await getBoutiqueSignupUrl();
+      window.location.href = signupUrl;
+    } catch (error) {
+      console.error("[LoginModal] Error getting signup URL:", error);
+      toast.error("Failed to initialize signup. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (

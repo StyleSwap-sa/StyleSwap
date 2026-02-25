@@ -68,6 +68,10 @@ export async function setupVite(app: Express, server: Server) {
         <script>
           window.__VITE_OAUTH_PORTAL_URL = "${ENV.oAuthPortalUrl || "https://manus.im"}";
           window.__VITE_APP_ID = "${ENV.appId || ""}";  
+          console.log('[Vite] OAuth variables injected:', {
+            appId: window.__VITE_APP_ID,
+            portalUrl: window.__VITE_OAUTH_PORTAL_URL
+          });
         </script>
       `;
       // Try to inject before </head>, then </body>, then just append
@@ -78,6 +82,7 @@ export async function setupVite(app: Express, server: Server) {
       } else {
         template += envScript;
       }
+      console.log('[Vite] Template injection - appId:', ENV.appId, 'portalUrl:', ENV.oAuthPortalUrl);
       
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
