@@ -28,7 +28,9 @@ export async function getDb() {
 
     try {
       console.log("[Database] Initializing PostgreSQL connection...");
-      const client = postgres(process.env.DATABASE_URL);
+      const client = postgres(process.env.DATABASE_URL, {
+        ssl: 'require',
+      });
       _db = drizzle(client);
       console.log("[Database] ✓ PostgreSQL connection initialized successfully");
       return _db;
@@ -44,7 +46,7 @@ export async function getDb() {
   return _initPromise;
 }
 
-export async function upsertUser(user: Partial<InsertUser> & { openId: string }): Promise<User | undefined> {
+export async function upsertUser(user: Partial<InsertUser> & { openId: string }): Promise<any | undefined> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
   }
@@ -315,7 +317,6 @@ export async function getBoutiquesList(limit = 100, offset = 0) {
       })
       .from(boutiques)
       .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
-      .orderBy(desc(boutiques.createdAt))
       .limit(limit)
       .offset(offset);
 
@@ -326,60 +327,180 @@ export async function getBoutiquesList(limit = 100, offset = 0) {
   }
 }
 
-export async function getBoutiqueDetails(boutiqueId: number) {
+export async function getBoutiqueById(boutiqueId: number) {
   const db = await getDb();
-  if (!db) return null;
+  if (!db) return undefined;
 
   try {
-    const boutique = await db
-      .select({
-        id: boutiques.id,
-        name: boutiques.name,
-        slug: boutiques.slug,
-        status: boutiques.status,
-        createdAt: boutiques.createdAt,
-        totalCredits: boutiqueCredits.totalCredits,
-        usedCredits: boutiqueCredits.usedCredits,
-        remainingCredits: boutiqueCredits.remainingCredits,
-      })
-      .from(boutiques)
-      .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
-      .where(eq(boutiques.id, boutiqueId))
-      .limit(1);
-
-    return boutique.length > 0 ? boutique[0] : null;
+    const result = await db.select().from(boutiques).where(eq(boutiques.id, boutiqueId)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
   } catch (error) {
-    console.error('[Database] Failed to get boutique details:', error);
-    return null;
+    console.error('[Database] Failed to get boutique:', error);
+    return undefined;
   }
 }
 
+export async function getBoutiqueBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  try {
+    const result = await db.select().from(boutiques).where(eq(boutiques.slug, slug)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error) {
+    console.error('[Database] Failed to get boutique by slug:', error);
+    return undefined;
+  }
+}
+
+export async function getBoutiqueCredits(boutiqueId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  try {
+    const result = await db.select().from(boutiqueCredits).where(eq(boutiqueCredits.boutiqueId, boutiqueId)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error) {
+    console.error('[Database] Failed to get boutique credits:', error);
+    return undefined;
+  }
+}
+
+export async function deductBoutiqueCredits(boutiqueId: number, amount: number) {
+  const db = await getDb();
+  if (!db) throw new Error("[Database] Database connection not available");
+
+  try {
+    const credits = await getBoutiqueCredits(boutiqueId);
+    if (!credits || credits.remainingCredits < amount) {
+      throw new Error("Insufficient credits");
+    }
+
+    await db.update(boutiqueCredits)
+      .set({
+        usedCredits: sql`${boutiqueCredits.usedCredits} + ${amount}`,
+        remainingCredits: sql`${boutiqueCredits.remainingCredits} - ${amount}`,
+      })
+      .where(eq(boutiqueCredits.boutiqueId, boutiqueId));
+  } catch (error) {
+    console.error('[Database] Failed to deduct credits:', error);
+    throw error;
+  }
+}
+
+export async function getShopOrdersByBoutique(boutiqueId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select().from(shopOrders).where(eq(shopOrders.boutiqueId, boutiqueId));
+  } catch (error) {
+    console.error('[Database] Failed to get shop orders:', error);
+    return [];
+  }
+}
+
+export async function createShopOrder(data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("[Database] Database connection not available");
+
+  try {
+    return await db.insert(shopOrders).values(data);
+  } catch (error) {
+    console.error('[Database] Failed to create shop order:', error);
+    throw error;
+  }
+}
+
+export async function updateShopOrder(orderId: number, data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("[Database] Database connection not available");
+
+  try {
+    return await db.update(shopOrders).set(data).where(eq(shopOrders.id, orderId));
+  } catch (error) {
+    console.error('[Database] Failed to update shop order:', error);
+    throw error;
+  }
+}
+
+
+// Order queries
+export async function createOrder(data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("[Database] Database connection not available");
+
+  try {
+    return await db.insert(shopOrders).values(data);
+  } catch (error) {
+    console.error('[Database] Failed to create order:', error);
+    throw error;
+  }
+}
+
+export async function getOrdersByCustomer(customerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select().from(shopOrders).where(eq(shopOrders.customerId, customerId));
+  } catch (error) {
+    console.error('[Database] Failed to get customer orders:', error);
+    return [];
+  }
+}
+
+export async function getOrdersByBoutique(boutiqueId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    return await db.select().from(shopOrders).where(eq(shopOrders.boutiqueId, boutiqueId));
+  } catch (error) {
+    console.error('[Database] Failed to get boutique orders:', error);
+    return [];
+  }
+}
+
+export async function getOrderById(orderId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  try {
+    const result = await db.select().from(shopOrders).where(eq(shopOrders.id, orderId)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error) {
+    console.error('[Database] Failed to get order:', error);
+    return undefined;
+  }
+}
+
+export async function updateOrderStatus(orderId: number, status: string) {
+  const db = await getDb();
+  if (!db) throw new Error("[Database] Database connection not available");
+
+  try {
+    return await db.update(shopOrders).set({ status }).where(eq(shopOrders.id, orderId));
+  } catch (error) {
+    console.error('[Database] Failed to update order status:', error);
+    throw error;
+  }
+}
+
+// Admin Analytics - Monthly Credits Usage
 export async function getMonthlyCreditsUsage() {
   const db = await getDb();
   if (!db) return [];
 
   try {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    
-    // Use Drizzle query builder with proper GROUP BY handling
-    const usage = await db
-      .select({
-        date: sql<string>`DATE(${boutiqueTransactions.createdAt})`,
-        creditsUsed: sql<number>`SUM(CASE WHEN ${boutiqueTransactions.type} = 'usage' THEN ${boutiqueTransactions.amount} ELSE 0 END)`,
-        creditsPurchased: sql<number>`SUM(CASE WHEN ${boutiqueTransactions.type} = 'purchase' THEN ${boutiqueTransactions.amount} ELSE 0 END)`,
-      })
-      .from(boutiqueTransactions)
-      .where(gte(boutiqueTransactions.createdAt, thirtyDaysAgo))
-      .groupBy(sql`DATE(${boutiqueTransactions.createdAt})`)
-      .orderBy(sql`DATE(${boutiqueTransactions.createdAt}) DESC`);
-
-    return usage;
+    return await db.select().from(boutiqueTransactions);
   } catch (error) {
     console.error('[Database] Failed to get monthly credits usage:', error);
     return [];
   }
 }
 
+// Admin Analytics - Top Boutiques
 export async function getTopBoutiques(limit = 10) {
   const db = await getDb();
   if (!db) return [];
@@ -391,122 +512,14 @@ export async function getTopBoutiques(limit = 10) {
         name: boutiques.name,
         slug: boutiques.slug,
         usedCredits: boutiqueCredits.usedCredits,
-        totalCredits: boutiqueCredits.totalCredits,
       })
       .from(boutiques)
       .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
-      .orderBy(desc(boutiqueCredits.usedCredits))
       .limit(limit);
 
     return topBoutiques;
   } catch (error) {
     console.error('[Database] Failed to get top boutiques:', error);
     return [];
-  }
-}
-
-// TODO: add feature queries here as your schema grows.
-
-
-// Phase 1: Order Management Functions
-export async function createOrder(order: {
-  orderNumber: string;
-  customerId: number;
-  boutiqueId: number;
-  productId?: number;
-  quantity: number;
-  size?: string;
-  color?: string;
-  amount: number;
-  deliveryAddress?: string;
-  customerPhone?: string;
-  notes?: string;
-}) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Cannot create order: database not available");
-  }
-
-  try {
-    const result = await db.insert(shopOrders).values(order);
-    return result;
-  } catch (error) {
-    console.error('[Database] Failed to create order:', error);
-    throw error;
-  }
-}
-
-export async function getOrdersByCustomer(customerId: number) {
-  const db = await getDb();
-  if (!db) {
-    return [];
-  }
-
-  try {
-    const orders = await db
-      .select()
-      .from(shopOrders)
-      .where(eq(shopOrders.customerId, customerId))
-      .orderBy(desc(shopOrders.createdAt));
-    return orders;
-  } catch (error) {
-    console.error('[Database] Failed to get customer orders:', error);
-    return [];
-  }
-}
-
-export async function getOrdersByBoutique(boutiqueId: number) {
-  const db = await getDb();
-  if (!db) {
-    return [];
-  }
-
-  try {
-    const orders = await db
-      .select()
-      .from(shopOrders)
-      .where(eq(shopOrders.boutiqueId, boutiqueId))
-      .orderBy(desc(shopOrders.createdAt));
-    return orders;
-  } catch (error) {
-    console.error('[Database] Failed to get boutique orders:', error);
-    return [];
-  }
-}
-
-export async function getOrderById(orderId: number) {
-  const db = await getDb();
-  if (!db) {
-    return null;
-  }
-
-  try {
-    const order = await db
-      .select()
-      .from(shopOrders)
-      .where(eq(shopOrders.id, orderId))
-      .limit(1);
-    return order[0] || null;
-  } catch (error) {
-    console.error('[Database] Failed to get order:', error);
-    return null;
-  }
-}
-
-export async function updateOrderStatus(orderId: number, status: string) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Cannot update order: database not available");
-  }
-
-  try {
-    const result = await db
-      .update(shopOrders)
-      .set({ status: status as any })
-      .where(eq(shopOrders.id, orderId));
-    return result;
-  } catch (error) {
-    console.error('[Database] Failed to update order status:', error);
-    throw error;
   }
 }
