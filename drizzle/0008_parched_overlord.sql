@@ -1,1 +1,0 @@
-ALTER TABLE `webhookEvents` ADD PRIMARY KEY(`id`);
