@@ -35,6 +35,19 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 
 
 export async function startServer() {
   console.log("[Server] Starting initialization...");
+  
+  // Run database migrations
+  try {
+    console.log("[Server] Running database migrations...");
+    const { migrate } = await import("drizzle-orm/postgres-js/migrator");
+    const { sql } = await import("../db");
+    await migrate(sql, { migrationsFolder: "./drizzle/migrations" });
+    console.log("[Server] ✅ Database migrations completed successfully");
+  } catch (migrationError) {
+    console.error("[Server] ⚠️ Migration warning (may be expected if tables already exist):", migrationError instanceof Error ? migrationError.message : migrationError);
+    // Don't fail startup if migrations fail - tables might already exist
+  }
+  
   const app = express();
   const server = createServer(app);
 
