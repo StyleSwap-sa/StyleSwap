@@ -1,4 +1,4 @@
-import { pgTable, pgSchema, AnyPgColumn, index, foreignKey, serial, varchar, text, timestamp, pgEnum, decimal, primaryKey, unique } from "drizzle-orm/pg-core"
+import { pgTable, pgSchema, index, foreignKey, serial, varchar, text, timestamp, pgEnum, decimal, primaryKey, unique } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 // PostgreSQL Enums

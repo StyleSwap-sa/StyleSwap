@@ -36,16 +36,35 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 
 export async function startServer() {
   console.log("[Server] Starting initialization...");
   
-  // Run database migrations
+  // Initialize database schema
   try {
-    console.log("[Server] Running database migrations...");
-    const { migrate } = await import("drizzle-orm/postgres-js/migrator");
+    console.log("[Server] Initializing database schema...");
     const { sql } = await import("../db");
-    await migrate(sql, { migrationsFolder: "./drizzle/migrations" });
-    console.log("[Server] ✅ Database migrations completed successfully");
-  } catch (migrationError) {
-    console.error("[Server] ⚠️ Migration warning (may be expected if tables already exist):", migrationError instanceof Error ? migrationError.message : migrationError);
-    // Don't fail startup if migrations fail - tables might already exist
+    
+    // Create users table if it doesn't exist
+    await sql.unsafe(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY NOT NULL,
+        \"openId\" VARCHAR(64) UNIQUE,
+        name TEXT,
+        email VARCHAR(320) UNIQUE,
+        \"loginMethod\" VARCHAR(64),
+        role VARCHAR(64) DEFAULT 'user' NOT NULL,
+        \"createdAt\" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        \"updatedAt\" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        \"lastSignedIn\" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        phone VARCHAR(20),
+        \"userType\" VARCHAR(64) DEFAULT 'customer' NOT NULL,
+        \"currentBoutiqueId\" INTEGER,
+        \"freeTrialUsed\" INTEGER DEFAULT 0 NOT NULL,
+        \"freeTrialUsedAt\" TIMESTAMP,
+        \"freeTrialExpiresAt\" TIMESTAMP
+      )
+    `);
+    
+    console.log("[Server] ✅ Database schema initialized successfully");
+  } catch (dbError) {
+    console.error("[Server] ⚠️ Database initialization warning:", dbError instanceof Error ? dbError.message : dbError);
   }
   
   const app = express();
