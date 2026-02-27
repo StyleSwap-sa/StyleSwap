@@ -2879,3 +2879,14 @@ This approach:
 - [ ] Fix OAuth callback endpoint
 - [ ] Test authentication flow
 - [ ] Verify login works on dev server
+
+
+## Phase 28: Promotional Free Trial System (NEW)
+- [x] Add signup_count field to track total signups
+- [x] Implement first 100 signups promotion logic
+- [x] Grant 2 free try-ons (credits) to first 100 users
+- [x] Remove default 1 free credit from all signups
+- [ ] Add promotional banner to homepage
+- [ ] Display "Only X spots left" message on signup page
+- [ ] Test promotional system end-to-end
+- [ ] Verify credits are correctly allocated

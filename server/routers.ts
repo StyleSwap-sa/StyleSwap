@@ -34,6 +34,7 @@ import { subscriptionAdminRouter } from "./routers/subscriptionAdmin";
 import { subscriptionRouter } from "./routers/subscription";
 import { freeTrialRouter } from "./routers/freetrial";
 import { widgetRouter } from "./routers/widget";
+import { promotionalRouter } from "./routers/promotional";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
 
 export const appRouter = router({
@@ -96,6 +97,7 @@ export const appRouter = router({
   verification: verificationRouter,
   freeTrial: freeTrialRouter,
   widget: widgetRouter,
+  promotional: promotionalRouter,
   fitroom: router({
     getCredits: publicProcedure.query(async () => {
       try {
