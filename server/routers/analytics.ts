@@ -1,7 +1,9 @@
 import { protectedProcedure, adminProcedure, publicProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
-import { tryOnAnalytics, analyticsSnapshots, tryOnResults } from "../../drizzle/schema";
+// import { tryOnAnalytics, analyticsSnapshots } from "../../drizzle/schema";
+import { tryOnResults } from "../../drizzle/schema";
+// TODO: tryOnAnalytics and analyticsSnapshots tables need to be created
 import { sql, eq, and, gte, lte, desc } from "drizzle-orm";
 
 export const analyticsRouter = {

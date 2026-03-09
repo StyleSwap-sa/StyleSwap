@@ -1,7 +1,9 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
-import { payouts, payoutTransactions, payoutAuditLog, boutiqueBankAccounts, boutiques } from "../../drizzle/schema";
+// import { payouts, payoutTransactions, payoutAuditLog, boutiqueBankAccounts } from "../../drizzle/schema";
+import { boutiques } from "../../drizzle/schema";
+// TODO: payouts, payoutTransactions, payoutAuditLog, boutiqueBankAccounts tables need to be created
 import { eq, and, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getPayout } from "../yoco-payouts";

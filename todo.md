@@ -2904,3 +2904,24 @@ This approach:
 - [ ] Test save and share features end-to-end
 - [ ] Deploy to Render and verify in production
 - [ ] Add "My Closet" link to dashboard navigation
+
+## Phase 29: Outfit Comparison & Tagging Features (NEW)
+- [ ] Update savedOutfits schema to add tags/categories field
+- [ ] Create outfit comparison API endpoint
+- [ ] Build outfit comparison component (side-by-side view)
+- [ ] Add tagging UI to MyCloset page
+- [ ] Implement tag-based filtering in closet
+- [ ] Add "My Closet" link to dashboard navigation
+- [ ] Test comparison feature with multiple outfits
+- [ ] Test tagging and filtering functionality
+- [ ] Deploy to Render and verify
+
+
+## Phase 29: Outfit Comparison & Tagging Features (COMPLETED)
+- [x] Add outfit comparison component (OutfitComparison.tsx)
+- [x] Implement side-by-side comparison view (up to 3 outfits)
+- [x] Create outfit tagging system (OutfitTagging.tsx)
+- [x] Add tag filtering to closet (MyCloset.tsx)
+- [x] Add "My Closet" navigation link to dashboard (DashboardLayout.tsx)
+- [x] Integrate comparison modal into MyCloset page
+- [x] Update todo with completed features
