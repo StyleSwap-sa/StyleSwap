@@ -59,6 +59,7 @@ const ForBoutiques = lazy(() => import("./pages/B2BLanding"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const BodyModels = lazy(() => import("./pages/BodyModels"));
 const WidgetDashboard = lazy(() => import("./pages/WidgetDashboard"));
+const MyCloset = lazy(() => import("./pages/MyCloset"));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -136,6 +137,7 @@ export default function App() {
               <Route path="/developer" component={DeveloperPortal} />
               <Route path="/body-models" component={BodyModels} />
               <Route path="/boutique/:boutiqueId/widget" component={WidgetDashboard} />
+              <Route path="/closet" component={MyCloset} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>
@@ -144,4 +146,4 @@ export default function App() {
     </ThemeProvider>
   );
 }
-// Force rebuild - Mon Feb 24 00:00:00 GMT 2026
+// Force rebuild - Sun Mar 09 00:00:00 GMT 2026

@@ -2890,3 +2890,17 @@ This approach:
 - [ ] Display "Only X spots left" message on signup page
 - [ ] Test promotional system end-to-end
 - [ ] Verify credits are correctly allocated
+
+## Phase 28: Save to Closet & Social Sharing Features (NEW)
+- [x] Create savedOutfits table in database schema
+- [x] Add API endpoints for saving/retrieving outfits (closet router)
+- [x] Create "Save to Closet" button component (SaveToClosetButton.tsx)
+- [x] Add closet/saved outfits page (MyCloset.tsx)
+- [x] Implement WhatsApp sharing functionality (SocialShareButtons.tsx)
+- [x] Implement Instagram sharing functionality (SocialShareButtons.tsx)
+- [x] Implement TikTok sharing functionality (SocialShareButtons.tsx)
+- [x] Create use-toast hook for notifications
+- [x] Create toast UI components
+- [ ] Test save and share features end-to-end
+- [ ] Deploy to Render and verify in production
+- [ ] Add "My Closet" link to dashboard navigation

@@ -130,12 +130,11 @@ export const boutiques = pgTable("boutiques", {
 	tiktokHandle: varchar({ length: 255 }),
 	facebookUrl: varchar({ length: 500 }),
 	whatsappNumber: varchar({ length: 20 }),
-},
-(table) => [
-	unique("boutiques_slug_unique").on(table.slug),
-	index("idx_boutique_owner").on(table.ownerId),
-	index("idx_boutique_status").on(table.status),
-]);
+	},
+	(table) => [
+		index("idx_boutique_owner").on(table.ownerId),
+		index("idx_boutique_status").on(table.status),
+	]);
 
 export const deletionLogs = pgTable("deletionLogs", {
 	id: serial().primaryKey().notNull(),
@@ -210,10 +209,7 @@ export const paymentReconciliation = pgTable("paymentReconciliation", {
 	notes: text(),
 	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-},
-(table) => [
-	unique("paymentReconciliation_yocoTransactionId_unique").on(table.yocoTransactionId),
-]);
+	});
 
 export const productSizeVariants = pgTable("productSizeVariants", {
 	id: serial().primaryKey().notNull(),
@@ -287,14 +283,13 @@ export const tryOnResults = pgTable("tryOnResults", {
 	flowType: flowTypeEnum('flow_type').default('b2c').notNull(),
 		selectedSize: productSizeEnum('product_size').default('M'),
 	sizeScalingFactor: decimal({ precision: 3, scale: 2 }).default('1.00'),
-},
-(table) => [
-	unique("tryOnResults_shareToken_unique").on(table.shareToken),
-	index("idx_tryon_boutique").on(table.boutiqueId),
-	index("idx_tryon_user").on(table.userId),
-	index("idx_tryon_flowtype").on(table.flowType),
-	index("idx_tryon_size").on(table.selectedSize),
-]);
+	},
+	(table) => [
+		index("idx_tryon_boutique").on(table.boutiqueId),
+		index("idx_tryon_user").on(table.userId),
+		index("idx_tryon_flowtype").on(table.flowType),
+		index("idx_tryon_size").on(table.selectedSize),
+	]);
 
 export const userCredits = pgTable("userCredits", {
 	id: serial().primaryKey().notNull(),
@@ -326,11 +321,7 @@ export const users = pgTable("users", {
 	freeTrialUsed: serial().default(0).notNull(),
 	freeTrialUsedAt: timestamp({ mode: 'string' }),
 	freeTrialExpiresAt: timestamp({ mode: 'string' }),
-},
-(table) => [
-	unique("users_openId_unique").on(table.openId),
-	unique("users_email_unique").on(table.email),
-]);
+	});
 
 export const webhookAlerts = pgTable("webhookAlerts", {
 	id: serial().primaryKey().notNull(),
@@ -362,10 +353,7 @@ export const webhookEvents = pgTable("webhookEvents", {
 	processedAt: timestamp({ mode: 'string' }),
 	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
-},
-(table) => [
-	unique("webhookEvents_externalEventId_unique").on(table.externalEventId),
-]);
+	});
 
 export const reviews = pgTable("reviews", {
 	id: serial().primaryKey().notNull(),
@@ -601,4 +589,25 @@ export const widgetAnalytics = pgTable("widgetAnalytics", {
 	index("idx_widget_analytics_widget").on(table.widgetId),
 	index("idx_widget_analytics_event").on(table.eventType),
 	index("idx_widget_analytics_timestamp").on(table.timestamp),
+]);
+
+// Saved Outfits (Closet) Table
+export const savedOutfits = pgTable("savedOutfits", {
+	id: serial().primaryKey().notNull(),
+	userId: serial().notNull().references(() => users.id),
+	tryOnResultId: serial().notNull().references(() => tryOnResults.id),
+	title: varchar({ length: 255 }).notNull(),
+	description: text(),
+	watermarkedImageUrl: varchar({ length: 500 }).notNull(),
+	isFavorite: serial().default(0).notNull(),
+	comparisonNotes: text(),
+	shareCount: serial().default(0).notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+},
+(table) => [
+	index("idx_saved_outfits_user").on(table.userId),
+	index("idx_saved_outfits_tryon").on(table.tryOnResultId),
+	index("idx_saved_outfits_created").on(table.createdAt),
+	index("idx_saved_outfits_favorite").on(table.isFavorite),
 ]);

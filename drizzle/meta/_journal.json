@@ -1,1 +1,13 @@
-{"version":"5","dialect":"postgresql","entries":[]}
+{
+  "version": "5",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1773056090939,
+      "tag": "0000_slippery_morg",
+      "breakpoints": true
+    }
+  ]
+}
