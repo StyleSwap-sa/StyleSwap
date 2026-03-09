@@ -538,3 +538,64 @@ export const widgets = pgTable("widgets", {
 	config: text(),
 	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
+
+
+// Outfit Voting Tables
+export const outfitVotings = pgTable("outfitVotings", {
+	id: serial().primaryKey().notNull(),
+	userId: integer().notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	description: text(),
+	outfitAImageUrl: text().notNull(),
+	outfitBImageUrl: text().notNull(),
+	outfitCImageUrl: text(),
+	outfitATitle: varchar({ length: 100 }).default("Outfit A"),
+	outfitBTitle: varchar({ length: 100 }).default("Outfit B"),
+	outfitCTitle: varchar({ length: 100 }).default("Outfit C"),
+	totalVotes: integer().default(0),
+	isActive: boolean().default(true),
+	expiresAt: timestamp({ mode: "string" }),
+	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
+});
+
+export const outfitVotes = pgTable("outfitVotes", {
+	id: serial().primaryKey().notNull(),
+	votingId: integer().notNull(),
+	voterId: integer().notNull(),
+	selectedOutfit: varchar({ length: 10 }).notNull(), // "A", "B", or "C"
+	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+// Outfit Discovery Feed Tables
+export const outfitDiscoveryFeed = pgTable("outfitDiscoveryFeed", {
+	id: serial().primaryKey().notNull(),
+	outfitId: integer().notNull(),
+	userId: integer().notNull(),
+	imageUrl: text().notNull(),
+	title: varchar({ length: 255 }).notNull(),
+	description: text(),
+	tags: text(), // JSON array of tags
+	likes: integer().default(0),
+	views: integer().default(0),
+	isPublic: boolean().default(true),
+	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
+});
+
+export const outfitLikes = pgTable("outfitLikes", {
+	id: serial().primaryKey().notNull(),
+	outfitId: integer().notNull(),
+	userId: integer().notNull(),
+	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const outfitReports = pgTable("outfitReports", {
+	id: serial().primaryKey().notNull(),
+	outfitId: integer().notNull(),
+	reportedBy: integer().notNull(),
+	reason: varchar({ length: 255 }).notNull(),
+	description: text(),
+	status: varchar({ length: 50 }).default("pending"),
+	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+});

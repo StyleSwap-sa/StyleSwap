@@ -60,6 +60,8 @@ const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const BodyModels = lazy(() => import("./pages/BodyModels"));
 const WidgetDashboard = lazy(() => import("./pages/WidgetDashboard"));
 const MyCloset = lazy(() => import("./pages/MyCloset"));
+const OutfitVoting = lazy(() => import("./pages/OutfitVoting"));
+const OutfitDiscovery = lazy(() => import("./pages/OutfitDiscovery"));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -138,6 +140,8 @@ export default function App() {
               <Route path="/body-models" component={BodyModels} />
               <Route path="/boutique/:boutiqueId/widget" component={WidgetDashboard} />
               <Route path="/closet" component={MyCloset} />
+              <Route path="/voting" component={OutfitVoting} />
+              <Route path="/discover" component={OutfitDiscovery} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>

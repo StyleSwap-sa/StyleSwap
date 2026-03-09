@@ -2925,3 +2925,32 @@ This approach:
 - [x] Add "My Closet" navigation link to dashboard (DashboardLayout.tsx)
 - [x] Integrate comparison modal into MyCloset page
 - [x] Update todo with completed features
+
+
+## Phase 30: Outfit Voting ("Pick My Outfit") Feature (COMPLETED)
+- [x] Create outfitVotings table in database schema
+- [x] Create outfitVotes table to track individual votes
+- [x] Add API endpoints for creating voting polls (votingRouter)
+- [x] Add API endpoints for submitting votes
+- [x] Add API endpoints for retrieving voting results
+- [x] Create OutfitVoting component for voting UI (OutfitVoting.tsx)
+- [x] Create VotingResults component to display results
+- [x] Add "Create Voting Poll" button to dashboard
+- [x] Integrate voting feature into dashboard navigation
+- [x] Add voting route to App.tsx
+- [ ] Deploy to Render
+
+## Phase 31: Outfit Discovery Feed Feature (COMPLETED)
+- [x] Create outfitDiscoveryFeed table to track feed visibility
+- [x] Add API endpoint to fetch outfit feed (paginated) (discoveryRouter)
+- [x] Add API endpoint to like/unlike outfits
+- [x] Add API endpoint to report inappropriate outfits
+- [x] Create OutfitDiscoveryFeed component
+- [x] Create OutfitCard component for feed display
+- [x] Add pagination
+- [x] Add filter options (recent, popular, trending)
+- [x] Add search functionality for outfit discovery
+- [x] Create OutfitDiscovery page component
+- [x] Add "Discover Outfits" link to dashboard navigation
+- [x] Add discovery route to App.tsx
+- [ ] Deploy to Render

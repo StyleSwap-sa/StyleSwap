@@ -1,4 +1,4 @@
-import { COOKIE_NAME } from "../shared/const";
+import { COOKIE_NAME } from "@shared/const";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
@@ -36,6 +36,8 @@ import { freeTrialRouter } from "./routers/freetrial";
 import { widgetRouter } from "./routers/widget";
 import { promotionalRouter } from "./routers/promotional";
 import { closetRouter } from "./routers/closet";
+import { votingRouter } from "./routers/voting";
+import { discoveryRouter } from "./routers/discovery";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
 
 export const appRouter = router({
@@ -100,6 +102,8 @@ export const appRouter = router({
   widget: widgetRouter,
   promotional: promotionalRouter,
   closet: closetRouter,
+  voting: votingRouter,
+  discovery: discoveryRouter,
   fitroom: router({
     getCredits: publicProcedure.query(async () => {
       try {
