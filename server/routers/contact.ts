@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { notifyOwner } from "../_core/notification";
+import { sendInquiryConfirmationEmail } from "../email";
 
 const contactFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -60,11 +61,22 @@ Submitted at: ${new Date().toISOString()}
           content: emailContent,
         });
 
+        // Send confirmation email to customer
+        try {
+          await sendInquiryConfirmationEmail(
+            input.name,
+            input.email,
+            input.inquiryType as "general" | "enterprise" | "integration" | "support"
+          );
+          console.log("[Contact] Confirmation email sent to:", input.email);
+        } catch (error) {
+          console.error("[Contact] Error sending confirmation email:", error);
+          // Don't fail the request if confirmation email fails
+        }
+
         // For enterprise sales inquiries, also send to sales email
         if (input.inquiryType === "enterprise") {
           try {
-            // You can add additional email sending logic here if needed
-            // For now, the owner notification will be the primary alert
             console.log("[Contact] Enterprise sales inquiry received from:", input.email);
           } catch (error) {
             console.error("[Contact] Error processing enterprise inquiry:", error);
