@@ -2967,3 +2967,25 @@ This approach:
 - [x] Add like functionality to comments
 - [ ] Test comments feature end-to-end
 - [ ] Deploy to Render and verify
+
+
+## Phase 33: Comment Notifications Feature (COMPLETED)
+- [x] Create commentNotifications table in database schema
+- [x] Add API endpoints for creating notifications (notificationsRouter)
+- [x] Add API endpoints for fetching user notifications
+- [x] Add API endpoints for marking notifications as read
+- [x] Create NotificationCenter page for viewing all notifications (NotificationCenter.tsx)
+- [x] Integrate notifications into routes (App.tsx)
+- [x] Add unread count tracking
+- [ ] Deploy to Render
+
+## Phase 34: Comment Moderation Tools (COMPLETED)
+- [x] Create flaggedComments table in database schema
+- [x] Create moderationLogs table for audit trail
+- [x] Add API endpoints for flagging comments (moderationRouter)
+- [x] Add API endpoints for admin to view flagged comments
+- [x] Add API endpoints for admin to approve/reject/delete comments
+- [x] Create ModerationDashboard component for admins (ModerationDashboard.tsx)
+- [x] Add moderation status tracking
+- [x] Create moderation logs for audit trail
+- [ ] Deploy to Render

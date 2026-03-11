@@ -611,3 +611,41 @@ export const outfitComments = pgTable("outfitComments", {
 	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
 });
+
+
+// Comment Notifications Table
+export const commentNotifications = pgTable("commentNotifications", {
+	id: serial("id").primaryKey(),
+	userId: integer("userId").notNull().references(() => users.id),
+	commentId: integer("commentId").notNull().references(() => outfitComments.id),
+	outfitId: integer("outfitId").notNull().references(() => savedOutfits.id),
+	notificationType: text("notificationType").notNull(), // 'new_comment', 'comment_reply', 'comment_like'
+	isRead: boolean("isRead").default(false),
+	createdAt: timestamp("createdAt").defaultNow(),
+});
+
+// Flagged Comments Table for Moderation
+export const flaggedComments = pgTable("flaggedComments", {
+	id: serial("id").primaryKey(),
+	commentId: integer("commentId").notNull().references(() => outfitComments.id),
+	reportedBy: integer("reportedBy").notNull().references(() => users.id),
+	reason: text("reason").notNull(), // 'inappropriate', 'spam', 'offensive', 'other'
+	description: text("description"),
+	status: text("status").default("pending"), // 'pending', 'approved', 'rejected', 'deleted'
+	moderatedBy: integer("moderatedBy").references(() => users.id),
+	moderationNotes: text("moderationNotes"),
+	createdAt: timestamp("createdAt").defaultNow(),
+	updatedAt: timestamp("updatedAt").defaultNow(),
+});
+
+// Moderation Logs for Audit Trail
+export const moderationLogs = pgTable("moderationLogs", {
+	id: serial("id").primaryKey(),
+	moderatorId: integer("moderatorId").notNull().references(() => users.id),
+	action: text("action").notNull(), // 'flagged', 'approved', 'rejected', 'deleted'
+	targetType: text("targetType").notNull(), // 'comment', 'outfit', 'user'
+	targetId: integer("targetId").notNull(),
+	reason: text("reason"),
+	notes: text("notes"),
+	createdAt: timestamp("createdAt").defaultNow(),
+});
