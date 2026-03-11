@@ -241,14 +241,6 @@ export default function B2BLanding() {
       {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-secondary/5 border-y border-secondary/20">
         <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              SIMPLE, TRANSPARENT PRICING
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Pay only for what you use. Volume discounts available.
-            </p>
-          </div>
 
           <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
             {[
