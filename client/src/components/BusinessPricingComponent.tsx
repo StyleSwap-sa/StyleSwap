@@ -99,8 +99,6 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
       name: "Enterprise Retail Pro",
       price: null, // Custom pricing
       features: [
-        "20,000+ Virtual Try-Ons",
-        "Unlimited custom credits",
         "Full API integration",
         "White-label option",
         "Dedicated account manager",

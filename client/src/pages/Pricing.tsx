@@ -222,8 +222,6 @@ export default function Pricing() {
       name: "Enterprise Retail Pro",
       price: null,
       features: [
-        "20,000+ Virtual Try-Ons",
-        "Unlimited custom credits",
         "Full API integration",
         "White-label option",
         "Dedicated account manager",
