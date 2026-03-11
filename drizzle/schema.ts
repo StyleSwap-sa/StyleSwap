@@ -742,3 +742,61 @@ export const referralTracking = pgTable("referralTracking", {
 	index("idx_tracking_referred").on(table.referredUserId),
 	index("idx_tracking_referrer").on(table.referrerUserId),
 ]);
+
+
+// Affiliate Links Table (for StyleSwap internal tracking)
+export const affiliateLinks = pgTable("affiliateLinks", {
+	id: serial("id").primaryKey(),
+	affiliateName: varchar("affiliateName", { length: 255 }).notNull(), // e.g., "Partner A", "Influencer B"
+	affiliateCode: varchar("affiliateCode", { length: 50 }).notNull().unique(), // Unique tracking code
+	description: text("description"), // Notes about the affiliate
+	commissionRate: decimal("commissionRate", { precision: 5, scale: 2 }).default("5.00").notNull(), // 5% default
+	isActive: boolean("isActive").default(true),
+	createdAt: timestamp("createdAt").defaultNow(),
+	updatedAt: timestamp("updatedAt").defaultNow(),
+}, (table) => [
+	index("idx_affiliate_code").on(table.affiliateCode),
+	index("idx_affiliate_active").on(table.isActive),
+]);
+
+// Affiliate Tracking Table (tracks boutique sources)
+export const affiliateTracking = pgTable("affiliateTracking", {
+	id: serial("id").primaryKey(),
+	affiliateLinkId: integer("affiliateLinkId").notNull().references(() => affiliateLinks.id),
+	boutiqueId: integer("boutiqueId").notNull().references(() => boutiques.id),
+	trackingToken: varchar("trackingToken", { length: 255 }).notNull().unique(), // Unique token for this boutique-affiliate pair
+	source: varchar("source", { length: 50 }), // 'direct_link', 'email', 'social_media', etc.
+	ipAddress: varchar("ipAddress", { length: 45 }),
+	userAgent: text("userAgent"),
+	isConverted: boolean("isConverted").default(false), // True when boutique makes first purchase
+	convertedAt: timestamp("convertedAt"),
+	createdAt: timestamp("createdAt").defaultNow(),
+	updatedAt: timestamp("updatedAt").defaultNow(),
+}, (table) => [
+	index("idx_affiliate_tracking_link").on(table.affiliateLinkId),
+	index("idx_affiliate_tracking_boutique").on(table.boutiqueId),
+	index("idx_affiliate_tracking_token").on(table.trackingToken),
+	index("idx_affiliate_tracking_converted").on(table.isConverted),
+]);
+
+// Affiliate Commission Table (tracks 5% commission on clothing purchases)
+export const affiliateCommissions = pgTable("affiliateCommissions", {
+	id: serial("id").primaryKey(),
+	affiliateTrackingId: integer("affiliateTrackingId").notNull().references(() => affiliateTracking.id),
+	affiliateLinkId: integer("affiliateLinkId").notNull().references(() => affiliateLinks.id),
+	boutiqueId: integer("boutiqueId").notNull().references(() => boutiques.id),
+	clothingPurchaseAmount: decimal("clothingPurchaseAmount", { precision: 12, scale: 2 }).notNull(), // Total clothing purchase amount
+	commissionAmount: decimal("commissionAmount", { precision: 12, scale: 2 }).notNull(), // 5% of purchase
+	commissionRate: decimal("commissionRate", { precision: 5, scale: 2 }).default("5.00").notNull(), // Always 5%
+	externalTransactionId: varchar("externalTransactionId", { length: 255 }), // Reference to external payment system
+	status: varchar("status", { length: 50 }).default("pending").notNull(), // 'pending', 'approved', 'paid'
+	paidAt: timestamp("paidAt"),
+	notes: text("notes"),
+	createdAt: timestamp("createdAt").defaultNow(),
+	updatedAt: timestamp("updatedAt").defaultNow(),
+}, (table) => [
+	index("idx_commission_affiliate").on(table.affiliateLinkId),
+	index("idx_commission_boutique").on(table.boutiqueId),
+	index("idx_commission_status").on(table.status),
+	index("idx_commission_tracking").on(table.affiliateTrackingId),
+]);
