@@ -250,7 +250,7 @@ export default function B2BLanding() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
             {[
               {
                 credits: 100,
@@ -271,6 +271,12 @@ export default function B2BLanding() {
                 perCredit: "R1.25",
                 color: "from-orange-500/20 to-orange-600/20",
               },
+              {
+                name: "Enterprise Retail Pro",
+                price: "Custom",
+                color: "from-orange-600/30 to-orange-700/30",
+                enterprise: true,
+              },
             ].map((tier, i) => (
               <Card
                 key={i}
@@ -286,36 +292,83 @@ export default function B2BLanding() {
                       MOST POPULAR
                     </div>
                   )}
+                  {tier.enterprise && (
+                    <div className="text-xs font-bold bg-orange-500 text-white px-3 py-1 rounded-full w-fit mb-4">
+                      ENTERPRISE
+                    </div>
+                  )}
                   <CardTitle className="text-3xl font-bold">
-                    {tier.credits.toLocaleString()} Credits
+                    {tier.enterprise ? tier.name : tier.credits.toLocaleString() + " Credits"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
                     <div className="text-4xl font-bold mb-2">{tier.price}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {tier.perCredit} per try-on
-                    </div>
+                    {!tier.enterprise && (
+                      <div className="text-sm text-muted-foreground">
+                        {tier.perCredit} per try-on
+                      </div>
+                    )}
+                    {tier.enterprise && (
+                      <div className="text-sm text-muted-foreground">
+                        Contact for pricing
+                      </div>
+                    )}
                   </div>
-                  <ul className="space-y-3">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-5 h-5 text-primary" />
-                      <span>Valid for 30 days</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-5 h-5 text-primary" />
-                      <span>Full analytics</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-5 h-5 text-primary" />
-                      <span>24/7 support</span>
-                    </li>
-                  </ul>
-                  <Link href="/b2b/signup">
-                    <Button className="w-full cursor-pointer">
-                      Get Started
-                    </Button>
-                  </Link>
+                  {!tier.enterprise && (
+                    <ul className="space-y-3">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Valid for 30 days</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Full analytics</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>24/7 support</span>
+                      </li>
+                    </ul>
+                  )}
+                  {tier.enterprise && (
+                    <ul className="space-y-3">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Full API integration</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>White-label option</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Dedicated account manager</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Custom SLA & support</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Priority feature requests</span>
+                      </li>
+                    </ul>
+                  )}
+                  {!tier.enterprise && (
+                    <Link href="/b2b/signup">
+                      <Button className="w-full cursor-pointer">
+                        Get Started
+                      </Button>
+                    </Link>
+                  )}
+                  {tier.enterprise && (
+                    <a href="#contact-sales">
+                      <Button className="w-full cursor-pointer bg-orange-600 hover:bg-orange-700">
+                        Contact Sales
+                      </Button>
+                    </a>
+                  )}
                 </CardContent>
               </Card>
             ))}

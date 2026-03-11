@@ -11,7 +11,8 @@ export function ContactForm() {
     company: '',
     phone: '',
     message: '',
-    businessType: 'boutique'
+    businessType: 'boutique',
+    inquiryType: 'general'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,7 +44,8 @@ export function ContactForm() {
         company: '',
         phone: '',
         message: '',
-        businessType: 'boutique'
+        businessType: 'boutique',
+        inquiryType: 'general'
       });
       setIsSubmitting(false);
     }, 1000);
@@ -150,20 +152,37 @@ export function ContactForm() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold mb-2">Business Type</label>
-                <select
-                  name="businessType"
-                  value={formData.businessType}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border border-border/30 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
-                >
-                  <option value="boutique">Fashion Boutique</option>
-                  <option value="fastfashion">Fast Fashion Retailer</option>
-                  <option value="luxury">Luxury Brand</option>
-                  <option value="ecommerce">E-commerce Store</option>
-                  <option value="other">Other</option>
-                </select>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold mb-2">Inquiry Type</label>
+                  <select
+                    name="inquiryType"
+                    value={formData.inquiryType}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-border/30 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                  >
+                    <option value="general">General Inquiry</option>
+                    <option value="enterprise">Enterprise Sales</option>
+                    <option value="demo">Request Demo</option>
+                    <option value="integration">API Integration</option>
+                    <option value="support">Support</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold mb-2">Business Type</label>
+                  <select
+                    name="businessType"
+                    value={formData.businessType}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-border/30 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                  >
+                    <option value="boutique">Fashion Boutique</option>
+                    <option value="fastfashion">Fast Fashion Retailer</option>
+                    <option value="luxury">Luxury Brand</option>
+                    <option value="ecommerce">E-commerce Store</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
               </div>
 
               <div>
