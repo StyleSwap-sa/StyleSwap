@@ -14,7 +14,6 @@ interface CreditTopupProps {
 
 export function CreditTopup({ boutiqueId, currentCredits = 0, onSuccess }: CreditTopupProps) {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-  const [customAmount, setCustomAmount] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -28,10 +27,6 @@ export function CreditTopup({ boutiqueId, currentCredits = 0, onSuccess }: Credi
   ];
 
   const getSelectedPackage = () => {
-    if (selectedPackage === "custom" && customAmount) {
-      const credits = parseInt(customAmount);
-      return { credits, price: credits * 3.85 }; // Base rate for custom
-    }
     return creditPackages.find((pkg) => pkg.id === selectedPackage);
   };
 
@@ -63,7 +58,6 @@ export function CreditTopup({ boutiqueId, currentCredits = 0, onSuccess }: Credi
       if (result.success) {
         setSuccess(true);
         setSelectedPackage(null);
-        setCustomAmount("");
         setTimeout(() => {
           setSuccess(false);
           onSuccess?.();
@@ -121,37 +115,6 @@ export function CreditTopup({ boutiqueId, currentCredits = 0, onSuccess }: Credi
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* Custom Amount */}
-          <div>
-            <Label htmlFor="custom-credits" className="text-base font-semibold mb-2 block">
-              Or Enter Custom Amount
-            </Label>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <Input
-                  id="custom-credits"
-                  type="number"
-                  placeholder="Enter number of credits"
-                  value={customAmount}
-                  onChange={(e) => {
-                    setCustomAmount(e.target.value);
-                    if (e.target.value) {
-                      setSelectedPackage("custom");
-                    }
-                  }}
-                  min="1"
-                  className="h-10"
-                />
-              </div>
-              <div className="flex items-center px-3 bg-muted rounded-md">
-                <span className="text-sm font-medium">
-                  {customAmount ? `R${(parseInt(customAmount) * 3.85).toFixed(2)}` : "R0.00"}
-                </span>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Minimum: 1 credit (R3.85)</p>
           </div>
 
           {/* Non-Refundable Notice */}
