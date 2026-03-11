@@ -800,3 +800,96 @@ export const affiliateCommissions = pgTable("affiliateCommissions", {
 	index("idx_commission_status").on(table.status),
 	index("idx_commission_tracking").on(table.affiliateTrackingId),
 ]);
+
+
+// Push Notifications Table for all notification types
+export const pushNotifications = pgTable("pushNotifications", {
+	id: serial("id").primaryKey(),
+	userId: integer("userId").notNull().references(() => users.id),
+	notificationType: text("notificationType").notNull(), // 'poll_vote', 'outfit_comment', 'follow', 'mention', 'trending_outfit'
+	title: varchar({ length: 255 }).notNull(),
+	message: text().notNull(),
+	relatedUserId: integer("relatedUserId").references(() => users.id), // User who triggered the notification
+	relatedOutfitId: integer("relatedOutfitId").references(() => savedOutfits.id),
+	relatedPollId: integer("relatedPollId").references(() => outfitVotings.id),
+	isRead: boolean("isRead").default(false),
+	actionUrl: text("actionUrl"), // URL to navigate to when notification is clicked
+	createdAt: timestamp("createdAt").defaultNow().notNull(),
+	updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => [
+	index("idx_pushNotifications_userId").on(table.userId),
+	index("idx_pushNotifications_notificationType").on(table.notificationType),
+	index("idx_pushNotifications_isRead").on(table.isRead),
+	index("idx_pushNotifications_createdAt").on(table.createdAt),
+]);
+
+// Push Notification Preferences Table
+export const pushNotificationPreferences = pgTable("pushNotificationPreferences", {
+	id: serial("id").primaryKey(),
+	userId: integer("userId").notNull().unique().references(() => users.id),
+	pollVotes: boolean("pollVotes").default(true),
+	outfitComments: boolean("outfitComments").default(true),
+	follows: boolean("follows").default(true),
+	mentions: boolean("mentions").default(true),
+	trendingOutfits: boolean("trendingOutfits").default(true),
+	allNotifications: boolean("allNotifications").default(true), // Master toggle
+	createdAt: timestamp("createdAt").defaultNow().notNull(),
+	updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => [
+	index("idx_pushNotificationPreferences_userId").on(table.userId),
+]);
+
+// Poll Vote Notifications (specific tracking)
+export const pollVoteNotifications = pgTable("pollVoteNotifications", {
+	id: serial("id").primaryKey(),
+	pollId: integer("pollId").notNull().references(() => outfitVotings.id),
+	voterId: integer("voterId").notNull().references(() => users.id),
+	pollOwnerId: integer("pollOwnerId").notNull().references(() => users.id),
+	selectedOutfit: varchar({ length: 10 }).notNull(),
+	isNotified: boolean("isNotified").default(false),
+	createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+	index("idx_pollVoteNotifications_pollId").on(table.pollId),
+	index("idx_pollVoteNotifications_pollOwnerId").on(table.pollOwnerId),
+]);
+
+// Trending Outfits Notifications
+export const trendingOutfitNotifications = pgTable("trendingOutfitNotifications", {
+	id: serial("id").primaryKey(),
+	outfitId: integer("outfitId").notNull().references(() => savedOutfits.id),
+	userId: integer("userId").notNull().references(() => users.id),
+	trendingRank: integer("trendingRank"), // Position in trending list
+	engagementScore: integer("engagementScore"), // Votes, comments, shares combined
+	isNotified: boolean("isNotified").default(false),
+	createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+	index("idx_trendingOutfitNotifications_userId").on(table.userId),
+	index("idx_trendingOutfitNotifications_outfitId").on(table.outfitId),
+]);
+
+// Follow Notifications
+export const followNotifications = pgTable("followNotifications", {
+	id: serial("id").primaryKey(),
+	followerId: integer("followerId").notNull().references(() => users.id),
+	followingId: integer("followingId").notNull().references(() => users.id),
+	isNotified: boolean("isNotified").default(false),
+	createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+	index("idx_followNotifications_followingId").on(table.followingId),
+	index("idx_followNotifications_followerId").on(table.followerId),
+]);
+
+// Mention Notifications
+export const mentionNotifications = pgTable("mentionNotifications", {
+	id: serial("id").primaryKey(),
+	mentionedUserId: integer("mentionedUserId").notNull().references(() => users.id),
+	mentionedByUserId: integer("mentionedByUserId").notNull().references(() => users.id),
+	contextType: text("contextType").notNull(), // 'comment', 'outfit_description', 'caption'
+	contextId: integer("contextId").notNull(), // ID of the comment or outfit
+	message: text("message"),
+	isNotified: boolean("isNotified").default(false),
+	createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+	index("idx_mentionNotifications_mentionedUserId").on(table.mentionedUserId),
+	index("idx_mentionNotifications_mentionedByUserId").on(table.mentionedByUserId),
+]);
