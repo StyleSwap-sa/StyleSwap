@@ -15,6 +15,9 @@ function generateTrackingToken(): string {
   return `track_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 }
 
+// Legal disclaimer for affiliate commissions
+const AFFILIATE_LEGAL_NOTICE = "StyleSwap will receive 5% commission for purchases originating from the StyleSwap platform.";
+
 export const affiliateRouter = router({
   // Create new affiliate link (admin only)
   createAffiliateLink: protectedProcedure
@@ -129,6 +132,7 @@ export const affiliateRouter = router({
           trackingToken,
           trackingUrl,
           affiliateName: affiliate.affiliateName,
+          legalNotice: AFFILIATE_LEGAL_NOTICE,
         };
       } catch (error) {
         console.error("[Affiliate] Error generating tracking link:", error);
