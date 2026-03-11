@@ -66,6 +66,7 @@ const NotificationCenter = lazy(() => import("./pages/NotificationCenter"));
 const ModerationDashboard = lazy(() => import("./pages/ModerationDashboard"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const ReferralSignup = lazy(() => import("./pages/ReferralSignup"));
+const BuyCredits = lazy(() => import("./pages/BuyCredits"));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -150,6 +151,7 @@ export default function App() {
               <Route path="/moderation" component={ModerationDashboard} />
               <Route path="/profile/:userId" component={UserProfile} />
               <Route path="/referral/:referralCode" component={ReferralSignup} />
+              <Route path="/buy-credits" component={BuyCredits} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>
@@ -158,4 +160,4 @@ export default function App() {
     </ThemeProvider>
   );
 }
-// Force rebuild - Sun Mar 09 00:00:00 GMT 2026
+// Force rebuild - Wed Mar 11 16:30:00 GMT 2026
