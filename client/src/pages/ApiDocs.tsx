@@ -276,6 +276,23 @@ export default function ApiDocs() {
                             <li>• Effective rate: R0.93 per simulation</li>
                           </ul>
                         </div>
+                        <div className="border rounded-lg p-4 bg-orange-50 border-orange-300">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-semibold">Enterprise Retail Pro – Custom Pricing</span>
+                            <span className="text-xs font-bold bg-orange-100 text-orange-700 px-2 py-1 rounded">CUSTOM</span>
+                          </div>
+                          <ul className="space-y-1 text-xs">
+                            <li>• Full API integration</li>
+                            <li>• White-label option</li>
+                            <li>• Dedicated account manager</li>
+                            <li>• Custom SLA & support</li>
+                            <li>• Priority feature requests</li>
+                            <li>• Custom integrations available</li>
+                          </ul>
+                          <div className="mt-3 pt-3 border-t border-orange-200">
+                            <p className="text-xs text-slate-600">Contact sales@styleswap.co.za for custom pricing</p>
+                          </div>
+                        </div>
                         <div className="border-t pt-4 mt-4">
                           <p className="text-xs font-semibold">Additional simulations billed at plan rate.</p>
                           <p className="text-xs font-semibold mt-2">Seamless integration via widget, API, or social selling landing page.</p>
