@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Heart, Share2, Flag, Loader2, Search } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { CommentSection } from "@/components/CommentSection";
+import { LikeCounter } from "@/components/LikeCounter";
 import { useState } from "react";
 
 type SortOption = "recent" | "popular" | "trending";
@@ -273,20 +274,11 @@ function OutfitCard({
         </div>
 
         <div className="flex gap-2">
-          <Button
-            variant={outfit.isLiked ? "default" : "outline"}
-            size="sm"
-            className="flex-1"
-            onClick={() => onLike(outfit.id)}
-            disabled={isLiking}
-          >
-            <Heart
-              className={`w-4 h-4 mr-2 ${
-                outfit.isLiked ? "fill-current" : ""
-              }`}
-            />
-            Like
-          </Button>
+          <LikeCounter
+            outfitId={outfit.id}
+            initialLikes={outfit.likes || 0}
+            onLikeChange={() => onLike(outfit.id)}
+          />
           <Button variant="outline" size="sm">
             <Share2 className="w-4 h-4" />
           </Button>
