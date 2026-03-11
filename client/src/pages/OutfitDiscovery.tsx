@@ -22,6 +22,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Share2, Flag, Loader2, Search } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { CommentSection } from "@/components/CommentSection";
+import { useState } from "react";
 
 type SortOption = "recent" | "popular" | "trending";
 
@@ -295,6 +297,11 @@ function OutfitCard({
           >
             <Flag className="w-4 h-4" />
           </Button>
+        </div>
+
+        {/* Comments Section */}
+        <div className="border-t pt-3 mt-3">
+          <CommentSection outfitId={outfit.id} />
         </div>
       </CardContent>
     </Card>

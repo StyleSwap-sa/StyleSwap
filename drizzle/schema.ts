@@ -599,3 +599,15 @@ export const outfitReports = pgTable("outfitReports", {
 	status: varchar({ length: 50 }).default("pending"),
 	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
+
+
+// Outfit Comments Table
+export const outfitComments = pgTable("outfitComments", {
+	id: serial().primaryKey().notNull(),
+	outfitId: integer().notNull(),
+	userId: integer().notNull(),
+	comment: text().notNull(),
+	likes: integer().default(0).notNull(),
+	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
+});

@@ -2954,3 +2954,16 @@ This approach:
 - [x] Add "Discover Outfits" link to dashboard navigation
 - [x] Add discovery route to App.tsx
 - [ ] Deploy to Render
+
+
+## Phase 32: Outfit Comments Feature (COMPLETED)
+- [x] Create outfitComments table in database schema
+- [x] Add API endpoints for creating comments (commentsRouter)
+- [x] Add API endpoints for retrieving comments (paginated)
+- [x] Add API endpoints for deleting comments (owner/admin only)
+- [x] Create CommentSection component for outfit cards (CommentSection.tsx)
+- [x] Integrate comments into OutfitDiscovery feed
+- [x] Add comment count badge to outfit cards
+- [x] Add like functionality to comments
+- [ ] Test comments feature end-to-end
+- [ ] Deploy to Render and verify
