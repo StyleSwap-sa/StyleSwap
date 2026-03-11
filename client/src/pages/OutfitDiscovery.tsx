@@ -25,6 +25,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { CommentSection } from "@/components/CommentSection";
 import { LikeCounter } from "@/components/LikeCounter";
 import { TrendingHashtags } from "@/components/TrendingHashtags";
+import { SocialShareWithReferral } from "@/components/SocialShareWithReferral";
 import { useState } from "react";
 
 type SortOption = "recent" | "popular" | "trending";
@@ -282,15 +283,17 @@ function OutfitCard({
           <span>{outfit.likes || 0} likes</span>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <LikeCounter
             outfitId={outfit.id}
             initialLikes={outfit.likes || 0}
             onLikeChange={() => onLike(outfit.id)}
           />
-          <Button variant="outline" size="sm">
-            <Share2 className="w-4 h-4" />
-          </Button>
+          <SocialShareWithReferral
+            outfitId={outfit.id}
+            outfitTitle={outfit.title}
+            outfitImage={outfit.imageUrl}
+          />
           <Button
             variant="outline"
             size="sm"

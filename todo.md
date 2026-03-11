@@ -3043,3 +3043,13 @@ This approach:
 - [ ] Add hashtag analytics (usage count, trending score)
 - [ ] Test trending hashtags end-to-end
 - [ ] Deploy to Render
+
+
+## Phase 50: Social Sharing with Referral Links (NEW)
+- [ ] Update database schema with referral tracking table
+- [ ] Create referral router with endpoints for link generation and tracking
+- [ ] Update social share components (WhatsApp, Instagram, TikTok) with referral URLs
+- [ ] Create referral signup landing page with outfit preview
+- [ ] Add referral parameter handling to signup flow
+- [ ] Test referral links in preview environment
+- [ ] Deploy referral feature to Render production

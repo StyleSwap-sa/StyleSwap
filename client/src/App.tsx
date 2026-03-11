@@ -65,6 +65,7 @@ const OutfitDiscovery = lazy(() => import("./pages/OutfitDiscovery"));
 const NotificationCenter = lazy(() => import("./pages/NotificationCenter"));
 const ModerationDashboard = lazy(() => import("./pages/ModerationDashboard"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
+const ReferralSignup = lazy(() => import("./pages/ReferralSignup"));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -148,6 +149,7 @@ export default function App() {
               <Route path="/notifications" component={NotificationCenter} />
               <Route path="/moderation" component={ModerationDashboard} />
               <Route path="/profile/:userId" component={UserProfile} />
+              <Route path="/referral/:referralCode" component={ReferralSignup} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>

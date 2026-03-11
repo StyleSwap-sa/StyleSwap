@@ -703,3 +703,42 @@ export const hashtagUsage = pgTable("hashtagUsage", {
 	outfitId: integer("outfitId").notNull().references(() => savedOutfits.id),
 	createdAt: timestamp("createdAt").defaultNow(),
 });
+
+
+// Referral Links Table
+export const referralLinks = pgTable("referralLinks", {
+	id: serial("id").primaryKey(),
+	userId: integer("userId").notNull().references(() => users.id),
+	outfitId: integer("outfitId").notNull().references(() => savedOutfits.id),
+	referralCode: varchar("referralCode", { length: 50 }).notNull().unique(),
+	shortUrl: varchar("shortUrl", { length: 255 }),
+	platform: varchar("platform", { length: 50 }), // 'whatsapp', 'instagram', 'tiktok', 'twitter'
+	clicks: integer("clicks").default(0),
+	signups: integer("signups").default(0),
+	isActive: boolean("isActive").default(true),
+	expiresAt: timestamp("expiresAt"),
+	createdAt: timestamp("createdAt").defaultNow(),
+	updatedAt: timestamp("updatedAt").defaultNow(),
+}, (table) => [
+	index("idx_referral_code").on(table.referralCode),
+	index("idx_referral_user").on(table.userId),
+	index("idx_referral_outfit").on(table.outfitId),
+]);
+
+// Referral Tracking Table
+export const referralTracking = pgTable("referralTracking", {
+	id: serial("id").primaryKey(),
+	referralLinkId: integer("referralLinkId").notNull().references(() => referralLinks.id),
+	referredUserId: integer("referredUserId").references(() => users.id),
+	referrerUserId: integer("referrerUserId").notNull().references(() => users.id),
+	platform: varchar("platform", { length: 50 }),
+	ipAddress: varchar("ipAddress", { length: 45 }),
+	userAgent: text("userAgent"),
+	conversionStatus: varchar("conversionStatus", { length: 50 }).default("clicked"), // 'clicked', 'signed_up', 'completed_profile'
+	convertedAt: timestamp("convertedAt"),
+	createdAt: timestamp("createdAt").defaultNow(),
+}, (table) => [
+	index("idx_tracking_link").on(table.referralLinkId),
+	index("idx_tracking_referred").on(table.referredUserId),
+	index("idx_tracking_referrer").on(table.referrerUserId),
+]);
