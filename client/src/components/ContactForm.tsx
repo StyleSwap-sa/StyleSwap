@@ -163,7 +163,6 @@ export function ContactForm() {
                   >
                     <option value="general">General Inquiry</option>
                     <option value="enterprise">Enterprise Sales</option>
-                    <option value="demo">Request Demo</option>
                     <option value="integration">API Integration</option>
                     <option value="support">Support</option>
                   </select>
