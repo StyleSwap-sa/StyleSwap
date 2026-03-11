@@ -12,6 +12,7 @@ interface BusinessPricingComponentProps {
 }
 
 export function BusinessPricingComponent({ compact = false }: BusinessPricingComponentProps) {
+  // Force rebuild - Enterprise Retail Pro package v2
   const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
