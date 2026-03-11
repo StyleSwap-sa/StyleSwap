@@ -211,13 +211,14 @@ export function serveStatic(app: Express) {
   // fall through to index.html if the file doesn't exist
   // Only for HTML pages, not for static assets that don't exist
   app.use("*", async (req, res, next) => {
-    // Don't serve index.html for API routes
-    if (req.path.startsWith("/api/")) {
+    // Don't serve index.html for API routes or health checks
+    if (req.path.startsWith("/api/") || req.path === "/health" || req.path.startsWith("/api-json")) {
+      console.log("[Static] Skipping SPA fallback for:", req.path);
       return next();
     }
     
-    // Don't serve index.html for health checks - let them fall through
-    if (req.path === "/health") {
+    // Skip for known static file extensions
+    if (req.path.match(/\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map)$/i)) {
       return next();
     }
 
