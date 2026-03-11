@@ -2999,3 +2999,47 @@ This approach:
 - [x] Add like count display with formatted numbers (1K, 1.2K, etc.)
 - [ ] Test like counter in development environment
 - [ ] Deploy to Render and verify
+
+
+## Phase 36: User Mentions in Comments (NEW)
+- [ ] Create userMentions table in database schema
+- [ ] Add API endpoints for parsing @mentions in comments
+- [ ] Add API endpoints for sending mention notifications
+- [ ] Update CommentSection component to support @username input
+- [ ] Create mention autocomplete dropdown
+- [ ] Add mention highlighting in comment display
+- [ ] Test mention notifications end-to-end
+- [ ] Deploy to Render
+
+## Phase 37: Follow System (NEW)
+- [ ] Create userFollows table in database schema
+- [ ] Add API endpoints for following/unfollowing users
+- [ ] Add API endpoints for fetching follower/following lists
+- [ ] Add follow button to user profiles
+- [ ] Add follower count display
+- [ ] Create personalized feed based on follows
+- [ ] Test follow system end-to-end
+- [ ] Deploy to Render
+
+## Phase 38: User Profile Pages (NEW)
+- [ ] Create UserProfile page component
+- [ ] Add profile header with avatar, name, bio
+- [ ] Add follower/following counts
+- [ ] Display user's saved outfits gallery
+- [ ] Add follow/unfollow button
+- [ ] Add user's voting polls
+- [ ] Add user's recent comments
+- [ ] Create route for /profile/:userId
+- [ ] Test profile pages end-to-end
+- [ ] Deploy to Render
+
+## Phase 39: Trending Hashtags (NEW)
+- [ ] Create trendingHashtags table in database schema
+- [ ] Add API endpoint to fetch trending hashtags
+- [ ] Add API endpoint to track hashtag usage
+- [ ] Create TrendingHashtags component
+- [ ] Add trending hashtags section to discovery feed
+- [ ] Add hashtag click to filter by tag
+- [ ] Add hashtag analytics (usage count, trending score)
+- [ ] Test trending hashtags end-to-end
+- [ ] Deploy to Render

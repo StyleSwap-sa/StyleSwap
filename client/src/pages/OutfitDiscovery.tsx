@@ -24,6 +24,7 @@ import { Heart, Share2, Flag, Loader2, Search } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { CommentSection } from "@/components/CommentSection";
 import { LikeCounter } from "@/components/LikeCounter";
+import { TrendingHashtags } from "@/components/TrendingHashtags";
 import { useState } from "react";
 
 type SortOption = "recent" | "popular" | "trending";
@@ -88,7 +89,9 @@ export default function OutfitDiscovery() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* Main Feed */}
+      <div className="lg:col-span-3 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Discover Outfits</h1>
         <div className="flex gap-4">
@@ -222,6 +225,12 @@ export default function OutfitDiscovery() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
+
+      {/* Sidebar */}
+      <div className="hidden lg:block">
+        <TrendingHashtags limit={15} />
+      </div>
     </div>
   );
 }

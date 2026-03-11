@@ -373,8 +373,8 @@ export const subscriptionAuditLog = pgTable("subscriptionAuditLog", {
 
 export const transactions = pgTable("transactions", {
 	id: serial().primaryKey().notNull(),
-	userId: serial(),
-	amount: decimal({ precision: 10, scale: 2 }),
+	userId: integer().references(() => users.id),
+	amount: varchar({ length: 50 }),
 	status: varchar({ length: 50 }),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
@@ -383,7 +383,7 @@ export const transactions = pgTable("transactions", {
 
 export const tryOnUserMonthlyUsage = pgTable("userMonthlyUsage", {
 	id: serial().primaryKey().notNull(),
-	userId: serial(),
+	userId: integer().references(() => users.id),
 	month: date(),
 	usage_count: integer(),
 	createdAt: timestamp({ mode: "string" })
@@ -647,5 +647,59 @@ export const moderationLogs = pgTable("moderationLogs", {
 	targetId: integer("targetId").notNull(),
 	reason: text("reason"),
 	notes: text("notes"),
+	createdAt: timestamp("createdAt").defaultNow(),
+});
+
+
+// User Follows Table
+export const userFollows = pgTable("userFollows", {
+	id: serial("id").primaryKey(),
+	followerId: integer("followerId").notNull().references(() => users.id),
+	followingId: integer("followingId").notNull().references(() => users.id),
+	createdAt: timestamp("createdAt").defaultNow(),
+});
+
+// User Profiles Table
+export const userProfiles = pgTable("userProfiles", {
+	id: serial("id").primaryKey(),
+	userId: integer("userId").notNull().unique().references(() => users.id),
+	bio: text("bio"),
+	avatar: text("avatar"),
+	website: text("website"),
+	location: text("location"),
+	favoriteStyle: text("favoriteStyle"),
+	followerCount: integer("followerCount").default(0),
+	followingCount: integer("followingCount").default(0),
+	outfitCount: integer("outfitCount").default(0),
+	createdAt: timestamp("createdAt").defaultNow(),
+	updatedAt: timestamp("updatedAt").defaultNow(),
+});
+
+// User Mentions Table
+export const userMentions = pgTable("userMentions", {
+	id: serial("id").primaryKey(),
+	commentId: integer("commentId").notNull().references(() => outfitComments.id),
+	mentionedUserId: integer("mentionedUserId").notNull().references(() => users.id),
+	mentionedBy: integer("mentionedBy").notNull().references(() => users.id),
+	isNotified: boolean("isNotified").default(false),
+	createdAt: timestamp("createdAt").defaultNow(),
+});
+
+// Trending Hashtags Table
+export const trendingHashtags = pgTable("trendingHashtags", {
+	id: serial("id").primaryKey(),
+	hashtag: text("hashtag").notNull().unique(),
+	usageCount: integer("usageCount").default(1),
+	trendingScore: decimal("trendingScore", { precision: 10, scale: 2 }).default("0"),
+	isActive: boolean("isActive").default(true),
+	createdAt: timestamp("createdAt").defaultNow(),
+	updatedAt: timestamp("updatedAt").defaultNow(),
+});
+
+// Hashtag Usage Table
+export const hashtagUsage = pgTable("hashtagUsage", {
+	id: serial("id").primaryKey(),
+	hashtagId: integer("hashtagId").notNull().references(() => trendingHashtags.id),
+	outfitId: integer("outfitId").notNull().references(() => savedOutfits.id),
 	createdAt: timestamp("createdAt").defaultNow(),
 });

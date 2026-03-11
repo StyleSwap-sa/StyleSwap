@@ -64,6 +64,7 @@ const OutfitVoting = lazy(() => import("./pages/OutfitVoting"));
 const OutfitDiscovery = lazy(() => import("./pages/OutfitDiscovery"));
 const NotificationCenter = lazy(() => import("./pages/NotificationCenter"));
 const ModerationDashboard = lazy(() => import("./pages/ModerationDashboard"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -146,6 +147,7 @@ export default function App() {
               <Route path="/discover" component={OutfitDiscovery} />
               <Route path="/notifications" component={NotificationCenter} />
               <Route path="/moderation" component={ModerationDashboard} />
+              <Route path="/profile/:userId" component={UserProfile} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>

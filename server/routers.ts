@@ -41,6 +41,10 @@ import { discoveryRouter } from "./routers/discovery";
 import { commentsRouter } from "./routers/comments";
 import { notificationsRouter } from "./routers/notifications";
 import { moderationRouter } from "./routers/moderation";
+import { followsRouter } from "./routers/follows";
+import { mentionsRouter } from "./routers/mentions";
+import { hashtagsRouter } from "./routers/hashtags";
+import { profilesRouter } from "./routers/profiles";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
 
 export const appRouter = router({
@@ -110,6 +114,10 @@ export const appRouter = router({
   comments: commentsRouter,
   notifications: notificationsRouter,
   moderation: moderationRouter,
+  follows: followsRouter,
+  mentions: mentionsRouter,
+  hashtags: hashtagsRouter,
+  profiles: profilesRouter,
   fitroom: router({
     getCredits: publicProcedure.query(async () => {
       try {

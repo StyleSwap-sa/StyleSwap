@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Heart, Trash2, MessageCircle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { UserMentionInput } from "@/components/UserMentionInput";
 
 interface CommentSectionProps {
   outfitId: number;
@@ -68,14 +68,12 @@ export function CommentSection({ outfitId }: CommentSectionProps) {
           {/* Add Comment Form */}
           {isAuthenticated ? (
             <div className="flex gap-2">
-              <Input
-                placeholder="Add a comment..."
+              <UserMentionInput
                 value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") handleAddComment();
+                onChange={setComment}
+                onMentionSelect={(userId, userName) => {
+                  // Mention selected - comment already updated
                 }}
-                className="text-sm"
               />
               <Button
                 size="sm"
