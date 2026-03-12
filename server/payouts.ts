@@ -3,7 +3,7 @@ import { shopOrders, payouts, payoutTransactions, payoutAuditLog } from "@/drizz
 import { eq, gte, lte, and, desc } from "drizzle-orm";
 
 // Constants
-const STYLESWAP_COMMISSION_PERCENTAGE = 0.05; // 5%
+const STYLESWAP_COMMISSION_PERCENTAGE = 0.075; // 7.5%
 const YOKO_FEE_PERCENTAGE = 0.025; // 2.5% (typical payment processor fee)
 
 interface PayoutCalculation {

@@ -2,28 +2,28 @@ import { describe, it, expect, vi } from "vitest";
 
 describe("Affiliate Tracking System", () => {
   describe("Commission Calculation", () => {
-    it("should calculate 5% commission on clothing purchase", () => {
+    it("should calculate 7.5% commission on clothing purchase", () => {
       const purchaseAmount = 100;
-      const commissionRate = 5;
+      const commissionRate = 7.5;
       const expectedCommission = (purchaseAmount * commissionRate) / 100;
       
-      expect(expectedCommission).toBe(5);
+      expect(expectedCommission).toBe(7.5);
     });
 
-    it("should calculate 5% commission on large purchase", () => {
+    it("should calculate 7.5% commission on large purchase", () => {
       const purchaseAmount = 1000;
-      const commissionRate = 5;
+      const commissionRate = 7.5;
       const expectedCommission = (purchaseAmount * commissionRate) / 100;
       
-      expect(expectedCommission).toBe(50);
+      expect(expectedCommission).toBe(75);
     });
 
-    it("should calculate 5% commission on small purchase", () => {
+    it("should calculate 7.5% commission on small purchase", () => {
       const purchaseAmount = 25.50;
-      const commissionRate = 5;
+      const commissionRate = 7.5;
       const expectedCommission = (purchaseAmount * commissionRate) / 100;
       
-      expect(expectedCommission).toBeCloseTo(1.275, 2);
+      expect(expectedCommission).toBeCloseTo(1.9125, 2);
     });
 
     it("should handle zero commission rate", () => {

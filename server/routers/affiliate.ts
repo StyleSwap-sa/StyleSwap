@@ -16,7 +16,7 @@ function generateTrackingToken(): string {
 }
 
 // Legal disclaimer for affiliate commissions
-const AFFILIATE_LEGAL_NOTICE = "StyleSwap will receive 5% commission for purchases originating from the StyleSwap platform.";
+const AFFILIATE_LEGAL_NOTICE = "StyleSwap will receive 7.5% commission for purchases originating from the StyleSwap platform.";
 
 export const affiliateRouter = router({
   // Create new affiliate link (admin only)
@@ -25,7 +25,7 @@ export const affiliateRouter = router({
       z.object({
         affiliateName: z.string().min(1, "Affiliate name is required"),
         description: z.string().optional(),
-        commissionRate: z.number().min(0).max(100).default(5),
+        commissionRate: z.number().min(0).max(100).default(7.5),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -186,8 +186,8 @@ export const affiliateRouter = router({
           });
         }
 
-        // Calculate 5% commission
-        const commissionRate = 5; // Always 5% for clothing purchases
+        // Calculate 7.5% commission
+        const commissionRate = 7.5; // Always 7.5% for clothing purchases
         const commissionAmount = (input.clothingPurchaseAmount * commissionRate) / 100;
 
         // Create commission record

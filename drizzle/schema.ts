@@ -750,7 +750,7 @@ export const affiliateLinks = pgTable("affiliateLinks", {
 	affiliateName: varchar("affiliateName", { length: 255 }).notNull(), // e.g., "Partner A", "Influencer B"
 	affiliateCode: varchar("affiliateCode", { length: 50 }).notNull().unique(), // Unique tracking code
 	description: text("description"), // Notes about the affiliate
-	commissionRate: decimal("commissionRate", { precision: 5, scale: 2 }).default("5.00").notNull(), // 5% default
+	commissionRate: decimal("commissionRate", { precision: 5, scale: 2 }).default("7.50").notNull(), // 7.5% default
 	isActive: boolean("isActive").default(true),
 	createdAt: timestamp("createdAt").defaultNow(),
 	updatedAt: timestamp("updatedAt").defaultNow(),
@@ -779,15 +779,15 @@ export const affiliateTracking = pgTable("affiliateTracking", {
 	index("idx_affiliate_tracking_converted").on(table.isConverted),
 ]);
 
-// Affiliate Commission Table (tracks 5% commission on clothing purchases)
+	// Affiliate Commission Table (tracks 7.5% commission on clothing purchases)
 export const affiliateCommissions = pgTable("affiliateCommissions", {
 	id: serial("id").primaryKey(),
 	affiliateTrackingId: integer("affiliateTrackingId").notNull().references(() => affiliateTracking.id),
 	affiliateLinkId: integer("affiliateLinkId").notNull().references(() => affiliateLinks.id),
 	boutiqueId: integer("boutiqueId").notNull().references(() => boutiques.id),
 	clothingPurchaseAmount: decimal("clothingPurchaseAmount", { precision: 12, scale: 2 }).notNull(), // Total clothing purchase amount
-	commissionAmount: decimal("commissionAmount", { precision: 12, scale: 2 }).notNull(), // 5% of purchase
-	commissionRate: decimal("commissionRate", { precision: 5, scale: 2 }).default("5.00").notNull(), // Always 5%
+	commissionAmount: decimal("commissionAmount", { precision: 12, scale: 2 }).notNull(), // 7.5% of purchase
+	commissionRate: decimal("commissionRate", { precision: 5, scale: 2 }).default("7.50").notNull(), // Always 7.5%
 	externalTransactionId: varchar("externalTransactionId", { length: 255 }), // Reference to external payment system
 	status: varchar("status", { length: 50 }).default("pending").notNull(), // 'pending', 'approved', 'paid'
 	paidAt: timestamp("paidAt"),

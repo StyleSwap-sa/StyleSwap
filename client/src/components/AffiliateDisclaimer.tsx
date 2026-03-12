@@ -16,7 +16,7 @@ export function AffiliateDisclaimer() {
             StyleSwap Commission Policy
           </p>
           <p>
-            <strong>StyleSwap will receive 5% commission for purchases originating from the StyleSwap platform.</strong>
+            <strong>StyleSwap will receive 7.5% commission for purchases originating from the StyleSwap platform.</strong>
           </p>
           <div className="space-y-2 border-t border-amber-200 pt-4 dark:border-amber-900">
             <p>
