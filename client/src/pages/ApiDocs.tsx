@@ -418,7 +418,7 @@ export default function ApiDocs() {
                     View Pricing <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </a>
-                <a href="/register-app">
+                <a href="/developer">
                   <Button className="bg-orange-500 text-white hover:bg-orange-400 font-semibold">
                     Register Your App <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>

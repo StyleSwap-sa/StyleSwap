@@ -511,7 +511,7 @@ print('Try-on result:', result['image_url'])`}</pre>
                     Complete reference for HTTP status codes, error handling, and retry strategies.
                   </p>
                   <Button asChild>
-                    <a href="/error-codes">View Error Codes</a>
+                    <a href="/api-docs">View Error Codes</a>
                   </Button>
                 </CardContent>
               </Card>
@@ -525,7 +525,7 @@ print('Try-on result:', result['image_url'])`}</pre>
                     Webhook event types, payload examples, and signature verification.
                   </p>
                   <Button asChild>
-                    <a href="/webhook-payloads">View Webhooks</a>
+                    <a href="/api-docs">View Webhooks</a>
                   </Button>
                 </CardContent>
               </Card>
@@ -539,7 +539,7 @@ print('Try-on result:', result['image_url'])`}</pre>
                     Official SDKs for Node.js, Python, and integration examples.
                   </p>
                   <Button asChild>
-                    <a href="/sdk-guide">View SDK Guide</a>
+                    <a href="/api-docs">View SDK Guide</a>
                   </Button>
                 </CardContent>
               </Card>

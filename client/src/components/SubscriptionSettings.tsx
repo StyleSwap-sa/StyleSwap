@@ -208,7 +208,7 @@ export function SubscriptionSettings({ boutiqueId }: SubscriptionSettingsProps) 
             <p className="font-medium">💡 Need help?</p>
             <p className="mt-1">
               If you have any questions about your subscription, please{" "}
-              <a href="/support" className="underline hover:no-underline">
+              <a href="/contact" className="underline hover:no-underline">
                 contact our support team
               </a>
               .

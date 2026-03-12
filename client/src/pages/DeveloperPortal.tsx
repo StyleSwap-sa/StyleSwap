@@ -240,7 +240,7 @@ export default function DeveloperPortal() {
                       Go to Widget Builder
                     </Button>
                   </Link>
-                  <Link href="/rate-limiting" className="flex-1">
+                  <Link href="/api-docs" className="flex-1">
                     <Button variant="outline" className="flex-1">
                       View Rate Limiting Docs
                     </Button>
@@ -263,7 +263,7 @@ export default function DeveloperPortal() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
                     <strong>Note:</strong> You must be logged in as a registered developer to manage API keys. 
-                    <Link href="/api-keys" className="text-blue-600 hover:underline ml-1">Register your application</Link>
+                    <Link href="/developer" className="text-blue-600 hover:underline ml-1">Register your application</Link>
                   </p>
                 </div>
 
@@ -304,7 +304,7 @@ export default function DeveloperPortal() {
                   </div>
                 </div>
 
-                <Link href="/api-keys">
+                <Link href="/developer">
                   <Button className="bg-orange-600 hover:bg-orange-700">
                     <Key className="w-4 h-4 mr-2" />
                     Generate New Key
@@ -364,7 +364,7 @@ export default function DeveloperPortal() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
                     <strong>Note:</strong> Webhook management is available in your developer dashboard. 
-                    <Link href="/api-keys" className="text-blue-600 hover:underline ml-1">Go to dashboard</Link>
+                    <Link href="/developer" className="text-blue-600 hover:underline ml-1">Go to dashboard</Link>
                   </p>
                 </div>
 
@@ -487,7 +487,7 @@ export default function DeveloperPortal() {
                 <CardContent>
                   <p className="text-slate-600 mb-4">Test webhook deliveries and debug integration issues</p>
                   <Button variant="outline" className="w-full" asChild>
-                    <a href="/webhook-testing">
+                    <a href="/api-docs">
                       Test Webhooks <ArrowRight className="ml-2 w-4 h-4" />
                     </a>
                   </Button>
