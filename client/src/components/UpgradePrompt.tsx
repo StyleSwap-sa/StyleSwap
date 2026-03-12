@@ -1,27 +1,23 @@
 import { useEffect, useState } from "react";
-import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Zap, Check } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface UpgradePromptProps {
-  showAfterFreeTrial?: boolean;
+  showPrompt?: boolean;
 }
 
-export function UpgradePrompt({ showAfterFreeTrial = true }: UpgradePromptProps) {
+export function UpgradePrompt({ showPrompt = true }: UpgradePromptProps) {
   const [shouldShow, setShouldShow] = useState(false);
   const [, setLocation] = useLocation();
 
-  // Check free trial status
-  const { data: freeTrialStatus } = trpc.freeTrial.getStatus.useQuery();
-
-  // Show upgrade prompt if free trial was just used
+  // Show upgrade prompt based on prop
   useEffect(() => {
-    if (showAfterFreeTrial && freeTrialStatus?.isUsed && !freeTrialStatus?.hasFreeTrial) {
+    if (showPrompt) {
       setShouldShow(true);
     }
-  }, [freeTrialStatus, showAfterFreeTrial]);
+  }, [showPrompt]);
 
   if (!shouldShow) {
     return null;
@@ -51,9 +47,9 @@ export function UpgradePrompt({ showAfterFreeTrial = true }: UpgradePromptProps)
         <div className="flex items-start gap-3 mb-4">
           <Zap className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
           <div>
-            <h3 className="font-semibold text-lg">Love your try-on?</h3>
+            <h3 className="font-semibold text-lg">Ready to explore more styles?</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Get more try-ons and keep exploring styles with our affordable packages
+              Get more try-ons and keep exploring with our affordable credit packages
             </p>
           </div>
         </div>
@@ -104,10 +100,6 @@ export function UpgradePrompt({ showAfterFreeTrial = true }: UpgradePromptProps)
           ))}
         </div>
       </div>
-
-      <p className="text-xs text-center text-muted-foreground">
-        Your free try-on expires in {freeTrialStatus?.daysRemaining || 0} days
-      </p>
     </div>
   );
 }

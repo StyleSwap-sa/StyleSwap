@@ -1,32 +1,8 @@
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
-import { getPromotionalStatus, validateWits100Coupon, applyWits100Coupon } from "../db.promotional";
+import { validateWits100Coupon, applyWits100Coupon } from "../db.promotional";
 import { z } from "zod";
 
 export const promotionalRouter = router({
-  /**
-   * Get current promotional status
-   * Returns: { isActive, spotsRemaining, totalSignups, message }
-   */
-  getStatus: publicProcedure.query(async () => {
-    try {
-      const status = await getPromotionalStatus();
-      return {
-        success: true,
-        ...status,
-      };
-    } catch (error) {
-      console.error("[Promotional] Failed to get promotional status:", error);
-      return {
-        success: false,
-        isActive: false,
-        spotsRemaining: 0,
-        totalSignups: 0,
-        message: "Unable to fetch promotional status",
-        error: error instanceof Error ? error.message : "Unknown error",
-      };
-    }
-  }),
-
   /**
    * Validate coupon code (public - no auth required)
    * Returns: { isValid, creditsValue, message }
@@ -41,7 +17,7 @@ export const promotionalRouter = router({
         isValid,
         creditsValue,
         message: isValid
-          ? `Valid coupon! You will receive ${creditsValue} free try-ons.`
+          ? `Valid coupon! You will receive ${creditsValue} credits.`
           : "Invalid coupon code",
       };
     }),

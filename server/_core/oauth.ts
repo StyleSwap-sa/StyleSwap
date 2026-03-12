@@ -4,7 +4,7 @@ import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import { COOKIE_NAME } from "@shared/const";
 import { ENV } from "./env";
-import { grantPromotionalCredits } from "../db.promotional";
+
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -96,11 +96,7 @@ export function registerOAuthRoutes(app: Express) {
 
       console.log("[OAuth] ✓ User upserted and retrieved, userId:", user.id);
 
-      // Grant promotional credits if user is eligible (first 100 signups)
-      const promoResult = await grantPromotionalCredits(user.id);
-      if (promoResult.granted) {
-        console.log(`[OAuth] ✓ Granted ${promoResult.creditsAmount} promotional credits. Signups: ${promoResult.totalSignups}/100`);
-      }
+
 
       const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
