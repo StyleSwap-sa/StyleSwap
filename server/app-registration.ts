@@ -2,6 +2,7 @@ import { appRegistrations } from "../drizzle/schema";
 import { getDb } from "./db";
 import { notifyOwner } from "./_core/notification";
 import { generateAdminNotificationHtml } from "./app-registration-notifications";
+import { sendRegistrationConfirmationEmail, sendWelcomeEmail, sendAdminRegistrationNotification } from "./email-service";
 import crypto from "crypto";
 
 /**
@@ -50,7 +51,38 @@ export async function registerApp(data: {
 
     const registration = result[0];
 
-    // Send admin notification with detailed HTML
+    const registrationTime = new Date().toISOString();
+
+    // Send confirmation email to retailer
+    await sendRegistrationConfirmationEmail({
+      email: data.email,
+      appName: data.appName,
+      companyName: data.companyName,
+      apiKey,
+      apiSecret: registration.apiSecret,
+      registrationTime,
+    });
+
+    // Send welcome email to retailer
+    await sendWelcomeEmail({
+      email: data.email,
+      appName: data.appName,
+      companyName: data.companyName,
+    });
+
+    // Send admin notification
+    await sendAdminRegistrationNotification({
+      appName: data.appName,
+      companyName: data.companyName,
+      email: data.email,
+      website: data.website,
+      platformType: data.platformType,
+      description: data.description,
+      apiKey,
+      registrationTime,
+    });
+
+    // Also send via notifyOwner for in-app notifications
     const adminHtml = generateAdminNotificationHtml({
       appName: data.appName,
       companyName: data.companyName,
@@ -59,7 +91,7 @@ export async function registerApp(data: {
       platformType: data.platformType,
       description: data.description,
       apiKey,
-      registrationTime: new Date().toISOString(),
+      registrationTime,
     });
 
     await notifyOwner({
