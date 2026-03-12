@@ -7,10 +7,13 @@ import { addCreditsAdmin } from "./db.credits";
  * Promotional system for first 100 signups
  * - First 100 new users get 2 free try-ons (2 credits)
  * - After 100 signups, no promotional credits are given
+ * - WITS100 coupon code also grants 2 free credits
  */
 
 const PROMO_SIGNUP_LIMIT = 100;
 const PROMO_CREDITS_AMOUNT = 2;
+const WITS100_COUPON_CODE = "WITS100";
+const WITS100_CREDITS = 2;
 
 /**
  * Get the current total signup count
@@ -137,4 +140,59 @@ export async function getPromotionalStatus(): Promise<{
     totalSignups,
     message,
   };
+}
+
+
+/**
+ * Validate and apply WITS100 coupon code
+ * Returns the credits amount if valid, 0 if invalid
+ */
+export function validateWits100Coupon(couponCode: string): number {
+  if (!couponCode) return 0;
+  
+  // Case-insensitive comparison
+  if (couponCode.toUpperCase() === WITS100_COUPON_CODE) {
+    return WITS100_CREDITS;
+  }
+  
+  return 0;
+}
+
+/**
+ * Apply WITS100 coupon code to a user
+ * Can be used during signup or anytime after
+ */
+export async function applyWits100Coupon(userId: number): Promise<{
+  success: boolean;
+  creditsAdded: number;
+  message: string;
+}> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  try {
+    const creditsToAdd = WITS100_CREDITS;
+    
+    // Grant the credits
+    await addCreditsAdmin(
+      userId,
+      creditsToAdd,
+      `WITS100 coupon code: ${creditsToAdd} free try-ons`
+    );
+
+    console.log(`[Coupon] ✓ Applied WITS100 coupon to user ${userId}. Added ${creditsToAdd} credits.`);
+
+    return {
+      success: true,
+      creditsAdded: creditsToAdd,
+      message: `Coupon WITS100 applied! You received ${creditsToAdd} free try-ons.`,
+    };
+  } catch (error) {
+    console.error("[Coupon] Failed to apply WITS100 coupon:", error);
+    return {
+      success: false,
+      creditsAdded: 0,
+      message: "Failed to apply coupon code. Please try again.",
+    };
+  }
 }

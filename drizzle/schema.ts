@@ -893,3 +893,45 @@ export const mentionNotifications = pgTable("mentionNotifications", {
 	index("idx_mentionNotifications_mentionedUserId").on(table.mentionedUserId),
 	index("idx_mentionNotifications_mentionedByUserId").on(table.mentionedByUserId),
 ]);
+
+
+// Coupon Codes Table
+export const couponCodes = pgTable(
+	"couponCodes",
+	{
+		id: serial().primaryKey().notNull(),
+		code: varchar({ length: 50 }).unique().notNull(),
+		description: text(),
+		creditsValue: decimal({ precision: 10, scale: 2 }).notNull(),
+		maxUses: integer().notNull(),
+		currentUses: integer().default(0).notNull(),
+		expiresAt: timestamp({ mode: "string" }),
+		isActive: boolean().default(true).notNull(),
+		createdAt: timestamp({ mode: "string" })
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull(),
+		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_coupon_codes_code").on(table.code),
+		index("idx_coupon_codes_active").on(table.isActive),
+	]
+);
+
+// Coupon Redemptions Table
+export const couponRedemptions = pgTable(
+	"couponRedemptions",
+	{
+		id: serial().primaryKey().notNull(),
+		couponId: serial().notNull().references(() => couponCodes.id),
+		userId: serial().notNull().references(() => users.id),
+		redeemedAt: timestamp({ mode: "string" })
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull(),
+	},
+	(table) => [
+		index("idx_coupon_redemptions_coupon").on(table.couponId),
+		index("idx_coupon_redemptions_user").on(table.userId),
+		uniqueIndex("idx_coupon_redemptions_unique").on(table.couponId, table.userId),
+	]
+);
