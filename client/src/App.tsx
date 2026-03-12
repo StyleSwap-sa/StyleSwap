@@ -69,6 +69,7 @@ const UserProfile = lazy(() => import("./pages/UserProfile"));
 const ReferralSignup = lazy(() => import("./pages/ReferralSignup"));
 const BuyCredits = lazy(() => import("./pages/BuyCredits"));
 const About = lazy(() => import("./pages/About"));
+const RegisterApp = lazy(() => import("./pages/RegisterApp"));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -141,6 +142,7 @@ export default function App() {
               <Route path="/admin/payouts" component={AdminPayoutDashboard} />
               <Route path="/admin/credits" component={AdminCredits} />
               <Route path="/api-docs" component={ApiDocs} />
+              <Route path="/register-app" component={RegisterApp} />
               <Route path="/for-boutiques" component={ForBoutiques} />
               <Route path="/customer-try-on" component={CustomerTryOn} />
               <Route path="/developer" component={DeveloperPortal} />
