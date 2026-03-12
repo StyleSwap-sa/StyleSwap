@@ -935,3 +935,33 @@ export const couponRedemptions = pgTable(
 		uniqueIndex("idx_coupon_redemptions_unique").on(table.couponId, table.userId),
 	]
 );
+
+
+// App Registrations Table
+export const appRegistrations = pgTable(
+	"appRegistrations",
+	{
+		id: serial().primaryKey().notNull(),
+		appName: varchar({ length: 255 }).notNull(),
+		companyName: varchar({ length: 255 }).notNull(),
+		email: varchar({ length: 255 }).notNull(),
+		website: varchar({ length: 500 }).notNull(),
+		platformType: varchar({ length: 50 }).notNull(),
+		description: text().notNull(),
+		apiKey: varchar({ length: 255 }).unique().notNull(),
+		apiSecret: varchar({ length: 255 }).unique().notNull(),
+		status: varchar({ length: 50 }).default("active").notNull(), // active, suspended, revoked
+		isLiveMode: boolean().default(false).notNull(),
+		requestsCount: integer().default(0).notNull(),
+		lastRequestAt: timestamp({ mode: "string" }),
+		createdAt: timestamp({ mode: "string" })
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull(),
+		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
+	},
+	(table) => [
+		index("idx_app_registrations_email").on(table.email),
+		index("idx_app_registrations_apiKey").on(table.apiKey),
+		index("idx_app_registrations_status").on(table.status),
+	]
+);

@@ -48,6 +48,7 @@ import { profilesRouter } from "./routers/profiles";
 import { referralsRouter } from "./routers/referrals";
 import { contactRouter } from "./routers/contact";
 import { affiliateRouter } from "./routers/affiliate";
+import { appRegistrationRouter } from "./routers/app-registration";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
 
 export const appRouter = router({
@@ -124,6 +125,7 @@ export const appRouter = router({
   referrals: referralsRouter,
   contact: contactRouter,
   affiliate: affiliateRouter,
+  appRegistration: appRegistrationRouter,
   fitroom: router({
     getCredits: publicProcedure.query(async () => {
       try {
