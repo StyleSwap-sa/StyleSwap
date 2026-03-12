@@ -192,7 +192,7 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
       )}
 
       {/* Pricing Cards Grid */}
-      <div className={`grid gap-6 ${compact ? 'grid-cols-1 sm:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
+      <div className={`grid gap-6 ${compact ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-7'}`}>
         {displayPlans.map((plan) => {
           const monthlyPrice = plan.price;
           const annualPrice = monthlyPrice ? getAnnualPrice(monthlyPrice) : null;
