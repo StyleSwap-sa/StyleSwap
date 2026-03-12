@@ -53,6 +53,8 @@ import { developerDashboardRouter } from "./routers/developer-dashboard";
 import { monitoringRouter } from "./routers/monitoring";
 import { webhooksRouter } from "./routers/webhooks";
 import { apiDocsRouter } from "./routers/api-docs";
+import { developerMarketplaceRouter } from "./routers/developer-marketplace";
+import { boutiqueMarketplaceRouter } from "./routers/boutique-marketplace";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
 
 export const appRouter = router({
@@ -134,6 +136,8 @@ export const appRouter = router({
   monitoring: monitoringRouter,
   webhooks: webhooksRouter,
   apiDocs: apiDocsRouter,
+  developerMarketplace: developerMarketplaceRouter,
+  boutiqueMarketplace: boutiqueMarketplaceRouter,
   fitroom: router({
     getCredits: publicProcedure.query(async () => {
       try {
