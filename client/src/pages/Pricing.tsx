@@ -308,7 +308,7 @@ export default function Pricing() {
               </span>
             )}
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-7 gap-6">
             {businessPlans.map((plan) => (
               <div key={plan.name} className="flex flex-col border-0 shadow-lg overflow-hidden rounded-lg bg-white">
                 {/* Orange Header with Title and Price */}
