@@ -67,6 +67,7 @@ const ModerationDashboard = lazy(() => import("./pages/ModerationDashboard"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const ReferralSignup = lazy(() => import("./pages/ReferralSignup"));
 const BuyCredits = lazy(() => import("./pages/BuyCredits"));
+const About = lazy(() => import("./pages/About"));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -152,6 +153,7 @@ export default function App() {
               <Route path="/profile/:userId" component={UserProfile} />
               <Route path="/referral/:referralCode" component={ReferralSignup} />
               <Route path="/buy-credits" component={BuyCredits} />
+              <Route path="/about" component={About} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>

@@ -55,9 +55,9 @@ export function Footer() {
             <h4 className="font-bold mb-4 text-sm uppercase tracking-wider">Company</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a href="/#overview" className="hover:text-primary transition">
+                <Link href="/about" className="hover:text-primary transition">
                   About
-                </a>
+                </Link>
               </li>
               <li>
                 <Link href="/contact" className="hover:text-primary transition">
