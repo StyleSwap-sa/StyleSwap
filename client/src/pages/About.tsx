@@ -10,6 +10,9 @@ export default function About() {
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-center">
             About StyleSwap
           </h1>
+          <p className="text-2xl md:text-3xl font-bold text-center mb-6 text-primary">
+            Try On Outfits. Ask Your Friends. Decide With Confidence.
+          </p>
           <p className="text-xl text-muted-foreground text-center leading-relaxed max-w-2xl mx-auto">
             StyleSwap is a social fashion platform that helps people make confident outfit decisions before they buy or wear something.
           </p>
