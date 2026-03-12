@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Code2, Key, Webhook, BookOpen, ArrowRight, CheckCircle2, Zap, Shield, X } from "lucide-react";
+import { ApiCredentials } from "@/components/ApiCredentials";
+import { WebhookManagement } from "@/components/WebhookManagement";
 
 export default function DeveloperPortal() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -252,6 +254,7 @@ export default function DeveloperPortal() {
 
           {/* API Keys Tab */}
           <TabsContent value="api-keys" className="space-y-6">
+            <ApiCredentials />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -353,11 +356,25 @@ export default function DeveloperPortal() {
 
           {/* Webhooks Tab */}
           <TabsContent value="webhooks" className="space-y-6">
+            <WebhookManagement 
+              webhooks={[
+                {
+                  id: "wh_1",
+                  url: "https://example.com/webhooks/styleswap",
+                  events: ["try_on.completed", "order.created"],
+                  status: "active",
+                  lastTriggered: "2 minutes ago"
+                }
+              ]}
+              onAddWebhook={(url, events) => console.log('Add webhook:', url, events)}
+              onDeleteWebhook={(id) => console.log('Delete webhook:', id)}
+              onTestWebhook={(id) => console.log('Test webhook:', id)}
+            />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Webhook className="w-5 h-5 text-orange-600" />
-                  Webhook Management
+                  Webhook Documentation
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
