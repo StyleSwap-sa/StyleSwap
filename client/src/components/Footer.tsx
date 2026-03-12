@@ -38,14 +38,14 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="/#technology" className="hover:text-primary transition">
+                <Link href="/technology" className="hover:text-primary transition">
                   Technology
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#case-studies" className="hover:text-primary transition">
+                <Link href="/case-studies" className="hover:text-primary transition">
                   Case Studies
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -65,9 +65,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="/#market" className="hover:text-primary transition">
+                <Link href="/blog" className="hover:text-primary transition">
                   Blog
-                </a>
+                </Link>
               </li>
               <li>
                 <Link href="/b2b" className="hover:text-primary transition">

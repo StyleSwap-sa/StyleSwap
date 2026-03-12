@@ -58,6 +58,7 @@ const ApiDocs = lazy(() => import("./pages/ApiDocs"));
 const ForBoutiques = lazy(() => import("./pages/B2BLanding"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const BodyModels = lazy(() => import("./pages/BodyModels"));
+const Blog = lazy(() => import("./pages/Blog"));
 const WidgetDashboard = lazy(() => import("./pages/WidgetDashboard"));
 const MyCloset = lazy(() => import("./pages/MyCloset"));
 const OutfitVoting = lazy(() => import("./pages/OutfitVoting"));
@@ -154,6 +155,7 @@ export default function App() {
               <Route path="/referral/:referralCode" component={ReferralSignup} />
               <Route path="/buy-credits" component={BuyCredits} />
               <Route path="/about" component={About} />
+              <Route path="/blog" component={Blog} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>
