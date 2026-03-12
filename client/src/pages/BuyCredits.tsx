@@ -9,9 +9,10 @@ import { trpc } from "@/lib/trpc";
 export default function BuyCredits() {
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
-  const { data: boutique } = trpc.boutiques.getBoutiqueByUserId.useQuery(undefined, {
+  const { data: boutiques } = trpc.boutiques.myBoutiques.useQuery(undefined, {
     enabled: !!user?.id,
   });
+  const boutique = boutiques?.[0];
 
   if (!isAuthenticated) {
     return (

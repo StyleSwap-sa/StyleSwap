@@ -84,12 +84,9 @@ export async function processCreditPurchase(options: {
     // Record transaction
     await db.insert(boutiqueTransactions).values({
       boutiqueId: options.boutiqueId,
-      type: 'purchase' as const,
-      amount: options.amount, // Store in cents as integer
-      price: (options.amount / 100) as any, // Convert cents to rand for display
-      currency: 'ZAR',
-      description: `${options.credits} credits purchased via ${options.paymentMethod}`,
-      status: 'completed' as const,
+      transaction_type: 'purchase',
+      amount: (options.amount / 100).toString(), // Convert cents to rand for storage
+      status: 'completed',
     });
 
     return { success: true, message: 'Credits purchased successfully' };
