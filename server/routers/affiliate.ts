@@ -1,9 +1,11 @@
 import { z } from "zod";
+
 import { publicProcedure, router, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { affiliateLinks, affiliateTracking, affiliateCommissions, boutiques } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { handleCommissionStatusUpdate } from "../commission-notifications";
 
 // Generate unique affiliate code
 function generateAffiliateCode(): string {
@@ -318,6 +320,16 @@ export const affiliateRouter = router({
           })
           .where(eq(affiliateCommissions.id, input.commissionId))
           .returning();
+
+        // Send notification for status update
+        if (result.length > 0) {
+          const commission = result[0];
+          await handleCommissionStatusUpdate(
+            commission.id.toString(),
+            input.status as any,
+            input.notes
+          );
+        }
 
         return {
           success: true,
