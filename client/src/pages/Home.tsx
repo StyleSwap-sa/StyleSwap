@@ -331,14 +331,7 @@ export default function Home() {
               >
                 Watch Demo
               </Button>
-              <Button 
-                onClick={handleTestLogin}
-                disabled={testLoginMutation.isPending}
-                variant="outline"
-                className="premium-button gap-2 text-xs"
-              >
-                {testLoginMutation.isPending ? "Logging in..." : "Test Login"}
-              </Button>
+
             </div>
           </div>
         </div>
