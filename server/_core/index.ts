@@ -274,8 +274,8 @@ export async function startServer() {
       res.status(500).json({ error: 'Failed to log error' });
     }
   });
-  console.log("[Server] Client error logging endpoint registered:");
-  console.log("  - POST /api/client-error");
+  console.info("[Server] Client error logging endpoint registered:");
+  console.info("  - POST /api/client-error");
   
   // Webhook endpoints
   app.post("/api/yoco/webhook", handleYokoWebhook);
