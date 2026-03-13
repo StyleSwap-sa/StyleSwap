@@ -115,7 +115,8 @@ export function registerOAuthRoutes(app: Express) {
 
       // Determine redirect destination based on user role
       let redirectPath = "/";
-      if (user.role === 'admin') {
+      const userRole = (user as any).user_role || 'user';
+      if (userRole === 'admin') {
         redirectPath = "/admin";
       } else {
         redirectPath = "/dashboard";
