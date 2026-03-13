@@ -18,15 +18,7 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLoginOptions, setShowLoginOptions] = useState(false);
   const [isDemoOpen, setIsDemoOpen] = useState(false);
-  const testLoginMutation = trpc.auth.testLogin.useMutation();
-  const handleTestLogin = async () => {
-    try {
-      await testLoginMutation.mutateAsync();
-      setLocation("/dashboard");
-    } catch (error) {
-      console.error("Test login failed:", error);
-    }
-  };
+
 
   const handleGetStarted = () => {
     if (isAuthenticated) {

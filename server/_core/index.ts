@@ -35,37 +35,8 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 
 
 export async function startServer() {
   console.log("[Server] Starting initialization...");
-  
-  // Initialize database schema
-  try {
-    console.log("[Server] Initializing database schema...");
-    const { sql } = await import("../db");
-    
-    // Create users table if it doesn't exist
-    await sql.unsafe(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY NOT NULL,
-        \"openId\" VARCHAR(64) UNIQUE,
-        name TEXT,
-        email VARCHAR(320) UNIQUE,
-        \"loginMethod\" VARCHAR(64),
-        role VARCHAR(64) DEFAULT 'user' NOT NULL,
-        \"createdAt\" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-        \"updatedAt\" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-        \"lastSignedIn\" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-        phone VARCHAR(20),
-        \"userType\" VARCHAR(64) DEFAULT 'customer' NOT NULL,
-        \"currentBoutiqueId\" INTEGER,
-        \"freeTrialUsed\" INTEGER DEFAULT 0 NOT NULL,
-        \"freeTrialUsedAt\" TIMESTAMP,
-        \"freeTrialExpiresAt\" TIMESTAMP
-      )
-    `);
-    
-    console.log("[Server] ✅ Database schema initialized successfully");
-  } catch (dbError) {
-    console.error("[Server] ⚠️ Database initialization warning:", dbError instanceof Error ? dbError.message : dbError);
-  }
+  console.log("[Server] ℹ️ Database schema is managed by Drizzle ORM migrations");
+  console.log("[Server] ℹ️ Run 'pnpm db:push' to apply schema changes");
   
   const app = express();
   const server = createServer(app);
