@@ -65,7 +65,9 @@ export async function startServer() {
     console.error("\n🔥🔥🔥 ERROR REGISTERING OAUTH ROUTES:", error, "🔥🔥🔥\n");
     throw error;
   }
+  console.error("\n🔥🔥🔥 OAUTH ROUTES REGISTERED 🔥🔥🔥");
   console.log("[Server] OAuth routes registered:");
+  console.log("  - GET /api/oauth/config");
   console.log("  - GET /api/oauth/callback");
   console.log("  - GET /api/oauth/debug");
 
