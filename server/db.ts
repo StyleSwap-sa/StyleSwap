@@ -80,11 +80,11 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
       updateSet.lastSignedIn = user.lastSignedIn;
     }
     if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
+      values.user_role = user.role;
+      updateSet.user_role = user.role;
     } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
+      values.user_role = 'admin';
+      updateSet.user_role = 'admin';
     }
 
     if (!values.lastSignedIn) {

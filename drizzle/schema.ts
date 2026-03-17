@@ -965,3 +965,10 @@ export const appRegistrations = pgTable(
 		index("idx_app_registrations_status").on(table.status),
 	]
 );
+
+
+// Type exports for insert operations
+export type InsertUser = typeof users.$inferInsert;
+export type SelectUser = typeof users.$inferSelect;
+export type InsertTryOnResult = typeof tryOnResults.$inferInsert;
+export type SelectTryOnResult = typeof tryOnResults.$inferSelect;
