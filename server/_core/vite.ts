@@ -205,7 +205,7 @@ export function serveStatic(app: Express) {
   // Serve static files (assets, public files, etc.) with proper cache headers
   // Skip API routes
   app.use((req, res, next) => {
-    if (req.path.startsWith("/api/") || req.path === "/health") {
+    if (req.path.startsWith("/api") || req.path === "/health") {
       return next();
     }
     express.static(distPath, {
