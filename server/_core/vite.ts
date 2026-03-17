@@ -203,10 +203,16 @@ export function serveStatic(app: Express) {
   }
 
   // Serve static files (assets, public files, etc.) with proper cache headers
-  app.use(express.static(distPath, {
-    maxAge: "1h",
-    etag: false,
-  }));
+  // Skip API routes
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api/") || req.path === "/health") {
+      return next();
+    }
+    express.static(distPath, {
+      maxAge: "1h",
+      etag: false,
+    })(req, res, next);
+  });
 
   // fall through to index.html if the file doesn't exist
   // Only for HTML pages, not for static assets that don't exist
