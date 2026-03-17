@@ -5,6 +5,7 @@
 set -e
 
 echo "[Migration] Starting database migration..."
+echo "[Migration] DATABASE_URL: ${DATABASE_URL:0:50}..."
 
 cd "$(dirname "$0")/.."
 
