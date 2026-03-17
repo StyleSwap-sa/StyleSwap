@@ -23,6 +23,9 @@ export function registerOAuthRoutes(app: Express) {
       portalUrl: ENV.oAuthPortalUrl,
     });
   });
+  console.log("[OAuth] ✓ Config endpoint registered: GET /api/oauth/config");
+  
+  console.log("[OAuth] ✓ Debug endpoint registered: GET /api/oauth/debug");
   
   // Test endpoint to debug OAuth configuration
   app.get("/api/oauth/debug", (req: Request, res: Response) => {
