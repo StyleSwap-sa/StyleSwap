@@ -12,6 +12,7 @@ function getQueryParam(req: Request, key: string): string | undefined {
 }
 
 export function registerOAuthRoutes(app: Express) {
+  // Force redeploy - OAuth config endpoint returns appId and portalUrl from environment
   console.log("[OAuth] Registering OAuth routes...");
   
   // OAuth configuration endpoint - returns appId and portalUrl
