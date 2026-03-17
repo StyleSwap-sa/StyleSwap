@@ -18,7 +18,7 @@ export function registerOAuthRoutes(app: Express) {
   
   // OAuth configuration endpoint - returns appId and portalUrl
   // This endpoint MUST be registered before the debug endpoint
-  app.get("/api/oauth/configuration", (req: Request, res: Response) => {
+  app.get("/api/oauth/configuration", async (req: Request, res: Response) => {
     console.error("[OAuth] CONFIG ENDPOINT CALLED");
     console.error("[OAuth] appId:", ENV.appId);
     console.error("[OAuth] portalUrl:", ENV.oAuthPortalUrl);
@@ -32,7 +32,7 @@ export function registerOAuthRoutes(app: Express) {
   console.log("[OAuth] ✓ Debug endpoint registered: GET /api/oauth/debug");
   
   // Test endpoint to debug OAuth configuration
-  app.get("/api/oauth/debug", (req: Request, res: Response) => {
+  app.get("/api/oauth/debug", async (req: Request, res: Response) => {
     console.log("[OAuth] DEBUG endpoint called!");
     const { ENV } = require("./env");
     res.json({
