@@ -34,6 +34,7 @@ import { initializeWebhookJobs } from "../webhookRetryService";
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 export async function startServer() {
+  console.error("\n\n🔥🔥🔥 UNIQUE MARKER: BUILD 2026-03-17 14:45:00 UTC 🔥🔥🔥\n\n");
   console.log("[Server] Starting initialization...");
   console.log("[Server] ℹ️ Database schema is managed by Drizzle ORM migrations");
   console.log("[Server] ℹ️ Run 'pnpm db:push' to apply schema changes");
@@ -55,8 +56,15 @@ export async function startServer() {
   
   // OAuth routes MUST be registered FIRST, before any other middleware
   // This ensures they take precedence over Vite SPA fallback
+  console.error("\n🔥🔥🔥 ABOUT TO REGISTER OAUTH ROUTES 🔥🔥🔥\n");
   console.log("[Server] Registering OAuth routes...");
-  registerOAuthRoutes(app);
+  try {
+    registerOAuthRoutes(app);
+    console.error("\n🔥🔥🔥 OAUTH ROUTES REGISTERED SUCCESSFULLY 🔥🔥🔥\n");
+  } catch (error) {
+    console.error("\n🔥🔥🔥 ERROR REGISTERING OAUTH ROUTES:", error, "🔥🔥🔥\n");
+    throw error;
+  }
   console.log("[Server] OAuth routes registered:");
   console.log("  - GET /api/oauth/callback");
   console.log("  - GET /api/oauth/debug");
