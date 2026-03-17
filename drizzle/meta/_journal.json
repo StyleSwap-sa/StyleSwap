@@ -1,12 +1,12 @@
 {
-  "version": "5",
+  "version": "6",
   "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
       "version": "7",
-      "when": 1773056090939,
-      "tag": "0000_slippery_morg",
+      "when": 1773747291644,
+      "tag": "0000_orange_imperial_guard",
       "breakpoints": true
     }
   ]
