@@ -10,7 +10,7 @@ async function fetchOAuthConfig() {
   }
 
   try {
-    const response = await fetch("/api/oauth/config");
+    const response = await fetch("/api/oauth/configuration");
     if (response.ok) {
       oauthConfig = await response.json();
       console.log("[OAuth] Configuration fetched from server:", oauthConfig);
