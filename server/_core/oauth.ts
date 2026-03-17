@@ -13,9 +13,11 @@ function getQueryParam(req: Request, key: string): string | undefined {
 
 export function registerOAuthRoutes(app: Express) {
   // Force redeploy - OAuth config endpoint returns appId and portalUrl from environment
+  // Build timestamp: 2026-03-17T12:56:00Z
   console.log("[OAuth] Registering OAuth routes...");
   
   // OAuth configuration endpoint - returns appId and portalUrl
+  // This endpoint MUST be registered before the debug endpoint
   app.get("/api/oauth/config", (req: Request, res: Response) => {
     console.log("[OAuth] Config endpoint called");
     res.json({
