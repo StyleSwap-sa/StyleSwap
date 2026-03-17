@@ -70,6 +70,12 @@ export async function startServer() {
   console.log("  - GET /api/oauth/config");
   console.log("  - GET /api/oauth/callback");
   console.log("  - GET /api/oauth/debug");
+  
+  // TEST: Add a simple test endpoint to verify routing works
+  app.get("/api/test-endpoint", (req, res) => {
+    res.json({ message: "Test endpoint works!" });
+  });
+  console.log("[Server] Test endpoint registered: GET /api/test-endpoint");
 
   // Try-on upload endpoint with file upload support
   app.post("/api/tryon/upload", createUploadRateLimiter(), upload.fields([
