@@ -71,6 +71,16 @@ export async function startServer() {
   console.log("  - GET /api/oauth/config");
   console.log("  - GET /api/oauth/callback");
   console.log("  - GET /api/oauth/debug");
+  console.error("\n🔥🔥🔥 OAUTH ROUTES REGISTRATION COMPLETE 🔥🔥🔥\n");
+  
+  // Verify OAuth routes are actually registered
+  console.error("\n🔥🔥🔥 VERIFYING OAUTH ROUTES ARE REGISTERED 🔥🔥🔥");
+  const routes = (app as any)._router.stack
+    .filter((layer: any) => layer.route)
+    .map((layer: any) => `${Object.keys(layer.route.methods).join(",").toUpperCase()} ${layer.route.path}`)
+    .filter((route: string) => route.includes("/api/oauth"));
+  console.error("Registered OAuth routes:", routes);
+  console.error("🔥🔥🔥 VERIFICATION COMPLETE 🔥🔥🔥\n");
   
   // TEST: Add a simple test endpoint to verify routing works
   app.get("/api/test-endpoint", (req, res) => {
