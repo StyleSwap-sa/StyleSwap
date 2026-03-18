@@ -88,16 +88,16 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
-    // Set user_role for both insert and update
+    // Set role for both insert and update
     if (user.role !== undefined) {
-      values.user_role = user.role;
-      updateSet.user_role = user.role;
+      values.role = user.role;
+      updateSet.role = user.role;
     } else if (user.openId === ENV.ownerOpenId) {
-      values.user_role = 'admin';
-      updateSet.user_role = 'admin';
+      values.role = 'admin';
+      updateSet.role = 'admin';
     } else {
-      values.user_role = 'user';
-      updateSet.user_role = 'user';
+      values.role = 'user';
+      updateSet.role = 'user';
     }
 
     if (!values.lastSignedIn) {
@@ -106,7 +106,7 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
 
     // Ensure free trial fields have defaults for new users
     if (values.freeTrialUsed === undefined) {
-      values.freeTrialUsed = false;
+      values.freeTrialUsed = 0;
     }
     updateSet.freeTrialUsed = values.freeTrialUsed;
     
