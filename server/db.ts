@@ -59,10 +59,6 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
   try {
     const values: any = {
       openId: user.openId,
-      // Ensure required fields have values for INSERT
-      name: user.name || 'User',
-      email: user.email || `user-${Date.now()}@styleswap.local`,
-      loginMethod: user.loginMethod || 'oauth',
     };
     const updateSet: Record<string, unknown> = {};
 
@@ -78,26 +74,17 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
     };
 
     textFields.forEach(assignNullable);
-    
-    // Always update these fields even if they came from defaults
-    updateSet.name = values.name;
-    updateSet.email = values.email;
-    updateSet.loginMethod = values.loginMethod;
 
     if (user.lastSignedIn !== undefined) {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
-    // Set role for both insert and update
     if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
+      values.user_role = user.role;
+      updateSet.user_role = user.role;
     } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    } else {
-      values.role = 'user';
-      updateSet.role = 'user';
+      values.user_role = 'admin';
+      updateSet.user_role = 'admin';
     }
 
     if (!values.lastSignedIn) {
@@ -105,27 +92,21 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
     }
 
     // Ensure free trial fields have defaults for new users
-    if (values.freeTrialUsed === undefined) {
+    if (!values.freeTrialUsed) {
       values.freeTrialUsed = 0;
     }
-    updateSet.freeTrialUsed = values.freeTrialUsed;
     
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = new Date();
     }
 
     // Check if email already exists with a different openId
-    if (values.email && values.email !== null && values.email !== '') {
-      try {
-        const existingByEmail = await db.select().from(users).where(eq(users.email, values.email)).limit(1);
-        if (existingByEmail.length > 0 && existingByEmail[0].openId !== user.openId) {
-          // Email exists with different openId - update that user instead
-          await db.update(users).set(updateSet).where(eq(users.id, existingByEmail[0].id));
-          return existingByEmail[0];
-        }
-      } catch (emailCheckError) {
-        console.warn('[Database] Error checking for existing email, continuing with upsert:', emailCheckError);
-        // Continue with regular upsert if email check fails
+    if (values.email) {
+      const existingByEmail = await db.select().from(users).where(eq(users.email, values.email)).limit(1);
+      if (existingByEmail.length > 0 && existingByEmail[0].openId !== user.openId) {
+        // Email exists with different openId - update that user instead
+        await db.update(users).set(updateSet).where(eq(users.id, existingByEmail[0].id));
+        return existingByEmail[0];
       }
     }
 

@@ -12,25 +12,19 @@ function getQueryParam(req: Request, key: string): string | undefined {
 }
 
 export function registerOAuthRoutes(app: Express) {
-  // Force redeploy - OAuth config endpoint returns appId and portalUrl from environment
-  // Build timestamp: 2026-03-17T13:10:00Z - CRITICAL FIX
-  console.error("[OAuth] REGISTERING OAUTH ROUTES - THIS FUNCTION IS BEING CALLED");
+  console.log("[OAuth] Registering OAuth routes...");
   
   // OAuth configuration endpoint - returns appId and portalUrl
-  // This endpoint MUST be registered before the debug endpoint
-  app.get("/api/oauth/config", async (req: Request, res: Response) => {
-    console.error("[OAuth] CONFIG ENDPOINT CALLED");
-    console.error("[OAuth] appId:", ENV.appId);
-    console.error("[OAuth] portalUrl:", ENV.oAuthPortalUrl);
+  app.get("/api/oauth/config", (req: Request, res: Response) => {
+    console.log("[OAuth] Config endpoint called");
     res.json({
       appId: ENV.appId,
       portalUrl: ENV.oAuthPortalUrl,
     });
   });
-  console.log("[OAuth] ✓ Config endpoint registered: GET /api/oauth/config");
   
   // Test endpoint to debug OAuth configuration
-  app.get("/api/oauth/debug", async (req: Request, res: Response) => {
+  app.get("/api/oauth/debug", (req: Request, res: Response) => {
     console.log("[OAuth] DEBUG endpoint called!");
     const { ENV } = require("./env");
     res.json({
@@ -43,7 +37,6 @@ export function registerOAuthRoutes(app: Express) {
       timestamp: new Date().toISOString(),
     });
   });
-  console.log("[OAuth] ✓ Debug endpoint registered: GET /api/oauth/debug");
 
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");

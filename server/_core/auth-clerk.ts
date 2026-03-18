@@ -19,8 +19,33 @@ export async function getAuthUser(req: Request): Promise<User | null> {
       }
     }
 
-    // No Clerk fallback - using Manus OAuth only
-    return null;
+    // Fall back to Clerk authentication
+    const auth = (req as any).auth;
+    if (!auth?.userId) return null;
+    
+    const clerkId = auth.userId;
+    
+    // Get existing user from database
+    let user = await db.getUserByClerkId(clerkId);
+    
+    if (user) return user;
+    
+    // Create new user from Clerk data if not exists
+    const clerkUser = (req as any).user;
+    if (!clerkUser) return null;
+    
+    const email = clerkUser.emailAddresses?.[0]?.emailAddress || '';
+    const firstName = clerkUser.firstName || '';
+    const lastName = clerkUser.lastName || '';
+    const name = `${firstName} ${lastName}`.trim();
+    
+    user = await db.upsertUser({
+      clerkId,
+      email,
+      name: name || email,
+    });
+    
+    return user;
   } catch (error) {
     console.error('[Auth] Error getting auth user:', error);
     return null;
