@@ -14,5 +14,6 @@ export default defineConfig({
   dbCredentials: {
     url: connectionString,
     // PostgreSQL connection via environment variable
+    ssl: "require",
   },
 });
