@@ -12,40 +12,42 @@ function getQueryParam(req: Request, key: string): string | undefined {
 }
 
 export function registerOAuthRoutes(app: Express) {
-  // Force redeploy - OAuth config endpoint returns appId and portalUrl from environment
-  // Build timestamp: 2026-03-17T13:10:00Z - CRITICAL FIX
-  console.error("[OAuth] REGISTERING OAUTH ROUTES - THIS FUNCTION IS BEING CALLED");
+  console.error("\n🔥🔥🔥 [OAuth] REGISTERING OAUTH ROUTES - THIS FUNCTION IS BEING CALLED 🔥🔥🔥\n");
   
-  // OAuth configuration endpoint - returns appId and portalUrl
-  // This endpoint MUST be registered before the debug endpoint
-  app.get("/api/oauth/config", async (req: Request, res: Response) => {
-    console.error("[OAuth] CONFIG ENDPOINT CALLED");
-    console.error("[OAuth] appId:", ENV.appId);
-    console.error("[OAuth] portalUrl:", ENV.oAuthPortalUrl);
-    res.json({
-      appId: ENV.appId,
-      portalUrl: ENV.oAuthPortalUrl,
+  try {
+    // OAuth configuration endpoint - returns appId and portalUrl
+    // This endpoint MUST be registered before the debug endpoint
+    console.error("[OAuth] About to register /api/oauth/config endpoint");
+    app.get("/api/oauth/config", async (req: Request, res: Response) => {
+      console.error("[OAuth] CONFIG ENDPOINT CALLED");
+      console.error("[OAuth] appId:", ENV.appId);
+      console.error("[OAuth] portalUrl:", ENV.oAuthPortalUrl);
+      res.json({
+        appId: ENV.appId,
+        portalUrl: ENV.oAuthPortalUrl,
+      });
     });
-  });
-  console.log("[OAuth] ✓ Config endpoint registered: GET /api/oauth/config");
+    console.error("🔥🔥🔥 [OAuth] ✓ Config endpoint registered: GET /api/oauth/config 🔥🔥🔥");
   
-  // Test endpoint to debug OAuth configuration
-  app.get("/api/oauth/debug", async (req: Request, res: Response) => {
-    console.log("[OAuth] DEBUG endpoint called!");
-    const { ENV } = require("./env");
-    res.json({
-      appId: ENV.appId,
-      oAuthServerUrl: ENV.oAuthServerUrl,
-      cookieSecret: ENV.cookieSecret ? "***set***" : "NOT SET",
-      databaseUrl: ENV.databaseUrl ? "***set***" : "NOT SET",
-      currentOrigin: req.get("origin") || req.get("host"),
-      expectedCallbackUrl: `${req.protocol}://${req.get("host")}/api/oauth/callback`,
-      timestamp: new Date().toISOString(),
+    // Test endpoint to debug OAuth configuration
+    console.error("[OAuth] About to register /api/oauth/debug endpoint");
+    app.get("/api/oauth/debug", async (req: Request, res: Response) => {
+      console.log("[OAuth] DEBUG endpoint called!");
+      const { ENV } = require("./env");
+      res.json({
+        appId: ENV.appId,
+        oAuthServerUrl: ENV.oAuthServerUrl,
+        cookieSecret: ENV.cookieSecret ? "***set***" : "NOT SET",
+        databaseUrl: ENV.databaseUrl ? "***set***" : "NOT SET",
+        currentOrigin: req.get("origin") || req.get("host"),
+        expectedCallbackUrl: `${req.protocol}://${req.get("host")}/api/oauth/callback`,
+        timestamp: new Date().toISOString(),
+      });
     });
-  });
-  console.log("[OAuth] ✓ Debug endpoint registered: GET /api/oauth/debug");
+    console.error("🔥🔥🔥 [OAuth] ✓ Debug endpoint registered: GET /api/oauth/debug 🔥🔥🔥");
 
-  app.get("/api/oauth/callback", async (req: Request, res: Response) => {
+    console.error("[OAuth] About to register /api/oauth/callback endpoint");
+    app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
     const origin = req.protocol + "://" + req.get("host");
@@ -166,5 +168,10 @@ export function registerOAuthRoutes(app: Express) {
       console.error("========== OAUTH CALLBACK ERROR END ==========");
       res.status(500).json({ error: "OAuth callback failed", details: error instanceof Error ? error.message : String(error) });
     }
-  });
+    });
+    console.error("🔥🔥🔥 [OAuth] ✓ Callback endpoint registered: GET /api/oauth/callback 🔥🔥🔥");
+  } catch (error) {
+    console.error("🔥🔥🔥 [OAuth] ERROR IN registerOAuthRoutes:", error, "🔥🔥🔥");
+    throw error;
+  }
 }
