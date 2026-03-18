@@ -11,6 +11,7 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+// Cache buster: 2026-03-18T09:30:00Z - Force rebuild
 export function registerOAuthRoutes(app: Express) {
   console.error("\n🔥🔥🔥 [OAuth] REGISTERING OAUTH ROUTES - THIS FUNCTION IS BEING CALLED 🔥🔥🔥\n");
   
