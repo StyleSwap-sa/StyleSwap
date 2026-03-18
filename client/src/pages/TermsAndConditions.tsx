@@ -177,52 +177,9 @@ export default function TermsAndConditions() {
             </p>
           </section>
 
-          {/* 14. Affiliate Commission Structure */}
+          {/* 14. Contact Information */}
           <section>
-            <h2 className="text-2xl font-bold mb-4">14. Affiliate Commission Structure</h2>
-            <div className="space-y-4 text-muted-foreground">
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">14.1 Commission Rate</h3>
-                <p className="leading-relaxed">
-                  StyleSwap retains a 7.5% commission on all clothing purchases made through affiliate tracking links. This commission is deducted from the sale price before payout to the affiliated boutique or retailer.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">14.2 Commission Eligibility</h3>
-                <p className="leading-relaxed">
-                  Commission is earned only when:
-                </p>
-                <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
-                  <li>A customer uses StyleSwap's virtual try-on feature</li>
-                  <li>The customer completes a purchase through an affiliate tracking link</li>
-                  <li>The boutique/retailer is on a premium tier (Retailer Pro, Enterprise Retail, or Enterprise Retail Pro)</li>
-                  <li>The purchase is for clothing items only</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">14.3 Commission Calculation</h3>
-                <p className="leading-relaxed">
-                  Commission is calculated as 7.5% of the total purchase amount. The calculation occurs after payment processing fees are deducted. Boutiques receive 92.5% of the sale price (after StyleSwap's 7.5% commission and payment processor fees of approximately 2.5%).
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">14.4 Commission Status and Payouts</h3>
-                <p className="leading-relaxed">
-                  Commission status progresses through the following stages: pending (awaiting verification), approved (verified and scheduled for payout), and paid (transferred to boutique account). Boutiques will receive automated notifications at each stage of the commission lifecycle.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">14.5 Payout Notifications</h3>
-                <p className="leading-relaxed">
-                  Boutiques will receive automated email notifications when commissions are approved for payout and when payouts are completed. These notifications include detailed breakdowns of purchases, commission calculations, and payout amounts.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* 15. Contact Information */}
-          <section>
-            <h2 className="text-2xl font-bold mb-4">15. Contact Information</h2>
+            <h2 className="text-2xl font-bold mb-4">14. Contact Information</h2>
             <p className="text-muted-foreground leading-relaxed">
               If you have any questions about these Terms and Conditions, please contact us at:
             </p>

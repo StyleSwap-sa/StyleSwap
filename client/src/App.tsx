@@ -58,18 +58,7 @@ const ApiDocs = lazy(() => import("./pages/ApiDocs"));
 const ForBoutiques = lazy(() => import("./pages/B2BLanding"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 const BodyModels = lazy(() => import("./pages/BodyModels"));
-const Blog = lazy(() => import("./pages/Blog"));
 const WidgetDashboard = lazy(() => import("./pages/WidgetDashboard"));
-const MyCloset = lazy(() => import("./pages/MyCloset"));
-const OutfitVoting = lazy(() => import("./pages/OutfitVoting"));
-const OutfitDiscovery = lazy(() => import("./pages/OutfitDiscovery"));
-const NotificationCenter = lazy(() => import("./pages/NotificationCenter"));
-const ModerationDashboard = lazy(() => import("./pages/ModerationDashboard"));
-const UserProfile = lazy(() => import("./pages/UserProfile"));
-const ReferralSignup = lazy(() => import("./pages/ReferralSignup"));
-const BuyCredits = lazy(() => import("./pages/BuyCredits"));
-const About = lazy(() => import("./pages/About"));
-const RegisterApp = lazy(() => import("./pages/RegisterApp"));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -142,22 +131,11 @@ export default function App() {
               <Route path="/admin/payouts" component={AdminPayoutDashboard} />
               <Route path="/admin/credits" component={AdminCredits} />
               <Route path="/api-docs" component={ApiDocs} />
-              <Route path="/register-app" component={RegisterApp} />
               <Route path="/for-boutiques" component={ForBoutiques} />
               <Route path="/customer-try-on" component={CustomerTryOn} />
               <Route path="/developer" component={DeveloperPortal} />
               <Route path="/body-models" component={BodyModels} />
               <Route path="/boutique/:boutiqueId/widget" component={WidgetDashboard} />
-              <Route path="/closet" component={MyCloset} />
-              <Route path="/voting" component={OutfitVoting} />
-              <Route path="/discover" component={OutfitDiscovery} />
-              <Route path="/notifications" component={NotificationCenter} />
-              <Route path="/moderation" component={ModerationDashboard} />
-              <Route path="/profile/:userId" component={UserProfile} />
-              <Route path="/referral/:referralCode" component={ReferralSignup} />
-              <Route path="/buy-credits" component={BuyCredits} />
-              <Route path="/about" component={About} />
-              <Route path="/blog" component={Blog} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>
@@ -166,4 +144,4 @@ export default function App() {
     </ThemeProvider>
   );
 }
-// Force rebuild - Wed Mar 11 16:30:00 GMT 2026
+// Force rebuild - Mon Feb 24 00:00:00 GMT 2026

@@ -68,10 +68,6 @@ export async function setupVite(app: Express, server: Server) {
         <script>
           window.__VITE_OAUTH_PORTAL_URL = "${ENV.oAuthPortalUrl || "https://manus.im"}";
           window.__VITE_APP_ID = "${ENV.appId || ""}";  
-          console.log('[Vite] OAuth variables injected:', {
-            appId: window.__VITE_APP_ID,
-            portalUrl: window.__VITE_OAUTH_PORTAL_URL
-          });
         </script>
       `;
       // Try to inject before </head>, then </body>, then just append
@@ -82,7 +78,6 @@ export async function setupVite(app: Express, server: Server) {
       } else {
         template += envScript;
       }
-      console.log('[Vite] Template injection - appId:', ENV.appId, 'portalUrl:', ENV.oAuthPortalUrl);
       
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
@@ -203,28 +198,21 @@ export function serveStatic(app: Express) {
   }
 
   // Serve static files (assets, public files, etc.) with proper cache headers
-  // Skip API routes
-  app.use((req, res, next) => {
-    if (req.path.startsWith("/api/") || req.path === "/health") {
-      return next();
-    }
-    express.static(distPath, {
-      maxAge: "1h",
-      etag: false,
-    })(req, res, next);
-  });
+  app.use(express.static(distPath, {
+    maxAge: "1h",
+    etag: false,
+  }));
 
   // fall through to index.html if the file doesn't exist
   // Only for HTML pages, not for static assets that don't exist
   app.use("*", async (req, res, next) => {
-    // Don't serve index.html for API routes or health checks
-    if (req.path.startsWith("/api/") || req.path === "/health" || req.path.startsWith("/api-json")) {
-      console.log("[Static] Skipping SPA fallback for:", req.path);
+    // Don't serve index.html for API routes
+    if (req.path.startsWith("/api/")) {
       return next();
     }
     
-    // Skip for known static file extensions
-    if (req.path.match(/\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map)$/i)) {
+    // Don't serve index.html for health checks - let them fall through
+    if (req.path === "/health") {
       return next();
     }
 

@@ -2,9 +2,8 @@ import { getDb } from "./db";
 import { emailNotifications } from "../drizzle/schema";
 import { notifyOwner } from "./_core/notification";
 import { eq } from "drizzle-orm";
-import { generateEmailTemplate, InquiryType } from "./email-templates";
 
-export type EmailType = "purchase_confirmation" | "try_on_complete" | "credits_expiring" | "promotional" | "order_confirmation" | "order_payment" | "verification_submitted" | "verification_approved" | "verification_rejected" | "onboarding_complete" | "fraud_appeal_submitted" | "fraud_appeal_approved" | "fraud_appeal_rejected" | "60_day_reminder" | "30_day_reminder" | "7_day_reminder" | "rate_limit_warning" | "api_key_generated" | "webhook_test_success" | "webhook_test_failed" | "inquiry_confirmation";
+export type EmailType = "purchase_confirmation" | "try_on_complete" | "credits_expiring" | "promotional" | "order_confirmation" | "order_payment" | "verification_submitted" | "verification_approved" | "verification_rejected" | "onboarding_complete" | "fraud_appeal_submitted" | "fraud_appeal_approved" | "fraud_appeal_rejected" | "60_day_reminder" | "30_day_reminder" | "7_day_reminder" | "rate_limit_warning" | "api_key_generated" | "webhook_test_success" | "webhook_test_failed";
 
 interface EmailPayload {
   userId?: number;
@@ -253,24 +252,6 @@ export async function sendCreditsExpiringEmail(
     recipientEmail: email,
     subject: "Your StyleSwap Credits are Expiring Soon",
     htmlContent,
-  });
-}
-
-/**
- * Send inquiry confirmation email
- */
-export async function sendInquiryConfirmationEmail(
-  customerName: string,
-  email: string,
-  inquiryType: InquiryType
-): Promise<boolean> {
-  const template = generateEmailTemplate(inquiryType, customerName);
-
-  return sendEmailNotification({
-    type: "inquiry_confirmation",
-    recipientEmail: email,
-    subject: template.subject,
-    htmlContent: template.html,
   });
 }
 

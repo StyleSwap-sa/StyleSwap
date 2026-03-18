@@ -1,0 +1,25 @@
+-- Create shopOrders table for Phase 1 order tracking
+CREATE TABLE IF NOT EXISTS `shopOrders` (
+  `id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `orderNumber` varchar(50) NOT NULL UNIQUE,
+  `customerId` int NOT NULL,
+  `boutiqueId` int NOT NULL,
+  `productId` int,
+  `quantity` int NOT NULL DEFAULT 1,
+  `size` varchar(50),
+  `color` varchar(50),
+  `amount` decimal(10, 2) NOT NULL,
+  `status` enum('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
+  `deliveryAddress` text,
+  `customerPhone` varchar(20),
+  `notes` text,
+  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_shopOrders_customer` (`customerId`),
+  INDEX `idx_shopOrders_boutique` (`boutiqueId`),
+  INDEX `idx_shopOrders_status` (`status`),
+  INDEX `idx_shopOrders_created` (`createdAt`),
+  INDEX `idx_shopOrders_number` (`orderNumber`),
+  CONSTRAINT `fk_shopOrders_customer` FOREIGN KEY (`customerId`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_shopOrders_boutique` FOREIGN KEY (`boutiqueId`) REFERENCES `boutiques`(`id`) ON DELETE CASCADE
+);

@@ -35,9 +35,6 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 
 
 export async function startServer() {
   console.log("[Server] Starting initialization...");
-  console.log("[Server] ℹ️ Database schema is managed by Drizzle ORM migrations");
-  console.log("[Server] ℹ️ Run 'pnpm db:push' to apply schema changes");
-  
   const app = express();
   const server = createServer(app);
 
@@ -245,8 +242,8 @@ export async function startServer() {
       res.status(500).json({ error: 'Failed to log error' });
     }
   });
-  console.info("[Server] Client error logging endpoint registered:");
-  console.info("  - POST /api/client-error");
+  console.log("[Server] Client error logging endpoint registered:");
+  console.log("  - POST /api/client-error");
   
   // Webhook endpoints
   app.post("/api/yoco/webhook", handleYokoWebhook);

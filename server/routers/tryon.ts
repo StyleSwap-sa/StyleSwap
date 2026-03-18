@@ -47,16 +47,13 @@ export const tryonRouter = router({
           await enforceSubscriptionCheck(ctx.user.id);
         }
 
-        // Calculate credits needed based on HD mode
-        const creditsNeeded = input.hdMode ? 2 : 1;
-        
         // Skip credit check in test mode
         if (!input.testMode) {
           const credits = await getUserCredits(ctx.user.id);
-          if (credits.remainingCredits < creditsNeeded) {
+          if (credits.remainingCredits < 1) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: `Insufficient credits. You need ${creditsNeeded} credits for ${input.hdMode ? "HD" : "standard"} try-on, but only have ${credits.remainingCredits} remaining.`,
+              message: "Insufficient credits. Please purchase more credits to continue.",
             });
           }
         }
@@ -108,7 +105,7 @@ export const tryonRouter = router({
           modelImageBase64: input.modelImageBase64,
           clothImageBase64: input.clothImageBase64,
           clothType: input.clothType as "upper" | "lower" | "combo" | "full",
-          hdMode: input.hdMode || false,
+          hdMode: input.hdMode || true,
         });
 
         // Clean up temp files
@@ -131,12 +128,11 @@ export const tryonRouter = router({
           });
         }
 
-        // Deduct credits after successful task creation (skip in test mode)
+        // Deduct credit after successful task creation (skip in test mode)
         if (!input.testMode) {
-          await deductCredits(ctx.user.id, creditsNeeded);
-          console.log(`[Try-On] Deducted ${creditsNeeded} credit(s) for ${input.hdMode ? "HD" : "standard"} try-on`);
+          await deductCredits(ctx.user.id, 1);
         } else {
-          console.log(`[Try-On] Test mode - skipping ${creditsNeeded} credit deduction`);
+          console.log("[Try-On] Test mode - skipping credit deduction");
         }
 
         console.log(`[Try-On] Task created successfully: ${taskResult.taskId}`);

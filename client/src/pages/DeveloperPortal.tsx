@@ -5,8 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Code2, Key, Webhook, BookOpen, ArrowRight, CheckCircle2, Zap, Shield, X } from "lucide-react";
-import { ApiCredentials } from "@/components/ApiCredentials";
-import { WebhookManagement } from "@/components/WebhookManagement";
 
 export default function DeveloperPortal() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -242,7 +240,7 @@ export default function DeveloperPortal() {
                       Go to Widget Builder
                     </Button>
                   </Link>
-                  <Link href="/api-docs" className="flex-1">
+                  <Link href="/rate-limiting" className="flex-1">
                     <Button variant="outline" className="flex-1">
                       View Rate Limiting Docs
                     </Button>
@@ -254,7 +252,6 @@ export default function DeveloperPortal() {
 
           {/* API Keys Tab */}
           <TabsContent value="api-keys" className="space-y-6">
-            <ApiCredentials />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -266,7 +263,7 @@ export default function DeveloperPortal() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
                     <strong>Note:</strong> You must be logged in as a registered developer to manage API keys. 
-                    <Link href="/developer" className="text-blue-600 hover:underline ml-1">Register your application</Link>
+                    <Link href="/api-keys" className="text-blue-600 hover:underline ml-1">Register your application</Link>
                   </p>
                 </div>
 
@@ -307,7 +304,7 @@ export default function DeveloperPortal() {
                   </div>
                 </div>
 
-                <Link href="/developer">
+                <Link href="/api-keys">
                   <Button className="bg-orange-600 hover:bg-orange-700">
                     <Key className="w-4 h-4 mr-2" />
                     Generate New Key
@@ -356,32 +353,18 @@ export default function DeveloperPortal() {
 
           {/* Webhooks Tab */}
           <TabsContent value="webhooks" className="space-y-6">
-            <WebhookManagement 
-              webhooks={[
-                {
-                  id: "wh_1",
-                  url: "https://example.com/webhooks/styleswap",
-                  events: ["try_on.completed", "order.created"],
-                  status: "active",
-                  lastTriggered: "2 minutes ago"
-                }
-              ]}
-              onAddWebhook={(url, events) => console.log('Add webhook:', url, events)}
-              onDeleteWebhook={(id) => console.log('Delete webhook:', id)}
-              onTestWebhook={(id) => console.log('Test webhook:', id)}
-            />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Webhook className="w-5 h-5 text-orange-600" />
-                  Webhook Documentation
+                  Webhook Management
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
                     <strong>Note:</strong> Webhook management is available in your developer dashboard. 
-                    <Link href="/developer" className="text-blue-600 hover:underline ml-1">Go to dashboard</Link>
+                    <Link href="/api-keys" className="text-blue-600 hover:underline ml-1">Go to dashboard</Link>
                   </p>
                 </div>
 
@@ -504,7 +487,7 @@ export default function DeveloperPortal() {
                 <CardContent>
                   <p className="text-slate-600 mb-4">Test webhook deliveries and debug integration issues</p>
                   <Button variant="outline" className="w-full" asChild>
-                    <a href="/api-docs">
+                    <a href="/webhook-testing">
                       Test Webhooks <ArrowRight className="ml-2 w-4 h-4" />
                     </a>
                   </Button>

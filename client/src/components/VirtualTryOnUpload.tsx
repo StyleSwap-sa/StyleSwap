@@ -26,7 +26,6 @@ export function VirtualTryOnUpload() {
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("M");
-  const [hdMode, setHdMode] = useState(false);
   
   // State for processing
   const [isLoading, setIsLoading] = useState(false);
@@ -79,9 +78,8 @@ export function VirtualTryOnUpload() {
       return;
     }
 
-    const creditsNeeded = hdMode ? 2 : 1;
-    if (!testMode && (!credits || credits.remainingCredits < creditsNeeded)) {
-      setError(`Insufficient credits. You need ${creditsNeeded} credits for ${hdMode ? "HD" : "standard"} try-on, but only have ${credits?.remainingCredits || 0} remaining.`);
+    if (!testMode && (!credits || credits.remainingCredits < 1)) {
+      setError("Insufficient credits. Please purchase more try-ons.");
       return;
     }
 
@@ -159,12 +157,10 @@ export function VirtualTryOnUpload() {
       
       // Use mapped cloth type (Fitroom API expects: upper, lower, or combo)
       formData.append("clothType", finalClothTypeForBackend);
-      // Pass test mode and HD mode to backend
+      // Pass test mode to backend
       formData.append("testMode", testMode.toString());
-      formData.append("hdMode", hdMode.toString());
       console.log("[VirtualTryOn] FormData clothType:", clothType);
       console.log("[VirtualTryOn] FormData testMode:", testMode);
-      console.log("[VirtualTryOn] FormData hdMode:", hdMode);
       console.log("[VirtualTryOn] FormData modelImage:", finalModelPhoto?.name, finalModelPhoto?.size);
       console.log("[VirtualTryOn] FormData clothImage:", finalClothImage?.name, finalClothImage?.size);
       setProcessingProgress(20);
@@ -674,36 +670,6 @@ export function VirtualTryOnUpload() {
             disabled={isLoading || isPolling}
             showDisclaimer={true}
           />
-
-          {/* HD Mode Toggle */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quality Options</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                <div>
-                  <p className="font-medium">HD Quality Try-On</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {hdMode ? "2 credits - Higher quality, ~30s processing" : "1 credit - Standard quality, ~9s processing"}
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setHdMode(!hdMode)}
-                  variant={hdMode ? "default" : "outline"}
-                  className="ml-4"
-                >
-                  {hdMode ? "HD" : "Standard"}
-                </Button>
-              </div>
-              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <strong>Standard (1 credit):</strong> Fast processing with good quality<br/>
-                  <strong>HD (2 credits):</strong> Premium quality with better details and accuracy
-                </p>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Submit Button */}
           <Button 

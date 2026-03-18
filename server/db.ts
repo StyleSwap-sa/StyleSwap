@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/postgres-js";
-import { eq, desc, gte, sql, onConflict } from "drizzle-orm";
+import { eq, desc, gte, sql } from "drizzle-orm";
 import { InsertUser, users, garments, tryOnResults, InsertTryOnResult, boutiques, boutiqueCredits, boutiqueTransactions, shopOrders } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import postgres from 'postgres';
@@ -28,9 +28,7 @@ export async function getDb() {
 
     try {
       console.log("[Database] Initializing PostgreSQL connection...");
-      const client = postgres(process.env.DATABASE_URL, {
-        ssl: 'require',
-      });
+      const client = postgres(process.env.DATABASE_URL);
       _db = drizzle(client);
       console.log("[Database] ✓ PostgreSQL connection initialized successfully");
       return _db;
@@ -46,7 +44,7 @@ export async function getDb() {
   return _initPromise;
 }
 
-export async function upsertUser(user: Partial<InsertUser> & { openId: string }): Promise<any | undefined> {
+export async function upsertUser(user: Partial<InsertUser> & { openId: string }): Promise<User | undefined> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
   }
@@ -59,6 +57,7 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
   try {
     const values: any = {
       openId: user.openId,
+      // Don't include clerkId for OAuth users - the column doesn't exist
     };
     const updateSet: Record<string, unknown> = {};
 
@@ -80,11 +79,11 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
       updateSet.lastSignedIn = user.lastSignedIn;
     }
     if (user.role !== undefined) {
-      values.user_role = user.role;
-      updateSet.user_role = user.role;
+      values.role = user.role;
+      updateSet.role = user.role;
     } else if (user.openId === ENV.ownerOpenId) {
-      values.user_role = 'admin';
-      updateSet.user_role = 'admin';
+      values.role = 'admin';
+      updateSet.role = 'admin';
     }
 
     if (!values.lastSignedIn) {
@@ -95,7 +94,8 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
     if (!values.freeTrialUsed) {
       values.freeTrialUsed = 0;
     }
-    
+    // Don't update freeTrialUsedAt and freeTrialExpiresAt on duplicate - only on first insert
+
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = new Date();
     }
@@ -110,14 +110,9 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
       }
     }
 
-    // Use PostgreSQL onConflict syntax instead of MySQL onDuplicateKeyUpdate
-    await db.insert(users).values(values).onConflictDoUpdate({
-      target: users.openId,
+    await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
     });
-    
-    // Return the upserted user
-    return await getUserByOpenId(user.openId);
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
@@ -135,6 +130,62 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+// Clerk-based user queries
+export async function getUserByClerkId(clerkId: string) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("[Database] Database connection not available");
+  }
+
+  const result = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function upsertUserWithClerk(data: {
+  clerkId: string;
+  email: string;
+  name?: string;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("[Database] Database connection not available");
+  }
+
+  try {
+    const existing = await getUserByClerkId(data.clerkId);
+    
+    if (existing) {
+      // Update existing user
+      await db.update(users)
+        .set({
+          email: data.email,
+          name: data.name || existing.name,
+          lastSignedIn: new Date(),
+        })
+        .where(eq(users.clerkId, data.clerkId));
+      
+      return existing;
+    }
+    
+    // Create new user
+    const newUser = {
+      clerkId: data.clerkId,
+      email: data.email,
+      name: data.name || data.email,
+      role: data.clerkId === ENV.ownerOpenId ? 'admin' : 'user',
+      lastSignedIn: new Date(),
+      freeTrialUsed: 0,
+    } as InsertUser;
+    
+    await db.insert(users).values(newUser);
+    return await getUserByClerkId(data.clerkId);
+  } catch (error) {
+    console.error('[Database] Error upserting user with Clerk:', error);
+    throw error;
+  }
+}
+
 export async function getUserByEmail(email: string) {
   const db = await getDb();
   if (!db) {
@@ -146,236 +197,316 @@ export async function getUserByEmail(email: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function getGarments() {
+// Garment queries
+export async function getActiveGarments() {
   const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  return await db.select().from(garments);
+  if (!db) return [];
+  return db.select().from(garments).where(eq(garments.isActive, 1));
 }
 
-export async function getTryOnResults(userId: number) {
+export async function getGarmentById(garmentId: number) {
   const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  return await db.select().from(tryOnResults).where(eq(tryOnResults.userId, userId));
+  if (!db) return undefined;
+  const result = await db.select().from(garments).where(eq(garments.id, garmentId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
 }
 
+// Try-on results queries
 export async function createTryOnResult(data: InsertTryOnResult) {
   const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  const result = await db.insert(tryOnResults).values(data).returning();
-  return result[0];
+  if (!db) return undefined;
+  return db.insert(tryOnResults).values(data);
 }
 
-export async function createOrder(data: any) {
+export async function getUserTryOnResults(userId: number, limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(tryOnResults).where(eq(tryOnResults.userId, userId)).orderBy(desc(tryOnResults.createdAt)).limit(limit);
+}
+
+export async function getTryOnResultByShareToken(shareToken: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(tryOnResults).where(eq(tryOnResults.shareToken, shareToken)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function incrementShareCount(tryOnResultId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(tryOnResults).set({ shareCount: sql`${tryOnResults.shareCount} + 1` }).where(eq(tryOnResults.id, tryOnResultId));
+}
+
+// Admin Analytics Queries
+export async function getPlatformMetrics() {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    // Get total boutiques
+    const totalBoutiquesResult = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(boutiques);
+    const totalBoutiques = totalBoutiquesResult[0]?.count || 0;
+
+    // Get active boutiques
+    const activeBoutiquesResult = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(boutiques)
+      .where(eq(boutiques.status, 'active'));
+    const activeBoutiques = activeBoutiquesResult[0]?.count || 0;
+
+    // Get total credits
+    const totalCreditsResult = await db
+      .select({ total: sql<number>`SUM(${boutiqueCredits.totalCredits})` })
+      .from(boutiqueCredits);
+    const totalCredits = totalCreditsResult[0]?.total || 0;
+
+    // Get used credits
+    const usedCreditsResult = await db
+      .select({ total: sql<number>`SUM(${boutiqueCredits.usedCredits})` })
+      .from(boutiqueCredits);
+    const usedCredits = usedCreditsResult[0]?.total || 0;
+
+    // Get remaining credits
+    const remainingCreditsResult = await db
+      .select({ total: sql<number>`SUM(${boutiqueCredits.remainingCredits})` })
+      .from(boutiqueCredits);
+    const remainingCredits = remainingCreditsResult[0]?.total || 0;
+
+    // Get total revenue (sum of all purchases)
+    const revenueResult = await db
+      .select({ total: sql<number>`SUM(CAST(${boutiqueTransactions.price} AS DECIMAL(10,2)))` })
+      .from(boutiqueTransactions)
+      .where(eq(boutiqueTransactions.type, 'purchase'));
+    const totalRevenue = revenueResult[0]?.total || 0;
+
+    return {
+      totalBoutiques,
+      activeBoutiques,
+      inactiveBoutiques: totalBoutiques - activeBoutiques,
+      totalCredits,
+      usedCredits,
+      remainingCredits,
+      creditUsagePercentage: totalCredits > 0 ? Math.round((usedCredits / totalCredits) * 100) : 0,
+      totalRevenue: parseFloat(totalRevenue.toString()),
+    };
+  } catch (error) {
+    console.error('[Database] Failed to get platform metrics:', error);
+    return null;
+  }
+}
+
+export async function getBoutiquesList(limit = 100, offset = 0) {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    const boutiquesData = await db
+      .select({
+        id: boutiques.id,
+        name: boutiques.name,
+        slug: boutiques.slug,
+        status: boutiques.status,
+        createdAt: boutiques.createdAt,
+        totalCredits: boutiqueCredits.totalCredits,
+        usedCredits: boutiqueCredits.usedCredits,
+        remainingCredits: boutiqueCredits.remainingCredits,
+      })
+      .from(boutiques)
+      .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
+      .orderBy(desc(boutiques.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return boutiquesData;
+  } catch (error) {
+    console.error('[Database] Failed to get boutiques list:', error);
+    return [];
+  }
+}
+
+export async function getBoutiqueDetails(boutiqueId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const boutique = await db
+      .select({
+        id: boutiques.id,
+        name: boutiques.name,
+        slug: boutiques.slug,
+        status: boutiques.status,
+        createdAt: boutiques.createdAt,
+        totalCredits: boutiqueCredits.totalCredits,
+        usedCredits: boutiqueCredits.usedCredits,
+        remainingCredits: boutiqueCredits.remainingCredits,
+      })
+      .from(boutiques)
+      .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
+      .where(eq(boutiques.id, boutiqueId))
+      .limit(1);
+
+    return boutique.length > 0 ? boutique[0] : null;
+  } catch (error) {
+    console.error('[Database] Failed to get boutique details:', error);
+    return null;
+  }
+}
+
+export async function getMonthlyCreditsUsage() {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    // Use Drizzle query builder with proper GROUP BY handling
+    const usage = await db
+      .select({
+        date: sql<string>`DATE(${boutiqueTransactions.createdAt})`,
+        creditsUsed: sql<number>`SUM(CASE WHEN ${boutiqueTransactions.type} = 'usage' THEN ${boutiqueTransactions.amount} ELSE 0 END)`,
+        creditsPurchased: sql<number>`SUM(CASE WHEN ${boutiqueTransactions.type} = 'purchase' THEN ${boutiqueTransactions.amount} ELSE 0 END)`,
+      })
+      .from(boutiqueTransactions)
+      .where(gte(boutiqueTransactions.createdAt, thirtyDaysAgo))
+      .groupBy(sql`DATE(${boutiqueTransactions.createdAt})`)
+      .orderBy(sql`DATE(${boutiqueTransactions.createdAt}) DESC`);
+
+    return usage;
+  } catch (error) {
+    console.error('[Database] Failed to get monthly credits usage:', error);
+    return [];
+  }
+}
+
+export async function getTopBoutiques(limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    const topBoutiques = await db
+      .select({
+        id: boutiques.id,
+        name: boutiques.name,
+        slug: boutiques.slug,
+        usedCredits: boutiqueCredits.usedCredits,
+        totalCredits: boutiqueCredits.totalCredits,
+      })
+      .from(boutiques)
+      .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
+      .orderBy(desc(boutiqueCredits.usedCredits))
+      .limit(limit);
+
+    return topBoutiques;
+  } catch (error) {
+    console.error('[Database] Failed to get top boutiques:', error);
+    return [];
+  }
+}
+
+// TODO: add feature queries here as your schema grows.
+
+
+// Phase 1: Order Management Functions
+export async function createOrder(order: {
+  orderNumber: string;
+  customerId: number;
+  boutiqueId: number;
+  productId?: number;
+  quantity: number;
+  size?: string;
+  color?: string;
+  amount: number;
+  deliveryAddress?: string;
+  customerPhone?: string;
+  notes?: string;
+}) {
   const db = await getDb();
   if (!db) {
-    throw new Error("[Database] Database connection not available");
+    throw new Error("[Database] Cannot create order: database not available");
   }
 
-  const result = await db.insert(shopOrders).values(data).returning();
-  return result[0];
+  try {
+    const result = await db.insert(shopOrders).values(order);
+    return result;
+  } catch (error) {
+    console.error('[Database] Failed to create order:', error);
+    throw error;
+  }
 }
 
 export async function getOrdersByCustomer(customerId: number) {
   const db = await getDb();
   if (!db) {
-    throw new Error("[Database] Database connection not available");
+    return [];
   }
 
-  return await db.select().from(shopOrders).where(eq(shopOrders.customerId, customerId));
+  try {
+    const orders = await db
+      .select()
+      .from(shopOrders)
+      .where(eq(shopOrders.customerId, customerId))
+      .orderBy(desc(shopOrders.createdAt));
+    return orders;
+  } catch (error) {
+    console.error('[Database] Failed to get customer orders:', error);
+    return [];
+  }
 }
 
 export async function getOrdersByBoutique(boutiqueId: number) {
   const db = await getDb();
   if (!db) {
-    throw new Error("[Database] Database connection not available");
+    return [];
   }
 
-  return await db.select().from(shopOrders).where(eq(shopOrders.boutiqueId, boutiqueId));
+  try {
+    const orders = await db
+      .select()
+      .from(shopOrders)
+      .where(eq(shopOrders.boutiqueId, boutiqueId))
+      .orderBy(desc(shopOrders.createdAt));
+    return orders;
+  } catch (error) {
+    console.error('[Database] Failed to get boutique orders:', error);
+    return [];
+  }
 }
 
 export async function getOrderById(orderId: number) {
   const db = await getDb();
   if (!db) {
-    throw new Error("[Database] Database connection not available");
+    return null;
   }
 
-  const result = await db.select().from(shopOrders).where(eq(shopOrders.id, orderId)).limit(1);
-  return result[0];
+  try {
+    const order = await db
+      .select()
+      .from(shopOrders)
+      .where(eq(shopOrders.id, orderId))
+      .limit(1);
+    return order[0] || null;
+  } catch (error) {
+    console.error('[Database] Failed to get order:', error);
+    return null;
+  }
 }
 
 export async function updateOrderStatus(orderId: number, status: string) {
   const db = await getDb();
   if (!db) {
-    throw new Error("[Database] Database connection not available");
+    throw new Error("[Database] Cannot update order: database not available");
   }
 
-  const result = await db.update(shopOrders).set({ status }).where(eq(shopOrders.id, orderId)).returning();
-  return result[0];
-}
-
-export async function getMonthlyCreditsUsage(boutiqueId: number, month: number, year: number) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
+  try {
+    const result = await db
+      .update(shopOrders)
+      .set({ status: status as any })
+      .where(eq(shopOrders.id, orderId));
+    return result;
+  } catch (error) {
+    console.error('[Database] Failed to update order status:', error);
+    throw error;
   }
-
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0);
-
-  return await db.select().from(boutiqueTransactions)
-    .where(
-      sql`${boutiqueTransactions.boutiqueId} = ${boutiqueId} 
-        AND ${boutiqueTransactions.createdAt} >= ${startDate}
-        AND ${boutiqueTransactions.createdAt} <= ${endDate}`
-    );
-}
-
-export async function getTopBoutiques(limit: number = 10) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  return await db.select().from(boutiques).limit(limit);
-}
-
-
-export async function getActiveGarments() {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  return await db.select().from(garments).where(sql`status = 'active'`);
-}
-
-export async function getGarmentById(garmentId: number) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  const result = await db.select().from(garments).where(eq(garments.id, garmentId)).limit(1);
-  return result[0];
-}
-
-export async function getUserTryOnResults(userId: number) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  return await db.select().from(tryOnResults).where(eq(tryOnResults.userId, userId));
-}
-
-export async function getTryOnResultByShareToken(shareToken: string) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  const result = await db.select().from(tryOnResults).where(eq(tryOnResults.shareToken, shareToken)).limit(1);
-  return result[0];
-}
-
-export async function incrementShareCount(resultId: number) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  const result = await db.update(tryOnResults)
-    .set({ shareCount: sql`${tryOnResults.shareCount} + 1` })
-    .where(eq(tryOnResults.id, resultId))
-    .returning();
-  
-  return result[0];
-}
-
-export async function getPlatformMetrics() {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  // Return basic platform metrics
-  const totalUsers = await db.select({ count: sql`count(*)` }).from(users);
-  const totalBoutiques = await db.select({ count: sql`count(*)` }).from(boutiques);
-  const totalTryOns = await db.select({ count: sql`count(*)` }).from(tryOnResults);
-
-  return {
-    totalUsers: totalUsers[0]?.count || 0,
-    totalBoutiques: totalBoutiques[0]?.count || 0,
-    totalTryOns: totalTryOns[0]?.count || 0,
-  };
-}
-
-export async function getBoutiquesList(limit: number = 10) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  return await db.select().from(boutiques).limit(limit);
-}
-
-export async function getMonthlyCreditUsage(boutiqueId: number) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-  return await db.select().from(boutiqueTransactions)
-    .where(
-      sql`${boutiqueTransactions.boutiqueId} = ${boutiqueId} 
-        AND ${boutiqueTransactions.createdAt} >= ${startOfMonth}
-        AND ${boutiqueTransactions.createdAt} <= ${endOfMonth}`
-    );
-}
-
-export async function getBoutiqueById(boutiqueId: number) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  const result = await db.select().from(boutiques).where(eq(boutiques.id, boutiqueId)).limit(1);
-  return result[0];
-}
-
-export async function updateBoutiqueCredits(boutiqueId: number, amount: number) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  const result = await db.update(boutiqueCredits)
-    .set({ balance: sql`${boutiqueCredits.balance} + ${amount}` })
-    .where(eq(boutiqueCredits.boutiqueId, boutiqueId))
-    .returning();
-  
-  return result[0];
-}
-
-export async function createBoutiqueTransaction(data: any) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  const result = await db.insert(boutiqueTransactions).values(data).returning();
-  return result[0];
 }

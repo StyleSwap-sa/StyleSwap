@@ -65,7 +65,6 @@ export default function Pricing() {
     "Store Scale": "pkg_1000_credits",
     "Retailer Pro": "pkg_5000_credits",
     "Enterprise Retail": "pkg_20000_credits",
-    "Enterprise Retail Pro": "enterprise_custom",
   };
 
   const handleSubscribe = async (packageName: string, monthlyPrice: number) => {
@@ -217,19 +216,6 @@ export default function Pricing() {
         "Custom SLA",
         "Effective rate: R0.93 per simulation"
       ]
-    },
-    { 
-      name: "Enterprise Retail Pro",
-      price: null,
-      features: [
-        "Full API integration",
-        "White-label option",
-        "Dedicated account manager",
-        "Custom SLA & support",
-        "Priority feature requests",
-        "Custom integrations available"
-      ],
-      isEnterprise: true
     }
   ];
 
@@ -308,7 +294,7 @@ export default function Pricing() {
               </span>
             )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-7 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {businessPlans.map((plan) => (
               <div key={plan.name} className="flex flex-col border-0 shadow-lg overflow-hidden rounded-lg bg-white">
                 {/* Orange Header with Title and Price */}
@@ -327,45 +313,28 @@ export default function Pricing() {
                   </ul>
                   <div className="space-y-2">
                     <div className="text-center">
-                      {plan.price !== null ? (
-                        <>
-                          <p className="text-2xl font-bold text-orange-600">
-                            R{(billingPeriod === 'annual' ? getAnnualPrice(plan.price) : plan.price).toLocaleString()}
-                          </p>
-                          <p className="text-sm text-slate-600">
-                            {billingPeriod === 'annual' ? '/year' : '/month'}
-                          </p>
-                          {billingPeriod === 'annual' && (
-                            <p className="text-xs text-green-600 font-semibold mt-1">
-                              Save R{Math.round(plan.price * 12 * 0.1).toLocaleString()}/year
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-2xl font-bold text-orange-600">Custom Pricing</p>
-                          <p className="text-sm text-slate-600">Contact for quote</p>
-                        </>
+                      <p className="text-2xl font-bold text-orange-600">
+                        R{(billingPeriod === 'annual' ? getAnnualPrice(plan.price) : plan.price).toLocaleString()}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {billingPeriod === 'annual' ? '/year' : '/month'}
+                      </p>
+                      {billingPeriod === 'annual' && (
+                        <p className="text-xs text-green-600 font-semibold mt-1">
+                          Save R{Math.round(plan.price * 12 * 0.1).toLocaleString()}/year
+                        </p>
                       )}
                     </div>
                     <Button 
-                      onClick={() => {
-                        if ((plan as any).isEnterprise) {
-                          window.location.href = 'mailto:sales@styleswap.co.za?subject=Enterprise%20Retail%20Pro%20Inquiry&body=I%20am%20interested%20in%20the%20Enterprise%20Retail%20Pro%20package%20with%20more%20than%2020,000%20credits.';
-                        } else {
-                          handleSubscribe(plan.name, plan.price);
-                        }
-                      }}
+                      onClick={() => handleSubscribe(plan.name, plan.price)}
                       disabled={loadingPackage === plan.name}
-                      className={`w-full ${(plan as any).isEnterprise ? 'bg-orange-700 hover:bg-orange-800' : 'bg-orange-600 hover:bg-orange-700'} text-white font-semibold py-3 disabled:opacity-50`}
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 disabled:opacity-50"
                     >
                       {loadingPackage === plan.name ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           Processing...
                         </>
-                      ) : (plan as any).isEnterprise ? (
-                        'Contact Sales'
                       ) : (
                         `Subscribe ${billingPeriod === 'annual' ? '(Annual)' : '(Monthly)'}`
                       )}

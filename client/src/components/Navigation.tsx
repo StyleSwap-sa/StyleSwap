@@ -19,7 +19,6 @@ export default function Navigation() {
     { label: 'Overview', path: '/overview' },
     { label: 'Technology', path: '/technology' },
     { label: 'Market', path: '/market' },
-    { label: 'About', path: '/about' },
     { label: 'Pricing', path: '/pricing' },
     { label: 'ROI', path: '/roi' },
     { label: 'Case Studies', path: '/case-studies' },

@@ -1,9 +1,202 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "b5dd50e7-8a47-4da8-b158-ff8d72f14041",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "15c44e7f-2830-4363-8193-cf675a5857d9",
+  "prevId": "e22e3de4-c185-4648-ba09-1a207be96947",
   "tables": {
+    "analyticsSnapshots": {
+      "name": "analyticsSnapshots",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "snapshotDate": {
+          "name": "snapshotDate",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "imageOptimizationVersion": {
+          "name": "imageOptimizationVersion",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "flowType": {
+          "name": "flowType",
+          "type": "enum('b2c','b2b')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "totalAttempts": {
+          "name": "totalAttempts",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "successfulAttempts": {
+          "name": "successfulAttempts",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "failedAttempts": {
+          "name": "failedAttempts",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "successRate": {
+          "name": "successRate",
+          "type": "decimal(5,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "avgProcessingTimeMs": {
+          "name": "avgProcessingTimeMs",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "p95ProcessingTimeMs": {
+          "name": "p95ProcessingTimeMs",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "p99ProcessingTimeMs": {
+          "name": "p99ProcessingTimeMs",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avgUploadTimeMs": {
+          "name": "avgUploadTimeMs",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avgFitRoomResponseTimeMs": {
+          "name": "avgFitRoomResponseTimeMs",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avgOriginalModelImageSize": {
+          "name": "avgOriginalModelImageSize",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avgOptimizedModelImageSize": {
+          "name": "avgOptimizedModelImageSize",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avgOriginalClothImageSize": {
+          "name": "avgOriginalClothImageSize",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avgOptimizedClothImageSize": {
+          "name": "avgOptimizedClothImageSize",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "compressionRatio": {
+          "name": "compressionRatio",
+          "type": "decimal(5,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "topErrorType": {
+          "name": "topErrorType",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "errorTypeBreakdown": {
+          "name": "errorTypeBreakdown",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'CURRENT_TIMESTAMP'"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "idx_snapshot_date": {
+          "name": "idx_snapshot_date",
+          "columns": [
+            "snapshotDate"
+          ],
+          "isUnique": false
+        },
+        "idx_snapshot_version": {
+          "name": "idx_snapshot_version",
+          "columns": [
+            "imageOptimizationVersion"
+          ],
+          "isUnique": false
+        },
+        "idx_snapshot_flow": {
+          "name": "idx_snapshot_flow",
+          "columns": [
+            "flowType"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "auditLogs": {
       "name": "auditLogs",
       "columns": {
@@ -83,7 +276,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         }
       },
       "indexes": {
@@ -144,14 +337,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "auditLogs_id": {
-          "name": "auditLogs_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -209,7 +395,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -222,6 +408,13 @@
         }
       },
       "indexes": {
+        "boutiqueCredits_boutiqueId_unique": {
+          "name": "boutiqueCredits_boutiqueId_unique",
+          "columns": [
+            "boutiqueId"
+          ],
+          "isUnique": false
+        },
         "idx_boutique_credits_boutique": {
           "name": "idx_boutique_credits_boutique",
           "columns": [
@@ -245,22 +438,8 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "boutiqueCredits_id": {
-          "name": "boutiqueCredits_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "boutiqueCredits_boutiqueId_unique": {
-          "name": "boutiqueCredits_boutiqueId_unique",
-          "columns": [
-            "boutiqueId"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "checkConstraint": {}
     },
     "boutiqueSettings": {
@@ -300,7 +479,7 @@
           "name": "enableSharing",
           "type": "int",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": 1
         },
@@ -308,7 +487,7 @@
           "name": "enableAnalytics",
           "type": "int",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": 1
         },
@@ -326,7 +505,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -338,7 +517,15 @@
           "default": "(now())"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "boutiqueSettings_boutiqueId_unique": {
+          "name": "boutiqueSettings_boutiqueId_unique",
+          "columns": [
+            "boutiqueId"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "boutiqueSettings_boutiqueId_boutiques_id_fk": {
           "name": "boutiqueSettings_boutiqueId_boutiques_id_fk",
@@ -354,22 +541,8 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "boutiqueSettings_id": {
-          "name": "boutiqueSettings_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "boutiqueSettings_boutiqueId_unique": {
-          "name": "boutiqueSettings_boutiqueId_unique",
-          "columns": [
-            "boutiqueId"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "checkConstraint": {}
     },
     "boutiqueTransactions": {
@@ -460,7 +633,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -523,14 +696,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "boutiqueTransactions_id": {
-          "name": "boutiqueTransactions_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -572,7 +738,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         }
       },
       "indexes": {
@@ -619,14 +785,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "boutiqueUsers_id": {
-          "name": "boutiqueUsers_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -675,34 +834,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "instagramHandle": {
-          "name": "instagramHandle",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "tiktokHandle": {
-          "name": "tiktokHandle",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "facebookUrl": {
-          "name": "facebookUrl",
-          "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "whatsappNumber": {
-          "name": "whatsappNumber",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "ownerId": {
           "name": "ownerId",
           "type": "int",
@@ -746,7 +877,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -756,9 +887,44 @@
           "autoincrement": false,
           "onUpdate": true,
           "default": "(now())"
+        },
+        "instagramHandle": {
+          "name": "instagramHandle",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tiktokHandle": {
+          "name": "tiktokHandle",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "facebookUrl": {
+          "name": "facebookUrl",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "whatsappNumber": {
+          "name": "whatsappNumber",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
+        "boutiques_slug_unique": {
+          "name": "boutiques_slug_unique",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": false
+        },
         "idx_boutique_owner": {
           "name": "idx_boutique_owner",
           "columns": [
@@ -789,22 +955,8 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "boutiques_id": {
-          "name": "boutiques_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "boutiques_slug_unique": {
-          "name": "boutiques_slug_unique",
-          "columns": [
-            "slug"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "checkConstraint": {}
     },
     "deletionLogs": {
@@ -872,7 +1024,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         }
       },
       "indexes": {
@@ -932,14 +1084,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "deletionLogs_id": {
-          "name": "deletionLogs_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1009,7 +1154,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1045,14 +1190,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "emailNotifications_id": {
-          "name": "emailNotifications_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1086,7 +1224,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         }
       },
       "indexes": {
@@ -1126,14 +1264,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "favorites_id": {
-          "name": "favorites_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1204,7 +1335,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1226,14 +1357,7 @@
         }
       },
       "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "garments_id": {
-          "name": "garments_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1266,8 +1390,7 @@
           "type": "varchar(3)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "'ZAR'"
+          "autoincrement": false
         },
         "yocoStatus": {
           "name": "yocoStatus",
@@ -1313,18 +1436,11 @@
         },
         "reconciliationStatus": {
           "name": "reconciliationStatus",
-          "type": "enum('matched','unmatched','duplicate','mismatch')",
+          "type": "enum('unmatched','matched','mismatch')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "'unmatched'"
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         },
         "createdAt": {
           "name": "createdAt",
@@ -1345,78 +1461,30 @@
         }
       },
       "indexes": {
-        "idx_reconciliation_yoco_id": {
-          "name": "idx_reconciliation_yoco_id",
+        "idx_payment_yoco_id": {
+          "name": "idx_payment_yoco_id",
           "columns": [
             "yocoTransactionId"
           ],
           "isUnique": false
         },
-        "idx_reconciliation_user": {
-          "name": "idx_reconciliation_user",
-          "columns": [
-            "styleswapUserId"
-          ],
-          "isUnique": false
-        },
-        "idx_reconciliation_status": {
-          "name": "idx_reconciliation_status",
+        "idx_payment_status": {
+          "name": "idx_payment_status",
           "columns": [
             "reconciliationStatus"
           ],
           "isUnique": false
         },
-        "idx_reconciliation_timestamp": {
-          "name": "idx_reconciliation_timestamp",
+        "idx_payment_user": {
+          "name": "idx_payment_user",
           "columns": [
-            "yocoTimestamp"
-          ],
-          "isUnique": false
-        },
-        "idx_reconciliation_created": {
-          "name": "idx_reconciliation_created",
-          "columns": [
-            "createdAt"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "paymentReconciliation_styleswapUserId_users_id_fk": {
-          "name": "paymentReconciliation_styleswapUserId_users_id_fk",
-          "tableFrom": "paymentReconciliation",
-          "tableTo": "users",
-          "columnsFrom": [
             "styleswapUserId"
           ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "paymentReconciliation_styleswapTransactionId_transactions_id_fk": {
-          "name": "paymentReconciliation_styleswapTransactionId_transactions_id_fk",
-          "tableFrom": "paymentReconciliation",
-          "tableTo": "transactions",
-          "columnsFrom": [
-            "styleswapTransactionId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "isUnique": false
         }
       },
-      "compositePrimaryKeys": {
-        "paymentReconciliation_id": {
-          "name": "paymentReconciliation_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "paymentReconciliation_yocoTransactionId_unique": {
           "name": "paymentReconciliation_yocoTransactionId_unique",
@@ -1508,7 +1576,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1551,14 +1619,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "products_id": {
-          "name": "products_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1636,7 +1697,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1679,14 +1740,316 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "transactions_id": {
-          "name": "transactions_id",
-          "columns": [
-            "id"
-          ]
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "tryOnAnalytics": {
+      "name": "tryOnAnalytics",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tryOnResultId": {
+          "name": "tryOnResultId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "boutiqueId": {
+          "name": "boutiqueId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "flowType": {
+          "name": "flowType",
+          "type": "enum('b2c','b2b')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'b2c'"
+        },
+        "imageOptimizationVersion": {
+          "name": "imageOptimizationVersion",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'v1'"
+        },
+        "originalModelImageWidth": {
+          "name": "originalModelImageWidth",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "originalModelImageHeight": {
+          "name": "originalModelImageHeight",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "originalModelImageSize": {
+          "name": "originalModelImageSize",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "optimizedModelImageWidth": {
+          "name": "optimizedModelImageWidth",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "optimizedModelImageHeight": {
+          "name": "optimizedModelImageHeight",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "optimizedModelImageSize": {
+          "name": "optimizedModelImageSize",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "originalClothImageWidth": {
+          "name": "originalClothImageWidth",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "originalClothImageHeight": {
+          "name": "originalClothImageHeight",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "originalClothImageSize": {
+          "name": "originalClothImageSize",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "optimizedClothImageWidth": {
+          "name": "optimizedClothImageWidth",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "optimizedClothImageHeight": {
+          "name": "optimizedClothImageHeight",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "optimizedClothImageSize": {
+          "name": "optimizedClothImageSize",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "success": {
+          "name": "success",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "processingTimeMs": {
+          "name": "processingTimeMs",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fitRoomResponseTime": {
+          "name": "fitRoomResponseTime",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "uploadTimeMs": {
+          "name": "uploadTimeMs",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "errorType": {
+          "name": "errorType",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "errorMessage": {
+          "name": "errorMessage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fitRoomErrorCode": {
+          "name": "fitRoomErrorCode",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "userAgent": {
+          "name": "userAgent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ipAddress": {
+          "name": "ipAddress",
+          "type": "varchar(45)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'CURRENT_TIMESTAMP'"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
         }
       },
+      "indexes": {
+        "idx_analytics_user": {
+          "name": "idx_analytics_user",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        },
+        "idx_analytics_boutique": {
+          "name": "idx_analytics_boutique",
+          "columns": [
+            "boutiqueId"
+          ],
+          "isUnique": false
+        },
+        "idx_analytics_success": {
+          "name": "idx_analytics_success",
+          "columns": [
+            "success"
+          ],
+          "isUnique": false
+        },
+        "idx_analytics_version": {
+          "name": "idx_analytics_version",
+          "columns": [
+            "imageOptimizationVersion"
+          ],
+          "isUnique": false
+        },
+        "idx_analytics_created": {
+          "name": "idx_analytics_created",
+          "columns": [
+            "createdAt"
+          ],
+          "isUnique": false
+        },
+        "idx_analytics_error": {
+          "name": "idx_analytics_error",
+          "columns": [
+            "errorType"
+          ],
+          "isUnique": false
+        },
+        "idx_analytics_flow": {
+          "name": "idx_analytics_flow",
+          "columns": [
+            "flowType"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "tryOnAnalytics_tryOnResultId_tryOnResults_id_fk": {
+          "name": "tryOnAnalytics_tryOnResultId_tryOnResults_id_fk",
+          "tableFrom": "tryOnAnalytics",
+          "tableTo": "tryOnResults",
+          "columnsFrom": [
+            "tryOnResultId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tryOnAnalytics_userId_users_id_fk": {
+          "name": "tryOnAnalytics_userId_users_id_fk",
+          "tableFrom": "tryOnAnalytics",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tryOnAnalytics_boutiqueId_boutiques_id_fk": {
+          "name": "tryOnAnalytics_boutiqueId_boutiques_id_fk",
+          "tableFrom": "tryOnAnalytics",
+          "tableTo": "boutiques",
+          "columnsFrom": [
+            "boutiqueId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -1700,25 +2063,11 @@
           "notNull": true,
           "autoincrement": true
         },
-        "boutiqueId": {
-          "name": "boutiqueId",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "userId": {
           "name": "userId",
           "type": "int",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "productId": {
-          "name": "productId",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "garmentId": {
@@ -1738,20 +2087,6 @@
         "resultImageUrl": {
           "name": "resultImageUrl",
           "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "fitRoomTaskId": {
-          "name": "fitRoomTaskId",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "fitRoomRequestId": {
-          "name": "fitRoomRequestId",
-          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1779,21 +2114,13 @@
           "autoincrement": false,
           "default": 0
         },
-        "flowType": {
-          "name": "flowType",
-          "type": "enum('b2c','b2b')",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'b2c'"
-        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1803,9 +2130,52 @@
           "autoincrement": false,
           "onUpdate": true,
           "default": "(now())"
+        },
+        "boutiqueId": {
+          "name": "boutiqueId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "productId": {
+          "name": "productId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fitRoomTaskId": {
+          "name": "fitRoomTaskId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fitRoomRequestId": {
+          "name": "fitRoomRequestId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "flowType": {
+          "name": "flowType",
+          "type": "enum('b2c','b2b')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'b2c'"
         }
       },
       "indexes": {
+        "tryOnResults_shareToken_unique": {
+          "name": "tryOnResults_shareToken_unique",
+          "columns": [
+            "shareToken"
+          ],
+          "isUnique": false
+        },
         "idx_tryon_boutique": {
           "name": "idx_tryon_boutique",
           "columns": [
@@ -1829,38 +2199,12 @@
         }
       },
       "foreignKeys": {
-        "tryOnResults_boutiqueId_boutiques_id_fk": {
-          "name": "tryOnResults_boutiqueId_boutiques_id_fk",
-          "tableFrom": "tryOnResults",
-          "tableTo": "boutiques",
-          "columnsFrom": [
-            "boutiqueId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "tryOnResults_userId_users_id_fk": {
           "name": "tryOnResults_userId_users_id_fk",
           "tableFrom": "tryOnResults",
           "tableTo": "users",
           "columnsFrom": [
             "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "tryOnResults_productId_products_id_fk": {
-          "name": "tryOnResults_productId_products_id_fk",
-          "tableFrom": "tryOnResults",
-          "tableTo": "products",
-          "columnsFrom": [
-            "productId"
           ],
           "columnsTo": [
             "id"
@@ -1880,24 +2224,36 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "tryOnResults_id": {
-          "name": "tryOnResults_id",
-          "columns": [
+        },
+        "tryOnResults_boutiqueId_boutiques_id_fk": {
+          "name": "tryOnResults_boutiqueId_boutiques_id_fk",
+          "tableFrom": "tryOnResults",
+          "tableTo": "boutiques",
+          "columnsFrom": [
+            "boutiqueId"
+          ],
+          "columnsTo": [
             "id"
-          ]
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tryOnResults_productId_products_id_fk": {
+          "name": "tryOnResults_productId_products_id_fk",
+          "tableFrom": "tryOnResults",
+          "tableTo": "products",
+          "columnsFrom": [
+            "productId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
-      "uniqueConstraints": {
-        "tryOnResults_shareToken_unique": {
-          "name": "tryOnResults_shareToken_unique",
-          "columns": [
-            "shareToken"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "checkConstraint": {}
     },
     "userCredits": {
@@ -1954,7 +2310,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -1990,14 +2346,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "userCredits_id": {
-          "name": "userCredits_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -2032,13 +2381,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "phone": {
-          "name": "phone",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "loginMethod": {
           "name": "loginMethod",
           "type": "varchar(64)",
@@ -2054,28 +2396,13 @@
           "autoincrement": false,
           "default": "'user'"
         },
-        "userType": {
-          "name": "userType",
-          "type": "enum('customer','merchant','admin')",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'customer'"
-        },
-        "currentBoutiqueId": {
-          "name": "currentBoutiqueId",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -2092,27 +2419,43 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "'CURRENT_TIMESTAMP'"
+        },
+        "phone": {
+          "name": "phone",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "userType": {
+          "name": "userType",
+          "type": "enum('customer','merchant','admin')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'customer'"
+        },
+        "currentBoutiqueId": {
+          "name": "currentBoutiqueId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "users_id": {
-          "name": "users_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
+      "indexes": {
         "users_openId_unique": {
           "name": "users_openId_unique",
           "columns": [
             "openId"
-          ]
+          ],
+          "isUnique": false
         }
       },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "checkConstraint": {}
     },
     "webhookAlerts": {
@@ -2209,84 +2552,30 @@
         }
       },
       "indexes": {
-        "idx_alerts_type": {
-          "name": "idx_alerts_type",
+        "idx_alert_type": {
+          "name": "idx_alert_type",
           "columns": [
             "alertType"
           ],
           "isUnique": false
         },
-        "idx_alerts_severity": {
-          "name": "idx_alerts_severity",
+        "idx_alert_severity": {
+          "name": "idx_alert_severity",
           "columns": [
             "severity"
           ],
           "isUnique": false
         },
-        "idx_alerts_resolved": {
-          "name": "idx_alerts_resolved",
+        "idx_alert_resolved": {
+          "name": "idx_alert_resolved",
           "columns": [
             "isResolved"
           ],
           "isUnique": false
-        },
-        "idx_alerts_created": {
-          "name": "idx_alerts_created",
-          "columns": [
-            "createdAt"
-          ],
-          "isUnique": false
         }
       },
-      "foreignKeys": {
-        "webhookAlerts_webhookEventId_webhookEvents_id_fk": {
-          "name": "webhookAlerts_webhookEventId_webhookEvents_id_fk",
-          "tableFrom": "webhookAlerts",
-          "tableTo": "webhookEvents",
-          "columnsFrom": [
-            "webhookEventId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "webhookAlerts_paymentReconciliationId_paymentReconciliation_id_fk": {
-          "name": "webhookAlerts_paymentReconciliationId_paymentReconciliation_id_fk",
-          "tableFrom": "webhookAlerts",
-          "tableTo": "paymentReconciliation",
-          "columnsFrom": [
-            "paymentReconciliationId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "webhookAlerts_resolvedBy_users_id_fk": {
-          "name": "webhookAlerts_resolvedBy_users_id_fk",
-          "tableFrom": "webhookAlerts",
-          "tableTo": "users",
-          "columnsFrom": [
-            "resolvedBy"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "webhookAlerts_id": {
-          "name": "webhookAlerts_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
@@ -2302,7 +2591,7 @@
         },
         "source": {
           "name": "source",
-          "type": "varchar(50)",
+          "type": "enum('yoco','fitroom')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -2323,14 +2612,14 @@
         },
         "payload": {
           "name": "payload",
-          "type": "text",
+          "type": "json",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "status": {
           "name": "status",
-          "type": "enum('pending','processing','success','failed','retrying')",
+          "type": "enum('pending','retrying','success','failed')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -2352,6 +2641,13 @@
           "autoincrement": false,
           "default": 3
         },
+        "nextRetryAt": {
+          "name": "nextRetryAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "lastRetryAt": {
           "name": "lastRetryAt",
           "type": "timestamp",
@@ -2359,8 +2655,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "nextRetryAt": {
-          "name": "nextRetryAt",
+        "processedAt": {
+          "name": "processedAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
@@ -2369,13 +2665,6 @@
         "error": {
           "name": "error",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "processedAt": {
-          "name": "processedAt",
-          "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2399,17 +2688,17 @@
         }
       },
       "indexes": {
-        "idx_webhook_source": {
-          "name": "idx_webhook_source",
-          "columns": [
-            "source"
-          ],
-          "isUnique": false
-        },
         "idx_webhook_status": {
           "name": "idx_webhook_status",
           "columns": [
             "status"
+          ],
+          "isUnique": false
+        },
+        "idx_webhook_source": {
+          "name": "idx_webhook_source",
+          "columns": [
+            "source"
           ],
           "isUnique": false
         },
@@ -2419,31 +2708,10 @@
             "externalEventId"
           ],
           "isUnique": false
-        },
-        "idx_webhook_next_retry": {
-          "name": "idx_webhook_next_retry",
-          "columns": [
-            "nextRetryAt"
-          ],
-          "isUnique": false
-        },
-        "idx_webhook_created": {
-          "name": "idx_webhook_created",
-          "columns": [
-            "createdAt"
-          ],
-          "isUnique": false
         }
       },
       "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "webhookEvents_id": {
-          "name": "webhookEvents_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "webhookEvents_externalEventId_unique": {
           "name": "webhookEvents_externalEventId_unique",

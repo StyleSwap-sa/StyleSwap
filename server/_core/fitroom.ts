@@ -108,10 +108,9 @@ export class FitroomClient {
         (payload as any).lower_cloth_image = request.lowerClothImageBase64;
       }
 
-      // HD mode is optional - only enable if explicitly requested
-      // Standard mode: 1 credit, ~9s processing
-      // HD mode: 2 credits, ~30s processing
-      (payload as any).hd_mode = request.hdMode || false;
+      // Enable HD mode by default for better quality (30s vs 9s processing)
+      // HD mode provides higher quality output at the cost of longer processing time
+      (payload as any).hd_mode = true;
 
       console.log("[Fitroom] Sending POST to /api/tryon/v2/tasks with base64 JSON payload");
       console.log("[Fitroom] Payload keys:", Object.keys(payload));

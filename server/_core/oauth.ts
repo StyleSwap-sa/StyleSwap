@@ -3,8 +3,6 @@ import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import { COOKIE_NAME } from "@shared/const";
-import { ENV } from "./env";
-
 
 function getQueryParam(req: Request, key: string): string | undefined {
   const value = req.query[key];
@@ -13,15 +11,6 @@ function getQueryParam(req: Request, key: string): string | undefined {
 
 export function registerOAuthRoutes(app: Express) {
   console.log("[OAuth] Registering OAuth routes...");
-  
-  // OAuth configuration endpoint - returns appId and portalUrl
-  app.get("/api/oauth/config", (req: Request, res: Response) => {
-    console.log("[OAuth] Config endpoint called");
-    res.json({
-      appId: ENV.appId,
-      portalUrl: ENV.oAuthPortalUrl,
-    });
-  });
   
   // Test endpoint to debug OAuth configuration
   app.get("/api/oauth/debug", (req: Request, res: Response) => {
@@ -96,8 +85,6 @@ export function registerOAuthRoutes(app: Express) {
 
       console.log("[OAuth] ✓ User upserted and retrieved, userId:", user.id);
 
-
-
       const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
       console.log("[OAuth] Creating session token...");
@@ -115,8 +102,7 @@ export function registerOAuthRoutes(app: Express) {
 
       // Determine redirect destination based on user role
       let redirectPath = "/";
-      const userRole = (user as any).user_role || 'user';
-      if (userRole === 'admin') {
+      if (user.role === 'admin') {
         redirectPath = "/admin";
       } else {
         redirectPath = "/dashboard";

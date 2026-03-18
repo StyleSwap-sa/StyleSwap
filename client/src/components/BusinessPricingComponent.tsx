@@ -12,7 +12,6 @@ interface BusinessPricingComponentProps {
 }
 
 export function BusinessPricingComponent({ compact = false }: BusinessPricingComponentProps) {
-  // Force rebuild - Enterprise Retail Pro package v2
   const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
@@ -94,19 +93,6 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
         "Custom SLA",
         "Effective rate: R0.93 per simulation"
       ]
-    },
-    { 
-      name: "Enterprise Retail Pro",
-      price: null, // Custom pricing
-      features: [
-        "Full API integration",
-        "White-label option",
-        "Dedicated account manager",
-        "Custom SLA & support",
-        "Priority feature requests",
-        "Custom integrations available"
-      ],
-      isEnterprise: true
     }
   ];
 
@@ -117,16 +103,9 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
     "Store Scale": "pkg_1000_credits",
     "Retailer Pro": "pkg_5000_credits",
     "Enterprise Retail": "pkg_20000_credits",
-    "Enterprise Retail Pro": "enterprise_custom",
   };
 
-  const handleSubscribe = async (packageName: string, monthlyPrice: number | null) => {
-    if (packageName === "Enterprise Retail Pro") {
-      // For enterprise, open email link
-      window.location.href = 'mailto:sales@styleswap.co.za?subject=Enterprise%20Retail%20Pro%20Inquiry&body=I%20am%20interested%20in%20the%20Enterprise%20Retail%20Pro%20package%20with%20more%20than%2020,000%20credits.';
-      return;
-    }
-
+  const handleSubscribe = async (packageName: string, monthlyPrice: number) => {
     if (!isAuthenticated) {
       const returnUrl = `/pricing`;
       localStorage.setItem('oauth_return_url', returnUrl);
@@ -137,7 +116,7 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
     try {
       setLoadingPackage(packageName);
       const packageId = packageNameToId[packageName];
-      const finalPrice = monthlyPrice ? (billingPeriod === 'annual' ? getAnnualPrice(monthlyPrice) : monthlyPrice) : 0;
+      const finalPrice = billingPeriod === 'annual' ? getAnnualPrice(monthlyPrice) : monthlyPrice;
       const billingLabel = billingPeriod === 'annual' ? 'annual' : 'monthly';
       
       const result = await createCheckout.mutateAsync({
@@ -156,7 +135,7 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
     } finally {
       setLoadingPackage(null);
     }
-  }
+  };
 
   const displayPlans = businessPlans; // Always show all plans
 
@@ -192,36 +171,23 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
       )}
 
       {/* Pricing Cards Grid */}
-      <div className={`grid gap-6 ${compact ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-7'}`}>
+      <div className={`grid gap-6 ${compact ? 'grid-cols-1 sm:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
         {displayPlans.map((plan) => {
           const monthlyPrice = plan.price;
-          const annualPrice = monthlyPrice ? getAnnualPrice(monthlyPrice) : null;
-          const displayPrice = monthlyPrice ? (billingPeriod === 'annual' ? annualPrice : monthlyPrice) : null;
-          const savings = monthlyPrice && billingPeriod === 'annual' ? monthlyPrice * 12 - (annualPrice || 0) : 0;
-          const isEnterprise = (plan as any).isEnterprise;
+          const annualPrice = getAnnualPrice(monthlyPrice);
+          const displayPrice = billingPeriod === 'annual' ? annualPrice : monthlyPrice;
+          const savings = billingPeriod === 'annual' ? monthlyPrice * 12 - annualPrice : 0;
 
           return (
-            <Card key={plan.name} className={`flex flex-col overflow-hidden hover:shadow-lg transition-shadow ${isEnterprise ? 'border-2 border-primary' : ''}`}>
+            <Card key={plan.name} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow">
               {/* Header with Orange Background */}
-              <CardHeader className={`${isEnterprise ? 'bg-gradient-to-r from-primary to-orange-600' : 'bg-primary'} text-white pb-4`}>
-                <div className="flex items-start justify-between">
-                  <h3 className="text-xl font-bold">{plan.name}</h3>
-                  {isEnterprise && <span className="text-xs font-bold bg-white text-primary px-2 py-1 rounded">CUSTOM</span>}
-                </div>
+              <CardHeader className="bg-primary text-white pb-4">
+                <h3 className="text-xl font-bold">{plan.name}</h3>
                 <div className="mt-2">
-                  {displayPrice !== null ? (
-                    <>
-                      <div className="text-3xl font-bold">R{displayPrice.toLocaleString()}</div>
-                      <div className="text-sm opacity-90">/{billingPeriod === 'annual' ? 'year' : 'month'}</div>
-                      {savings > 0 && (
-                        <div className="text-sm mt-2 font-semibold">Save R{savings.toLocaleString()}/year</div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-3xl font-bold">Custom Pricing</div>
-                      <div className="text-sm opacity-90">Contact for quote</div>
-                    </>
+                  <div className="text-3xl font-bold">R{displayPrice.toLocaleString()}</div>
+                  <div className="text-sm opacity-90">/{billingPeriod === 'annual' ? 'year' : 'month'}</div>
+                  {savings > 0 && (
+                    <div className="text-sm mt-2 font-semibold">Save R{savings.toLocaleString()}/year</div>
                   )}
                 </div>
               </CardHeader>
@@ -243,14 +209,12 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
                 <Button
                   onClick={() => handleSubscribe(plan.name, monthlyPrice)}
                   disabled={loadingPackage === plan.name}
-                  className={`w-full ${isEnterprise ? 'bg-orange-600 hover:bg-orange-700' : 'bg-primary hover:bg-primary/90'} text-white font-semibold text-sm`}>
+                  className={`w-full bg-primary hover:bg-primary/90 text-white font-semibold text-sm`}               >
                   {loadingPackage === plan.name ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Processing...
                     </>
-                  ) : isEnterprise ? (
-                    'Contact Sales'
                   ) : (
                     `Subscribe (${billingPeriod === 'annual' ? 'Annual' : 'Monthly'})`
                   )}

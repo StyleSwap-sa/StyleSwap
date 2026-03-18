@@ -27,7 +27,6 @@ export function BusinessPricingSection({
     "Store Scale": "pkg_1000_credits",
     "Retailer Pro": "pkg_5000_credits",
     "Enterprise Retail": "pkg_20000_credits",
-    "Enterprise Retail Pro": "enterprise_pro",
   };
 
   const handleSubscribe = async (packageName: string, price: number) => {
@@ -130,20 +129,6 @@ export function BusinessPricingSection({
         "Custom SLA",
         "Effective rate: R0.93 per simulation"
       ]
-    },
-    { 
-      name: "Enterprise Retail Pro",
-      price: null,
-      features: [
-        "20,000+ Virtual Try-Ons",
-        "Unlimited custom credits",
-        "Full API integration",
-        "White-label option",
-        "Dedicated account manager",
-        "Custom SLA & support",
-        "Priority feature requests"
-      ],
-      isEnterprise: true
     }
   ];
 
@@ -157,26 +142,14 @@ export function BusinessPricingSection({
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {businessPlans.map((plan: any) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {businessPlans.map((plan) => (
             <div key={plan.name} className="flex flex-col border-0 shadow-lg overflow-hidden rounded-lg bg-white">
               {/* Orange Header with Title and Price */}
-              <div className={`${plan.isEnterprise ? 'bg-gradient-to-r from-orange-600 to-orange-700' : 'bg-orange-600'} text-white p-6`}>
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-lg font-bold">{plan.name}</h3>
-                  {plan.isEnterprise && <span className="text-xs font-bold bg-white text-orange-600 px-2 py-1 rounded">CUSTOM</span>}
-                </div>
-                {plan.price !== null ? (
-                  <>
-                    <p className="text-3xl font-bold">R{plan.price.toLocaleString()}</p>
-                    <p className="text-sm mt-1 opacity-90">/month</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-3xl font-bold">Custom Pricing</p>
-                    <p className="text-sm mt-1 opacity-90">Contact for quote</p>
-                  </>
-                )}
+              <div className="bg-orange-600 text-white p-6">
+                <h3 className="text-lg font-bold mb-2">{plan.name}</h3>
+                <p className="text-3xl font-bold">R{plan.price.toLocaleString()}</p>
+                <p className="text-sm mt-1 opacity-90">/month</p>
               </div>
               <div className="flex-grow flex flex-col justify-between p-6">
                 {/* All features list */}
@@ -188,29 +161,20 @@ export function BusinessPricingSection({
                     </li>
                   ))}
                 </ul>
-                {plan.isEnterprise ? (
-                  <a 
-                    href="mailto:sales@styleswap.co.za?subject=Enterprise%20Retail%20Pro%20Inquiry&body=I%20am%20interested%20in%20the%20Enterprise%20Retail%20Pro%20package%20for%20StyleSwap."
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded inline-block text-center disabled:opacity-50"
-                  >
-                    Contact Sales
-                  </a>
-                ) : (
-                  <Button 
-                    onClick={() => handleSubscribe(plan.name, plan.price)}
-                    disabled={loadingPackage === plan.name}
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 disabled:opacity-50"
-                  >
-                    {loadingPackage === plan.name ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      'Subscribe Now'
-                    )}
-                  </Button>
-                )}
+                <Button 
+                  onClick={() => handleSubscribe(plan.name, plan.price)}
+                  disabled={loadingPackage === plan.name}
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 disabled:opacity-50"
+                >
+                  {loadingPackage === plan.name ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Subscribe Now'
+                  )}
+                </Button>
               </div>
             </div>
           ))}

@@ -1,7 +1,5 @@
 import { getDb } from "./db";
-// import { payouts, boutiques, payoutAuditLog, users } from "../drizzle/schema";
-import { boutiques, users } from "../drizzle/schema";
-// TODO: payouts and payoutAuditLog tables need to be created in schema
+import { payouts, boutiques, payoutAuditLog, users } from "../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { createPayout } from "./yoco-payouts";
 import Decimal from "decimal.js";
