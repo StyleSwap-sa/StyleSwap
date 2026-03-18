@@ -22,7 +22,7 @@ export const users = pgTable(
 		name: varchar({ length: 255 }).notNull(),
 		email: varchar({ length: 255 }).unique().notNull(),
 		loginMethod: varchar({ length: 50 }).default("oauth").notNull(),
-		role: varchar({ length: 50 }).default("user").notNull(),
+		user_role: varchar({ length: 50 }).default("user").notNull(),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
