@@ -216,9 +216,10 @@ export function serveStatic(app: Express) {
 
   // fall through to index.html if the file doesn't exist
   // Only for HTML pages, not for static assets that don't exist
-  app.use("*", async (req, res, next) => {
+  // Use app.get instead of app.use to avoid catching API routes
+  app.get("*", async (req, res, next) => {
     // Don't serve index.html for API routes or health checks
-    if (req.path.startsWith("/api/") || req.path === "/health" || req.path.startsWith("/api-json")) {
+    if (req.path.startsWith("/api") || req.path === "/health" || req.path.startsWith("/api-json")) {
       console.log("[Static] Skipping SPA fallback for:", req.path);
       return next();
     }
