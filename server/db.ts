@@ -92,8 +92,8 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
     }
 
     // Ensure free trial fields have defaults for new users
-    if (!values.freeTrialUsed) {
-      values.freeTrialUsed = 0;
+    if (values.freeTrialUsed === undefined) {
+      values.freeTrialUsed = false;
     }
     
     if (Object.keys(updateSet).length === 0) {
