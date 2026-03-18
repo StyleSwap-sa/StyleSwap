@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, email, name, role, \"userType\" FROM \"user\" WHERE email = 'rtumi.m@icloud.com' OR name LIKE '%Renelle%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT id, email, name, role, \"userType\" FROM \"user\" WHERE email = 'rtumi.m@icloud.com' OR name LIKE '%Renelle%' LIMIT 5;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 52 near \"\"user\" WHERE email = 'rtumi.m@icloud.com' OR name LIKE '%Renelle%' LIMIT 5\""
+  ]
+}
