@@ -1,0 +1,16 @@
+{
+  "query": "SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND column_name LIKE '%role%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT column_name FROM information_schema.columns WHERE table_name = 'users' AND column_name LIKE '%role%';",
+  "rows": [
+    {
+      "column_name": "role"
+    },
+    {
+      "column_name": "role"
+    }
+  ],
+  "messages": [],
+  "stdout": "column_name\nrole\nrole\n",
+  "stderr": "",
+  "execution_time_ms": 1842
+}
