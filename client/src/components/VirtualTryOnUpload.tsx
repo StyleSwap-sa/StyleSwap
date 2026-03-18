@@ -53,13 +53,6 @@ export function VirtualTryOnUpload() {
   // Fetch user info
   const { user, isAuthenticated } = useAuth();
   const isAdmin = user?.role === "admin";
-  
-  // Debug logging
-  useEffect(() => {
-    console.log('[VirtualTryOnUpload] User data:', user);
-    console.log('[VirtualTryOnUpload] User role:', user?.role);
-    console.log('[VirtualTryOnUpload] Is admin:', isAdmin);
-  }, [user, isAdmin]);
 
   // Fetch credits
   const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery(undefined, {
@@ -732,13 +725,6 @@ export function VirtualTryOnUpload() {
           </Button>
         </div>
       )}
-
-      {/* Debug Info */}
-      <Card className="bg-yellow-50 border-yellow-200 mb-4">
-        <CardContent className="pt-6">
-          <p className="text-sm">Debug: User role = {user?.role || 'null'} | Is Admin = {String(isAdmin)}</p>
-        </CardContent>
-      </Card>
 
       {/* Test Mode Toggle */}
       {isAdmin && user && (
