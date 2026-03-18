@@ -14,16 +14,6 @@ import { FitroomCreditsWidget } from "@/components/FitroomCreditsWidget";
 
 export default function Home() {
   const { user, isAuthenticated, logout, loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
   const [, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLoginOptions, setShowLoginOptions] = useState(false);
@@ -83,11 +73,11 @@ export default function Home() {
   ];
 
   // For admin users, add a link to the customer dashboard for testing
-  const adminTestItems = (user?.user_role === 'admin' || user?.user_type === 'admin') ? [
+  const adminTestItems = (user?.role === 'admin' || user?.userType === 'admin') ? [
     { label: 'Try Customer Dashboard', path: '/dashboard' },
   ] : [];
 
-  const isAdmin = user?.user_role === 'admin' || user?.user_type === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.userType === 'admin';
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">

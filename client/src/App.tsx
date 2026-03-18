@@ -131,7 +131,6 @@ export default function App() {
               <Route path="/social-seller" component={SocialSellerDashboard} />
               <Route path="/ar-tryon" component={ARTryOn} />
               <Route path="/tryon" component={TryOnPage} />
-              <Route path="/try-on" component={TryOnPage} />
               <Route path="/terms" component={TermsAndConditions} />
               <Route path="/privacy" component={PrivacyPolicy} />
               <Route path="/refund" component={RefundPolicy} />

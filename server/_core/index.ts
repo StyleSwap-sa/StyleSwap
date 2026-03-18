@@ -33,7 +33,6 @@ import { initializeWebhookJobs } from "../webhookRetryService";
 // Configure multer for file uploads
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
-// Build timestamp: 2026-03-18T10:00:00Z - Force Render rebuild
 export async function startServer() {
   console.error("\n\n🔥🔥🔥 UNIQUE MARKER: BUILD 2026-03-17 14:45:00 UTC 🔥🔥🔥\n\n");
   console.log("[Server] Starting initialization...");
@@ -71,16 +70,6 @@ export async function startServer() {
   console.log("  - GET /api/oauth/config");
   console.log("  - GET /api/oauth/callback");
   console.log("  - GET /api/oauth/debug");
-  console.error("\n🔥🔥🔥 OAUTH ROUTES REGISTRATION COMPLETE 🔥🔥🔥\n");
-  
-  // Verify OAuth routes are actually registered
-  console.error("\n🔥🔥🔥 VERIFYING OAUTH ROUTES ARE REGISTERED 🔥🔥🔥");
-  const routes = (app as any)._router.stack
-    .filter((layer: any) => layer.route)
-    .map((layer: any) => `${Object.keys(layer.route.methods).join(",").toUpperCase()} ${layer.route.path}`)
-    .filter((route: string) => route.includes("/api/oauth"));
-  console.error("Registered OAuth routes:", routes);
-  console.error("🔥🔥🔥 VERIFICATION COMPLETE 🔥🔥🔥\n");
   
   // TEST: Add a simple test endpoint to verify routing works
   app.get("/api/test-endpoint", (req, res) => {

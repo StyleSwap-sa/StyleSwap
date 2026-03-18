@@ -1,6 +1,0 @@
-{
-  "version": "1.0.5",
-  "buildTime": "2026-03-18T13:50:00Z",
-  "features": ["oauth-config-endpoint", "middleware-fix"],
-  "note": "Force rebuild - OAuth config endpoint must be registered"
-}

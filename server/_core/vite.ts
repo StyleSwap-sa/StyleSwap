@@ -31,15 +31,14 @@ export async function setupVite(app: Express, server: Server) {
   });
   
   // SPA fallback - serve index.html for all non-API routes
-  // Use app.get instead of app.use to prevent catching API routes
-  app.get("*", async (req, res, next) => {
+  app.use("*", async (req, res, next) => {
     // Skip API routes and static assets
     console.log("[Vite SPA] Received request:", req.path);
     if (req.path.startsWith("/api")) {
       console.log("[Vite SPA] Skipping API route:", req.path);
       return next();
     }
-    if (req.path.match(/\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map)$/i)) {
+    if (req.path.match(/\\.(js|css|json|png|jpg|svg|ico|woff|woff2)$/)) {
       console.log("[Vite SPA] Skipping static asset:", req.path);
       return next();
     }
@@ -206,22 +205,13 @@ export function serveStatic(app: Express) {
   // Serve static files (assets, public files, etc.) with proper cache headers
   // Skip API routes
   app.use((req, res, next) => {
-    // CRITICAL: Never serve static files for API routes
     if (req.path.startsWith("/api") || req.path === "/health") {
-      console.log("[Static] Skipping static middleware for API route:", req.path);
       return next();
     }
-    // Only serve static files for known asset extensions
-    if (req.path.match(/\.(js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map)$/i)) {
-      console.log("[Static] Serving static asset:", req.path);
-      return express.static(distPath, {
-        maxAge: "1h",
-        etag: false,
-      })(req, res, next);
-    }
-    // For all other paths, skip static middleware and let next handler decide
-    console.log("[Static] Skipping static middleware for non-asset path:", req.path);
-    return next();
+    express.static(distPath, {
+      maxAge: "1h",
+      etag: false,
+    })(req, res, next);
   });
 
   // fall through to index.html if the file doesn't exist
