@@ -5,8 +5,6 @@ import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles }
 import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { SizeSelector } from "@/components/SizeSelector";
-import { SaveToGalleryButton } from "@/components/SaveToGalleryButton";
 
 interface TryOnResult {
   taskId: string;
@@ -25,7 +23,6 @@ export function VirtualTryOnUpload() {
   const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
-  const [selectedSize, setSelectedSize] = useState<string>("M");
   
   // State for processing
   const [isLoading, setIsLoading] = useState(false);
@@ -73,11 +70,6 @@ export function VirtualTryOnUpload() {
       return;
     }
 
-    if (!selectedSize || selectedSize === "") {
-      setError("Please select a size before generating the try-on.");
-      return;
-    }
-
     if (!testMode && (!credits || credits.remainingCredits < 1)) {
       setError("Insufficient credits. Please purchase more try-ons.");
       return;
@@ -87,9 +79,6 @@ export function VirtualTryOnUpload() {
     setError("");
     setWarning("");
     setProcessingProgress(0);
-    
-    // Log selected size
-    console.log(`[VirtualTryOn] Selected size: ${selectedSize}`);
 
     try {
       // Auto-resize images if they exceed Fitroom limits
@@ -111,8 +100,6 @@ export function VirtualTryOnUpload() {
       
       // Crop clothing image based on selected type
       console.log("[VirtualTryOn] Processing clothing image for type:", clothType);
-      let finalClothTypeForBackend = clothType;
-      let finalLowerClothImage: File | null = null;
       
       try {
         if (clothType === "upper") {
@@ -123,17 +110,10 @@ export function VirtualTryOnUpload() {
           console.log("[VirtualTryOn] Cropping bottom portion of clothing image");
           finalClothImage = await cropBottomClothing(finalClothImage);
           setWarning("Clothing image cropped to bottom portion for better fitting");
-        } else if (clothType === "full") {
-          console.log("[VirtualTryOn] Splitting full dress");
-          const split = await splitDressImage(finalClothImage);
-          finalClothImage = split.topImage;
-          finalLowerClothImage = split.bottomImage;
-          finalClothTypeForBackend = "combo";
-          setWarning("Full dress split for fitting");
         }
       } catch (cropError) {
-        console.error("[VirtualTryOn] Error processing image:", cropError);
-        // Continue with original image if processing fails
+        console.error("[VirtualTryOn] Error cropping image:", cropError);
+        // Continue with original image if cropping fails
         setWarning("Could not optimize clothing image, using original");
       }
       
@@ -145,18 +125,18 @@ export function VirtualTryOnUpload() {
       formData.append("modelImage", finalModelPhoto);
       
       // For combo, send as upper+lower. For single garments, send only cloth image
-      if (finalClothTypeForBackend === "combo") {
+      if (clothType === "combo") {
         formData.append("upperClothImage", finalClothImage);
-        if (finalLowerClothImage) {
-          formData.append("lowerClothImage", finalLowerClothImage);
+        if (lowerClothImage) {
+          formData.append("lowerClothImage", lowerClothImage);
         }
       } else {
         // For single garments (upper/lower), send only the cloth image
         formData.append("clothImage", finalClothImage);
       }
       
-      // Use mapped cloth type (Fitroom API expects: upper, lower, or combo)
-      formData.append("clothType", finalClothTypeForBackend);
+      // Use selected cloth type (Fitroom API expects: upper, lower, or combo)
+      formData.append("clothType", clothType);
       // Pass test mode to backend
       formData.append("testMode", testMode.toString());
       console.log("[VirtualTryOn] FormData clothType:", clothType);
@@ -370,39 +350,7 @@ export function VirtualTryOnUpload() {
               alt="Try-on result"
               className="w-full rounded-lg border border-border shadow-lg"
             />
-            {/* Size Comparison Feature */}
-            <div className="pt-4 border-t border-green-200 dark:border-green-800">
-              <p className="text-sm font-medium text-green-900 dark:text-green-100 mb-3">
-                Want to compare sizes? Try another size to see the difference.
-              </p>
-              <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-                {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => {
-                      setSelectedSize(size);
-                      setResult(null);
-                      handleCreateTryOn();
-                    }}
-                    disabled={isLoading || isPolling}
-                    className={`py-2 px-1 sm:px-2 rounded text-xs sm:text-sm font-semibold border-2 transition-all ${
-                      selectedSize === size
-                        ? "border-green-600 bg-green-600 text-white"
-                        : "border-green-200 dark:border-green-700 bg-white dark:bg-green-900/20 text-green-900 dark:text-green-100 hover:border-green-400"
-                    } ${isLoading || isPolling ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex gap-3 flex-col sm:flex-row">
-              <SaveToGalleryButton
-                imageUrl={result.resultImageUrl}
-                variant="default"
-                className="flex-1"
-              />
+            <div className="flex gap-3">
               <Button onClick={handleReset} className="flex-1">
                 <Sparkles className="w-4 h-4 mr-2" />
                 Try Another
@@ -662,14 +610,6 @@ export function VirtualTryOnUpload() {
               </CardContent>
             </Card>
           )}
-
-          {/* Size Selector */}
-          <SizeSelector
-            selectedSize={selectedSize}
-            onSizeChange={setSelectedSize}
-            disabled={isLoading || isPolling}
-            showDisclaimer={true}
-          />
 
           {/* Submit Button */}
           <Button 

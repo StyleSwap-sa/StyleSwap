@@ -68,7 +68,7 @@ export default function BoutiqueLandingPage({ slug }: BoutiqueLandingPageProps) 
             )}
             <h1 className="font-heading font-bold text-xl">{boutique.name}</h1>
           </div>
-          <Button variant="default" className="gap-2" onClick={() => setLocation(`/boutique/${slug}/shop`)}>
+          <Button variant="default" className="gap-2">
             <ShoppingBag className="w-4 h-4" />
             Shop Now
           </Button>
@@ -88,11 +88,11 @@ export default function BoutiqueLandingPage({ slug }: BoutiqueLandingPageProps) 
             Try on clothes virtually before you buy. See how our latest collection looks on you with AI-powered virtual fitting room technology.
           </p>
           <div className="flex gap-4 justify-center pt-4">
-            <Button size="lg" className="gap-2" onClick={() => setLocation(`/boutique/${slug}/try-on`)}>
+            <Button size="lg" className="gap-2">
               <ShoppingBag className="w-5 h-5" />
               Start Virtual Try-On
             </Button>
-            <Button size="lg" variant="outline" onClick={() => setLocation(`/boutique/${slug}`)}>
+            <Button size="lg" variant="outline">
               Learn More
             </Button>
           </div>

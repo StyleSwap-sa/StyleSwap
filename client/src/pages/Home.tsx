@@ -4,50 +4,32 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, Menu, X } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
-import { LoginOptionsModal } from "@/components/LoginOptionsModal";
-import { Footer } from "@/components/Footer";
-import DemoVideoModal from "@/components/DemoVideoModal";
-import { FitroomCreditsWidget } from "@/components/FitroomCreditsWidget";
-import { FreeTrialWelcomeModal } from "@/components/FreeTrialWelcomeModal";
-
 
 export default function Home() {
   const { user, isAuthenticated, logout, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showLoginOptions, setShowLoginOptions] = useState(false);
-  const [isDemoOpen, setIsDemoOpen] = useState(false);
-  const testLoginMutation = trpc.auth.testLogin.useMutation();
-  const handleTestLogin = async () => {
-    try {
-      await testLoginMutation.mutateAsync();
-      setLocation("/dashboard");
-    } catch (error) {
-      console.error("Test login failed:", error);
-    }
-  };
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
       // Redirect based on user type
       if (user?.userType === 'admin' || user?.role === 'admin') {
-        setLocation('/admin/dashboard');
+        setLocation('/admin');
       } else if (user?.userType === 'merchant') {
-        setLocation('/boutique/dashboard');
+        setLocation('/boutique-dashboard');
       } else {
         setLocation('/dashboard');
       }
     } else {
-      setShowLoginOptions(true);
+      window.location.href = getLoginUrl();
     }
   };
 
   const getDashboardPath = () => {
     if (user?.userType === 'admin' || user?.role === 'admin') {
-      return '/admin/dashboard';
+      return '/admin';
     } else if (user?.userType === 'merchant') {
-      return '/boutique/dashboard';
+      return '/boutique-dashboard';
     } else {
       return '/dashboard';
     }
@@ -71,7 +53,6 @@ export default function Home() {
     { label: 'ROI', path: '/roi' },
     { label: 'Case Studies', path: '/case-studies' },
     { label: 'For Boutiques', path: '/for-boutiques' },
-    { label: 'API Docs', path: '/api-docs' },
     { label: 'Contact', path: '/contact' },
   ];
 
@@ -89,13 +70,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* Free Trial Welcome Modal */}
-      {isAuthenticated && <FreeTrialWelcomeModal />}
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/20">
         <div className="container mx-auto py-4 flex justify-between items-center px-4 md:px-0">
           <div className="flex items-center gap-3">
-            <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663284718291/ilMaDKzhgsDAyZui.png" alt="StyleSwap" className="h-12" width="auto" height="48" />
+            <img src="/images/styleswap-icon.png" alt="StyleSwap" className="w-10 h-10" width="40" height="40" />
+            <div className="font-heading font-bold text-xl md:text-2xl tracking-tight">
+              Style<span className="text-primary">Swap</span>
+            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -144,11 +126,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Fitroom Credits Widget */}
-          {isAuthenticated && (
-            <FitroomCreditsWidget apiKey="744af8dfea9f4b04bc2ba36082c255049928648390bb4586a8fb157a2116e483" />
-          )}
-
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
@@ -182,18 +159,12 @@ export default function Home() {
                 </Button>
               </>
             ) : (
-              <>
-                <Button 
-                  onClick={handleGetStarted}
-                  className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  Get Started
-                </Button>
-                <LoginOptionsModal 
-                  open={showLoginOptions} 
-                  onOpenChange={setShowLoginOptions}
-                />
-              </>
+              <Button 
+                onClick={handleGetStarted}
+                className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Get Started
+              </Button>
             )}
           </div>
 
@@ -314,47 +285,17 @@ export default function Home() {
       <main className="pt-20 pb-20">
         <div className="container mx-auto px-4 md:px-0">
           <div className="text-center py-20">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to StyleSwap</h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-2">AI-powered virtual try-on for fashion retail</p>
-            <p className="text-sm md:text-base text-muted-foreground/80 mb-8">Transform how customers shop with realistic virtual clothing simulations</p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Button 
-                onClick={handleGetStarted}
-                className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-              >
-                Get Started <ArrowRight className="w-4 h-4" />
-              </Button>
-              <Button 
-                onClick={() => setIsDemoOpen(true)}
-                variant="outline"
-                className="premium-button gap-2"
-              >
-                Watch Demo
-              </Button>
-              <Button 
-                onClick={handleTestLogin}
-                disabled={testLoginMutation.isPending}
-                variant="outline"
-                className="premium-button gap-2 text-xs"
-              >
-                {testLoginMutation.isPending ? "Logging in..." : "Test Login"}
-              </Button>
-            </div>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome to StyleSwap</h1>
+            <p className="text-lg md:text-xl text-muted-foreground mb-8">AI-powered virtual try-on for fashion retail</p>
+            <Button 
+              onClick={handleGetStarted}
+              className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+            >
+              Get Started <ArrowRight className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </main>
-
-
-
-      {/* Demo Video Modal */}
-      <DemoVideoModal
-        isOpen={isDemoOpen}
-        onClose={() => setIsDemoOpen(false)}
-        defaultVideoId="customer-demo"
-      />
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

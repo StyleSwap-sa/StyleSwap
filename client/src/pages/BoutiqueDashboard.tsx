@@ -3,16 +3,12 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles, Code2 } from "lucide-react";
+import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles } from "lucide-react";
 import { Link } from "wouter";
-import { BatchUploadComponent } from "@/components/BatchUploadComponent";
-import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
-import { Footer } from "@/components/Footer";
 
 export default function BoutiqueDashboard() {
   const [selectedBoutique, setSelectedBoutique] = useState<number | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
-  const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
   
   // Fetch user's boutiques
   const { data: boutiques, isLoading: boutiquesLoading } =
@@ -67,7 +63,7 @@ export default function BoutiqueDashboard() {
                   your customers
                 </p>
               </div>
-              <Link href="/b2b/signup">
+              <Link href="/b2b-signup">
                 <Button className="cursor-pointer">
                   <Plus className="w-4 h-4 mr-2" />
                   Register Boutique
@@ -87,21 +83,21 @@ export default function BoutiqueDashboard() {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+        <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold">Boutique Dashboard</h1>
+            <h1 className="text-4xl font-bold">Boutique Dashboard</h1>
             <p className="text-muted-foreground mt-2">
               Welcome back! Manage your products and credits below.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <div className="flex gap-2">
             <Link href={`/boutique-products/${selectedBoutique}`}>
-              <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
+              <Button variant="outline" className="cursor-pointer">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Product
               </Button>
             </Link>
-            <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
+            <Button variant="outline" className="cursor-pointer">
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
@@ -137,12 +133,12 @@ export default function BoutiqueDashboard() {
               <Card className="premium-card">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Total Credits Purchased
+                    Total Spent
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">
-                    {billingSummary?.totalCredits || 0}
+                    R{(billingSummary?.totalSpending || 0).toFixed(2)}
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
                     All time
@@ -153,15 +149,15 @@ export default function BoutiqueDashboard() {
               <Card className="premium-card">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Credits Used
+                    Average Cost
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">
-                    {billingSummary?.usedCredits || 0}
+                    R{billingSummary?.averageCostPerCredit || 0}
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    For try-ons
+                    Per try-on
                   </p>
                 </CardContent>
               </Card>
@@ -213,32 +209,15 @@ export default function BoutiqueDashboard() {
                 </Card>
               </Link>
 
-              <Card
-                className="premium-card cursor-pointer hover:shadow-lg transition"
-                onClick={() => setIsCreditModalOpen(true)}
-              >
-                <CardContent className="pt-6">
-                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
-                    <Zap className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold mb-2">Buy Credits</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Purchase more try-ons instantly
-                  </p>
-                </CardContent>
-              </Card>
-
-
-
-              <Link href={`/boutique/${selectedBoutique}/widget`}>
+              <Link href={`/boutique-credits/${selectedBoutique}`}>
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
                     <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
-                      <Code2 className="w-6 h-6" />
+                      <Zap className="w-6 h-6" />
                     </div>
-                    <h3 className="font-bold mb-2">Widget</h3>
+                    <h3 className="font-bold mb-2">Buy Credits</h3>
                     <p className="text-sm text-muted-foreground">
-                      Embed try-on on your website
+                      Purchase more try-ons
                     </p>
                   </CardContent>
                 </Card>
@@ -335,19 +314,6 @@ export default function BoutiqueDashboard() {
               </Card>
             )}
 
-            {/* Batch Upload */}
-            <Card className="premium-card">
-              <CardHeader>
-                <CardTitle>Batch Upload Your Products</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Upload multiple clothing images at once to quickly build your catalog
-                </p>
-                <BatchUploadComponent />
-              </CardContent>
-            </Card>
-
             {/* Getting Started */}
             <Card className="premium-card bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">
               <CardHeader>
@@ -398,21 +364,6 @@ export default function BoutiqueDashboard() {
           </>
         )}
       </div>
-
-      {/* Credit Purchase Modal */}
-      {selectedBoutique && (
-        <CreditPurchaseModal
-          isOpen={isCreditModalOpen}
-          onClose={() => setIsCreditModalOpen(false)}
-          boutiqueId={selectedBoutique}
-          onPurchaseSuccess={() => {
-            setIsCreditModalOpen(false);
-          }}
-        />
-      )}
-
-      {/* Footer */}
-      <Footer />
     </DashboardLayout>
   );
 }

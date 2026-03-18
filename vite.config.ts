@@ -7,19 +7,10 @@ import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
 
-// Only use Manus runtime plugin in development/preview mode
-const plugins = [
-  react(),
-  tailwindcss(),
-  jsxLocPlugin(),
-  ...(process.env.NODE_ENV === 'production' ? [] : [vitePluginManusRuntime()]),
-];
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime()];
 
 export default defineConfig({
-  define: {
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
-  },
-  plugins: plugins,
+  plugins,
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -29,34 +20,32 @@ export default defineConfig({
   },
   envDir: path.resolve(import.meta.dirname),
   root: path.resolve(import.meta.dirname, "client"),
-  // Ensure script tags are properly included in production
-  optimizeDeps: {
-    include: ['react', 'react-dom'],
-  },
   publicDir: path.resolve(import.meta.dirname, "client", "public"),
   build: {
-    // Ensure HTML includes script tags
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
     // Performance optimizations
-    sourcemap: false,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        passes: 2,
-      },
-      mangle: true,
-    },
-    chunkSizeWarningLimit: 1000,
-    // Simple, effective code splitting
+    sourcemap: false, // Disable source maps in production
+    minify: 'terser', // Minify JavaScript
+    // Code splitting for better caching and performance
     rollupOptions: {
-      input: path.resolve(import.meta.dirname, "client", "index.html"),
       output: {
         manualChunks: {
-          'vendor': ['react', 'react-dom', 'wouter'],
-          'trpc': ['@tanstack/react-query', '@trpc/client', '@trpc/react-query'],
-          'ui': ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          // Vendor libraries - separate chunk for better caching
+          'vendor': [
+            'react',
+            'react-dom',
+          ],
+          // tRPC and React Query
+          'trpc': [
+            '@tanstack/react-query',
+            '@trpc/client',
+            '@trpc/react-query',
+          ],
+          // UI libraries
+          'ui': [
+            'lucide-react',
+          ],
         },
       },
     },

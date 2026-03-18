@@ -10,7 +10,6 @@ import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import { users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
-import { sendPurchaseConfirmationEmail } from "../email";
 
 export const paymentRouter = router({
   /**
@@ -46,8 +45,6 @@ export const paymentRouter = router({
         successUrl: z.string().url(),
         cancelUrl: z.string().url(),
         phoneNumber: z.string().optional(),
-        amount: z.number().optional(), // Custom amount for annual billing (10% discount)
-        billingPeriod: z.enum(['monthly', 'annual']).optional(), // Track billing period
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -78,9 +75,6 @@ export const paymentRouter = router({
           }
         }
 
-        // Use custom amount if provided (for annual billing with discount)
-        const finalAmount = input.amount ? Math.round(input.amount * 100) : pkg.price;
-        
         const paymentIntent = await createPaymentIntent({
           userId: ctx.user.id,
           packageId: input.packageId,
@@ -88,8 +82,6 @@ export const paymentRouter = router({
           userName: ctx.user.name || "User",
           successUrl: input.successUrl,
           cancelUrl: input.cancelUrl,
-          amount: finalAmount, // Pass custom amount
-          billingPeriod: input.billingPeriod || 'monthly', // Track billing period
         });
 
         // Generate checkout URL from payment intent
@@ -104,7 +96,6 @@ export const paymentRouter = router({
           packageId: input.packageId,
           credits: pkg.credits,
           checkoutUrl: checkoutUrl,
-          billingPeriod: input.billingPeriod || 'monthly',
         };
       } catch (error) {
         console.error("[Payment Router] Error creating checkout:", error);
@@ -143,24 +134,6 @@ export const paymentRouter = router({
           packageId: input.packageId,
           credits: input.credits,
         });
-
-        // Send purchase confirmation email
-        const pkg = getPaymentPackage(input.packageId);
-        if (pkg && ctx.user.email) {
-          try {
-            await sendPurchaseConfirmationEmail(
-              ctx.user.id,
-              ctx.user.name || "User",
-              ctx.user.email,
-              input.credits,
-              (pkg.price / 100).toString(), // Convert cents to ZAR
-              pkg.currency
-            );
-          } catch (emailError) {
-            console.error("[Payment Router] Error sending confirmation email:", emailError);
-            // Don't throw error - payment was successful, just log email failure
-          }
-        }
 
         return {
           success: true,

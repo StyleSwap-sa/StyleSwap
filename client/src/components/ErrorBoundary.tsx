@@ -21,25 +21,6 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
-    console.error('[ErrorBoundary] Caught error:', error);
-    console.error('[ErrorBoundary] Error info:', errorInfo);
-    
-    // Log to server
-    fetch('/api/client-error', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        context: 'ErrorBoundary',
-        message: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
-        url: window.location.href,
-        timestamp: new Date().toISOString(),
-      }),
-    }).catch(err => console.error('[ErrorBoundary] Failed to log error:', err));
-  }
-
   render() {
     if (this.state.hasError) {
       return (

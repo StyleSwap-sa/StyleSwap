@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { tryonRouter, calculateSizeScalingFactor, SIZE_SCALING_FACTORS } from "./tryon";
+import { tryonRouter } from "./tryon";
 import { getFitroomClient } from "../_core/fitroom";
 import { getUserCredits, deductCredits, refundCredits } from "../db.credits";
 
@@ -218,7 +218,7 @@ describe("Try-On Router", () => {
         caller.createTryOn({
           modelImageBase64: "/9j/4AAQSkZJRg==",
           clothImageBase64: "iVBORw0KGgo=",
-          clothType: "upper",
+          clothType: "single",
           hdMode: false,
         })
       ).rejects.toThrow("Invalid image format");
@@ -242,141 +242,10 @@ describe("Try-On Router", () => {
         caller.createTryOn({
           modelImageBase64: "/9j/4AAQSkZJRg==",
           clothImageBase64: "iVBORw0KGgo=",
-          clothType: "upper",
+          clothType: "single",
           hdMode: false,
         })
       ).rejects.toThrow("Insufficient credits");
-    });
-  });
-});
-
-
-describe("Size Scaling Logic", () => {
-
-  describe("SIZE_SCALING_FACTORS", () => {
-    it("should have all required sizes defined", () => {
-      const requiredSizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-      requiredSizes.forEach((size) => {
-        expect(SIZE_SCALING_FACTORS).toHaveProperty(size);
-      });
-    });
-
-    it("should have M (Medium) as baseline at 1.0", () => {
-      expect(SIZE_SCALING_FACTORS.M).toBe(1.0);
-    });
-
-    it("should have smaller sizes with factors less than 1.0", () => {
-      expect(SIZE_SCALING_FACTORS.XS).toBeLessThan(1.0);
-      expect(SIZE_SCALING_FACTORS.S).toBeLessThan(1.0);
-    });
-
-    it("should have larger sizes with factors greater than 1.0", () => {
-      expect(SIZE_SCALING_FACTORS.L).toBeGreaterThan(1.0);
-      expect(SIZE_SCALING_FACTORS.XL).toBeGreaterThan(1.0);
-      expect(SIZE_SCALING_FACTORS.XXL).toBeGreaterThan(1.0);
-      expect(SIZE_SCALING_FACTORS.XXXL).toBeGreaterThan(1.0);
-    });
-
-    it("should have scaling factors in progressive order", () => {
-      const sizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-      for (let i = 0; i < sizes.length - 1; i++) {
-        expect(SIZE_SCALING_FACTORS[sizes[i]]).toBeLessThanOrEqual(
-          SIZE_SCALING_FACTORS[sizes[i + 1]]
-        );
-      }
-    });
-  });
-
-  describe("calculateSizeScalingFactor", () => {
-    it("should return correct scaling factor for XS", () => {
-      expect(calculateSizeScalingFactor("XS")).toBe(0.85);
-    });
-
-    it("should return correct scaling factor for S", () => {
-      expect(calculateSizeScalingFactor("S")).toBe(0.92);
-    });
-
-    it("should return correct scaling factor for M", () => {
-      expect(calculateSizeScalingFactor("M")).toBe(1.0);
-    });
-
-    it("should return correct scaling factor for L", () => {
-      expect(calculateSizeScalingFactor("L")).toBe(1.08);
-    });
-
-    it("should return correct scaling factor for XL", () => {
-      expect(calculateSizeScalingFactor("XL")).toBe(1.15);
-    });
-
-    it("should return correct scaling factor for XXL", () => {
-      expect(calculateSizeScalingFactor("XXL")).toBe(1.22);
-    });
-
-    it("should return correct scaling factor for XXXL", () => {
-      expect(calculateSizeScalingFactor("XXXL")).toBe(1.25);
-    });
-
-    it("should return default 1.0 for unknown size", () => {
-      expect(calculateSizeScalingFactor("UNKNOWN")).toBe(1.0);
-    });
-
-    it("should return 1.0 for empty string", () => {
-      expect(calculateSizeScalingFactor("")).toBe(1.0);
-    });
-  });
-
-  describe("Size scaling ranges", () => {
-    it("should have XS as smallest scaling factor", () => {
-      const allFactors = Object.values(SIZE_SCALING_FACTORS);
-      expect(SIZE_SCALING_FACTORS.XS).toBe(Math.min(...allFactors));
-    });
-
-    it("should have XXXL as largest scaling factor", () => {
-      const allFactors = Object.values(SIZE_SCALING_FACTORS);
-      expect(SIZE_SCALING_FACTORS.XXXL).toBe(Math.max(...allFactors));
-    });
-
-    it("should have reasonable scaling range (0.8 to 1.3)", () => {
-      Object.entries(SIZE_SCALING_FACTORS).forEach(([size, factor]) => {
-        expect(factor).toBeGreaterThanOrEqual(0.8);
-        expect(factor).toBeLessThanOrEqual(1.3);
-      });
-    });
-
-    it("should have maximum scaling difference of 0.4 (40%)", () => {
-      const minFactor = SIZE_SCALING_FACTORS.XS;
-      const maxFactor = SIZE_SCALING_FACTORS.XXXL;
-      const difference = maxFactor - minFactor;
-      expect(difference).toBeLessThanOrEqual(0.4);
-    });
-  });
-
-  describe("Credit deduction logic", () => {
-    it("should deduct 1 credit per try-on regardless of size", () => {
-      // This test documents the requirement that all sizes cost 1 credit
-      const creditCost = 1;
-      const sizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-
-      sizes.forEach((size) => {
-        // Each size should cost exactly 1 credit
-        expect(creditCost).toBe(1);
-      });
-    });
-
-    it("should not vary credit cost based on scaling factor", () => {
-      // Verify that credit deduction is independent of size scaling
-      const sizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
-      const creditCost = 1;
-
-      sizes.forEach((size) => {
-        const scalingFactor = calculateSizeScalingFactor(size);
-        // Credit cost should always be 1, not affected by scaling factor
-        expect(creditCost).toBe(1);
-        // Only M (1.0) will equal creditCost, all others should be different
-        if (size !== "M") {
-          expect(creditCost).not.toBe(scalingFactor);
-        }
-      });
     });
   });
 });

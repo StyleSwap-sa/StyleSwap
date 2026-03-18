@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ArrowRight,
@@ -13,10 +12,8 @@ import {
   Globe,
 } from "lucide-react";
 import { Link } from "wouter";
-import DemoVideoModal from "@/components/DemoVideoModal";
 
 export default function B2BLanding() {
-  const [isDemoOpen, setIsDemoOpen] = useState(false);
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Navigation */}
@@ -42,14 +39,8 @@ export default function B2BLanding() {
                 {item}
               </a>
             ))}
-            <Link href="/api-docs" className="hover:text-primary transition-colors uppercase tracking-wide">
-              API Docs
-            </Link>
-            <Link href="/developer" className="hover:text-primary transition-colors uppercase tracking-wide">
-              Developer Portal
-            </Link>
           </div>
-          <Link href="/b2b/signup">
+          <Link href="/b2b-signup">
             <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 font-bold cursor-pointer">
               Get Started
             </Button>
@@ -76,13 +67,12 @@ export default function B2BLanding() {
               StyleSwap's AI-powered try-on technology.
             </p>
             <div className="flex gap-4">
-              <Link href="/b2b/signup">
+              <Link href="/b2b-signup">
                 <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-8 text-lg cursor-pointer">
-                  Get Started <ArrowRight className="ml-2" />
+                  Start Free Trial <ArrowRight className="ml-2" />
                 </Button>
               </Link>
               <Button
-                onClick={() => setIsDemoOpen(true)}
                 variant="outline"
                 className="premium-button h-14 px-8 text-lg cursor-pointer"
               >
@@ -311,7 +301,7 @@ export default function B2BLanding() {
                       <span>24/7 support</span>
                     </li>
                   </ul>
-                  <Link href="/b2b/signup">
+                  <Link href="/b2b-signup">
                     <Button className="w-full cursor-pointer">
                       Get Started
                     </Button>
@@ -325,11 +315,9 @@ export default function B2BLanding() {
             <p className="text-muted-foreground mb-4">
               Need more credits? Contact our sales team for custom packages.
             </p>
-            <a href="mailto:sales@styleswap.co.za">
-              <Button variant="outline" className="cursor-pointer">
-                Contact Sales
-              </Button>
-            </a>
+            <Button variant="outline" className="cursor-pointer">
+              Contact Sales
+            </Button>
           </div>
         </div>
       </section>
@@ -400,13 +388,19 @@ export default function B2BLanding() {
             conversions and reduce returns.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link href="/b2b/signup">
+            <Link href="/b2b-signup">
               <Button
                 className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-14 px-8 text-lg font-bold cursor-pointer"
               >
-                Get Started <ArrowRight className="ml-2" />
+                Start Free Trial <ArrowRight className="ml-2" />
               </Button>
             </Link>
+            <Button
+              variant="outline"
+              className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 h-14 px-8 text-lg font-bold cursor-pointer"
+            >
+              Schedule Demo
+            </Button>
           </div>
         </div>
       </section>
@@ -486,9 +480,9 @@ export default function B2BLanding() {
                   </a>
                 </li>
                 <li>
-                  <Link href="/api-docs" className="hover:text-primary transition">
-                    API Documentation
-                  </Link>
+                  <a href="#" className="hover:text-primary transition">
+                    Documentation
+                  </a>
                 </li>
               </ul>
             </div>
@@ -549,13 +543,6 @@ export default function B2BLanding() {
           </div>
         </div>
       </footer>
-
-      {/* Demo Video Modal */}
-      <DemoVideoModal
-        isOpen={isDemoOpen}
-        onClose={() => setIsDemoOpen(false)}
-        defaultVideoId="boutique-demo"
-      />
     </div>
   );
 }

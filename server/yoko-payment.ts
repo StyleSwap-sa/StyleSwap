@@ -96,8 +96,6 @@ export interface CreatePaymentIntentRequest {
   userName: string;
   successUrl: string;
   cancelUrl: string;
-  amount?: number; // Custom amount for annual billing (10% discount)
-  billingPeriod?: 'monthly' | 'annual'; // Track billing period
 }
 
 export interface PaymentIntentResponse {
@@ -130,9 +128,6 @@ export async function createPaymentIntent(
   }
 
   try {
-    const finalAmount = request.amount || pkg.price;
-    const billingPeriod = request.billingPeriod || 'monthly';
-    
     const response = await fetch(`${ENV.yocoApiBaseUrl}/checkouts`, {
       method: "POST",
       headers: {
@@ -140,7 +135,7 @@ export async function createPaymentIntent(
         Authorization: `Bearer ${ENV.yocoSecretKey}`,
       },
       body: JSON.stringify({
-        amount: finalAmount,
+        amount: pkg.price,
         currency: pkg.currency,
         successUrl: request.successUrl,
         cancelUrl: request.cancelUrl,
@@ -150,8 +145,6 @@ export async function createPaymentIntent(
           credits: pkg.credits,
           userName: request.userName,
           userEmail: request.userEmail,
-          billingPeriod: billingPeriod,
-          discountApplied: billingPeriod === 'annual' ? '10%' : 'none',
         },
         clientReferenceId: `${request.userId}-${request.packageId}-${Date.now()}`,
       }),
@@ -163,18 +156,13 @@ export async function createPaymentIntent(
     }
 
     const data = await response.json();
-    console.log('[Yoko Payment] API Response:', JSON.stringify(data, null, 2));
-    
-    // Yoco might return the URL in different fields
-    const redirectUrl = data.redirectUrl || data.checkout_url || data.url || `https://checkout.yoco.com/${data.id}`;
-    
     return {
       id: data.id,
       clientSecret: "", // Yoco doesn't use client secrets
       status: data.status,
       amount: data.amount,
       currency: data.currency,
-      checkoutUrl: redirectUrl,
+      checkoutUrl: data.redirectUrl, // Yoco returns redirectUrl
       metadata: data.metadata,
     };
   } catch (error) {
@@ -336,70 +324,4 @@ export function getPaymentPackage(packageId: string): PaymentPackage | undefined
  */
 export function getAllPaymentPackages(): PaymentPackage[] {
   return PAYMENT_PACKAGES;
-}
-
-
-/**
- * Create a payment intent for product orders (Phase 2)
- */
-export async function createOrderPaymentIntent(
-  request: {
-    userId: number;
-    userEmail: string;
-    userName: string;
-    amount: number; // in cents
-    orderNumber: string;
-    productName: string;
-    quantity: number;
-    successUrl: string;
-    cancelUrl: string;
-  }
-): Promise<PaymentIntentResponse> {
-  if (!ENV.yocoSecretKey || !ENV.yocoApiBaseUrl) {
-    throw new Error("Yoco credentials not configured");
-  }
-
-  try {
-    const response = await fetch(`${ENV.yocoApiBaseUrl}/checkouts`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${ENV.yocoSecretKey}`,
-      },
-      body: JSON.stringify({
-        amount: request.amount,
-        currency: "ZAR",
-        successUrl: request.successUrl,
-        cancelUrl: request.cancelUrl,
-        metadata: {
-          userId: request.userId.toString(),
-          orderNumber: request.orderNumber,
-          productName: request.productName,
-          quantity: request.quantity.toString(),
-          userName: request.userName,
-          userEmail: request.userEmail,
-        },
-        clientReferenceId: `order-${request.orderNumber}-${Date.now()}`,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Yoko API error: ${error.message || response.statusText}`);
-    }
-
-    const data = await response.json();
-    return {
-      id: data.id,
-      clientSecret: "",
-      status: data.status,
-      amount: data.amount,
-      currency: data.currency,
-      checkoutUrl: data.redirectUrl,
-      metadata: data.metadata,
-    };
-  } catch (error) {
-    console.error("[Yoko Payment] Error creating order payment intent:", error);
-    throw error;
-  }
 }

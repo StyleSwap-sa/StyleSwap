@@ -1,63 +1,37 @@
-import { drizzle } from "drizzle-orm/postgres-js";
+import { drizzle } from "drizzle-orm/mysql2";
 import { eq, desc, gte, sql } from "drizzle-orm";
-import { InsertUser, users, garments, tryOnResults, InsertTryOnResult, boutiques, boutiqueCredits, boutiqueTransactions, shopOrders } from "../drizzle/schema";
+import { InsertUser, users, garments, tryOnResults, InsertTryOnResult, boutiques, boutiqueCredits, boutiqueTransactions } from "../drizzle/schema";
 import { ENV } from './_core/env';
-import postgres from 'postgres';
 
 let _db: ReturnType<typeof drizzle> | null = null;
-let _initPromise: Promise<ReturnType<typeof drizzle> | null> | null = null;
 
-// Initialize database connection with proper error handling
+// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
-  // Return cached instance if already initialized
-  if (_db) {
-    return _db;
-  }
-
-  // Return existing promise if initialization is in progress
-  if (_initPromise) {
-    return _initPromise;
-  }
-
-  // Start initialization
-  _initPromise = (async () => {
-    if (!process.env.DATABASE_URL) {
-      console.error("[Database] DATABASE_URL environment variable is not set");
-      return null;
-    }
-
+  if (!_db && process.env.DATABASE_URL) {
     try {
-      console.log("[Database] Initializing PostgreSQL connection...");
-      const client = postgres(process.env.DATABASE_URL);
-      _db = drizzle(client);
-      console.log("[Database] ✓ PostgreSQL connection initialized successfully");
-      return _db;
+      _db = drizzle(process.env.DATABASE_URL);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error("[Database] ✗ Failed to initialize connection pool:", errorMsg);
+      console.warn("[Database] Failed to connect:", error);
       _db = null;
-      _initPromise = null;
-      return null;
     }
-  })();
-
-  return _initPromise;
+  }
+  return _db;
 }
 
-export async function upsertUser(user: Partial<InsertUser> & { openId: string }): Promise<User | undefined> {
+export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
   }
 
   const db = await getDb();
   if (!db) {
-    throw new Error("[Database] Database connection not available");
+    console.warn("[Database] Cannot upsert user: database not available");
+    return;
   }
 
   try {
-    const values: any = {
+    const values: InsertUser = {
       openId: user.openId,
-      // Don't include clerkId for OAuth users - the column doesn't exist
     };
     const updateSet: Record<string, unknown> = {};
 
@@ -90,24 +64,8 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
       values.lastSignedIn = new Date();
     }
 
-    // Ensure free trial fields have defaults for new users
-    if (!values.freeTrialUsed) {
-      values.freeTrialUsed = 0;
-    }
-    // Don't update freeTrialUsedAt and freeTrialExpiresAt on duplicate - only on first insert
-
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = new Date();
-    }
-
-    // Check if email already exists with a different openId
-    if (values.email) {
-      const existingByEmail = await db.select().from(users).where(eq(users.email, values.email)).limit(1);
-      if (existingByEmail.length > 0 && existingByEmail[0].openId !== user.openId) {
-        // Email exists with different openId - update that user instead
-        await db.update(users).set(updateSet).where(eq(users.id, existingByEmail[0].id));
-        return existingByEmail[0];
-      }
     }
 
     await db.insert(users).values(values).onDuplicateKeyUpdate({
@@ -122,77 +80,11 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
   if (!db) {
-    throw new Error("[Database] Database connection not available");
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
   }
 
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
-  return result.length > 0 ? result[0] : undefined;
-}
-
-// Clerk-based user queries
-export async function getUserByClerkId(clerkId: string) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  const result = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
-
-  return result.length > 0 ? result[0] : undefined;
-}
-
-export async function upsertUserWithClerk(data: {
-  clerkId: string;
-  email: string;
-  name?: string;
-}) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  try {
-    const existing = await getUserByClerkId(data.clerkId);
-    
-    if (existing) {
-      // Update existing user
-      await db.update(users)
-        .set({
-          email: data.email,
-          name: data.name || existing.name,
-          lastSignedIn: new Date(),
-        })
-        .where(eq(users.clerkId, data.clerkId));
-      
-      return existing;
-    }
-    
-    // Create new user
-    const newUser = {
-      clerkId: data.clerkId,
-      email: data.email,
-      name: data.name || data.email,
-      role: data.clerkId === ENV.ownerOpenId ? 'admin' : 'user',
-      lastSignedIn: new Date(),
-      freeTrialUsed: 0,
-    } as InsertUser;
-    
-    await db.insert(users).values(newUser);
-    return await getUserByClerkId(data.clerkId);
-  } catch (error) {
-    console.error('[Database] Error upserting user with Clerk:', error);
-    throw error;
-  }
-}
-
-export async function getUserByEmail(email: string) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Database connection not available");
-  }
-
-  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
 }
@@ -406,107 +298,3 @@ export async function getTopBoutiques(limit = 10) {
 }
 
 // TODO: add feature queries here as your schema grows.
-
-
-// Phase 1: Order Management Functions
-export async function createOrder(order: {
-  orderNumber: string;
-  customerId: number;
-  boutiqueId: number;
-  productId?: number;
-  quantity: number;
-  size?: string;
-  color?: string;
-  amount: number;
-  deliveryAddress?: string;
-  customerPhone?: string;
-  notes?: string;
-}) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Cannot create order: database not available");
-  }
-
-  try {
-    const result = await db.insert(shopOrders).values(order);
-    return result;
-  } catch (error) {
-    console.error('[Database] Failed to create order:', error);
-    throw error;
-  }
-}
-
-export async function getOrdersByCustomer(customerId: number) {
-  const db = await getDb();
-  if (!db) {
-    return [];
-  }
-
-  try {
-    const orders = await db
-      .select()
-      .from(shopOrders)
-      .where(eq(shopOrders.customerId, customerId))
-      .orderBy(desc(shopOrders.createdAt));
-    return orders;
-  } catch (error) {
-    console.error('[Database] Failed to get customer orders:', error);
-    return [];
-  }
-}
-
-export async function getOrdersByBoutique(boutiqueId: number) {
-  const db = await getDb();
-  if (!db) {
-    return [];
-  }
-
-  try {
-    const orders = await db
-      .select()
-      .from(shopOrders)
-      .where(eq(shopOrders.boutiqueId, boutiqueId))
-      .orderBy(desc(shopOrders.createdAt));
-    return orders;
-  } catch (error) {
-    console.error('[Database] Failed to get boutique orders:', error);
-    return [];
-  }
-}
-
-export async function getOrderById(orderId: number) {
-  const db = await getDb();
-  if (!db) {
-    return null;
-  }
-
-  try {
-    const order = await db
-      .select()
-      .from(shopOrders)
-      .where(eq(shopOrders.id, orderId))
-      .limit(1);
-    return order[0] || null;
-  } catch (error) {
-    console.error('[Database] Failed to get order:', error);
-    return null;
-  }
-}
-
-export async function updateOrderStatus(orderId: number, status: string) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("[Database] Cannot update order: database not available");
-  }
-
-  try {
-    const result = await db
-      .update(shopOrders)
-      .set({ status: status as any })
-      .where(eq(shopOrders.id, orderId));
-    return result;
-  } catch (error) {
-    console.error('[Database] Failed to update order status:', error);
-    throw error;
-  }
-}

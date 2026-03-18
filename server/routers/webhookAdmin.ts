@@ -231,7 +231,7 @@ export const webhookAdminRouter = router({
           .update(webhookAlerts)
           .set({
             isResolved: 1,
-            resolvedAt: new Date().toISOString(),
+            resolvedAt: new Date(),
           })
           .where(eq(webhookAlerts.id, input.alertId));
 

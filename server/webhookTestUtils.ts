@@ -94,9 +94,7 @@ export async function createTestWebhookEvent(
     if (!db) throw new Error('Database not available');
 
     const testEventId =
-      externalEventId || `test_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    
-    const now = new Date().toISOString();
+      externalEventId || `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     const result = await db.insert(webhookEvents).values({
       source: 'yoco',
@@ -106,9 +104,9 @@ export async function createTestWebhookEvent(
       status: 'pending',
       retryCount: 0,
       maxRetries: 3,
-      nextRetryAt: now,
-      createdAt: now,
-      updatedAt: now,
+      nextRetryAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     console.log(`[Test] Created test webhook event: ${testEventId}`);
@@ -137,10 +135,10 @@ export async function createTestUnmatchedPayment(
       yocoAmount: amount.toString(),
       yocoCurrency: currency,
       yocoStatus: 'completed',
-      yocoTimestamp: new Date().toISOString(),
+      yocoTimestamp: new Date(),
       reconciliationStatus: 'unmatched',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     console.log(`[Test] Created test unmatched payment: ${yocoTransactionId}`);
