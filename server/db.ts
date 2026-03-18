@@ -59,6 +59,10 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
   try {
     const values: any = {
       openId: user.openId,
+      // Ensure required fields have values for INSERT
+      name: user.name || 'User',
+      email: user.email || `user-${Date.now()}@styleswap.local`,
+      loginMethod: user.loginMethod || 'oauth',
     };
     const updateSet: Record<string, unknown> = {};
 
@@ -74,6 +78,11 @@ export async function upsertUser(user: Partial<InsertUser> & { openId: string })
     };
 
     textFields.forEach(assignNullable);
+    
+    // Always update these fields even if they came from defaults
+    updateSet.name = values.name;
+    updateSet.email = values.email;
+    updateSet.loginMethod = values.loginMethod;
 
     if (user.lastSignedIn !== undefined) {
       values.lastSignedIn = user.lastSignedIn;
