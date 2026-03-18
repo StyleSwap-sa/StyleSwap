@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE users ADD COLUMN IF NOT EXISTS freeTrialUsed INT DEFAULT 0 NOT NULL;\nALTER TABLE users ADD COLUMN IF NOT EXISTS freeTrialUsedAt TIMESTAMP NULL;\nALTER TABLE users ADD COLUMN IF NOT EXISTS freeTrialExpiresAt TIMESTAMP NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute ALTER TABLE users ADD COLUMN IF NOT EXISTS freeTrialUsed INT DEFAULT 0 NOT NULL;\nALTER TABLE users ADD COLUMN IF NOT EXISTS freeTrialUsedAt TIMESTAMP NULL;\nALTER TABLE users ADD COLUMN IF NOT EXISTS freeTrialExpiresAt TIMESTAMP NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1729
+}

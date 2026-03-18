@@ -278,6 +278,29 @@ export default function BoutiqueFeatures() {
         </div>
       </section>
 
+      {/* Onboarding CTA */}
+      <section className="py-16 px-4 bg-gradient-to-r from-primary/10 to-secondary/10 border-y border-primary/20">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Started?</h2>
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Join hundreds of boutiques already using StyleSwap. Complete onboarding in 5 minutes and start generating virtual try-ons.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/onboarding">
+              <Button size="lg" className="bg-primary hover:bg-primary/90">
+                <ArrowRight className="mr-2 w-5 h-5" />
+                Start Onboarding
+              </Button>
+            </Link>
+            <Link href="/api-docs">
+              <Button size="lg" variant="outline">
+                View API Docs
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer CTA */}
       <section className="py-12 px-4 bg-muted/50 border-t border-border">
         <div className="max-w-6xl mx-auto">

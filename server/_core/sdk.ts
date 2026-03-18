@@ -39,19 +39,22 @@ class OAuthService {
   }
 
   private decodeState(state: string): string {
-    const redirectUri = atob(state);
+    const redirectUri = Buffer.from(state, 'base64').toString('utf-8');
     return redirectUri;
   }
 
   async getTokenByCode(
     code: string,
-    state: string
+    state: string,
+    redirectUri?: string
   ): Promise<ExchangeTokenResponse> {
+    // Use provided redirectUri if available, otherwise decode from state
+    const finalRedirectUri = redirectUri || this.decodeState(state);
     const payload: ExchangeTokenRequest = {
       clientId: ENV.appId,
       grantType: "authorization_code",
       code,
-      redirectUri: this.decodeState(state),
+      redirectUri: finalRedirectUri,
     };
 
     const { data } = await this.client.post<ExchangeTokenResponse>(
@@ -116,13 +119,14 @@ class SDKServer {
   /**
    * Exchange OAuth authorization code for access token
    * @example
-   * const tokenResponse = await sdk.exchangeCodeForToken(code, state);
+   * const tokenResponse = await sdk.exchangeCodeForToken(code, state, redirectUri);
    */
   async exchangeCodeForToken(
     code: string,
-    state: string
+    state: string,
+    redirectUri?: string
   ): Promise<ExchangeTokenResponse> {
-    return this.oauthService.getTokenByCode(code, state);
+    return this.oauthService.getTokenByCode(code, state, redirectUri);
   }
 
   /**
@@ -131,9 +135,12 @@ class SDKServer {
    * const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
    */
   async getUserInfo(accessToken: string): Promise<GetUserInfoResponse> {
-    const data = await this.oauthService.getUserInfoByToken({
-      accessToken,
-    } as ExchangeTokenResponse);
+    const { data } = await this.client.post<GetUserInfoResponse>(
+      GET_USER_INFO_PATH,
+      {
+        accessToken,
+      }
+    );
     const loginMethod = this.deriveLoginMethod(
       (data as any)?.platforms,
       (data as any)?.platform ?? data.platform ?? null

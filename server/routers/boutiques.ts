@@ -26,6 +26,16 @@ import {
 import { TRPCError } from "@trpc/server";
 import { createVerificationToken, sendVerificationEmail } from "../email.verification";
 import { createYocoCharge, processCreditPurchase, getYocoPublicKey } from "../yoco.payment";
+import { awardReferrerCredits } from "../db.referral";
+import {
+  createApiKey,
+  getApiKeysByBoutique,
+  getApiKeyById,
+  updateApiKeyName,
+  revokeApiKey,
+  getApiKeyStats,
+} from "../db.apikeys";
+import { z } from "zod";
 
 /**
  * Boutique Management Router
@@ -113,6 +123,7 @@ export const boutiquesRouter = router({
         tiktokHandle: z.string().optional(),
         facebookUrl: z.string().optional(),
         whatsappNumber: z.string().optional(),
+        referralCode: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -176,6 +187,25 @@ export const boutiquesRouter = router({
         role: "owner",
       });
 
+      // Process referral code if provided
+      if (input.referralCode) {
+        try {
+          // Call the applyReferralCode mutation to award credits
+          const referralParts = input.referralCode.split("-");
+          if (referralParts.length === 3 && referralParts[0] === "STYLESWAP" && referralParts[1] === "BOUTIQUE") {
+            const referrerBoutiqueId = parseInt(referralParts[2], 10);
+            if (!isNaN(referrerBoutiqueId)) {
+              // Award 10 credits to referrer
+              await awardReferrerCredits(referrerBoutiqueId, 10);
+              console.log(`[Referral] Awarded 10 credits to boutique ${referrerBoutiqueId} for referring boutique ${boutiqueId}`);
+            }
+          }
+        } catch (error) {
+          console.error('[Referral] Error processing referral code:', error);
+          // Don't fail boutique creation if referral processing fails
+        }
+      }
+
       // Generate and send verification email
       try {
         const verificationToken = await createVerificationToken(boutiqueId);
@@ -187,6 +217,17 @@ export const boutiquesRouter = router({
         );
       } catch (error) {
         console.error('Error sending verification email:', error);
+      }
+
+      // Send notification to owner about new boutique signup
+      try {
+        const { notifyOwner } = await import("../db.notifications");
+        await notifyOwner({
+          title: `New Boutique Signup: ${input.name}`,
+          content: `A new boutique has signed up!\n\nBoutique: ${input.name}\nSlug: ${finalSlug}\nOwner Email: ${ctx.user.email}\n\nVerify this boutique in the admin dashboard.`,
+        });
+      } catch (error) {
+        console.error('[Notification] Error sending boutique signup notification:', error);
       }
 
       return { id: boutiqueId, name: input.name, slug: finalSlug, description: input.description, logoUrl: input.logoUrl, websiteUrl: input.websiteUrl, isVerified: false };

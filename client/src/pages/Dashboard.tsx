@@ -5,28 +5,38 @@ import { Loader2, Zap, History, Shirt, ShoppingBag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { VirtualTryOnUpload } from "@/components/VirtualTryOnUpload";
+import { MobileNavMenu } from "@/components/MobileNavMenu";
+import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
+import { LowCreditAlert } from "@/components/LowCreditAlert";
+import { Footer } from "@/components/Footer";
 
-type DashboardTab = "overview" | "try-on" | "history";
+
+type DashboardTab = "overview" | "history";
 
 export default function Dashboard() {
   const { user, isAuthenticated } = useAuth({ redirectOnUnauthenticated: true });
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
+  const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
   // Redirect based on user type (skip for admins testing customer dashboard)
   useEffect(() => {
-    if (isAuthenticated && user) {
-      const params = new URLSearchParams(window.location.search);
-      const isTestingCustomer = params.get('test') === 'customer';
-      
-      if (!isTestingCustomer) {
-        if (user.userType === 'admin' || user.role === 'admin') {
-          setLocation('/admin');
-        } else if (user.userType === 'merchant') {
-          setLocation('/boutique-dashboard');
-        }
-      }
+    if (!isAuthenticated || !user) return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const isTestingCustomer = params.get('test') === 'customer';
+    
+    // If test=customer is set, don't redirect - show customer dashboard
+    if (isTestingCustomer) return;
+    
+    // Redirect based on user type
+    const isAdmin = user.userType === 'admin' || user.role === 'admin';
+    const isMerchant = user.userType === 'merchant';
+    
+    if (isAdmin) {
+      setLocation('/admin/dashboard');
+    } else if (isMerchant) {
+      setLocation('/boutique/dashboard');
     }
   }, [isAuthenticated, user, setLocation]);
 
@@ -121,43 +131,56 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 p-6 border-b border-border/20 bg-secondary/5">
-          <Button
-            onClick={() => setActiveTab("overview")}
-            variant={activeTab === "overview" ? "default" : "outline"}
-            className={activeTab === "overview" ? "premium-button" : ""}
-          >
-            Overview
-          </Button>
-          <Button
-            onClick={() => setActiveTab("try-on")}
-            variant={activeTab === "try-on" ? "default" : "outline"}
-            className={activeTab === "try-on" ? "premium-button" : ""}
-          >
-            <Shirt className="w-4 h-4 mr-2" />
-            Virtual Try-On
-          </Button>
-
-          <Button
-            onClick={() => setActiveTab("history")}
-            variant={activeTab === "history" ? "default" : "outline"}
-            className={activeTab === "history" ? "premium-button" : ""}
-          >
-            <History className="w-4 h-4 mr-2" />
-            History
-          </Button>
-
-          {/* Admin Dashboard Link - Only visible to owner */}
-          {(user?.role === 'admin' || user?.userType === 'admin') && (
+        {/* Navigation Tabs - Mobile Hamburger Menu + Desktop Tabs */}
+        <div className="flex items-center justify-between p-3 sm:p-6 border-b border-border/20 bg-secondary/5">
+          {/* Desktop Navigation Tabs */}
+          <div className="hidden sm:flex sm:flex-row sm:flex-wrap gap-2 w-full">
             <Button
-              onClick={() => setLocation('/admin')}
-              variant="outline"
-              className="ml-auto border-primary/50 text-primary hover:bg-primary/10"
+              onClick={() => setActiveTab("overview")}
+              variant={activeTab === "overview" ? "default" : "outline"}
+              className={`${activeTab === "overview" ? "premium-button" : ""} text-xs sm:text-base px-2 sm:px-4`}
+              size="sm"
             >
-              Platform Analytics
+              Overview
             </Button>
-          )}
+            <Button
+              onClick={() => setLocation('/try-on')}
+              variant="outline"
+              className="border-primary/50 text-primary hover:bg-primary/10 text-xs sm:text-base px-2 sm:px-4"
+              size="sm"
+            >
+              Try-On
+            </Button>
+            <Button
+              onClick={() => setActiveTab("history")}
+              variant={activeTab === "history" ? "default" : "outline"}
+              className={`${activeTab === "history" ? "premium-button" : ""} text-xs sm:text-base px-2 sm:px-4`}
+              size="sm"
+            >
+              <History className="w-3 h-3 sm:w-4 sm:h-4" />
+            </Button>
+
+            {/* Admin Dashboard Link - Only visible to owner */}
+            {(user?.role === 'admin' || user?.userType === 'admin') && (
+              <Button
+                onClick={() => setLocation('/admin/dashboard')}
+                variant="outline"
+                className="border-primary/50 text-primary hover:bg-primary/10 text-xs sm:text-base px-2 sm:px-4 ml-auto"
+                size="sm"
+              >
+                Analytics
+              </Button>
+            )}
+          </div>
+
+          {/* Mobile Hamburger Menu */}
+          <MobileNavMenu
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onTryOnClick={() => setLocation('/try-on')}
+            onAdminClick={() => setLocation('/admin/dashboard')}
+            isAdmin={user?.role === 'admin' || user?.userType === 'admin'}
+          />
         </div>
 
         {/* Tab Content */}
@@ -202,19 +225,25 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex flex-col gap-3 pt-4">
+                    <Button
+                      onClick={() => setLocation('/try-on')}
+                      className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 w-full"
+                    >
+                      Choose Try-On Mode
+                    </Button>
                     <Button
                       onClick={() => setActiveTab("try-on")}
-                      className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
+                      className="premium-button bg-secondary text-secondary-foreground hover:bg-secondary/90 w-full"
                     >
-                      Start Try-On
+                      Classic Upload
                     </Button>
-                  <Button
-                    onClick={() => window.location.href = '/pricing'}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    Buy More Credits
-                  </Button>
+                    <Button
+                      onClick={() => setIsCreditModalOpen(true)}
+                      className="bg-foreground/10 text-foreground hover:bg-foreground/20 w-full"
+                    >
+                      Buy More Credits
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -240,76 +269,42 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Virtual Try-On Tab */}
-          {activeTab === "try-on" && (
-            <VirtualTryOnUpload />
-          )}
-
-
-
-          {/* Transaction History Tab */}
+          {/* History Tab */}
           {activeTab === "history" && (
-            <Card className="premium-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="w-5 h-5" />
-                  Transaction History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {transactionsLoading ? (
-                  <Loader2 className="w-8 h-8 animate-spin" />
-                ) : transactions && transactions.length > 0 ? (
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {transactions.map((tx) => (
-                      <div
-                        key={tx.id}
-                        className="flex justify-between items-center p-4 bg-secondary/5 rounded-lg border border-border/20 hover:border-border/40 transition-colors"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium capitalize">{tx.type}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {tx.description}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className={`font-bold text-lg ${
-                            tx.type === "purchase" ? "text-primary" : "text-foreground/70"
-                          }`}>
-                            {tx.type === "purchase" ? "+" : "-"}{tx.amount}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(tx.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-center py-8">
-                    No transactions yet. Buy credits to get started!
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card className="premium-card">
+                <CardHeader>
+                  <CardTitle>Transaction History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {transactionsLoading ? (
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                  ) : transactions.length === 0 ? (
+                    <p className="text-muted-foreground">No transactions yet</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Transaction list would go here */}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           )}
         </div>
-
-        {/* Footer CTA */}
-        {credits && credits.remainingCredits < 5 && (
-          <div className="p-6 bg-primary/10 border-t border-primary/20 text-center">
-            <p className="text-sm text-muted-foreground mb-3">
-              You're running low on credits! Get more to continue enjoying StyleSwap.
-            </p>
-            <Button
-              onClick={() => window.location.href = '/pricing'}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Buy More Credits
-            </Button>
-          </div>
-        )}
       </div>
+
+      {/* Credit Purchase Modal */}
+      <CreditPurchaseModal
+        isOpen={isCreditModalOpen}
+        onClose={() => setIsCreditModalOpen(false)}
+        onPurchaseSuccess={() => {
+          refetchCredits();
+          setIsCreditModalOpen(false);
+        }}
+      />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

@@ -37,13 +37,6 @@ export interface FitroomTaskStatusResponse {
   errorCode?: string;
 }
 
-export interface FitroomValidationResponse {
-  success: boolean;
-  valid: boolean;
-  error?: string;
-  message?: string;
-}
-
 export class FitroomClient {
   private client: AxiosInstance;
   private apiKey: string;
@@ -115,9 +108,10 @@ export class FitroomClient {
         (payload as any).lower_cloth_image = request.lowerClothImageBase64;
       }
 
-      // Enable HD mode by default for better quality (30s vs 9s processing)
-      // HD mode provides higher quality output at the cost of longer processing time
-      (payload as any).hd_mode = true;
+      // HD mode is optional - only enable if explicitly requested
+      // Standard mode: 1 credit, ~9s processing
+      // HD mode: 2 credits, ~30s processing
+      (payload as any).hd_mode = request.hdMode || false;
 
       console.log("[Fitroom] Sending POST to /api/tryon/v2/tasks with base64 JSON payload");
       console.log("[Fitroom] Payload keys:", Object.keys(payload));
@@ -354,98 +348,13 @@ export class FitroomClient {
       };
     }
   }
-
-  /**
-   * Validate model image before try-on
-   */
-  async validateModelImage(imagePath: string, testMode: boolean = false): Promise<FitroomValidationResponse> {
-    try {
-      if (!fs.existsSync(imagePath)) {
-        return {
-          success: false,
-          valid: false,
-          error: `Model image not found: ${imagePath}`,
-        };
-      }
-
-      const form = new FormData();
-      form.append("input_image", fs.createReadStream(imagePath), {
-        filename: path.basename(imagePath),
-        contentType: this.getMimeType(imagePath),
-      });
-
-      console.log("[Fitroom] Validating model image:", imagePath, "Test mode:", testMode);
-      const response = await this.client.post("/api/tryon/input_check/v1/model", form, {
-        headers: form.getHeaders(),
-        timeout: 30000,
-        params: testMode ? { test_mode: 'true' } : {},
-      });
-
-      console.log("[Fitroom] Model validation response:", response.data);
-      return {
-        success: true,
-        valid: response.data.valid !== false,
-        message: response.data.message,
-      };
-    } catch (error: any) {
-      console.error("[Fitroom] Model validation failed:", error.message);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Model validation failed";
-      return {
-        success: false,
-        valid: false,
-        error: String(errorMessage),
-      };
-    }
-  }
-
-  /**
-   * Validate clothes image before try-on
-   */
-  async validateClothesImage(imagePath: string, testMode: boolean = false): Promise<FitroomValidationResponse> {
-    try {
-      if (!fs.existsSync(imagePath)) {
-        return {
-          success: false,
-          valid: false,
-          error: `Clothes image not found: ${imagePath}`,
-        };
-      }
-
-      const form = new FormData();
-      form.append("input_image", fs.createReadStream(imagePath), {
-        filename: path.basename(imagePath),
-        contentType: this.getMimeType(imagePath),
-      });
-
-      console.log("[Fitroom] Validating clothes image:", imagePath, "Test mode:", testMode);
-      const response = await this.client.post("/api/tryon/input_check/v1/clothes", form, {
-        headers: form.getHeaders(),
-        timeout: 30000,
-        params: testMode ? { test_mode: 'true' } : {},
-      });
-
-      console.log("[Fitroom] Clothes validation response:", response.data);
-      return {
-        success: true,
-        valid: response.data.valid !== false,
-        message: response.data.message,
-      };
-    } catch (error: any) {
-      console.error("[Fitroom] Clothes validation failed:", error.message);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Clothes validation failed";
-      return {
-        success: false,
-        valid: false,
-        error: String(errorMessage),
-      };
-    }
-  }
 }
 
-export function getFitroomClient(): FitroomClient {
+export function getFitroomClient(): FitroomClient | null {
   const apiKey = process.env.FITROOM_API_KEY;
   if (!apiKey) {
-    throw new Error("FITROOM_API_KEY environment variable is not set");
+    console.warn("[Fitroom] FITROOM_API_KEY environment variable is not set - Fitroom features will be unavailable");
+    return null;
   }
   return new FitroomClient(apiKey);
 }

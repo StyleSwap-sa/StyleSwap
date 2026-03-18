@@ -5,6 +5,8 @@ import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles }
 import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { SizeSelector } from "@/components/SizeSelector";
+import { SaveToGalleryButton } from "@/components/SaveToGalleryButton";
 
 interface TryOnResult {
   taskId: string;
@@ -23,6 +25,8 @@ export function VirtualTryOnUpload() {
   const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string>("M");
+  const [hdMode, setHdMode] = useState(false);
   
   // State for processing
   const [isLoading, setIsLoading] = useState(false);
@@ -70,8 +74,14 @@ export function VirtualTryOnUpload() {
       return;
     }
 
-    if (!testMode && (!credits || credits.remainingCredits < 1)) {
-      setError("Insufficient credits. Please purchase more try-ons.");
+    if (!selectedSize || selectedSize === "") {
+      setError("Please select a size before generating the try-on.");
+      return;
+    }
+
+    const creditsNeeded = hdMode ? 2 : 1;
+    if (!testMode && (!credits || credits.remainingCredits < creditsNeeded)) {
+      setError(`Insufficient credits. You need ${creditsNeeded} credits for ${hdMode ? "HD" : "standard"} try-on, but only have ${credits?.remainingCredits || 0} remaining.`);
       return;
     }
 
@@ -79,6 +89,9 @@ export function VirtualTryOnUpload() {
     setError("");
     setWarning("");
     setProcessingProgress(0);
+    
+    // Log selected size
+    console.log(`[VirtualTryOn] Selected size: ${selectedSize}`);
 
     try {
       // Auto-resize images if they exceed Fitroom limits
@@ -100,6 +113,8 @@ export function VirtualTryOnUpload() {
       
       // Crop clothing image based on selected type
       console.log("[VirtualTryOn] Processing clothing image for type:", clothType);
+      let finalClothTypeForBackend = clothType;
+      let finalLowerClothImage: File | null = null;
       
       try {
         if (clothType === "upper") {
@@ -110,10 +125,17 @@ export function VirtualTryOnUpload() {
           console.log("[VirtualTryOn] Cropping bottom portion of clothing image");
           finalClothImage = await cropBottomClothing(finalClothImage);
           setWarning("Clothing image cropped to bottom portion for better fitting");
+        } else if (clothType === "full") {
+          console.log("[VirtualTryOn] Splitting full dress");
+          const split = await splitDressImage(finalClothImage);
+          finalClothImage = split.topImage;
+          finalLowerClothImage = split.bottomImage;
+          finalClothTypeForBackend = "combo";
+          setWarning("Full dress split for fitting");
         }
       } catch (cropError) {
-        console.error("[VirtualTryOn] Error cropping image:", cropError);
-        // Continue with original image if cropping fails
+        console.error("[VirtualTryOn] Error processing image:", cropError);
+        // Continue with original image if processing fails
         setWarning("Could not optimize clothing image, using original");
       }
       
@@ -125,22 +147,24 @@ export function VirtualTryOnUpload() {
       formData.append("modelImage", finalModelPhoto);
       
       // For combo, send as upper+lower. For single garments, send only cloth image
-      if (clothType === "combo") {
+      if (finalClothTypeForBackend === "combo") {
         formData.append("upperClothImage", finalClothImage);
-        if (lowerClothImage) {
-          formData.append("lowerClothImage", lowerClothImage);
+        if (finalLowerClothImage) {
+          formData.append("lowerClothImage", finalLowerClothImage);
         }
       } else {
         // For single garments (upper/lower), send only the cloth image
         formData.append("clothImage", finalClothImage);
       }
       
-      // Use selected cloth type (Fitroom API expects: upper, lower, or combo)
-      formData.append("clothType", clothType);
-      // Pass test mode to backend
+      // Use mapped cloth type (Fitroom API expects: upper, lower, or combo)
+      formData.append("clothType", finalClothTypeForBackend);
+      // Pass test mode and HD mode to backend
       formData.append("testMode", testMode.toString());
+      formData.append("hdMode", hdMode.toString());
       console.log("[VirtualTryOn] FormData clothType:", clothType);
       console.log("[VirtualTryOn] FormData testMode:", testMode);
+      console.log("[VirtualTryOn] FormData hdMode:", hdMode);
       console.log("[VirtualTryOn] FormData modelImage:", finalModelPhoto?.name, finalModelPhoto?.size);
       console.log("[VirtualTryOn] FormData clothImage:", finalClothImage?.name, finalClothImage?.size);
       setProcessingProgress(20);
@@ -350,7 +374,39 @@ export function VirtualTryOnUpload() {
               alt="Try-on result"
               className="w-full rounded-lg border border-border shadow-lg"
             />
-            <div className="flex gap-3">
+            {/* Size Comparison Feature */}
+            <div className="pt-4 border-t border-green-200 dark:border-green-800">
+              <p className="text-sm font-medium text-green-900 dark:text-green-100 mb-3">
+                Want to compare sizes? Try another size to see the difference.
+              </p>
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+                {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => {
+                      setSelectedSize(size);
+                      setResult(null);
+                      handleCreateTryOn();
+                    }}
+                    disabled={isLoading || isPolling}
+                    className={`py-2 px-1 sm:px-2 rounded text-xs sm:text-sm font-semibold border-2 transition-all ${
+                      selectedSize === size
+                        ? "border-green-600 bg-green-600 text-white"
+                        : "border-green-200 dark:border-green-700 bg-white dark:bg-green-900/20 text-green-900 dark:text-green-100 hover:border-green-400"
+                    } ${isLoading || isPolling ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex gap-3 flex-col sm:flex-row">
+              <SaveToGalleryButton
+                imageUrl={result.resultImageUrl}
+                variant="default"
+                className="flex-1"
+              />
               <Button onClick={handleReset} className="flex-1">
                 <Sparkles className="w-4 h-4 mr-2" />
                 Try Another
@@ -610,6 +666,44 @@ export function VirtualTryOnUpload() {
               </CardContent>
             </Card>
           )}
+
+          {/* Size Selector */}
+          <SizeSelector
+            selectedSize={selectedSize}
+            onSizeChange={setSelectedSize}
+            disabled={isLoading || isPolling}
+            showDisclaimer={true}
+          />
+
+          {/* HD Mode Toggle */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Quality Options</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                <div>
+                  <p className="font-medium">HD Quality Try-On</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {hdMode ? "2 credits - Higher quality, ~30s processing" : "1 credit - Standard quality, ~9s processing"}
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setHdMode(!hdMode)}
+                  variant={hdMode ? "default" : "outline"}
+                  className="ml-4"
+                >
+                  {hdMode ? "HD" : "Standard"}
+                </Button>
+              </div>
+              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>Standard (1 credit):</strong> Fast processing with good quality<br/>
+                  <strong>HD (2 credits):</strong> Premium quality with better details and accuracy
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Submit Button */}
           <Button 

@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import {
@@ -11,7 +10,10 @@ import { getBillingHistory, getTotalSpending, getTotalCreditsUsed } from "../db.
 import { getBoutiqueTryOnResults, getBoutiqueUsageStats } from "../db.tryons";
 import { getDb, getPlatformMetrics, getBoutiquesList, getMonthlyCreditsUsage, getTopBoutiques } from "../db";
 import { boutiqueTransactions, tryOnResults, boutiques, boutiqueCredits } from "../../drizzle/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
+import { z } from "zod";
+import { COOKIE_NAME } from "../../shared/const";
+import { adminPayoutsRouter } from "./admin-payouts";
 
 /**
  * Admin Management Router
@@ -53,166 +55,6 @@ export const adminRouter = router({
         });
       }
 
-      const boutique = await getBoutiqueById(input.boutiqueId);
-      if (!boutique) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Boutique not found",
-        });
-      }
-
-      const totalSpending = await getTotalSpending(input.boutiqueId);
-      const totalUsed = await getTotalCreditsUsed(input.boutiqueId);
-      const usageStats = await getBoutiqueUsageStats(input.boutiqueId);
-
-      return {
-        ...boutique,
-        analytics: {
-          totalSpending,
-          totalCreditsUsed: totalUsed,
-          usageStats,
-        },
-      };
-    }),
-
-  /**
-   * Suspend boutique
-   */
-  suspendBoutique: protectedProcedure
-    .input(
-      z.object({
-        boutiqueId: z.number(),
-        reason: z.string().optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only admins can suspend boutiques",
-        });
-      }
-
-      const boutique = await getBoutiqueById(input.boutiqueId);
-      if (!boutique) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Boutique not found",
-        });
-      }
-
-      await updateBoutique(input.boutiqueId, { status: "suspended" });
-
-      return {
-        success: true,
-        message: `Boutique ${boutique.name} has been suspended`,
-      };
-    }),
-
-  /**
-   * Reactivate boutique
-   */
-  reactivateBoutique: protectedProcedure
-    .input(z.object({ boutiqueId: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only admins can reactivate boutiques",
-        });
-      }
-
-      const boutique = await getBoutiqueById(input.boutiqueId);
-      if (!boutique) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Boutique not found",
-        });
-      }
-
-      await updateBoutique(input.boutiqueId, { status: "active" });
-
-      return {
-        success: true,
-        message: `Boutique ${boutique.name} has been reactivated`,
-      };
-    }),
-
-  /**
-   * Get platform statistics
-   */
-  getPlatformStats: protectedProcedure.query(async ({ ctx }) => {
-    if (ctx.user.role !== "admin") {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Only admins can view platform stats",
-      });
-    }
-
-    const db = await getDb();
-    if (!db) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Database not available",
-      });
-    }
-
-    // Get total boutiques
-    const allBoutiques = await getAllBoutiques();
-    const activeBoutiques = await getAllBoutiques("active");
-
-    // Get total try-ons
-    const allTryOns = await db.select().from(tryOnResults);
-
-    // Get total revenue
-    const allTransactions = await db.select().from(boutiqueTransactions);
-    const totalRevenue = allTransactions
-      .filter(t => t.type === "purchase" && t.status === "completed")
-      .reduce((sum, t) => sum + (typeof t.price === 'number' ? t.price : 0), 0);
-
-    const totalCreditsUsed = allTransactions
-      .filter(t => t.type === "usage")
-      .reduce((sum, t) => sum + (t.amount || 0), 0);
-
-    // Get this month's stats
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const thisMonthTryOns = allTryOns.filter(t => new Date(t.createdAt) >= monthStart).length;
-    const thisMonthRevenue = allTransactions
-      .filter(
-        t =>
-          t.type === "purchase" &&
-          t.status === "completed" &&
-          new Date(t.createdAt) >= monthStart
-      )
-      .reduce((sum, t) => sum + (typeof t.price === 'number' ? t.price : 0), 0);
-
-    return {
-      totalBoutiques: allBoutiques.length,
-      activeBoutiques: activeBoutiques.length,
-      totalTryOns: allTryOns.length,
-      totalCreditsUsed,
-      totalRevenue,
-      thisMonthTryOns,
-      thisMonthRevenue,
-      averageRevenuePerBoutique:
-        activeBoutiques.length > 0 ? (totalRevenue / activeBoutiques.length).toFixed(2) : 0,
-    };
-  }),
-
-  /**
-   * Get recent transactions
-   */
-  getRecentTransactions: protectedProcedure
-    .input(z.object({ limit: z.number().optional().default(50) }))
-    .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only admins can view transactions",
-        });
-      }
-
       const db = await getDb();
       if (!db) {
         throw new TRPCError({
@@ -221,21 +63,85 @@ export const adminRouter = router({
         });
       }
 
-      return await db
-        .select()
-        .from(boutiqueTransactions)
-        .orderBy(desc(boutiqueTransactions.createdAt))
-        .limit(input.limit);
+      try {
+        const boutique = await getBoutiqueById(input.boutiqueId);
+        if (!boutique) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Boutique not found",
+          });
+        }
+
+        const [billingHistory, usageStats, tryOnResults] = await Promise.all([
+          getBillingHistory(input.boutiqueId),
+          getBoutiqueUsageStats(input.boutiqueId),
+          getBoutiqueTryOnResults(input.boutiqueId),
+        ]);
+
+        return {
+          ...boutique,
+          billingHistory,
+          usageStats,
+          tryOnResults,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch boutique details",
+        });
+      }
     }),
 
   /**
-   * Get top performing boutiques
+   * Get platform metrics
+   */
+  getPlatformMetrics: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Only admins can view platform metrics",
+      });
+    }
+
+    try {
+      return await getPlatformMetrics();
+    } catch (error) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch platform metrics",
+      });
+    }
+  }),
+
+  /**
+   * Get monthly credits usage
+   */
+  getMonthlyCreditsUsage: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Only admins can view credits usage",
+      });
+    }
+
+    try {
+      return await getMonthlyCreditsUsage();
+    } catch (error) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch credits usage",
+      });
+    }
+  }),
+
+  /**
+   * Get top boutiques by usage
    */
   getTopBoutiques: protectedProcedure
     .input(
       z.object({
-        metric: z.enum(["revenue", "usage", "tryons"]).optional().default("revenue"),
-        limit: z.number().optional().default(10),
+        limit: z.number().min(1).max(100).default(10),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -246,6 +152,73 @@ export const adminRouter = router({
         });
       }
 
+      try {
+        return await getTopBoutiques(input.limit);
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch top boutiques",
+        });
+      }
+    }),
+
+  /**
+   * Update boutique status
+   */
+  updateBoutiqueStatus: protectedProcedure
+    .input(
+      z.object({
+        boutiqueId: z.number(),
+        status: z.enum(["active", "suspended", "inactive"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can update boutique status",
+        });
+      }
+
+      try {
+        const updated = await updateBoutique(input.boutiqueId, {
+          status: input.status,
+        });
+
+        if (!updated) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Boutique not found",
+          });
+        }
+
+        return updated;
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update boutique status",
+        });
+      }
+    }),
+
+  /**
+   * Get AR mode analytics
+   */
+  getARModeAnalytics: protectedProcedure
+    .input(
+      z.object({
+        days: z.number().min(1).max(365).default(30),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only admins can view AR analytics",
+        });
+      }
+
       const db = await getDb();
       if (!db) {
         throw new TRPCError({
@@ -254,110 +227,69 @@ export const adminRouter = router({
         });
       }
 
-      const allBoutiques = await getAllBoutiques();
+      try {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - input.days);
 
-      // Calculate metrics for each boutique
-      const boutiquesWithMetrics = await Promise.all(
-        allBoutiques.map(async b => {
-          const revenue = await getTotalSpending(b.id);
-          const used = await getTotalCreditsUsed(b.id);
-          const tryOns = await db
-            .select()
-            .from(tryOnResults)
-            .where(eq(tryOnResults.boutiqueId, b.id));
+        const results = await db
+          .select()
+          .from(tryOnResults)
+          .where(gte(tryOnResults.createdAt, startDate));
 
-          return {
-            id: b.id,
-            name: b.name,
-            revenue,
-            creditsUsed: used,
-            tryOns: tryOns.length,
-          };
-        })
-      );
+        const totalTryOns = results.length;
+        const arTryOns = results.filter((r) => r.arMode === true).length;
+        const uploadTryOns = totalTryOns - arTryOns;
 
-      // Sort by metric
-      let sorted = boutiquesWithMetrics;
-      if (input.metric === "revenue") {
-        sorted = boutiquesWithMetrics.sort((a, b) => b.revenue - a.revenue);
-      } else if (input.metric === "usage") {
-        sorted = boutiquesWithMetrics.sort((a, b) => b.creditsUsed - a.creditsUsed);
-      } else if (input.metric === "tryons") {
-        sorted = boutiquesWithMetrics.sort((a, b) => b.tryOns - a.tryOns);
+        // Calculate conversion rates
+        const completedAR = results.filter((r) => r.arMode === true && r.status === "completed").length;
+        const completedUpload = results.filter((r) => r.arMode === false && r.status === "completed").length;
+
+        const conversionRateAR = arTryOns > 0 ? (completedAR / arTryOns) * 100 : 0;
+        const conversionRateUpload = uploadTryOns > 0 ? (completedUpload / uploadTryOns) * 100 : 0;
+
+        // Group by date for trends
+        const trendData: Record<
+          string,
+          { ar: number; upload: number; date: string }
+        > = {};
+        results.forEach((result) => {
+          const date = result.createdAt.toISOString().split("T")[0];
+          if (!trendData[date]) {
+            trendData[date] = { ar: 0, upload: 0, date };
+          }
+          if (result.arMode) {
+            trendData[date].ar++;
+          } else {
+            trendData[date].upload++;
+          }
+        });
+
+        const trends = Object.values(trendData).sort((a, b) => a.date.localeCompare(b.date));
+
+        // Estimate percentages
+        const estimatedARCount = arTryOns;
+        const estimatedUploadCount = uploadTryOns;
+
+        return {
+          totalARTryOns: estimatedARCount,
+          totalUploadTryOns: estimatedUploadCount,
+          arPercentage: estimatedARCount > 0 ? (estimatedARCount / totalTryOns) * 100 : 0,
+          uploadPercentage: estimatedUploadCount > 0 ? (estimatedUploadCount / totalTryOns) * 100 : 0,
+          conversionRateAR,
+          conversionRateUpload,
+          trendData: trends,
+        };
+      } catch (error) {
+        console.error("[Admin] Failed to get AR mode analytics:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch AR mode analytics",
+        });
       }
-
-      return sorted.slice(0, input.limit);
     }),
 
   /**
-   * Export boutique data (CSV)
-   */
-  exportBoutiqueData: protectedProcedure
-    .input(z.object({ boutiqueId: z.number() }))
-    .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only admins can export data",
-        });
-      }
-
-      const boutique = await getBoutiqueById(input.boutiqueId);
-      if (!boutique) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Boutique not found",
-        });
-      }
-
-      const transactions = await getBillingHistory(input.boutiqueId);
-      const tryOns = await getBoutiqueTryOnResults(input.boutiqueId, 1000);
-
-      // Format as CSV
-      const headers = ["Date", "Type", "Amount", "Price", "Description", "Status"];
-      const rows = transactions.map(t => [
-        new Date(t.createdAt).toISOString(),
-        t.type,
-        t.amount,
-        t.price,
-        t.description,
-        t.status,
-      ]);
-
-      const csv = [headers, ...rows].map(row => row.join(",")).join("\n");
-
-      return {
-        filename: `${boutique.slug}-data-${new Date().toISOString().split("T")[0]}.csv`,
-        data: csv,
-        transactionCount: transactions.length,
-        tryOnCount: tryOns.length,
-      };
-    }),
-
-  /**
-   * Get platform-wide metrics (admin dashboard)
-   */
-  getPlatformMetricsData: protectedProcedure.query(async ({ ctx }) => {
-    if (ctx.user.role !== "admin") {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Only admins can view platform metrics",
-      });
-    }
-
-    const metrics = await getPlatformMetrics();
-    if (!metrics) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch platform metrics",
-      });
-    }
-
-    return metrics;
-  }),
-
-  /**
-   * Get boutiques list with pagination
+   * Get paginated boutiques list with credits info
    */
   getBoutiquesListPaginated: protectedProcedure
     .input(
@@ -374,434 +306,44 @@ export const adminRouter = router({
         });
       }
 
-      return await getBoutiquesList(input.limit, input.offset);
-    }),
-
-  /**
-   * Get monthly credits usage analytics
-   */
-  getCreditsUsageAnalytics: protectedProcedure.query(async ({ ctx }) => {
-    if (ctx.user.role !== "admin") {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Only admins can view analytics",
-      });
-    }
-
-    return await getMonthlyCreditsUsage();
-  }),
-
-  /**
-   * Get top performing boutiques
-   */
-  getTopPerformingBoutiques: protectedProcedure
-    .input(
-      z.object({
-        limit: z.number().optional().default(10),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only admins can view top boutiques",
-        });
-      }
-
-      return await getTopBoutiques(input.limit);
-    }),
-
-  /**
-   * Check boutiques that need credit alerts
-   * Returns boutiques at 80%, 50%, 20%, and 10% credit usage thresholds
-   */
-  checkCreditAlerts: protectedProcedure.query(async ({ ctx }) => {
-    if (ctx.user.role !== "admin") {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Only admins can check credit alerts",
-      });
-    }
-
-    const db = await getDb();
-    if (!db) return { alerts80: [], alerts50: [], alerts20: [], alerts10: [] };
-
-    try {
-      
-      
-      // Get all boutiques with their credit status
-      const boutiquesWithCredits = await db
-        .select({
-          id: boutiques.id,
-          name: boutiques.name,
-          slug: boutiques.slug,
-          totalCredits: boutiqueCredits.totalCredits,
-          usedCredits: boutiqueCredits.usedCredits,
-          remainingCredits: boutiqueCredits.remainingCredits,
-        })
-        .from(boutiques)
-        .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
-        .where(eq(boutiques.status, "active"));
-
-      // Categorize boutiques by alert threshold
-      const alerts80: any[] = [];
-      const alerts50: any[] = [];
-      const alerts20: any[] = [];
-      const alerts10: any[] = [];
-
-      for (const boutique of boutiquesWithCredits) {
-        if (!boutique.totalCredits || boutique.totalCredits === 0) continue;
-        
-        const usagePercentage = (boutique.usedCredits || 0) / boutique.totalCredits * 100;
-        
-        if (usagePercentage >= 80) alerts80.push(boutique);
-        else if (usagePercentage >= 50) alerts50.push(boutique);
-        else if (usagePercentage >= 20) alerts20.push(boutique);
-        else if (usagePercentage >= 10) alerts10.push(boutique);
-      }
-
-      return { alerts80, alerts50, alerts20, alerts10 };
-    } catch (error) {
-      console.error('[Admin] Failed to check credit alerts:', error);
-      return { alerts80: [], alerts50: [], alerts20: [], alerts10: [] };
-    }
-  }),
-
-  /**
-   * Get credit alert status for a specific boutique
-   */
-  getBoutiqueAlertStatus: protectedProcedure
-    .input(z.object({ boutiqueId: z.number() }))
-    .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only admins can view boutique alert status",
-        });
-      }
-
-      const db = await getDb();
-      if (!db) return null;
-
       try {
-        
-        
-        const result = await db
+        const db = getDb();
+        const boutiquesData = await db
           .select({
             id: boutiques.id,
             name: boutiques.name,
-            totalCredits: boutiqueCredits.totalCredits,
-            usedCredits: boutiqueCredits.usedCredits,
-            remainingCredits: boutiqueCredits.remainingCredits,
+            status: boutiques.status,
+            createdAt: boutiques.createdAt,
+            totalCredits: sql`COALESCE(SUM(${boutiqueCredits.totalCredits}), 0)`,
+            usedCredits: sql`COALESCE(SUM(${boutiqueCredits.usedCredits}), 0)`,
+            remainingCredits: sql`COALESCE(SUM(${boutiqueCredits.remainingCredits}), 0)`,
           })
           .from(boutiques)
           .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
-          .where(eq(boutiques.id, input.boutiqueId))
-          .limit(1);
-
-        if (result.length === 0) return null;
-
-        const boutique = result[0];
-        const totalCredits = boutique.totalCredits || 0;
-        const usedCredits = boutique.usedCredits || 0;
-        const usagePercentage = totalCredits > 0 ? (usedCredits / totalCredits) * 100 : 0;
-
-        let alertLevel: "none" | "10" | "20" | "50" | "80" = "none";
-        if (usagePercentage >= 80) alertLevel = "80";
-        else if (usagePercentage >= 50) alertLevel = "50";
-        else if (usagePercentage >= 20) alertLevel = "20";
-        else if (usagePercentage >= 10) alertLevel = "10";
-
-        return {
-          ...boutique,
-          usagePercentage: Math.round(usagePercentage),
-          alertLevel,
-          daysUntilEmpty: usedCredits > 0 ? Math.ceil(totalCredits / (usedCredits / 30)) : null,
-        };
-      } catch (error) {
-        console.error('[Admin] Failed to get boutique alert status:', error);
-        return null;
-      }
-    }),
-
-  /**
-   * Send credit alert emails to boutiques at specified threshold
-   */
-  sendCreditAlertEmails: protectedProcedure
-    .input(
-      z.object({
-        alertLevel: z.enum(["80", "50", "20", "10"]),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only admins can send alert emails",
-        });
-      }
-
-      const db = await getDb();
-      if (!db) return { sent: 0, failed: 0, errors: [] };
-
-      try {
-        const { sendCreditAlertEmail } = await import("../email");
-        const { users } = await import("../../drizzle/schema");
-        
-        // Get boutiques at the specified alert level
-        const boutiquesWithCredits = await db
-          .select({
-            id: boutiques.id,
-            name: boutiques.name,
-            ownerId: boutiques.ownerId,
-            totalCredits: boutiqueCredits.totalCredits,
-            usedCredits: boutiqueCredits.usedCredits,
-            remainingCredits: boutiqueCredits.remainingCredits,
-          })
-          .from(boutiques)
-          .leftJoin(boutiqueCredits, eq(boutiques.id, boutiqueCredits.boutiqueId))
-          .where(eq(boutiques.status, "active"));
-
-        let sent = 0;
-        let failed = 0;
-        const errors: string[] = [];
-
-        for (const boutique of boutiquesWithCredits) {
-          if (!boutique.totalCredits || boutique.totalCredits === 0) continue;
-          
-          const usagePercentage = (boutique.usedCredits || 0) / boutique.totalCredits * 100;
-          const thresholds = { "80": 80, "50": 50, "20": 20, "10": 10 };
-          const threshold = thresholds[input.alertLevel];
-          
-          // Check if boutique matches the alert level
-          if (usagePercentage < threshold) continue;
-          if (usagePercentage >= (threshold === 80 ? 100 : threshold + 30)) continue;
-
-          // Get boutique owner info
-          const owner = await db
-            .select()
-            .from(users)
-            .where(eq(users.id, boutique.ownerId))
-            .limit(1);
-
-          if (owner.length === 0) {
-            errors.push(`Boutique ${boutique.name}: Owner not found`);
-            failed++;
-            continue;
-          }
-
-          const ownerEmail = owner[0].email;
-          if (!ownerEmail) {
-            errors.push(`Boutique ${boutique.name}: Owner email not found`);
-            failed++;
-            continue;
-          }
-
-          // Send email
-          const emailSent = await sendCreditAlertEmail(
-            boutique.ownerId,
-            owner[0].name || "Boutique Owner",
-            ownerEmail,
-            boutique.name,
-            Math.round(usagePercentage),
-            boutique.remainingCredits || 0,
-            boutique.totalCredits,
-            input.alertLevel as "10" | "20" | "50" | "80"
-          );
-
-          if (emailSent) {
-            sent++;
-          } else {
-            failed++;
-            errors.push(`Boutique ${boutique.name}: Email send failed`);
-          }
-        }
-
-        return { sent, failed, errors };
-      } catch (error) {
-        console.error('[Admin] Failed to send credit alert emails:', error);
-        return { sent: 0, failed: 0, errors: [(error as Error).message] };
-      }
-    }),
-
-  /**
-   * Get boutique performance report with usage analytics
-   */
-  getBoutiquePerformanceReport: protectedProcedure
-    .input(
-      z.object({
-        boutiqueId: z.number().int().positive(),
-        startDate: z.date(),
-        endDate: z.date(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only admins can view performance reports",
-        });
-      }
-
-      const db = await getDb();
-      if (!db) return null;
-
-      try {
-        const { boutiqueTransactions } = await import("../../drizzle/schema");
-        const { eq, and, gte, lte } = await import("drizzle-orm");
-
-        // Get boutique info
-        const boutique = await db
-          .select()
-          .from(boutiques)
-          .where(eq(boutiques.id, input.boutiqueId))
-          .limit(1);
-
-        if (boutique.length === 0) return null;
-
-        // Get transactions in date range
-        const transactions = await db
-          .select()
-          .from(boutiqueTransactions)
-          .where(
-            and(
-              eq(boutiqueTransactions.boutiqueId, input.boutiqueId),
-              gte(boutiqueTransactions.createdAt, input.startDate),
-              lte(boutiqueTransactions.createdAt, input.endDate)
-            )
-          );
-
-        // Calculate statistics
-        const stats = {
-          totalTryOns: transactions.filter((t) => t.type === "usage").length,
-          totalCreditsUsed: transactions
-            .filter((t) => t.type === "usage")
-            .reduce((sum, t) => sum + (t.amount || 0), 0),
-          totalCreditsAdded: transactions
-            .filter((t) => t.type === "purchase")
-            .reduce((sum, t) => sum + (t.amount || 0), 0),
-          totalRevenue: transactions
-            .filter((t) => t.type === "purchase")
-            .reduce((sum, t) => sum + parseFloat(t.price?.toString() || "0"), 0),
-          averageCreditsPerTryOn: 0,
-          transactionCount: transactions.length,
-        };
-
-        if (stats.totalTryOns > 0) {
-          stats.averageCreditsPerTryOn = Math.round(
-            stats.totalCreditsUsed / stats.totalTryOns
-          );
-        }
-
-        return {
-          boutique: boutique[0],
-          dateRange: {
-            start: input.startDate,
-            end: input.endDate,
-          },
-          statistics: stats,
-          transactions: transactions.map((t) => ({
-            id: t.id,
-            type: t.type,
-            amount: t.amount,
-            price: t.price,
-            currency: t.currency,
-            description: t.description,
-            status: t.status,
-            createdAt: t.createdAt,
-          })),
-        };
-      } catch (error) {
-        console.error("[Admin] Failed to get boutique performance report:", error);
-        return null;
-      }
-    }),
-
-  /**
-   * Get all boutiques performance summary for date range
-   */
-  getAllBoutiquesPerformanceSummary: protectedProcedure
-    .input(
-      z.object({
-        startDate: z.date(),
-        endDate: z.date(),
-        limit: z.number().int().positive().default(50),
-        offset: z.number().int().nonnegative().default(0),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only admins can view performance reports",
-        });
-      }
-
-      const db = await getDb();
-      if (!db) return { boutiques: [], total: 0 };
-
-      try {
-        const { boutiqueTransactions } = await import("../../drizzle/schema");
-        const { eq, and, gte, lte, sql } = await import("drizzle-orm");
-
-        // Get all active boutiques
-        const allBoutiques = await db
-          .select()
-          .from(boutiques)
-          .where(eq(boutiques.status, "active"))
+          .groupBy(boutiques.id)
           .limit(input.limit)
           .offset(input.offset);
 
-        const summaryData = await Promise.all(
-          allBoutiques.map(async (boutique) => {
-            const transactions = await db
-              .select()
-              .from(boutiqueTransactions)
-              .where(
-                and(
-                  eq(boutiqueTransactions.boutiqueId, boutique.id),
-                  gte(boutiqueTransactions.createdAt, input.startDate),
-                  lte(boutiqueTransactions.createdAt, input.endDate)
-                )
-              );
-
-            const tryOns = transactions.filter((t) => t.type === "usage").length;
-            const creditsUsed = transactions
-              .filter((t) => t.type === "usage")
-              .reduce((sum, t) => sum + (t.amount || 0), 0);
-            const revenue = transactions
-              .filter((t) => t.type === "purchase")
-              .reduce((sum, t) => sum + parseFloat(t.price?.toString() || "0"), 0);
-
-            return {
-              id: boutique.id,
-              name: boutique.name,
-              slug: boutique.slug,
-              totalTryOns: tryOns,
-              totalCreditsUsed: creditsUsed,
-              totalRevenue: revenue,
-              transactionCount: transactions.length,
-            };
-          })
-        );
-
-        // Get total count
-        const totalResult = await db
-          .select({ count: sql`COUNT(*)` })
-          .from(boutiques)
-          .where(eq(boutiques.status, "active"));
-
-        return {
-          boutiques: summaryData,
-          total: totalResult[0]?.count || 0,
-        };
+        return boutiquesData.map((b) => ({
+          id: b.id,
+          name: b.name,
+          status: b.status,
+          createdAt: b.createdAt,
+          totalCredits: Number(b.totalCredits) || 0,
+          usedCredits: Number(b.usedCredits) || 0,
+          remainingCredits: Number(b.remainingCredits) || 0,
+        }));
       } catch (error) {
-        console.error(
-          "[Admin] Failed to get boutiques performance summary:",
-          error
-        );
-        return { boutiques: [], total: 0 };
+        console.error("[Admin] Failed to get boutiques list:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch boutiques list",
+        });
       }
     }),
-});
 
+  /**
+   * Payout management sub-router
+   */
+  payouts: adminPayoutsRouter,
+});

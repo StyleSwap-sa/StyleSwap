@@ -241,7 +241,12 @@ export function initializeWebhookJobs() {
     try {
       await retryFailedWebhooks();
     } catch (error) {
-      console.error('[Webhook] Error in retry job:', error);
+      // Silently log database connection errors to prevent spam
+      if (error instanceof Error && error.message.includes('ECONNRESET')) {
+        console.debug('[Webhook] Database connection reset, will retry later');
+      } else {
+        console.error('[Webhook] Error in retry job:', error);
+      }
     }
   }, 5 * 60 * 1000); // 5 minutes
 
@@ -250,7 +255,12 @@ export function initializeWebhookJobs() {
     try {
       await dailyPaymentReconciliation();
     } catch (error) {
-      console.error('[Webhook] Error in reconciliation job:', error);
+      // Silently log database connection errors
+      if (error instanceof Error && error.message.includes('ECONNRESET')) {
+        console.debug('[Webhook] Database connection reset during reconciliation');
+      } else {
+        console.error('[Webhook] Error in reconciliation job:', error);
+      }
     }
   }, 2); // 2 AM
 

@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, TrendingUp, Users, Zap, DollarSign } from "lucide-react";
+import { AlertCircle, TrendingUp, Users, Zap, DollarSign, CreditCard } from "lucide-react";
+import { useLocation } from "wouter";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { CreditAlertsCard } from "@/components/CreditAlertsCard";
 import { AdvancedAnalyticsCharts } from "@/components/AdvancedAnalyticsCharts";
 import { SchedulerControls } from "@/components/SchedulerControls";
+import { ARAnalyticsPanel } from "@/components/ARAnalyticsPanel";
 
 export default function AdminDashboard() {
+  const [, setLocation] = useLocation();
   const [selectedBoutiqueId, setSelectedBoutiqueId] = useState<number | null>(null);
 
   // Fetch platform metrics
@@ -57,9 +60,18 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Platform Admin Dashboard</h1>
-          <p className="text-muted-foreground">Monitor your platform's credit usage, boutique subscriptions, and revenue metrics</p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-foreground mb-2">Platform Admin Dashboard</h1>
+            <p className="text-muted-foreground">Monitor your platform's credit usage, boutique subscriptions, and revenue metrics</p>
+          </div>
+          <Button
+            onClick={() => setLocation("/admin/credits")}
+            className="flex items-center gap-2 whitespace-nowrap"
+          >
+            <CreditCard className="w-4 h-4" />
+            Manage Credits
+          </Button>
         </div>
 
         {/* Credit Alert */}
@@ -314,6 +326,16 @@ export default function AdminDashboard() {
               </p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* AR Mode Analytics Section */}
+        <div className="mt-8">
+          <ARAnalyticsPanel
+            arUsageCount={0}
+            uploadUsageCount={0}
+            totalUsage={0}
+            arTrendData={[]}
+          />
         </div>
 
         {/* Scheduler Controls Section */}

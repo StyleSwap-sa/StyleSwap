@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { boutiques, auditLogs, users, boutiqueCredits, boutiqueSettings, boutiqueTransactions, boutiqueUsers, deletionLogs, emailNotifications, favorites, garments, products, transactions, tryOnResults, userCredits } from "./schema";
+import { boutiques, auditLogs, users, boutiqueCredits, boutiqueSettings, boutiqueTransactions, boutiqueUsers, deletionLogs, emailNotifications, favorites, garments, paymentReconciliation, transactions, products, productSizeVariants, tryOnResults, userCredits, webhookEvents, webhookAlerts } from "./schema";
 
 export const auditLogsRelations = relations(auditLogs, ({one}) => ({
 	boutique: one(boutiques, {
@@ -40,9 +40,11 @@ export const usersRelations = relations(users, ({many}) => ({
 	}),
 	emailNotifications: many(emailNotifications),
 	favorites: many(favorites),
+	paymentReconciliations: many(paymentReconciliation),
 	transactions: many(transactions),
 	tryOnResults: many(tryOnResults),
 	userCredits: many(userCredits),
+	webhookAlerts: many(webhookAlerts),
 }));
 
 export const boutiqueCreditsRelations = relations(boutiqueCredits, ({one}) => ({
@@ -121,19 +123,40 @@ export const garmentsRelations = relations(garments, ({many}) => ({
 	tryOnResults: many(tryOnResults),
 }));
 
+export const paymentReconciliationRelations = relations(paymentReconciliation, ({one, many}) => ({
+	user: one(users, {
+		fields: [paymentReconciliation.styleswapUserId],
+		references: [users.id]
+	}),
+	transaction: one(transactions, {
+		fields: [paymentReconciliation.styleswapTransactionId],
+		references: [transactions.id]
+	}),
+	webhookAlerts: many(webhookAlerts),
+}));
+
+export const transactionsRelations = relations(transactions, ({one, many}) => ({
+	paymentReconciliations: many(paymentReconciliation),
+	user: one(users, {
+		fields: [transactions.userId],
+		references: [users.id]
+	}),
+}));
+
+export const productSizeVariantsRelations = relations(productSizeVariants, ({one}) => ({
+	product: one(products, {
+		fields: [productSizeVariants.productId],
+		references: [products.id]
+	}),
+}));
+
 export const productsRelations = relations(products, ({one, many}) => ({
+	productSizeVariants: many(productSizeVariants),
 	boutique: one(boutiques, {
 		fields: [products.boutiqueId],
 		references: [boutiques.id]
 	}),
 	tryOnResults: many(tryOnResults),
-}));
-
-export const transactionsRelations = relations(transactions, ({one}) => ({
-	user: one(users, {
-		fields: [transactions.userId],
-		references: [users.id]
-	}),
 }));
 
 export const tryOnResultsRelations = relations(tryOnResults, ({one}) => ({
@@ -160,4 +183,23 @@ export const userCreditsRelations = relations(userCredits, ({one}) => ({
 		fields: [userCredits.userId],
 		references: [users.id]
 	}),
+}));
+
+export const webhookAlertsRelations = relations(webhookAlerts, ({one}) => ({
+	webhookEvent: one(webhookEvents, {
+		fields: [webhookAlerts.webhookEventId],
+		references: [webhookEvents.id]
+	}),
+	paymentReconciliation: one(paymentReconciliation, {
+		fields: [webhookAlerts.paymentReconciliationId],
+		references: [paymentReconciliation.id]
+	}),
+	user: one(users, {
+		fields: [webhookAlerts.resolvedBy],
+		references: [users.id]
+	}),
+}));
+
+export const webhookEventsRelations = relations(webhookEvents, ({many}) => ({
+	webhookAlerts: many(webhookAlerts),
 }));

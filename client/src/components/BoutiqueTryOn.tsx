@@ -38,6 +38,9 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
   const [error, setError] = useState<string>("");
   const [warning, setWarning] = useState<string>("");
   
+  // State for test mode
+  const [testMode, setTestMode] = useState(false);
+  
   // Refs
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
   const clothImageInputRef = useRef<HTMLInputElement>(null);
@@ -189,6 +192,7 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
         lowerClothImage: lowerClothBase64 || undefined,
         clothType,
         boutiqueId,
+        testMode,
       });
 
       setCurrentTaskId(response.taskId);
@@ -579,6 +583,35 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
                     />
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Test Mode Toggle */}
+          <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+            <CardHeader>
+              <CardTitle className="text-base">Test Mode</CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Generate try-ons without using credits
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Button
+                type="button"
+                onClick={() => setTestMode(!testMode)}
+                variant={testMode ? "default" : "outline"}
+                className="w-full"
+              >
+                <p className="font-semibold text-blue-900">{testMode ? "✓ Enabled" : "Disabled"}</p>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Test Mode Active Notice */}
+          {testMode && (
+            <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+              <CardContent className="pt-6">
+                <p className="text-green-900 font-semibold">✓ Test Mode Active - Credits will not be deducted</p>
               </CardContent>
             </Card>
           )}

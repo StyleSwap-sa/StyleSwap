@@ -1,40 +1,12 @@
 {
-  "version": "7",
-  "dialect": "mysql",
+  "version": "6",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1769163572647,
-      "tag": "0000_silky_living_tribunal",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1769168313991,
-      "tag": "0001_elite_ozymandias",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1769170134188,
-      "tag": "0002_flimsy_iron_fist",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1769593617206,
-      "tag": "0003_great_slayback",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1769593912195,
-      "tag": "0004_cultured_squadron_sinister",
+      "version": "7",
+      "when": 1773747291644,
+      "tag": "0000_orange_imperial_guard",
       "breakpoints": true
     }
   ]

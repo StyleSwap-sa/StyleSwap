@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
@@ -11,9 +12,11 @@ export function ContactForm() {
     company: '',
     phone: '',
     message: '',
-    businessType: 'boutique'
+    businessType: 'boutique',
+    inquiryType: 'general'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitInquiryMutation = trpc.contact.submitInquiry.useMutation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -27,26 +30,44 @@ export function ContactForm() {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.name || !formData.email || !formData.message) {
+    if (!formData.name || !formData.email || !formData.message || !formData.company || !formData.phone) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     setIsSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      toast.success('Thank you! We\'ll be in touch soon.');
-      setFormData({
-        name: '',
-        email: '',
-        company: '',
-        phone: '',
-        message: '',
-        businessType: 'boutique'
+    try {
+      const result = await submitInquiryMutation.mutateAsync({
+        name: formData.name,
+        email: formData.email,
+        company: formData.company,
+        phone: formData.phone,
+        message: formData.message,
+        businessType: formData.businessType as 'boutique' | 'fastfashion' | 'luxury' | 'ecommerce' | 'other',
+        inquiryType: formData.inquiryType as 'general' | 'enterprise' | 'integration' | 'support',
       });
+
+      if (result.success) {
+        toast.success(result.message);
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          phone: '',
+          message: '',
+          businessType: 'boutique',
+          inquiryType: 'general'
+        });
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error('Failed to submit inquiry. Please try again.');
+      console.error('Contact form error:', error);
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -150,20 +171,36 @@ export function ContactForm() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold mb-2">Business Type</label>
-                <select
-                  name="businessType"
-                  value={formData.businessType}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border border-border/30 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
-                >
-                  <option value="boutique">Fashion Boutique</option>
-                  <option value="fastfashion">Fast Fashion Retailer</option>
-                  <option value="luxury">Luxury Brand</option>
-                  <option value="ecommerce">E-commerce Store</option>
-                  <option value="other">Other</option>
-                </select>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold mb-2">Inquiry Type</label>
+                  <select
+                    name="inquiryType"
+                    value={formData.inquiryType}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-border/30 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                  >
+                    <option value="general">General Inquiry</option>
+                    <option value="enterprise">Enterprise Sales</option>
+                    <option value="integration">API Integration</option>
+                    <option value="support">Support</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold mb-2">Business Type</label>
+                  <select
+                    name="businessType"
+                    value={formData.businessType}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-lg border border-border/30 bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                  >
+                    <option value="boutique">Fashion Boutique</option>
+                    <option value="fastfashion">Fast Fashion Retailer</option>
+                    <option value="luxury">Luxury Brand</option>
+                    <option value="ecommerce">E-commerce Store</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
               </div>
 
               <div>

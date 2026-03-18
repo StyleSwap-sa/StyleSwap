@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ArrowRight,
@@ -12,8 +13,10 @@ import {
   Globe,
 } from "lucide-react";
 import { Link } from "wouter";
+import DemoVideoModal from "@/components/DemoVideoModal";
 
 export default function B2BLanding() {
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Navigation */}
@@ -39,8 +42,14 @@ export default function B2BLanding() {
                 {item}
               </a>
             ))}
+            <Link href="/api-docs" className="hover:text-primary transition-colors uppercase tracking-wide">
+              API Docs
+            </Link>
+            <Link href="/developer" className="hover:text-primary transition-colors uppercase tracking-wide">
+              Developer Portal
+            </Link>
           </div>
-          <Link href="/b2b-signup">
+          <Link href="/b2b/signup">
             <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 font-bold cursor-pointer">
               Get Started
             </Button>
@@ -67,12 +76,13 @@ export default function B2BLanding() {
               StyleSwap's AI-powered try-on technology.
             </p>
             <div className="flex gap-4">
-              <Link href="/b2b-signup">
+              <Link href="/b2b/signup">
                 <Button className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-8 text-lg cursor-pointer">
-                  Start Free Trial <ArrowRight className="ml-2" />
+                  Get Started <ArrowRight className="ml-2" />
                 </Button>
               </Link>
               <Button
+                onClick={() => setIsDemoOpen(true)}
                 variant="outline"
                 className="premium-button h-14 px-8 text-lg cursor-pointer"
               >
@@ -231,16 +241,8 @@ export default function B2BLanding() {
       {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-secondary/5 border-y border-secondary/20">
         <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-6xl font-bold mb-6">
-              SIMPLE, TRANSPARENT PRICING
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Pay only for what you use. Volume discounts available.
-            </p>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
             {[
               {
                 credits: 100,
@@ -261,6 +263,12 @@ export default function B2BLanding() {
                 perCredit: "R1.25",
                 color: "from-orange-500/20 to-orange-600/20",
               },
+              {
+                name: "Enterprise Retail Pro",
+                price: "Custom",
+                color: "from-orange-600/30 to-orange-700/30",
+                enterprise: true,
+              },
             ].map((tier, i) => (
               <Card
                 key={i}
@@ -276,36 +284,83 @@ export default function B2BLanding() {
                       MOST POPULAR
                     </div>
                   )}
+                  {tier.enterprise && (
+                    <div className="text-xs font-bold bg-orange-500 text-white px-3 py-1 rounded-full w-fit mb-4">
+                      ENTERPRISE
+                    </div>
+                  )}
                   <CardTitle className="text-3xl font-bold">
-                    {tier.credits.toLocaleString()} Credits
+                    {tier.enterprise ? tier.name : tier.credits.toLocaleString() + " Credits"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
                     <div className="text-4xl font-bold mb-2">{tier.price}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {tier.perCredit} per try-on
-                    </div>
+                    {!tier.enterprise && (
+                      <div className="text-sm text-muted-foreground">
+                        {tier.perCredit} per try-on
+                      </div>
+                    )}
+                    {tier.enterprise && (
+                      <div className="text-sm text-muted-foreground">
+                        Contact for pricing
+                      </div>
+                    )}
                   </div>
-                  <ul className="space-y-3">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-5 h-5 text-primary" />
-                      <span>Valid for 30 days</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-5 h-5 text-primary" />
-                      <span>Full analytics</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-5 h-5 text-primary" />
-                      <span>24/7 support</span>
-                    </li>
-                  </ul>
-                  <Link href="/b2b-signup">
-                    <Button className="w-full cursor-pointer">
-                      Get Started
-                    </Button>
-                  </Link>
+                  {!tier.enterprise && (
+                    <ul className="space-y-3">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Valid for 30 days</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Full analytics</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>24/7 support</span>
+                      </li>
+                    </ul>
+                  )}
+                  {tier.enterprise && (
+                    <ul className="space-y-3">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Full API integration</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>White-label option</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Dedicated account manager</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Custom SLA & support</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-primary" />
+                        <span>Priority feature requests</span>
+                      </li>
+                    </ul>
+                  )}
+                  {!tier.enterprise && (
+                    <Link href="/b2b/signup">
+                      <Button className="w-full cursor-pointer">
+                        Get Started
+                      </Button>
+                    </Link>
+                  )}
+                  {tier.enterprise && (
+                    <a href="#contact-sales">
+                      <Button className="w-full cursor-pointer bg-orange-600 hover:bg-orange-700">
+                        Contact Sales
+                      </Button>
+                    </a>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -315,9 +370,11 @@ export default function B2BLanding() {
             <p className="text-muted-foreground mb-4">
               Need more credits? Contact our sales team for custom packages.
             </p>
-            <Button variant="outline" className="cursor-pointer">
-              Contact Sales
-            </Button>
+            <a href="mailto:sales@styleswap.co.za">
+              <Button variant="outline" className="cursor-pointer">
+                Contact Sales
+              </Button>
+            </a>
           </div>
         </div>
       </section>
@@ -388,19 +445,13 @@ export default function B2BLanding() {
             conversions and reduce returns.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link href="/b2b-signup">
+            <Link href="/b2b/signup">
               <Button
                 className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-14 px-8 text-lg font-bold cursor-pointer"
               >
-                Start Free Trial <ArrowRight className="ml-2" />
+                Get Started <ArrowRight className="ml-2" />
               </Button>
             </Link>
-            <Button
-              variant="outline"
-              className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 h-14 px-8 text-lg font-bold cursor-pointer"
-            >
-              Schedule Demo
-            </Button>
           </div>
         </div>
       </section>
@@ -480,9 +531,9 @@ export default function B2BLanding() {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-primary transition">
-                    Documentation
-                  </a>
+                  <Link href="/api-docs" className="hover:text-primary transition">
+                    API Documentation
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -543,6 +594,13 @@ export default function B2BLanding() {
           </div>
         </div>
       </footer>
+
+      {/* Demo Video Modal */}
+      <DemoVideoModal
+        isOpen={isDemoOpen}
+        onClose={() => setIsDemoOpen(false)}
+        defaultVideoId="boutique-demo"
+      />
     </div>
   );
 }

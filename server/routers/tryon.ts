@@ -2,6 +2,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getFitroomClient } from "../_core/fitroom";
 import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
+import { enforceSubscriptionCheck } from "../middleware/subscriptionValidation";
 import { TRPCError } from "@trpc/server";
 import { storagePut, storageGet } from "../storage";
 import fs from "fs";
@@ -33,6 +34,7 @@ export const tryonRouter = router({
         modelImageBase64: z.string().describe("Base64 encoded customer body photo"),
         clothImageBase64: z.string().describe("Base64 encoded garment image"),
         clothType: z.enum(["upper", "lower", "combo", "full"]).default("upper"), // "upper" for tops, "lower" for bottoms, "combo" for top+bottom, "full" for dresses/jumpsuits
+        selectedSize: z.enum(["XS", "S", "M", "L", "XL", "XXL", "XXXL"]).optional().default("M"),
         hdMode: z.boolean().optional().default(false),
         testMode: z.boolean().optional().default(false).describe("Skip credit deduction for testing"),
       })
@@ -40,13 +42,21 @@ export const tryonRouter = router({
     .mutation(async ({ ctx, input }) => {
       let tempDir: string | null = null;
       try {
+        // Check if user's boutique has an active paid subscription
+        if (!input.testMode) {
+          await enforceSubscriptionCheck(ctx.user.id);
+        }
+
+        // Calculate credits needed based on HD mode
+        const creditsNeeded = input.hdMode ? 2 : 1;
+        
         // Skip credit check in test mode
         if (!input.testMode) {
           const credits = await getUserCredits(ctx.user.id);
-          if (credits.remainingCredits < 1) {
+          if (credits.remainingCredits < creditsNeeded) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: "Insufficient credits. Please purchase more credits to continue.",
+              message: `Insufficient credits. You need ${creditsNeeded} credits for ${input.hdMode ? "HD" : "standard"} try-on, but only have ${credits.remainingCredits} remaining.`,
             });
           }
         }
@@ -98,7 +108,7 @@ export const tryonRouter = router({
           modelImageBase64: input.modelImageBase64,
           clothImageBase64: input.clothImageBase64,
           clothType: input.clothType as "upper" | "lower" | "combo" | "full",
-          hdMode: input.hdMode || true,
+          hdMode: input.hdMode || false,
         });
 
         // Clean up temp files
@@ -121,11 +131,12 @@ export const tryonRouter = router({
           });
         }
 
-        // Deduct credit after successful task creation (skip in test mode)
+        // Deduct credits after successful task creation (skip in test mode)
         if (!input.testMode) {
-          await deductCredits(ctx.user.id, 1);
+          await deductCredits(ctx.user.id, creditsNeeded);
+          console.log(`[Try-On] Deducted ${creditsNeeded} credit(s) for ${input.hdMode ? "HD" : "standard"} try-on`);
         } else {
-          console.log("[Try-On] Test mode - skipping credit deduction");
+          console.log(`[Try-On] Test mode - skipping ${creditsNeeded} credit deduction`);
         }
 
         console.log(`[Try-On] Task created successfully: ${taskResult.taskId}`);
@@ -265,3 +276,26 @@ export const tryonRouter = router({
       }
     }),
 });
+
+/**
+ * Size scaling factors for visual scaling based on selected size
+ * M (Medium) is the baseline at 1.0
+ * Scaling is relative: XS is 0.85 (15% smaller), XXXL is 1.25 (25% larger)
+ */
+export const SIZE_SCALING_FACTORS: Record<string, number> = {
+  XS: 0.85,
+  S: 0.92,
+  M: 1.0,
+  L: 1.08,
+  XL: 1.15,
+  XXL: 1.22,
+  XXXL: 1.25,
+};
+
+/**
+ * Calculate size scaling factor for a given size
+ * Returns decimal value for visual scaling (e.g., 0.85 for XS, 1.25 for XXXL)
+ */
+export function calculateSizeScalingFactor(size: string): number {
+  return SIZE_SCALING_FACTORS[size] || 1.0;
+}
