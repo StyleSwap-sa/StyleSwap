@@ -23,7 +23,7 @@ describe("Referrals Router", () => {
         name: "Test Referrer",
         email: `test-referral-${Date.now()}@test.com`,
         loginMethod: "oauth",
-        role: "user",
+        user_role: "user",
       })
       .returning();
 
@@ -135,7 +135,7 @@ describe("Referrals Router", () => {
         name: "Referred User",
         email: `referred-${Date.now()}@test.com`,
         loginMethod: "oauth",
-        role: "user",
+        user_role: "user",
       })
       .returning();
 
