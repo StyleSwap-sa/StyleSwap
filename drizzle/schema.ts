@@ -376,12 +376,13 @@ export const transactions = pgTable("transactions", {
 	userId: integer().references(() => users.id),
 	amount: decimal({ precision: 10, scale: 2 }),
 	status: varchar({ length: 50 }),
+	reason: varchar({ length: 255 }),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),
 });
 
-	export const tryOnUserMonthlyUsage = pgTable("userMonthlyUsage", {
+export const tryOnUserMonthlyUsage = pgTable("userMonthlyUsage", {
 		id: serial().primaryKey().notNull(),
 		userId: integer().references(() => users.id),
 	month: date(),
