@@ -5,8 +5,6 @@ import { getDb } from "../db";
 import {
   outfitVotings,
   outfitVotes,
-  transactions,
-  userCredits,
 } from "../../drizzle/schema";
 import { eq, and, desc, gte, count } from "drizzle-orm";
 
@@ -206,7 +204,7 @@ export const outfitPollsRouter = router({
 
   /**
    * Track poll share to WhatsApp
-   * Award bonus credits for sharing
+   * Simply tracks the share without awarding credits
    */
   trackPollShare: protectedProcedure
     .input(
@@ -216,41 +214,11 @@ export const outfitPollsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const db = getDb();
-      const userId = ctx.user.id;
-      const bonusCredits = 0.5;
-
       try {
-        // Award bonus credits for sharing
-        await db.insert(transactions).values({
-          userId,
-          amount: bonusCredits.toString(),
-          status: "completed",
-          reason: `Poll share bonus on ${input.platform}`,
-        });
-
-        // Update user credits
-        const userCreditsRecord = await db
-          .select()
-          .from(userCredits)
-          .where(eq(userCredits.userId, userId))
-          .limit(1);
-
-        if (userCreditsRecord.length > 0) {
-          const current = userCreditsRecord[0];
-          await db
-            .update(userCredits)
-            .set({
-              totalCredits: current.totalCredits + bonusCredits,
-              remainingCredits: current.remainingCredits + bonusCredits,
-            })
-            .where(eq(userCredits.userId, userId));
-        }
-
+        // Just track the share event - no credits awarded
         return {
           success: true,
-          message: `Share tracked! You earned ${bonusCredits} bonus credits`,
-          bonusCredits,
+          message: `Poll shared on ${input.platform}!`,
         };
       } catch (error) {
         console.error("Error tracking share:", error);
