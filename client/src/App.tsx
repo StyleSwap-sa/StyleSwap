@@ -48,6 +48,7 @@ const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
 const OwnerBoutiqueDashboard = lazy(() => import("./pages/OwnerBoutiqueDashboard"));
+const Polls = lazy(() => import("./pages/Polls"));
 const MyOrders = lazy(() => import("./pages/MyOrders"));
 const BoutiqueOrderDashboard = lazy(() => import("./pages/BoutiqueOrderDashboard"));
 const OrderConfirmation = lazy(() => import("./pages/OrderConfirmation"));
@@ -162,6 +163,8 @@ export default function App() {
               <Route path="/buy-credits" component={BuyCredits} />
               <Route path="/about" component={About} />
               <Route path="/blog" component={Blog} />
+              <Route path="/polls" component={Polls} />
+              <Route path="/polls/:pollId" component={Polls} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>
