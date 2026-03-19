@@ -3066,3 +3066,13 @@ This approach:
 - [ ] Integrate enterprise tier into pricing UI
 - [ ] Test on preview environment
 - [ ] Deploy to Render production
+
+
+## Phase XX: Coupon Code UI Implementation
+- [x] Create CouponCodeInput component with validation
+- [x] Add coupon input to Dashboard
+- [x] Add coupon input to Pricing page
+- [x] Test coupon redemption flow
+- [x] Verify credits are added after redemption
+- [x] Test WITS100 coupon code
+- [x] Create unit tests for coupon validation (13 tests passing)

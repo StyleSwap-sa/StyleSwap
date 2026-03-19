@@ -9,6 +9,8 @@ import { MobileNavMenu } from "@/components/MobileNavMenu";
 import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
 import { LowCreditAlert } from "@/components/LowCreditAlert";
 import { Footer } from "@/components/Footer";
+import { CouponCodeInput } from "@/components/CouponCodeInput";
+import { trpc } from "@/lib/trpc";
 
 
 type DashboardTab = "overview" | "history";
@@ -247,6 +249,9 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Coupon Code Input */}
+              <CouponCodeInput onCouponApplied={() => refetchCredits()} />
 
               {/* Quick Stats */}
               <Card className="premium-card">
