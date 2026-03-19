@@ -83,11 +83,11 @@ export default function Home() {
   ];
 
   // For admin users, add a link to the customer dashboard for testing
-  const adminTestItems = (user?.user_role === 'admin' || user?.user_type === 'admin') ? [
+  const adminTestItems = (user?.role === 'admin' || user?.user_type === 'admin') ? [
     { label: 'Try Customer Dashboard', path: '/dashboard' },
   ] : [];
 
-  const isAdmin = user?.user_role === 'admin' || user?.user_type === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.user_type === 'admin';
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
