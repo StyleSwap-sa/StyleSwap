@@ -140,7 +140,11 @@ export function CouponCodeInput({ onCouponApplied }: CouponCodeInputProps) {
           <AlertCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
           <div className="text-xs text-muted-foreground">
             <p className="font-medium text-foreground mb-1">Available Codes:</p>
-            <p><strong>WITS100</strong> - Get 2 bonus credits (one-time use)</p>
+            <p><strong>WITS100</strong> - Get 2 bonus credits</p>
+            <p><strong>INVITE2GET5</strong> - Invite 2 friends, get 5 credits</p>
+            <p><strong>ME2</strong> - Get 2 credits when invited</p>
+            <p><strong>STYLECHAT2</strong> - Get 2 credits via WhatsApp</p>
+            <p><strong>STYLEVIP30</strong> - VIP influencers: 30 credits</p>
           </div>
         </div>
       </CardContent>

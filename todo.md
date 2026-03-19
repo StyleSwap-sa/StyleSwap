@@ -3076,3 +3076,11 @@ This approach:
 - [x] Verify credits are added after redemption
 - [x] Test WITS100 coupon code
 - [x] Create unit tests for coupon validation (13 tests passing)
+
+
+## Promotional Coupon Codes (NEW)
+- [x] Add INVITE2GET5 coupon (50 max uses, 5 credits per redemption)
+- [x] Add ME2 coupon (100 max uses, 2 credits per redemption)
+- [x] Add STYLECHAT2 coupon (100 max uses, 2 credits per redemption)
+- [x] Add STYLEVIP30 coupon (15 max uses, 30 credits per redemption)
+- [x] Verify all coupons display on dashboard
