@@ -1,8 +1,7 @@
-import { trpc } from "@/lib/trpc";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Zap, History, Shirt, ShoppingBag } from "lucide-react";
-import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { MobileNavMenu } from "@/components/MobileNavMenu";
