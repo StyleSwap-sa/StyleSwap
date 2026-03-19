@@ -1,0 +1,130 @@
+{
+  "query": "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = 'users' ORDER BY ordinal_position",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2BiW6Pa6WEn7uXU.root --database D76VHaJuXXxVHZHmea7vdc --execute SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = 'users' ORDER BY ordinal_position",
+  "rows": [
+    {
+      "column_name": "id",
+      "data_type": "int",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "id",
+      "data_type": "int",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "openId",
+      "data_type": "varchar",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "openId",
+      "data_type": "varchar",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "name",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "email",
+      "data_type": "varchar",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "email",
+      "data_type": "varchar",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "loginMethod",
+      "data_type": "varchar",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "loginMethod",
+      "data_type": "varchar",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "role",
+      "data_type": "enum",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "role",
+      "data_type": "enum",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "createdAt",
+      "data_type": "timestamp",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "createdAt",
+      "data_type": "timestamp",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "updatedAt",
+      "data_type": "timestamp",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "updatedAt",
+      "data_type": "timestamp",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "lastSignedIn",
+      "data_type": "timestamp",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "lastSignedIn",
+      "data_type": "timestamp",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "phone",
+      "data_type": "varchar",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "userType",
+      "data_type": "enum",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "currentBoutiqueId",
+      "data_type": "int",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "freeTrialUsed",
+      "data_type": "int",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "freeTrialUsedAt",
+      "data_type": "timestamp",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "freeTrialExpiresAt",
+      "data_type": "timestamp",
+      "is_nullable": "YES"
+    }
+  ],
+  "messages": [],
+  "stdout": "column_name\tdata_type\tis_nullable\nid\tint\tNO\nid\tint\tNO\nopenId\tvarchar\tNO\nopenId\tvarchar\tNO\nname\ttext\tYES\nname\ttext\tYES\nemail\tvarchar\tYES\nemail\tvarchar\tYES\nloginMethod\tvarchar\tYES\nloginMethod\tvarchar\tYES\nrole\tenum\tNO\nrole\tenum\tNO\ncreatedAt\ttimestamp\tNO\ncreatedAt\ttimestamp\tNO\nupdatedAt\ttimestamp\tNO\nupdatedAt\ttimestamp\tNO\nlastSignedIn\ttimestamp\tNO\nlastSignedIn\ttimestamp\tNO\nphone\tvarchar\tYES\nuserType\tenum\tNO\ncurrentBoutiqueId\tint\tYES\nfreeTrialUsed\tint\tNO\nfreeTrialUsedAt\ttimestamp\tYES\nfreeTrialExpiresAt\ttimestamp\tYES\n",
+  "stderr": "",
+  "execution_time_ms": 2377
+}
