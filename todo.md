@@ -3093,3 +3093,18 @@ This approach:
 - [x] Add referral status dashboard to customer profile (integrated into Dashboard)
 - [ ] Test referral flow end-to-end (pending after schema fixes)
 - [ ] Verify automatic credit allocation when referral conditions are met (pending after schema fixes)
+
+
+## Phase 50: Critical Schema & TypeScript Fixes (IN PROGRESS)
+- [x] Fixed userCredits table schema: changed from single 'credits' field to three fields (totalCredits, usedCredits, remainingCredits)
+- [x] Fixed transactions table schema: made userId and amount NOT NULL, added reason field
+- [x] Fixed db.credits.ts: removed InsertTransaction import, fixed Date type issues with sql`CURRENT_TIMESTAMP`
+- [x] Fixed db.credits.ts: changed userType to user_type to match actual schema
+- [ ] Fix yoko-payment.ts: update transaction inserts to use new schema (remove type, description, fitRoomOrderId, currency fields)
+- [ ] Fix admin-credits.ts: update transaction inserts to use new schema
+- [ ] Fix invite-campaign.ts: update transaction inserts to use new schema
+- [ ] Fix webhooks/yoco.ts: update transaction inserts to use new schema (3 locations)
+- [ ] Run pnpm db:push to apply schema migrations (blocked by SSL/TLS database connection)
+- [ ] Verify all TypeScript errors are resolved
+- [ ] Run all tests to ensure nothing is broken
+- [ ] Test coupon codes, referral system, and anti-abuse features on live site

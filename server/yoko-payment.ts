@@ -1,7 +1,7 @@
 import { ENV } from "./_core/env";
 import { getDb } from "./db";
 import { users, userCredits, transactions } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export interface PaymentPackage {
   id: string;
@@ -260,7 +260,6 @@ export async function handlePaymentSuccess(
         totalCredits: credits,
         usedCredits: 0,
         remainingCredits: credits,
-        expiresAt: expiresAtString,
       });
     } else {
       // Update existing credit record
@@ -273,8 +272,7 @@ export async function handlePaymentSuccess(
         .set({
           totalCredits: newTotal,
           remainingCredits: newRemaining,
-          expiresAt: expiresAtString,
-          updatedAt: new Date().toISOString(),
+          updatedAt: sql`CURRENT_TIMESTAMP`,
         })
         .where(eq(userCredits.userId, userId));
     }
@@ -282,13 +280,9 @@ export async function handlePaymentSuccess(
     // Record transaction
     await db.insert(transactions).values({
       userId,
-      type: "purchase",
-      amount: credits,
-      description: `Purchased ${credits} try-on credits`,
-      fitRoomOrderId: paymentIntentId,
-      createdAt: new Date().toISOString(),
+      amount: credits.toString(),
       status: "completed",
-      currency: "ZAR",
+      reason: `Purchased ${credits} try-on credits via Yoco payment (Order: ${paymentIntentId})`,
     });
 
     console.log(

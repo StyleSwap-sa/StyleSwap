@@ -189,19 +189,21 @@ export const products = pgTable(
 );
 
 // User Credits Table
-export const userCredits = pgTable(
-	"userCredits",
-	{
-		id: serial().primaryKey().notNull(),
+	export const userCredits = pgTable(
+		"userCredits",
+		{
+			id: serial().primaryKey().notNull(),
 			userId: integer().notNull().references(() => users.id),
-			credits: decimal({ precision: 10, scale: 2 }).default("0").notNull(),
+			totalCredits: integer().default(0).notNull(),
+			usedCredits: integer().default(0).notNull(),
+			remainingCredits: integer().default(0).notNull(),
 			createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
-		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
-	},
-	(table) => [index("idx_user_credits_user").on(table.userId)]
-);
+			updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
+		},
+		(table) => [index("idx_user_credits_user").on(table.userId)]
+	);
 
 // Try-On Results Table
 export const tryOnResults = pgTable(
@@ -373,9 +375,9 @@ export const paymentReconciliation = pgTable("paymentReconciliation", {
 
 export const transactions = pgTable("transactions", {
 	id: serial().primaryKey().notNull(),
-	userId: integer().references(() => users.id),
-	amount: decimal({ precision: 10, scale: 2 }),
-	status: varchar({ length: 50 }),
+	userId: integer().notNull().references(() => users.id),
+	amount: decimal({ precision: 10, scale: 2 }).notNull(),
+	status: varchar({ length: 50 }).notNull(),
 	reason: varchar({ length: 255 }),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)

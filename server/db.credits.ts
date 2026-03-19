@@ -1,6 +1,6 @@
-import { eq, and, like, or } from "drizzle-orm";
+import { eq, and, like, or, sql } from "drizzle-orm";
 import { getDb } from "./db";
-import { userCredits, transactions, InsertTransaction } from "../drizzle/schema";
+import { userCredits, transactions } from "../drizzle/schema";
 
 /**
  * Get or create user credits record
@@ -63,20 +63,16 @@ export async function addCredits(
     .set({
       totalCredits: newTotal,
       remainingCredits: newRemaining,
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(userCredits.userId, userId));
 
   // Log transaction
   await db.insert(transactions).values({
     userId,
-    type: "purchase",
-    amount,
-    price,
-    currency: "ZAR",
-    fitRoomOrderId,
-    description: `Purchased ${amount} try-on credits`,
+    amount: amount.toString(),
     status: "completed",
+    reason: `Purchased ${amount} try-on credits at ${price} ZAR`,
   });
 
   return { totalCredits: newTotal, remainingCredits: newRemaining };
@@ -104,18 +100,16 @@ export async function deductCredits(userId: number, amount: number = 1) {
     .set({
       usedCredits: newUsed,
       remainingCredits: newRemaining,
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(userCredits.userId, userId));
 
   // Log transaction
   await db.insert(transactions).values({
     userId,
-    type: "usage",
-    amount,
-    currency: "ZAR",
-    description: `Used ${amount} try-on credit(s)`,
+    amount: amount.toString(),
     status: "completed",
+    reason: `Used ${amount} try-on credit(s)`,
   });
 
   return { remainingCredits: newRemaining, usedCredits: newUsed };
@@ -139,18 +133,16 @@ export async function refundCredits(userId: number, amount: number = 1) {
     .set({
       usedCredits: newUsed,
       remainingCredits: newRemaining,
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(userCredits.userId, userId));
 
   // Log transaction
   await db.insert(transactions).values({
     userId,
-    type: "refund",
-    amount,
-    currency: "ZAR",
-    description: `Refunded ${amount} try-on credit(s) due to generation failure`,
+    amount: amount.toString(),
     status: "completed",
+    reason: `Refunded ${amount} try-on credit(s) due to generation failure`,
   });
 
   return { remainingCredits: newRemaining, usedCredits: newUsed };
@@ -193,18 +185,16 @@ export async function addCreditsAdmin(
     .set({
       totalCredits: newTotal,
       remainingCredits: newRemaining,
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(userCredits.userId, userId));
 
   // Log transaction with admin note
   await db.insert(transactions).values({
     userId,
-    type: "adjustment",
-    amount: creditsToAdd,
-    currency: "ZAR",
-    description: `Admin adjustment: ${reason}`,
+    amount: creditsToAdd.toString(),
     status: "completed",
+    reason: `Admin adjustment: ${reason}`,
   });
 
   return { totalCredits: newTotal, remainingCredits: newRemaining };
@@ -225,7 +215,7 @@ export async function searchUsersForAdmin(query: string, limit: number = 20) {
       id: usersTable.id,
       name: usersTable.name,
       email: usersTable.email,
-      userType: usersTable.userType,
+      userType: usersTable.user_type,
       createdAt: usersTable.createdAt,
     })
     .from(usersTable)
@@ -282,18 +272,16 @@ export async function deductCreditsAdmin(
     .set({
       usedCredits: newUsed,
       remainingCredits: newRemaining,
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(userCredits.userId, userId));
 
   // Log transaction
   await db.insert(transactions).values({
     userId,
-    type: "adjustment",
-    amount: -creditsToDeduct,
-    currency: "ZAR",
-    description: `Admin deduction: ${reason}`,
+    amount: (-creditsToDeduct).toString(),
     status: "completed",
+    reason: `Admin deduction: ${reason}`,
   });
 
   return { remainingCredits: newRemaining, usedCredits: newUsed };

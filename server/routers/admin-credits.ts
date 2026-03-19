@@ -478,11 +478,9 @@ export const adminCreditsRouter = router({
         // Log transaction
         await db.insert(transactions).values({
           userId: input.userId,
-          type: "expiry_extension",
-          amount: 0,
-          description: `Credit expiry extended to ${input.newExpiryDate.toLocaleDateString()}. Reason: ${input.reason}`,
-          adminId: ctx.user.id,
-          createdAt: new Date().toISOString(),
+          amount: "0",
+          status: "completed",
+          reason: `Credit expiry extended by admin. Reason: ${input.reason}`,
         });
 
         return { success: true };

@@ -162,13 +162,9 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"], external
     // Record transaction
     await db.insert(transactions).values({
       userId,
-      type: "purchase",
-      amount: credits,
-      price: (data.amount / 100).toString(),
-      currency: (data.currency || "ZAR").toUpperCase(),
-      description: `Purchased ${credits} try-on credits`,
-      fitRoomOrderId: data.id,
+      amount: credits.toString(),
       status: "completed",
+      reason: `Purchased ${credits} try-on credits via Yoco payment (Order: ${data.id})`,
     });
 
     // Send confirmation email
@@ -298,13 +294,9 @@ async function handlePaymentFailed(data: YokoWebhookPayload["data"]) {
     if (userId) {
       await db.insert(transactions).values({
         userId,
-        type: "purchase",
-        amount: data.metadata.credits,
-        price: (data.amount / 100).toString(),
-        currency: (data.currency || "ZAR").toUpperCase(),
-        description: `Failed purchase attempt for ${data.metadata.credits} credits`,
-        fitRoomOrderId: data.id,
+        amount: data.metadata.credits.toString(),
         status: "failed",
+        reason: `Failed purchase attempt for ${data.metadata.credits} credits (Order: ${data.id})`,
       });
     }
 
@@ -332,13 +324,9 @@ async function handlePaymentCanceled(data: YokoWebhookPayload["data"]) {
     if (userId) {
       await db.insert(transactions).values({
         userId,
-        type: "purchase",
-        amount: data.metadata.credits,
-        price: (data.amount / 100).toString(),
-        currency: (data.currency || "ZAR").toUpperCase(),
-        description: `Canceled purchase for ${data.metadata.credits} credits`,
-        fitRoomOrderId: data.id,
+        amount: data.metadata.credits.toString(),
         status: "failed",
+        reason: `Canceled purchase for ${data.metadata.credits} credits (Order: ${data.id})`,
       });
     }
 
@@ -395,13 +383,9 @@ export async function handleOrderPaymentSucceeded(data: YokoWebhookPayload["data
     // 3. Record transaction
     await db.insert(transactions).values({
       userId,
-      type: "order_payment",
-      amount: 1, // Placeholder
-      price: (data.amount / 100).toString(),
-      currency: (data.currency || "ZAR").toUpperCase(),
-      description: `Order payment for ${orderNumber}`,
-      fitRoomOrderId: data.id,
+      amount: "1",
       status: "completed",
+      reason: `Order payment for ${orderNumber} (Order: ${data.id})`,
     });
 
     // 4. Process immediate payout to boutique (Phase 3)
