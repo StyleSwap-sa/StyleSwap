@@ -50,7 +50,7 @@ export const boutiques = pgTable(
 		slug: varchar({ length: 255 }).unique().notNull(),
 		description: text(),
 		logo: varchar({ length: 500 }),
-		ownerId: serial().notNull().references(() => users.id),
+			ownerId: integer().notNull().references(() => users.id),
 		website: varchar({ length: 500 }),
 		instagram: varchar({ length: 255 }),
 		tiktok: varchar({ length: 255 }),
@@ -72,8 +72,8 @@ export const boutiqueCredits = pgTable(
 	"boutiqueCredits",
 	{
 		id: serial().primaryKey().notNull(),
-		boutiqueId: serial().notNull().references(() => boutiques.id),
-		credits: decimal({ precision: 10, scale: 2 }).default("0").notNull(),
+			boutiqueId: integer().notNull().references(() => boutiques.id),
+			credits: decimal({ precision: 10, scale: 2 }).default("0").notNull(),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
@@ -87,8 +87,8 @@ export const boutiqueSettings = pgTable(
 	"boutiqueSettings",
 	{
 		id: serial().primaryKey().notNull(),
-		boutiqueId: serial().notNull().references(() => boutiques.id),
-		setting_key: varchar({ length: 255 }).notNull(),
+			boutiqueId: integer().notNull().references(() => boutiques.id),
+			setting_key: varchar({ length: 255 }).notNull(),
 		setting_value: text().notNull(),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
@@ -106,8 +106,8 @@ export const boutiqueSubscriptions = pgTable(
 	"boutiqueSubscriptions",
 	{
 		id: serial().primaryKey().notNull(),
-		boutiqueId: serial().notNull().references(() => boutiques.id),
-		subscription_type: varchar({ length: 50 }).notNull(),
+			boutiqueId: integer().notNull().references(() => boutiques.id),
+			subscription_type: varchar({ length: 50 }).notNull(),
 		status: varchar({ length: 50 }).default("active").notNull(),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
@@ -122,8 +122,8 @@ export const boutiqueTransactions = pgTable(
 	"boutiqueTransactions",
 	{
 		id: serial().primaryKey().notNull(),
-		boutiqueId: serial().notNull().references(() => boutiques.id),
-		transaction_type: varchar({ length: 50 }).notNull(),
+			boutiqueId: integer().notNull().references(() => boutiques.id),
+			transaction_type: varchar({ length: 50 }).notNull(),
 		amount: decimal({ precision: 10, scale: 2 }).notNull(),
 		status: varchar({ length: 50 }).default("pending").notNull(),
 		createdAt: timestamp({ mode: "string" })
@@ -139,8 +139,8 @@ export const boutiqueUsers = pgTable(
 	"boutiqueUsers",
 	{
 		id: serial().primaryKey().notNull(),
-		boutiqueId: serial().notNull().references(() => boutiques.id),
-		userId: serial().notNull().references(() => users.id),
+			boutiqueId: integer().notNull().references(() => boutiques.id),
+			userId: integer().notNull().references(() => users.id),
 		role: varchar({ length: 50 }).default("staff").notNull(),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
@@ -158,10 +158,10 @@ export const garments = pgTable(
 	"garments",
 	{
 		id: serial().primaryKey().notNull(),
-		boutiqueId: serial().notNull().references(() => boutiques.id),
-		name: varchar({ length: 255 }).notNull(),
-		description: text(),
-		image_url: varchar({ length: 500 }),
+			boutiqueId: integer().notNull().references(() => boutiques.id),
+			name: varchar({ length: 255 }).notNull(),
+			description: text(),
+			image_url: varchar({ length: 500 }),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
@@ -175,10 +175,10 @@ export const products = pgTable(
 	"products",
 	{
 		id: serial().primaryKey().notNull(),
-		boutiqueId: serial().notNull().references(() => boutiques.id),
-		name: varchar({ length: 255 }).notNull(),
-		description: text(),
-		price: decimal({ precision: 10, scale: 2 }).notNull(),
+			boutiqueId: integer().notNull().references(() => boutiques.id),
+			name: varchar({ length: 255 }).notNull(),
+			description: text(),
+			price: decimal({ precision: 10, scale: 2 }).notNull(),
 		image_url: varchar({ length: 500 }),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
@@ -193,9 +193,9 @@ export const userCredits = pgTable(
 	"userCredits",
 	{
 		id: serial().primaryKey().notNull(),
-		userId: serial().notNull().references(() => users.id),
-		credits: decimal({ precision: 10, scale: 2 }).default("0").notNull(),
-		createdAt: timestamp({ mode: "string" })
+			userId: integer().notNull().references(() => users.id),
+			credits: decimal({ precision: 10, scale: 2 }).default("0").notNull(),
+			createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
 		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
@@ -208,8 +208,8 @@ export const tryOnResults = pgTable(
 	"tryOnResults",
 	{
 		id: serial().primaryKey().notNull(),
-		userId: serial().notNull().references(() => users.id),
-		garmentId: serial().references(() => garments.id),
+			userId: integer().notNull().references(() => users.id),
+			garmentId: integer().references(() => garments.id),
 		image_url: varchar({ length: 500 }).notNull(),
 		watermarked_image_url: varchar({ length: 500 }),
 		createdAt: timestamp({ mode: "string" })
@@ -228,14 +228,14 @@ export const savedOutfits = pgTable(
 	"savedOutfits",
 	{
 		id: serial().primaryKey().notNull(),
-		userId: serial().notNull().references(() => users.id),
-		tryOnResultId: serial().notNull().references(() => tryOnResults.id),
+			userId: integer().notNull().references(() => users.id),
+			tryOnResultId: integer().notNull().references(() => tryOnResults.id),
 		title: varchar({ length: 255 }).notNull(),
 		description: text(),
 		watermarkedImageUrl: varchar({ length: 500 }).notNull(),
-		isFavorite: serial().default(0).notNull(),
-		comparisonNotes: text(),
-		shareCount: serial().default(0).notNull(),
+			isFavorite: integer().default(0).notNull(),
+			comparisonNotes: text(),
+			shareCount: integer().default(0).notNull(),
 		tags: text().default("[]"),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
@@ -259,18 +259,18 @@ export const auditLogs = pgTable("auditLogs", {
 		.notNull(),
 });
 
-export const batchUploadFiles = pgTable("batchUploadFiles", {
-	id: serial().primaryKey().notNull(),
-	batchUploadId: serial(),
+	export const batchUploadFiles = pgTable("batchUploadFiles", {
+		id: serial().primaryKey().notNull(),
+		batchUploadId: integer(),
 	file_name: varchar({ length: 255 }),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),
 });
 
-export const batchUploads = pgTable("batchUploads", {
-	id: serial().primaryKey().notNull(),
-	boutiqueId: serial(),
+	export const batchUploads = pgTable("batchUploads", {
+		id: serial().primaryKey().notNull(),
+		boutiqueId: integer(),
 	status: varchar({ length: 50 }),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
@@ -286,9 +286,9 @@ export const deletionLogs = pgTable("deletionLogs", {
 		.notNull(),
 });
 
-export const emailNotifications = pgTable("emailNotifications", {
-	id: serial().primaryKey().notNull(),
-	userId: serial(),
+	export const emailNotifications = pgTable("emailNotifications", {
+		id: serial().primaryKey().notNull(),
+		userId: integer(),
 	email: varchar({ length: 255 }),
 	subject: varchar({ length: 255 }),
 	createdAt: timestamp({ mode: "string" })
@@ -296,27 +296,27 @@ export const emailNotifications = pgTable("emailNotifications", {
 		.notNull(),
 });
 
-export const favorites = pgTable("favorites", {
-	id: serial().primaryKey().notNull(),
-	userId: serial(),
-	garmentId: serial(),
+	export const favorites = pgTable("favorites", {
+		id: serial().primaryKey().notNull(),
+		userId: integer(),
+		garmentId: integer(),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),
 });
 
-export const featureAccessLogs = pgTable("featureAccessLogs", {
-	id: serial().primaryKey().notNull(),
-	userId: serial(),
+	export const featureAccessLogs = pgTable("featureAccessLogs", {
+		id: serial().primaryKey().notNull(),
+		userId: integer(),
 	feature_name: varchar({ length: 255 }),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),
 });
 
-export const inAppNotifications = pgTable("inAppNotifications", {
-	id: serial().primaryKey().notNull(),
-	userId: serial(),
+	export const inAppNotifications = pgTable("inAppNotifications", {
+		id: serial().primaryKey().notNull(),
+		userId: integer(),
 	message: text(),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
@@ -332,19 +332,19 @@ export const paymentReconciliation = pgTable("paymentReconciliation", {
 		.notNull(),
 });
 
-export const productSizeVariants = pgTable("productSizeVariants", {
-	id: serial().primaryKey().notNull(),
-	productId: serial(),
+	export const productSizeVariants = pgTable("productSizeVariants", {
+		id: serial().primaryKey().notNull(),
+		productId: integer(),
 	size: varchar({ length: 50 }),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),
 });
 
-export const reviews = pgTable("reviews", {
-	id: serial().primaryKey().notNull(),
-	userId: serial(),
-	productId: serial(),
+	export const reviews = pgTable("reviews", {
+		id: serial().primaryKey().notNull(),
+		userId: integer(),
+		productId: integer(),
 	rating: integer(),
 	comment: text(),
 	createdAt: timestamp({ mode: "string" })
@@ -352,9 +352,9 @@ export const reviews = pgTable("reviews", {
 		.notNull(),
 });
 
-export const shopOrders = pgTable("shopOrders", {
-	id: serial().primaryKey().notNull(),
-	userId: serial(),
+	export const shopOrders = pgTable("shopOrders", {
+		id: serial().primaryKey().notNull(),
+		userId: integer(),
 	total_amount: decimal({ precision: 10, scale: 2 }),
 	status: varchar({ length: 50 }),
 	createdAt: timestamp({ mode: "string" })
@@ -362,9 +362,9 @@ export const shopOrders = pgTable("shopOrders", {
 		.notNull(),
 });
 
-export const subscriptionAuditLog = pgTable("subscriptionAuditLog", {
-	id: serial().primaryKey().notNull(),
-	subscriptionId: serial(),
+	export const subscriptionAuditLog = pgTable("subscriptionAuditLog", {
+		id: serial().primaryKey().notNull(),
+		subscriptionId: integer(),
 	action: varchar({ length: 255 }),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
@@ -374,16 +374,16 @@ export const subscriptionAuditLog = pgTable("subscriptionAuditLog", {
 export const transactions = pgTable("transactions", {
 	id: serial().primaryKey().notNull(),
 	userId: integer().references(() => users.id),
-	amount: varchar({ length: 50 }),
+	amount: decimal({ precision: 10, scale: 2 }),
 	status: varchar({ length: 50 }),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),
 });
 
-export const tryOnUserMonthlyUsage = pgTable("userMonthlyUsage", {
-	id: serial().primaryKey().notNull(),
-	userId: integer().references(() => users.id),
+	export const tryOnUserMonthlyUsage = pgTable("userMonthlyUsage", {
+		id: serial().primaryKey().notNull(),
+		userId: integer().references(() => users.id),
 	month: date(),
 	usage_count: integer(),
 	createdAt: timestamp({ mode: "string" })
@@ -923,8 +923,8 @@ export const couponRedemptions = pgTable(
 	"couponRedemptions",
 	{
 		id: serial().primaryKey().notNull(),
-		couponId: serial().notNull().references(() => couponCodes.id),
-		userId: serial().notNull().references(() => users.id),
+			couponId: integer().notNull().references(() => couponCodes.id),
+			userId: integer().notNull().references(() => users.id),
 		redeemedAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
