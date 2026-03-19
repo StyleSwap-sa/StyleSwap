@@ -9,6 +9,7 @@ import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
 import { LowCreditAlert } from "@/components/LowCreditAlert";
 import { Footer } from "@/components/Footer";
 import { CouponCodeInput } from "@/components/CouponCodeInput";
+import { InviteReferralCard } from "@/components/InviteReferralCard";
 import { trpc } from "@/lib/trpc";
 
 
@@ -251,6 +252,9 @@ export default function Dashboard() {
 
               {/* Coupon Code Input */}
               <CouponCodeInput onCouponApplied={() => refetchCredits()} />
+
+              {/* Invite Referral Card */}
+              <InviteReferralCard />
 
               {/* Quick Stats */}
               <Card className="premium-card">

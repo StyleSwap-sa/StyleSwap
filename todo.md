@@ -3084,3 +3084,12 @@ This approach:
 - [x] Add STYLECHAT2 coupon (100 max uses, 2 credits per redemption)
 - [x] Add STYLEVIP30 coupon (15 max uses, 30 credits per redemption)
 - [x] Verify all coupons display on dashboard
+
+
+## Phase XX: Referral Tracking System
+- [x] Design referral tracking database schema (existing tables: referralLinks, referralTracking)
+- [x] Create referral tracking API procedures (invite-campaign router with 4 endpoints)
+- [x] Implement referral code generation and sharing UI (InviteReferralCard component)
+- [x] Add referral status dashboard to customer profile (integrated into Dashboard)
+- [ ] Test referral flow end-to-end (pending after schema fixes)
+- [ ] Verify automatic credit allocation when referral conditions are met (pending after schema fixes)

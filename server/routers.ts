@@ -56,6 +56,7 @@ import { apiDocsRouter } from "./routers/api-docs";
 import { developerMarketplaceRouter } from "./routers/developer-marketplace";
 import { boutiqueMarketplaceRouter } from "./routers/boutique-marketplace";
 import { enterpriseRouter } from "./routers/enterprise";
+import { inviteCampaignRouter } from "./routers/invite-campaign";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
 
 export const appRouter = router({
@@ -130,6 +131,7 @@ export const appRouter = router({
   hashtags: hashtagsRouter,
   profiles: profilesRouter,
   referrals: referralsRouter,
+  inviteCampaign: inviteCampaignRouter,
   contact: contactRouter,
   affiliate: affiliateRouter,
   appRegistration: appRegistrationRouter,
