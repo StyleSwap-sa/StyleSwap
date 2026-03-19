@@ -60,12 +60,16 @@ export default function BoutiqueSignupWithVerification() {
     setError(null);
 
     try {
+      // Generate slug from business name
+      const slug = formData.businessName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
       createBoutiqueMutation.mutate({
         name: formData.businessName,
-        ownerName: formData.ownerName,
-        email: formData.email,
-        phone: formData.phone,
-        businessType: formData.businessType,
+        slug: slug,
+        description: `${formData.businessType === 'social_media' ? 'Social media seller' : 'Registered business'}`,
       });
     } catch (err) {
       setError('Failed to create boutique account');
@@ -85,11 +89,17 @@ export default function BoutiqueSignupWithVerification() {
         return;
       }
 
+      const verificationType = verificationData.verificationType === 'formal' ? 'formal_business' : 'social_media';
+      const verificationMethod = verificationData.verificationType === 'formal' ? 'documents' : 'social_media';
+
       submitVerificationMutation.mutate({
         boutiqueId: boutique.id,
-        verificationType: verificationData.verificationType,
-        documents: verificationData.documents,
-        socialMediaAccounts: verificationData.socialMediaAccounts,
+        verificationType: verificationType,
+        verificationMethod: verificationMethod,
+        businessName: formData.businessName,
+        businessRegistrationNumber: verificationData.verificationType === 'formal' ? 'pending' : undefined,
+        taxId: verificationData.verificationType === 'formal' ? 'pending' : undefined,
+        businessAddress: 'pending',
       });
     } catch (err) {
       setError('Failed to submit verification');

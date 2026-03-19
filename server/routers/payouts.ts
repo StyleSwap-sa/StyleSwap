@@ -370,7 +370,7 @@ export const payoutsRouter = router({
 
         // Log the sync
         await db.insert(payoutAuditLog).values({
-          payoutId: input.payoutId,
+          payout_id: input.payoutId,
           action: "payout_status_synced",
           oldStatus: payout[0].status,
           newStatus: yocoStatus.status,

@@ -3138,7 +3138,9 @@ This approach:
 ## Phase 53: Fix Boutique Signup Routing and Pages
 - [x] Add BoutiqueSignupWithVerification route to App.tsx
 - [x] Verify BoutiqueSignupWithVerification component has all required fields (business name, seller type, social media handles, location, product catalogue, pricing)
-- [ ] Create or update boutique signup API endpoints if missing
-- [ ] Ensure boutique verification flow is complete (anti-scam checks)
+- [x] Create or update boutique signup API endpoints if missing (verified boutiques.create and verification.submitForVerification exist)
+- [x] Ensure boutique verification flow is complete (anti-scam checks)
+- [x] Fixed BoutiqueSignupWithVerification component to match API signatures
+- [x] Fixed all payoutId vs payout_id schema mismatches in database code
 - [ ] Test boutique signup flow end-to-end
 - [ ] Verify boutique landing page displays correctly after signup

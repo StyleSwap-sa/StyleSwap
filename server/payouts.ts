@@ -127,15 +127,15 @@ export async function createPayout(
 
   // Log audit
   await db.insert(payoutAuditLog).values({
-    payoutId: Number(payoutId),
+    payout_id: Number(payoutId),
     action: "PAYOUT_CREATED",
-    oldStatus: null,
-    newStatus: "pending",
-    actorType: "system",
     details: JSON.stringify({
       totalRevenue: calculation.totalRevenue,
       boutiquePayout: calculation.boutiquePayout,
       orderCount: calculation.orders.length,
+      oldStatus: null,
+      newStatus: "pending",
+      actorType: "system",
     }),
   });
 
@@ -169,12 +169,14 @@ export async function updatePayoutStatus(
 
   // Log audit
   await db.insert(payoutAuditLog).values({
-    payoutId,
+    payout_id: payoutId,
     action: "PAYOUT_STATUS_UPDATED",
-    oldStatus: payout.status,
-    newStatus,
-    actorType: "system",
-    details: JSON.stringify({ notes }),
+    details: JSON.stringify({
+      notes,
+      oldStatus: payout.status,
+      newStatus,
+      actorType: "system",
+    }),
   });
 }
 

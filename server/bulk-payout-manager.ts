@@ -219,7 +219,7 @@ export async function retryFailedPayouts(payoutIds: string[], adminId: string): 
 
         // Log the retry attempt
         await db.insert(payoutAuditLog).values({
-          payoutId,
+          payout_id: payoutId,
           action: "payout_retry_by_admin",
           oldStatus: "failed",
           newStatus: "processing",

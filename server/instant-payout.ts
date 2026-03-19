@@ -122,22 +122,19 @@ export async function requestInstantPayout(request: InstantPayoutRequest): Promi
 
     // Log the request
     await db.insert(payoutAuditLog).values({
-      payoutId,
+      payout_id: payoutId,
       action: "instant_payout_requested",
-      oldStatus: null,
-      newStatus: "pending",
-      actorId: requestedBy,
-      actorType: "boutique_owner",
       details: JSON.stringify({
         requestedAmount: requestAmount,
         fee,
         netAmount,
         bankAccountId: bankAccount.id,
-        requestedAt: now.toISOString(),
+        actorId: requestedBy,
+        actorType: "boutique_owner",
       }),
     });
 
-    // Create payout request with Yoco
+    // Create Yoco payout
     const yocoResult = await createPayout({
       amount: parseFloat(netAmount) * 100, // Convert to cents
       currency: "ZAR",

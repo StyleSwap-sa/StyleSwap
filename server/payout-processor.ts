@@ -107,17 +107,17 @@ export async function processOrderPayout(orderId: number) {
 
     // 4. Log audit entry
     await db.insert(payoutAuditLog).values({
-      payoutId,
+      payout_id: payoutId,
       action: "credit_purchase",
-      oldStatus: null,
-      newStatus: "completed",
-      actorId: null,
-      actorType: "system",
       details: JSON.stringify({
         orderNumber: orderData.orderNumber,
         orderAmount,
         creditsPurchased: Math.floor(orderAmount * 10), // Example: R10 = 100 credits
         system: "credit-based",
+        oldStatus: null,
+        newStatus: "completed",
+        actorId: null,
+        actorType: "system",
       }),
     });
 

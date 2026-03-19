@@ -103,7 +103,7 @@ router.post("/yoco-payouts", async (req, res) => {
 
     // Log the status change
     await db.insert(payoutAuditLog).values({
-      payoutId: payout.id,
+      payout_id: payout.id,
       action: `payout_yoco_${event.data.status}`,
       oldStatus,
       newStatus,
