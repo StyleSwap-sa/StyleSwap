@@ -163,7 +163,7 @@ export async function getFailedWebhooks() {
     const failed = await db
       .select()
       .from(webhookEvents)
-      .where(eq(webhookEvents.status, 'failed'));
+      .where(eq(webhookEvents.webhook_event_status, 'failed'));
 
     console.log(`[Test] Found ${failed.length} failed webhooks`);
     return failed;
@@ -185,7 +185,7 @@ export async function getPendingRetries() {
     const pending = await db
       .select()
       .from(webhookEvents)
-      .where(eq(webhookEvents.status, 'retrying'));
+      .where(eq(webhookEvents.webhook_event_status, 'retrying'));
 
     console.log(`[Test] Found ${pending.length} pending retries`);
     return pending;

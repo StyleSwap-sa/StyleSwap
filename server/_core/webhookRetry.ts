@@ -149,7 +149,7 @@ export async function getPendingWebhooksForRetry() {
     const now = new Date();
     const events = await db.query.webhookEvents.findMany({
       where: and(
-        eq(webhookEvents.status, 'retrying'),
+        eq(webhookEvents.webhook_event_status, 'retrying'),
         lt(webhookEvents.nextRetryAt, now)
       ),
     });

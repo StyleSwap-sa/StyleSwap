@@ -57,9 +57,9 @@ describe('Webhook Admin Router', () => {
         const successEvents = await db
           .select()
           .from(webhookEvents)
-          .where(eq(webhookEvents.status, 'success'));
+          .where(eq(webhookEvents.webhook_event_status, 'success'));
         
-        expect(successEvents.every((e: any) => e.status === 'success')).toBe(true);
+        expect(successEvents.every((e: any) => e.webhook_event_status === 'success')).toBe(true);
       }
     });
   });

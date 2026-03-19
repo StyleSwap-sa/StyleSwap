@@ -283,7 +283,7 @@ export async function retryFailedWebhooks() {
       .from(webhookEvents)
       .where(
         and(
-          eq(webhookEvents.status, 'retrying'),
+          eq(webhookEvents.webhook_event_status, 'retrying'),
           lt(webhookEvents.nextRetryAt, now)
         )
       );

@@ -32,7 +32,7 @@ export const webhookAdminRouter = router({
         const db = await getDb();
         if (!db) throw new Error('Database not available');
 
-        const conditions = input.status ? [eq(webhookEvents.status, input.status)] : [];
+        const conditions = input.status ? [eq(webhookEvents.webhook_event_status, input.status)] : [];
         const events = await db
           .select()
           .from(webhookEvents)
