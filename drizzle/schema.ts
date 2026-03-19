@@ -357,12 +357,19 @@ export const paymentReconciliation = pgTable("paymentReconciliation", {
 	export const shopOrders = pgTable("shopOrders", {
 		id: serial().primaryKey().notNull(),
 		userId: integer(),
-	total_amount: decimal({ precision: 10, scale: 2 }),
-	status: varchar({ length: 50 }),
-	createdAt: timestamp({ mode: "string" })
-		.default(sql`CURRENT_TIMESTAMP`)
-		.notNull(),
-});
+		boutiqueId: integer(),
+		orderNumber: varchar({ length: 50 }).unique(),
+		total_amount: decimal({ precision: 10, scale: 2 }),
+		status: varchar({ length: 50 }).default("pending"),
+		deliveryAddress: text(),
+		customerPhone: varchar({ length: 20 }),
+		createdAt: timestamp({ mode: "string" })
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull(),
+		updatedAt: timestamp({ mode: "string" })
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull(),
+	});
 
 	export const subscriptionAuditLog = pgTable("subscriptionAuditLog", {
 		id: serial().primaryKey().notNull(),

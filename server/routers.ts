@@ -57,6 +57,8 @@ import { developerMarketplaceRouter } from "./routers/developer-marketplace";
 import { boutiqueMarketplaceRouter } from "./routers/boutique-marketplace";
 import { enterpriseRouter } from "./routers/enterprise";
 import { inviteCampaignRouter } from "./routers/invite-campaign";
+import { couponRedemptionRouter } from "./routers/coupon-redemption";
+import { outfitPollsRouter } from "./routers/outfit-polls";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
 
 export const appRouter = router({
@@ -132,6 +134,8 @@ export const appRouter = router({
   profiles: profilesRouter,
   referrals: referralsRouter,
   inviteCampaign: inviteCampaignRouter,
+  couponRedemption: couponRedemptionRouter,
+  outfitPolls: outfitPollsRouter,
   contact: contactRouter,
   affiliate: affiliateRouter,
   appRegistration: appRegistrationRouter,

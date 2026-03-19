@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { getDb } from "../db";
 import { transactions, userCredits, users, boutiqueCredits, shopOrders } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { sendEmailNotification } from "../email";
 import { verifyWebhookSignature } from "../yoko-payment";
 import { sendPaymentConfirmationSMS } from "../sms";
@@ -140,7 +140,6 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"], external
         totalCredits: credits,
         usedCredits: 0,
         remainingCredits: credits,
-        expiresAt: expiresAtString,
       });
     } else {
       // Update existing credit record
@@ -153,8 +152,7 @@ async function handlePaymentSucceeded(data: YokoWebhookPayload["data"], external
         .set({
           totalCredits: newTotal,
           remainingCredits: newRemaining,
-          expiresAt: expiresAtString,
-          updatedAt: new Date().toISOString(),
+          updatedAt: sql`CURRENT_TIMESTAMP`,
         })
         .where(eq(userCredits.userId, userId));
     }

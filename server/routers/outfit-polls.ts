@@ -1,173 +1,212 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
-import { db } from "../db";
-import { sql, eq, and } from "drizzle-orm";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { TRPCError } from "@trpc/server";
+import { getDb } from "../db";
+import {
+  outfitVotings,
+  outfitVotes,
+  transactions,
+  userCredits,
+} from "../../drizzle/schema";
+import { eq, and, desc, gte, count } from "drizzle-orm";
 
 /**
- * Outfit Polls Feature
- * Biggest growth driver: Force sharing to WhatsApp to get more votes
- * 
+ * Outfit Polls Feature with Viral Growth Mechanics
+ * Biggest growth driver: Force sharing to WhatsApp to unlock voting
+ *
  * How it works:
- * 1. User creates a poll comparing 2 outfits
- * 2. They can vote immediately
- * 3. To see results, they must share the poll to WhatsApp
- * 4. Each share brings in new users who vote
+ * 1. User creates a poll comparing outfits
+ * 2. Poll requires WhatsApp share to unlock voting
+ * 3. Each share brings in new users who vote
+ * 4. Trending polls get featured in discovery feed
+ * 5. Users earn bonus credits for sharing
  */
 export const outfitPollsRouter = router({
   /**
    * Create a new outfit poll
-   * Compares 2 outfits and asks "Which outfit is better?"
    */
   createPoll: protectedProcedure
     .input(
       z.object({
-        outfit1Id: z.number().describe("First outfit ID"),
-        outfit2Id: z.number().describe("Second outfit ID"),
-        question: z.string().optional().describe("Custom poll question"),
+        outfitId: z.number(),
+        question: z.string().min(5).max(200),
+        options: z.array(z.string()).min(2).max(4),
+        expiresAt: z.date().optional(),
+        requireWhatsAppShare: z.boolean().default(true),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const db = getDb();
       const userId = ctx.user.id;
-      const question =
-        input.question || "Which outfit is better?";
-
-      // Create poll in database
-      // Note: This assumes a polls table exists in the schema
-      const pollQuery = sql`
-        INSERT INTO polls (user_id, outfit1_id, outfit2_id, question, created_at)
-        VALUES (${userId}, ${input.outfit1Id}, ${input.outfit2Id}, ${question}, NOW())
-        RETURNING id, outfit1_id, outfit2_id, question, created_at
-      `;
 
       try {
-        const result = await db.execute(pollQuery);
-        const poll = result.rows[0];
+        const expiresAt =
+          input.expiresAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+        const result = await db.insert(outfitVotings).values({
+          outfitId: input.outfitId,
+          userId,
+          question: input.question,
+          options: JSON.stringify(input.options),
+          expiresAt: expiresAt.toISOString(),
+          requireWhatsAppShare: input.requireWhatsAppShare,
+          status: "active",
+        });
+
+        const pollId = result[0]?.insertId || result[0]?.id;
 
         return {
           success: true,
-          pollId: poll.id,
-          shareUrl: `/polls/${poll.id}`,
-          whatsappShareText: `Check out this outfit poll! Which one do you prefer? ${question}`,
+          pollId,
+          shareUrl: `/polls/${pollId}/share`,
+          whatsappShareText: `Check out this outfit poll! ${input.question}`,
         };
       } catch (error) {
         console.error("Error creating poll:", error);
-        return {
-          success: false,
-          error: "Failed to create poll",
-        };
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create poll",
+        });
       }
     }),
 
   /**
    * Vote on a poll
-   * User votes for outfit1 or outfit2
    */
   votePoll: protectedProcedure
     .input(
       z.object({
         pollId: z.number(),
-        voteFor: z.enum(["outfit1", "outfit2"]),
+        optionIndex: z.number().min(0).max(3),
+        whatsAppShareVerified: z.boolean(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const db = getDb();
       const userId = ctx.user.id;
 
-      // Record vote
-      const voteQuery = sql`
-        INSERT INTO poll_votes (poll_id, user_id, vote_for, created_at)
-        VALUES (${input.pollId}, ${userId}, ${input.voteFor}, NOW())
-        ON CONFLICT (poll_id, user_id) DO UPDATE SET vote_for = ${input.voteFor}
-        RETURNING id
-      `;
-
       try {
-        await db.execute(voteQuery);
+        const poll = await db
+          .select()
+          .from(outfitVotings)
+          .where(eq(outfitVotings.id, input.pollId))
+          .limit(1);
+
+        if (poll.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Poll not found",
+          });
+        }
+
+        const pollData = poll[0];
+
+        if (pollData.status !== "active") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Poll is no longer active",
+          });
+        }
+
+        if (pollData.requireWhatsAppShare && !input.whatsAppShareVerified) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You must share this poll on WhatsApp to vote",
+          });
+        }
+
+        const existingVote = await db
+          .select()
+          .from(outfitVotes)
+          .where(
+            and(
+              eq(outfitVotes.pollId, input.pollId),
+              eq(outfitVotes.userId, userId)
+            )
+          )
+          .limit(1);
+
+        if (existingVote.length > 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "You have already voted on this poll",
+          });
+        }
+
+        await db.insert(outfitVotes).values({
+          pollId: input.pollId,
+          userId,
+          optionIndex: input.optionIndex,
+        });
 
         return {
           success: true,
-          message: "Vote recorded",
+          message: "Vote recorded successfully!",
         };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error("Error recording vote:", error);
-        return {
-          success: false,
-          error: "Failed to record vote",
-        };
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to record vote",
+        });
       }
     }),
 
   /**
    * Get poll results
-   * Only shows results if user has shared to WhatsApp
-   * Otherwise shows "Share to see results" CTA
    */
-  getPollResults: protectedProcedure
+  getPollResults: publicProcedure
     .input(z.object({ pollId: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const userId = ctx.user.id;
+    .query(async ({ input }) => {
+      const db = getDb();
 
-      // Check if user has shared this poll
-      const shareQuery = sql`
-        SELECT id FROM poll_shares 
-        WHERE poll_id = ${input.pollId} AND user_id = ${userId}
-        LIMIT 1
-      `;
+      const poll = await db
+        .select()
+        .from(outfitVotings)
+        .where(eq(outfitVotings.id, input.pollId))
+        .limit(1);
 
-      try {
-        const shareResult = await db.execute(shareQuery);
-        const hasShared = shareResult.rows.length > 0;
-
-        if (!hasShared) {
-          return {
-            success: true,
-            hasShared: false,
-            message: "Share this poll to WhatsApp to see results!",
-            results: null,
-            shareUrl: `https://styleswap.co.za/polls/${input.pollId}?ref=${userId}`,
-            whatsappMessage: "Check out this outfit poll! Which one do you prefer?",
-          };
-        }
-
-        // Get poll results
-        const resultsQuery = sql`
-          SELECT 
-            (SELECT COUNT(*) FROM poll_votes WHERE poll_id = ${input.pollId} AND vote_for = 'outfit1') as outfit1_votes,
-            (SELECT COUNT(*) FROM poll_votes WHERE poll_id = ${input.pollId} AND vote_for = 'outfit2') as outfit2_votes,
-            (SELECT COUNT(*) FROM poll_votes WHERE poll_id = ${input.pollId}) as total_votes
-        `;
-
-        const resultsData = await db.execute(resultsQuery);
-        const results = resultsData.rows[0];
-
-        return {
-          success: true,
-          hasShared: true,
-          results: {
-            outfit1Votes: results.outfit1_votes || 0,
-            outfit2Votes: results.outfit2_votes || 0,
-            totalVotes: results.total_votes || 0,
-            outfit1Percentage:
-              results.total_votes > 0
-                ? Math.round((results.outfit1_votes / results.total_votes) * 100)
-                : 0,
-            outfit2Percentage:
-              results.total_votes > 0
-                ? Math.round((results.outfit2_votes / results.total_votes) * 100)
-                : 0,
-          },
-        };
-      } catch (error) {
-        console.error("Error getting poll results:", error);
-        return {
-          success: false,
-          error: "Failed to get poll results",
-        };
+      if (poll.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Poll not found",
+        });
       }
+
+      const pollData = poll[0];
+      const votes = await db
+        .select()
+        .from(outfitVotes)
+        .where(eq(outfitVotes.pollId, input.pollId));
+
+      const options = JSON.parse(pollData.options || "[]");
+      const voteCounts = options.map((option: string, index: number) => ({
+        option,
+        votes: votes.filter((v) => v.optionIndex === index).length,
+        percentage:
+          votes.length > 0
+            ? Math.round(
+                (votes.filter((v) => v.optionIndex === index).length /
+                  votes.length) *
+                  100
+              )
+            : 0,
+      }));
+
+      return {
+        success: true,
+        pollId: input.pollId,
+        question: pollData.question,
+        options: voteCounts,
+        totalVotes: votes.length,
+        status: pollData.status,
+      };
     }),
 
   /**
    * Track poll share to WhatsApp
-   * When user shares, unlock results and track the share
+   * Award bonus credits for sharing
    */
   trackPollShare: protectedProcedure
     .input(
@@ -176,73 +215,99 @@ export const outfitPollsRouter = router({
         platform: z.enum(["whatsapp", "instagram", "twitter"]),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const db = getDb();
       const userId = ctx.user.id;
-
-      // Record share
-      const shareQuery = sql`
-        INSERT INTO poll_shares (poll_id, user_id, platform, created_at)
-        VALUES (${input.pollId}, ${userId}, ${input.platform}, NOW())
-        RETURNING id
-      `;
+      const bonusCredits = 0.5;
 
       try {
-        await db.execute(shareQuery);
-
         // Award bonus credits for sharing
-        const bonusQuery = sql`
-          INSERT INTO transactions (user_id, amount, status, reason, created_at)
-          VALUES (${userId}, '0.5', 'completed', 'Poll share bonus', NOW())
-        `;
+        await db.insert(transactions).values({
+          userId,
+          amount: bonusCredits.toString(),
+          status: "completed",
+          reason: `Poll share bonus on ${input.platform}`,
+        });
 
-        await db.execute(bonusQuery);
+        // Update user credits
+        const userCreditsRecord = await db
+          .select()
+          .from(userCredits)
+          .where(eq(userCredits.userId, userId))
+          .limit(1);
+
+        if (userCreditsRecord.length > 0) {
+          const current = userCreditsRecord[0];
+          await db
+            .update(userCredits)
+            .set({
+              totalCredits: current.totalCredits + bonusCredits,
+              remainingCredits: current.remainingCredits + bonusCredits,
+            })
+            .where(eq(userCredits.userId, userId));
+        }
 
         return {
           success: true,
-          message: "Share tracked! You earned 0.5 bonus credits",
-          bonusCredits: 0.5,
+          message: `Share tracked! You earned ${bonusCredits} bonus credits`,
+          bonusCredits,
         };
       } catch (error) {
         console.error("Error tracking share:", error);
-        return {
-          success: false,
-          error: "Failed to track share",
-        };
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to track share",
+        });
       }
     }),
 
   /**
    * Get trending polls
-   * Shows most shared and voted polls to drive engagement
+   * Shows most voted polls to drive engagement
    */
-  getTrendingPolls: protectedProcedure.query(async ({ ctx }) => {
-    const trendingQuery = sql`
-      SELECT 
-        p.id,
-        p.outfit1_id,
-        p.outfit2_id,
-        p.question,
-        (SELECT COUNT(*) FROM poll_votes WHERE poll_id = p.id) as total_votes,
-        (SELECT COUNT(*) FROM poll_shares WHERE poll_id = p.id) as total_shares,
-        p.created_at
-      FROM polls p
-      ORDER BY total_shares DESC, total_votes DESC
-      LIMIT 10
-    `;
+  getTrendingPolls: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).default(10),
+        offset: z.number().min(0).default(0),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = getDb();
 
-    try {
-      const result = await db.execute(trendingQuery);
+      const polls = await db
+        .select({
+          id: outfitVotings.id,
+          question: outfitVotings.question,
+          options: outfitVotings.options,
+          totalVotes: count(outfitVotes.id),
+          createdAt: outfitVotings.createdAt,
+        })
+        .from(outfitVotings)
+        .leftJoin(
+          outfitVotes,
+          eq(outfitVotes.pollId, outfitVotings.id)
+        )
+        .where(
+          and(
+            eq(outfitVotings.status, "active"),
+            gte(outfitVotings.expiresAt, new Date().toISOString())
+          )
+        )
+        .groupBy(outfitVotings.id)
+        .orderBy(desc(count(outfitVotes.id)))
+        .limit(input.limit)
+        .offset(input.offset);
+
       return {
         success: true,
-        polls: result.rows,
+        polls: polls.map((poll) => ({
+          id: poll.id,
+          question: poll.question,
+          options: JSON.parse(poll.options || "[]"),
+          totalVotes: poll.totalVotes,
+          engagementScore: poll.totalVotes * 10,
+        })),
       };
-    } catch (error) {
-      console.error("Error getting trending polls:", error);
-      return {
-        success: false,
-        error: "Failed to get trending polls",
-        polls: [],
-      };
-    }
-  }),
+    }),
 });
