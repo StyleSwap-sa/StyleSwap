@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, CheckCircle2, Clock, FileText, User } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 
 /**
  * Boutique Signup with Mandatory Verification
@@ -13,7 +13,7 @@ import { useNavigate } from 'wouter';
  */
 
 export default function BoutiqueSignupWithVerification() {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [step, setStep] = useState<'signup' | 'verification' | 'success'>('signup');
   const [formData, setFormData] = useState({
     businessName: '',

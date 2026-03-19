@@ -70,6 +70,7 @@ const ReferralSignup = lazy(() => import("./pages/ReferralSignup"));
 const BuyCredits = lazy(() => import("./pages/BuyCredits"));
 const About = lazy(() => import("./pages/About"));
 const RegisterApp = lazy(() => import("./pages/RegisterApp"));
+const BoutiqueSignupWithVerification = lazy(() => import("./pages/BoutiqueSignupWithVerification"));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -145,6 +146,8 @@ export default function App() {
               <Route path="/api-docs" component={ApiDocs} />
               <Route path="/register-app" component={RegisterApp} />
               <Route path="/for-boutiques" component={ForBoutiques} />
+              <Route path="/boutique/signup" component={BoutiqueSignupWithVerification} />
+              <Route path="/b2b/signup" component={BoutiqueSignupWithVerification} />
               <Route path="/customer-try-on" component={CustomerTryOn} />
               <Route path="/developer" component={DeveloperPortal} />
               <Route path="/body-models" component={BodyModels} />
