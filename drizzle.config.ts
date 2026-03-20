@@ -12,7 +12,7 @@ export default defineConfig({
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    url: connectionString,
-    // PostgreSQL connection via environment variable
+    url: connectionString + "?sslmode=require",
+    // PostgreSQL connection via environment variable with SSL enabled
   },
 });

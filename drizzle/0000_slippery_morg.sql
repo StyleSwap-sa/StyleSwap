@@ -332,9 +332,9 @@ CREATE TABLE "savedOutfits" (
 	"title" varchar(255) NOT NULL,
 	"description" text,
 	"watermarkedImageUrl" varchar(500) NOT NULL,
-	"isFavorite" serial DEFAULT 0 NOT NULL,
+	"isFavorite" serial DEFAULT 0,
 	"comparisonNotes" text,
-	"shareCount" serial DEFAULT 0 NOT NULL,
+	"shareCount" serial DEFAULT 0,
 	"createdAt" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL
 );
