@@ -15,6 +15,7 @@ const INDIVIDUAL_PLANS = [
     credits: 10,
     costPerTryOn: 4.50,
     features: ["10 virtual try-ons", "30-day validity", "Email support"],
+    badge: null,
   },
   {
     id: "pkg_20_credits",
@@ -23,6 +24,8 @@ const INDIVIDUAL_PLANS = [
     credits: 20,
     costPerTryOn: 4.00,
     features: ["20 virtual try-ons", "30-day validity", "Email support"],
+    badge: "⭐ MOST POPULAR",
+    isPopular: true,
   },
   {
     id: "pkg_50_credits",
@@ -31,6 +34,8 @@ const INDIVIDUAL_PLANS = [
     credits: 50,
     costPerTryOn: 3.00,
     features: ["50 virtual try-ons", "30-day validity", "Email support"],
+    badge: "💎 PREMIUM",
+    isPremium: true,
   },
 ];
 
@@ -58,8 +63,21 @@ export default function PricingPage() {
           <p className="text-muted-foreground mb-12">Pay-as-you-go plans for personal use</p>
           <div className="grid md:grid-cols-3 gap-8">
             {INDIVIDUAL_PLANS.map((plan) => (
-              <Card key={plan.id} className="premium-card hover:shadow-2xl transition-all duration-300 flex flex-col">
-                <CardHeader className="bg-primary text-white pb-4">
+              <Card key={plan.id} className={`premium-card hover:shadow-2xl transition-all duration-300 flex flex-col ${
+                plan.isPopular ? 'ring-2 ring-primary scale-105 md:scale-110' : ''
+              } ${
+                plan.isPremium ? 'ring-2 ring-yellow-500' : ''
+              }`}>
+                {plan.badge && (
+                  <div className={`text-center py-2 font-bold text-sm ${
+                    plan.isPopular ? 'bg-primary text-white' : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {plan.badge}
+                  </div>
+                )}
+                <CardHeader className={`${
+                  plan.isPopular ? 'bg-primary text-white' : plan.isPremium ? 'bg-yellow-500 text-white' : 'bg-primary text-white'
+                } pb-4`}>
                   <div className="text-4xl font-bold mb-2">R{plan.price}</div>
                   <div className="text-sm opacity-90 mb-2">{plan.credits} try-ons</div>
                   <div className="text-sm opacity-90 font-semibold">R{plan.costPerTryOn.toFixed(2)}/try-on</div>
