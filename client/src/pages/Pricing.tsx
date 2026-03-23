@@ -120,7 +120,10 @@ export default function Pricing() {
         "30-day validity",
         "Standard support",
         "Effective rate: R4.50 per try-on"
-      ]
+      ],
+      badge: null,
+      isPopular: false,
+      isPremium: false
     },
     { 
       tryOns: 20, 
@@ -131,7 +134,10 @@ export default function Pricing() {
         "30-day validity",
         "Standard support",
         "Effective rate: R4.00 per try-on"
-      ]
+      ],
+      badge: "⭐ MOST POPULAR",
+      isPopular: true,
+      isPremium: false
     },
     { 
       tryOns: 50, 
@@ -142,7 +148,10 @@ export default function Pricing() {
         "30-day validity",
         "Standard support",
         "Effective rate: R3.00 per try-on"
-      ]
+      ],
+      badge: "💎 PREMIUM",
+      isPopular: false,
+      isPremium: true
     },
   ];
 
@@ -247,9 +256,22 @@ export default function Pricing() {
           <h2 className="text-3xl font-bold mb-8 text-center">Individual Try-On Credits</h2>
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             {individualPlans.map((plan) => (
-              <div key={plan.tryOns} className="flex flex-col border-0 shadow-lg overflow-hidden rounded-lg bg-white">
+              <div key={plan.tryOns} className={`flex flex-col border-0 shadow-lg overflow-hidden rounded-lg bg-white ${
+                plan.isPopular ? 'ring-2 ring-orange-600 scale-105 md:scale-110' : ''
+              } ${
+                plan.isPremium ? 'ring-2 ring-yellow-500' : ''
+              }`}>
+                {plan.badge && (
+                  <div className={`text-center py-2 font-bold text-sm ${
+                    plan.isPopular ? 'bg-orange-600 text-white' : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {plan.badge}
+                  </div>
+                )}
                 {/* Orange Header with Title and Price */}
-                <div className="bg-orange-600 text-white p-6">
+                <div className={`${
+                  plan.isPopular ? 'bg-orange-600 text-white' : plan.isPremium ? 'bg-yellow-500 text-white' : 'bg-orange-600 text-white'
+                } p-6`}>
                   <h3 className="text-lg font-bold mb-2">{plan.tryOns} Try-Ons</h3>
                   <p className="text-3xl font-bold">R{plan.price}</p>
                   <p className="text-sm mt-1 opacity-90">R{plan.costPerTryOn}/try-on</p>
