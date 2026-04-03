@@ -67,7 +67,7 @@ export async function setupVite(app: Express, server: Server) {
       // Inject environment variables as global window variables
       const envScript = `
         <script>
-          window.__VITE_OAUTH_PORTAL_URL = "${ENV.oAuthPortalUrl || "https://manus.im"}";
+          window.__VITE_OAUTH_PORTAL_URL = "${ENV.oAuthPortalUrl || ""}";
           window.__VITE_APP_ID = "${ENV.appId || ""}";  
           console.log('[Vite] OAuth variables injected:', {
             appId: window.__VITE_APP_ID,
@@ -287,7 +287,7 @@ export function serveStatic(app: Express) {
       // Inject environment variables as global window variables
       const envScript = `
         <script>
-          window.__VITE_OAUTH_PORTAL_URL = "${ENV.oAuthPortalUrl || "https://manus.im"}";
+          window.__VITE_OAUTH_PORTAL_URL = "${ENV.oAuthPortalUrl || ""}";
           window.__VITE_APP_ID = "${ENV.appId || ""}";  
         </script>
       `;

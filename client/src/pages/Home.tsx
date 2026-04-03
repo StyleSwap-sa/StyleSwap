@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, LogOut, Menu, X } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
 import { LoginOptionsModal } from "@/components/LoginOptionsModal";
 import { Footer } from "@/components/Footer";
 import DemoVideoModal from "@/components/DemoVideoModal";
@@ -14,21 +13,10 @@ import { FitroomCreditsWidget } from "@/components/FitroomCreditsWidget";
 
 export default function Home() {
   const { user, isAuthenticated, logout, loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
   const [, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLoginOptions, setShowLoginOptions] = useState(false);
   const [isDemoOpen, setIsDemoOpen] = useState(false);
-
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
@@ -83,15 +71,14 @@ export default function Home() {
   ];
 
   // For admin users, add a link to the customer dashboard for testing
-  const adminTestItems = (user?.user_role === 'admin' || user?.user_type === 'admin') ? [
+  const adminTestItems = (user?.role === 'admin' || user?.userType === 'admin') ? [
     { label: 'Try Customer Dashboard', path: '/dashboard' },
   ] : [];
 
-  const isAdmin = user?.user_role === 'admin' || user?.user_type === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.userType === 'admin';
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/20">
         <div className="container mx-auto py-4 flex justify-between items-center px-4 md:px-0">
@@ -332,13 +319,10 @@ export default function Home() {
               >
                 Watch Demo
               </Button>
-
             </div>
           </div>
         </div>
       </main>
-
-
 
       {/* Demo Video Modal */}
       <DemoVideoModal

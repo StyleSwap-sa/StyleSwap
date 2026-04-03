@@ -1,8 +1,11 @@
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME } from "../shared/const";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
-import { sdk } from "./_core/sdk";
+
+import bcrypt from 'bcrypt';
+import { createToken } from './_core/jwt';
+import { z } from 'zod';
 import { getSessionCookieOptions } from "./_core/cookies";
 import { tryonRouter } from "./routers/tryon";
 import { garmentsRouter } from "./routers/garments";
@@ -34,45 +37,52 @@ import { subscriptionAdminRouter } from "./routers/subscriptionAdmin";
 import { subscriptionRouter } from "./routers/subscription";
 import { freeTrialRouter } from "./routers/freetrial";
 import { widgetRouter } from "./routers/widget";
-import { promotionalRouter } from "./routers/promotional";
-import { closetRouter } from "./routers/closet";
-import { votingRouter } from "./routers/voting";
-import { discoveryRouter } from "./routers/discovery";
-import { commentsRouter } from "./routers/comments";
-import { notificationsRouter } from "./routers/notifications";
-import { moderationRouter } from "./routers/moderation";
-import { followsRouter } from "./routers/follows";
-import { mentionsRouter } from "./routers/mentions";
-import { hashtagsRouter } from "./routers/hashtags";
-import { profilesRouter } from "./routers/profiles";
-import { referralsRouter } from "./routers/referrals";
-import { contactRouter } from "./routers/contact";
-import { affiliateRouter } from "./routers/affiliate";
-import { appRegistrationRouter } from "./routers/app-registration";
-import { developerDashboardRouter } from "./routers/developer-dashboard";
-import { monitoringRouter } from "./routers/monitoring";
-import { webhooksRouter } from "./routers/webhooks";
-import { apiDocsRouter } from "./routers/api-docs";
-import { developerMarketplaceRouter } from "./routers/developer-marketplace";
-import { boutiqueMarketplaceRouter } from "./routers/boutique-marketplace";
-import { enterpriseRouter } from "./routers/enterprise";
-import { inviteCampaignRouter } from "./routers/invite-campaign";
-import { couponRedemptionRouter } from "./routers/coupon-redemption";
-import { outfitPollsRouter } from "./routers/outfit-polls";
-import { pollNotificationsRouter } from "./routers/poll-notifications";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
 
+const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+
+function setAuthCookie(res: any, token: string) {
+  res.cookie(COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    path: '/',
+  });
+}
+
+// Helper function to map database user to frontend-friendly format
+function mapUserToFrontend(user: any) {
+  if (!user) return null;
+  return {
+    id: user.id,
+    openId: user.openId,
+    name: user.name,
+    email: user.email,
+    loginMethod: user.loginMethod,
+    role: user.user_role,
+    userType: user.user_type,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    lastSignedIn: user.lastSignedIn,
+    phone: user.phone,
+    currentBoutiqueId: user.currentBoutiqueId,
+    freeTrialUsed: user.freeTrialUsed,
+    freeTrialUsedAt: user.freeTrialUsedAt,
+    freeTrialExpiresAt: user.freeTrialExpiresAt,
+  };
+}
+
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
+    me: publicProcedure.query(async (opts) => {
+      return mapUserToFrontend(opts.ctx.user);
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return {
-        success: true,
-      } as const;
+      return { success: true };
     }),
     testLogin: publicProcedure.mutation(async ({ ctx }) => {
       const timestamp = Date.now();
@@ -84,14 +94,83 @@ export const appRouter = router({
       await db.upsertUser(testUser);
       const user = await db.getUserByOpenId(testUser.openId);
       if (!user || !user.id) throw new Error("Failed to create user");
-      const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
-      const sessionToken = await sdk.createSessionToken(testUser.openId, { name: testUser.name, expiresInMs: ONE_YEAR_MS });
+      const token = createToken(user.id, user.openId);
       const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      return { success: true, user };
+      ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      return { success: true, user: mapUserToFrontend(user) };
     }),
-  }),
+    // Email/password signup
+    signup: publicProcedure
+  .input(z.object({
+    email: z.string().email(),
+    password: z.string().min(6),
+    name: z.string().optional(),
+    userType: z.enum(['customer', 'merchant']).default('customer'),
+  }))
+  .mutation(async ({ input, ctx }) => {
+    console.log("[Signup] Starting for:", input.email);
+    console.log("[Signup] Received userType from frontend:", input.userType);
+    
+    const existing = await db.getUserByEmail(input.email);
+    if (existing) {
+      console.log("[Signup] User already exists:", input.email);
+      throw new Error('Email already in use');
+    }
 
+    console.log("[Signup] Hashing password...");
+    const hashed = await bcrypt.hash(input.password, 10);
+    console.log("[Signup] Password hashed, length:", hashed.length);
+    
+    const openId = `email-${Date.now()}`;
+    console.log("[Signup] OpenId:", openId);
+    
+    const userData = {
+      openId,
+      email: input.email,
+      name: input.name || input.email,
+      loginMethod: 'email',
+      password: hashed,
+      userType: input.userType,
+      role: input.userType === 'merchant' ? 'merchant' : 'user',
+    };
+    
+    console.log("[Signup] userData.user_type:", userData.userType);
+    console.log("[Signup] userData.user_role:", userData.role);
+    
+    await db.upsertUser(userData);
+    console.log("[Signup] upsertUser completed");
+    
+    const user = await db.getUserByOpenId(openId);
+    console.log("[Signup] Retrieved user from DB - user_type:", user?.user_type);
+    console.log("[Signup] Retrieved user from DB - user_role:", user?.user_role);
+    
+    if (!user) throw new Error('Failed to create user');
+
+    const token = createToken(user.id, user.openId);
+    setAuthCookie(ctx.res, token);
+    console.log("[Signup] Success for:", input.email);
+    
+    return { success: true, user: mapUserToFrontend(user) };
+  }),
+    // Email/password login
+    login: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const user = await db.getUserByEmail(input.email);
+        if (!user) throw new Error('Invalid credentials');
+        if (!user.password) throw new Error('Please sign up first');
+
+        const valid = await bcrypt.compare(input.password, user.password);
+        if (!valid) throw new Error('Invalid credentials');
+
+        const token = createToken(user.id, user.openId);
+        setAuthCookie(ctx.res, token);
+        return { success: true, user: mapUserToFrontend(user) };
+      }),
+  }),
   tryon: tryonRouter,
   garments: garmentsRouter,
   sharing: sharingRouter,
@@ -122,36 +201,9 @@ export const appRouter = router({
   verification: verificationRouter,
   freeTrial: freeTrialRouter,
   widget: widgetRouter,
-  promotional: promotionalRouter,
-  closet: closetRouter,
-  voting: votingRouter,
-  discovery: discoveryRouter,
-  comments: commentsRouter,
-  notifications: notificationsRouter,
-  moderation: moderationRouter,
-  follows: followsRouter,
-  mentions: mentionsRouter,
-  hashtags: hashtagsRouter,
-  profiles: profilesRouter,
-  referrals: referralsRouter,
-  inviteCampaign: inviteCampaignRouter,
-  couponRedemption: couponRedemptionRouter,
-  outfitPolls: outfitPollsRouter,
-  pollNotifications: pollNotificationsRouter,
-  contact: contactRouter,
-  affiliate: affiliateRouter,
-  appRegistration: appRegistrationRouter,
-  developerDashboard: developerDashboardRouter,
-  monitoring: monitoringRouter,
-  webhooks: webhooksRouter,
-  apiDocs: apiDocsRouter,
-  developerMarketplace: developerMarketplaceRouter,
-  boutiqueMarketplace: boutiqueMarketplaceRouter,
-  enterprise: enterpriseRouter,
   fitroom: router({
     getCredits: publicProcedure.query(async () => {
       try {
-        // Import ENV to get the server-side Fitroom API key
         const { ENV } = await import("./_core/env");
         if (!ENV.fitroomApiKey) {
           console.warn("[Fitroom] API key not configured in environment");

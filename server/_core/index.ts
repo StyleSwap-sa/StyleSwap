@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express, { type Express } from "express";
 const app = express();
 import { createServer } from "http";
@@ -5,7 +6,7 @@ import net from "net";
 import multer from "multer";
 import cookieParser from "cookie-parser";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
+
 // Clerk middleware removed - using Manus OAuth instead
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -16,7 +17,7 @@ import { testYocoBoutiqueWebhook } from "../webhooks/test-webhook";
 import yocoPayoutsRouter from "../webhooks/yoco-payouts";
 import { getFitroomClient } from "./fitroom";
 import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
-import { sdk } from "./sdk";
+import { getUserFromRequest } from './auth';
 import crypto from "crypto";
 import path from "path";
 import fs from "fs";
@@ -30,16 +31,12 @@ import {
 } from "./rateLimiter";
 import { initializeWebhookJobs } from "../webhookRetryService";
 
+console.log("DATABASE_URL exists?", !!process.env.DATABASE_URL);
 // Configure multer for file uploads
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
-// Build timestamp: 2026-03-18T10:00:00Z - Force Render rebuild
 export async function startServer() {
-  console.error("\n\n🔥🔥🔥 UNIQUE MARKER: BUILD 2026-03-17 14:45:00 UTC 🔥🔥🔥\n\n");
   console.log("[Server] Starting initialization...");
-  console.log("[Server] ℹ️ Database schema is managed by Drizzle ORM migrations");
-  console.log("[Server] ℹ️ Run 'pnpm db:push' to apply schema changes");
-  
   const app = express();
   const server = createServer(app);
 
@@ -55,38 +52,7 @@ export async function startServer() {
     res.json({ status: "ok" });
   });
   
-  // OAuth routes MUST be registered FIRST, before any other middleware
-  // This ensures they take precedence over Vite SPA fallback
-  console.error("\n🔥🔥🔥 ABOUT TO REGISTER OAUTH ROUTES 🔥🔥🔥\n");
-  console.log("[Server] Registering OAuth routes...");
-  try {
-    registerOAuthRoutes(app);
-    console.error("\n🔥🔥🔥 OAUTH ROUTES REGISTERED SUCCESSFULLY 🔥🔥🔥\n");
-  } catch (error) {
-    console.error("\n🔥🔥🔥 ERROR REGISTERING OAUTH ROUTES:", error, "🔥🔥🔥\n");
-    throw error;
-  }
-  console.error("\n🔥🔥🔥 OAUTH ROUTES REGISTERED 🔥🔥🔥");
-  console.log("[Server] OAuth routes registered:");
-  console.log("  - GET /api/oauth/config");
-  console.log("  - GET /api/oauth/callback");
-  console.log("  - GET /api/oauth/debug");
-  console.error("\n🔥🔥🔥 OAUTH ROUTES REGISTRATION COMPLETE 🔥🔥🔥\n");
-  
-  // Verify OAuth routes are actually registered
-  console.error("\n🔥🔥🔥 VERIFYING OAUTH ROUTES ARE REGISTERED 🔥🔥🔥");
-  const routes = (app as any)._router.stack
-    .filter((layer: any) => layer.route)
-    .map((layer: any) => `${Object.keys(layer.route.methods).join(",").toUpperCase()} ${layer.route.path}`)
-    .filter((route: string) => route.includes("/api/oauth"));
-  console.error("Registered OAuth routes:", routes);
-  console.error("🔥🔥🔥 VERIFICATION COMPLETE 🔥🔥🔥\n");
-  
-  // TEST: Add a simple test endpoint to verify routing works
-  app.get("/api/test-endpoint", (req, res) => {
-    res.json({ message: "Test endpoint works!" });
-  });
-  console.log("[Server] Test endpoint registered: GET /api/test-endpoint");
+
 
   // Try-on upload endpoint with file upload support
   app.post("/api/tryon/upload", createUploadRateLimiter(), upload.fields([
@@ -100,18 +66,12 @@ export async function startServer() {
       console.log("[Try-On Upload] Received request");
       console.log("[Try-On Upload] Cookie header:", req.headers.cookie ? "present" : "missing");
       
-      // Authenticate the user using Clerk
+      // Authenticate the user using JWT
       let user;
       try {
-        const auth = (req as any).auth;
-        if (!auth?.userId) {
-          return res.status(401).json({ error: "Unauthorized: No authentication token" });
-        }
-        // Get user from database using Clerk ID
-        const { getAuthUser } = await import("./auth-clerk");
-        user = await getAuthUser(req);
+        user = await getUserFromRequest(req);
         if (!user) {
-          return res.status(401).json({ error: "Unauthorized: User not found" });
+          return res.status(401).json({ error: "Unauthorized: No valid session" });
         }
         console.log("[Try-On Upload] Authentication successful for user:", user.id);
       } catch (authError) {
@@ -272,8 +232,8 @@ export async function startServer() {
       res.status(500).json({ error: 'Failed to log error' });
     }
   });
-  console.info("[Server] Client error logging endpoint registered:");
-  console.info("  - POST /api/client-error");
+  console.log("[Server] Client error logging endpoint registered:");
+  console.log("  - POST /api/client-error");
   
   // Webhook endpoints
   app.post("/api/yoco/webhook", handleYokoWebhook);

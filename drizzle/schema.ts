@@ -1,45 +1,58 @@
-import { sql } from "drizzle-orm";
-import {
-	index,
-	integer,
-	pgTable,
-	serial,
-	text,
-	timestamp,
-	varchar,
-	boolean,
-	decimal,
-	date,
-	uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { pgTable, integer, boolean, date, uniqueIndex, pgSchema, AnyPgColumn, index, foreignKey, serial, varchar, text, timestamp, pgEnum, decimal, primaryKey, unique } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
 
-// Users Table
-export const users = pgTable(
-	"users",
-	{
-		id: serial().primaryKey().notNull(),
-		openId: varchar({ length: 255 }).unique().notNull(),
-		name: varchar({ length: 255 }).notNull(),
-		email: varchar({ length: 255 }).unique().notNull(),
-		loginMethod: varchar({ length: 50 }).default("oauth").notNull(),
-		user_role: varchar({ length: 50 }).default("user").notNull(),
-		createdAt: timestamp({ mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
-			.notNull(),
-		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
-		lastSignedIn: timestamp({ mode: "string" }),
-		phone: varchar({ length: 20 }),
-		user_type: varchar({ length: 50 }).default("individual"),
-		currentBoutiqueId: integer(),
-		freeTrialUsed: boolean().default(false),
-		freeTrialUsedAt: timestamp({ mode: "string" }),
-		freeTrialExpiresAt: timestamp({ mode: "string" }),
-	},
-	(table) => [
-		index("idx_users_email").on(table.email),
-		index("idx_users_openId").on(table.openId),
-	]
-);
+
+// PostgreSQL Enums
+export const auditLogsActionEnum = pgEnum('audit_logs_action', ['create', 'update', 'delete', 'export', 'import']);
+export const boutiqueStatusEnum = pgEnum('boutique_status', ['active', 'suspended', 'inactive']);
+export const boutiqueTransactionTypeEnum = pgEnum('boutique_transaction_type', ['purchase', 'usage', 'refund', 'adjustment']);
+export const boutiqueTransactionStatusEnum = pgEnum('boutique_transaction_status', ['pending', 'completed', 'failed']);
+export const boutiqueUserRoleEnum = pgEnum('boutique_user_role', ['owner', 'manager', 'staff']);
+export const emailNotificationTypeEnum = pgEnum('email_notification_type', ['purchase_confirmation', 'try_on_complete', 'credits_expiring', 'promotional']);
+export const emailNotificationStatusEnum = pgEnum('email_notification_status', ['pending', 'sent', 'failed', 'bounced']);
+export const productSizeEnum = pgEnum('product_size', ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']);
+export const fitAdjustmentEnum = pgEnum('fit_adjustment', ['tight', 'perfect', 'loose']);
+export const transactionTypeEnum = pgEnum('transaction_type', ['purchase', 'usage', 'refund', 'adjustment', 'order_payment', 'order_confirmation']);
+export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'completed', 'failed']);
+export const flowTypeEnum = pgEnum('flow_type', ['b2c', 'b2b']);
+export const userRoleEnum = pgEnum('user_role', ['user', 'admin', 'merchant']);
+export const userTypeEnum = pgEnum('user_type', ['customer', 'merchant', 'admin']);
+export const webhookAlertTypeEnum = pgEnum('webhook_alert_type', ['webhook_failed', 'webhook_max_retries', 'payment_unmatched', 'payment_mismatch']);
+export const webhookAlertSeverityEnum = pgEnum('webhook_alert_severity', ['low', 'medium', 'high', 'critical']);
+export const webhookEventStatusEnum = pgEnum('webhook_event_status', ['pending', 'processing', 'success', 'failed', 'retrying']);
+export const batchUploadStatusEnum = pgEnum('batch_upload_status', ['pending', 'processing', 'completed', 'failed']);
+export const batchUploadFileStatusEnum = pgEnum('batch_upload_file_status', ['pending', 'uploaded', 'failed']);
+export const clothingTypeEnum = pgEnum('clothing_type', ['upper', 'lower', 'combo', 'full']);
+export const paymentReconciliationStatusEnum = pgEnum('payment_reconciliation_status', ['matched', 'unmatched', 'duplicate', 'mismatch']);
+export const shopOrderStatusEnum = pgEnum('shop_order_status', ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']);
+export const bankAccountTypeEnum = pgEnum('bank_account_type', ['checking', 'savings']);
+export const payoutStatusEnum = pgEnum('payout_status', ['pending', 'processing', 'completed', 'failed']);
+export const apiKeyStatusEnum = pgEnum('api_key_status', ['active', 'revoked']);
+export const payoutAuditActorTypeEnum = pgEnum('payout_audit_actor_type', ['system', 'admin', 'boutique']);
+
+export const users = pgTable("users", {
+	id: serial().primaryKey().notNull(),
+	openId: varchar({ length: 64 }).unique(),
+	name: text(),
+	email: varchar({ length: 320 }).unique(),
+	loginMethod: varchar({ length: 64 }),
+	password: varchar("password", { length: 255 }),
+	role: userRoleEnum('user_role').default('user').notNull(),
+	createdAt: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
+	lastSignedIn: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	phone: varchar({ length: 20 }),
+	userType: userTypeEnum('user_type').default('customer').notNull(),
+	currentBoutiqueId: serial(),
+	freeTrialUsed: serial().default(0).notNull(),
+	freeTrialUsedAt: timestamp({ mode: 'string' }),
+	freeTrialExpiresAt: timestamp({ mode: 'string' }),
+},
+(table) => [
+	unique("users_openId_unique").on(table.openId),
+	unique("users_email_unique").on(table.email),
+]);
+
 
 // Boutiques Table
 export const boutiques = pgTable(
