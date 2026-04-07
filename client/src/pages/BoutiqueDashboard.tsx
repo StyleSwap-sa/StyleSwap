@@ -95,7 +95,7 @@ export default function BoutiqueDashboard() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Link href={`/boutique/products/${selectedBoutique}`}>
+            <Link href="/boutique/products">
               <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Product
