@@ -340,7 +340,7 @@ export default function BoutiqueVerificationFlow() {
                   <span className="text-sm">You'll receive an email notification</span>
                 </div>
               </div>
-              <Button onClick={() => window.location.href = "/boutique-dashboard"}>
+              <Button onClick={() => window.location.href = "/boutique/dashboard"}>
                 Back to Dashboard
               </Button>
             </CardContent>

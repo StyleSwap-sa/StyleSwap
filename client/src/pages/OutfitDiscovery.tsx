@@ -26,7 +26,6 @@ import { CommentSection } from "@/components/CommentSection";
 import { LikeCounter } from "@/components/LikeCounter";
 import { TrendingHashtags } from "@/components/TrendingHashtags";
 import { SocialShareWithReferral } from "@/components/SocialShareWithReferral";
-import { useState } from "react";
 
 type SortOption = "recent" | "popular" | "trending";
 

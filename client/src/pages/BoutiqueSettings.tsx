@@ -70,7 +70,7 @@ export default function BoutiqueSettings() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLocation("/boutique-dashboard")}
+              onClick={() => setLocation("/boutique/dashboard")}
               className="cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -98,7 +98,7 @@ export default function BoutiqueSettings() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setLocation("/boutique-dashboard")}
+            onClick={() => setLocation("/boutique/dashboard")}
             className="cursor-pointer w-fit"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -183,7 +183,7 @@ export default function BoutiqueSettings() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setLocation("/boutique-dashboard")}
+                onClick={() => setLocation("/boutique/dashboard")}
                 className="cursor-pointer w-full xs:flex-1 h-11 md:h-10 text-sm md:text-base"
               >
                 Cancel

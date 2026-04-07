@@ -145,7 +145,7 @@ export default function B2BSignup() {
         });
         setSuccess(true);
         setTimeout(() => {
-          setLocation("/boutique-dashboard");
+          setLocation("/boutique/dashboard");
         }, 2000);
       } catch (err: any) {
         setError(err.message || "Failed to create boutique");

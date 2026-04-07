@@ -95,7 +95,7 @@ export default function BoutiqueDashboard() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Link href={`/boutique-products/${selectedBoutique}`}>
+            <Link href={`/boutique/products/${selectedBoutique}`}>
               <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Product
@@ -185,7 +185,7 @@ export default function BoutiqueDashboard() {
 
             {/* Quick Actions */}
             <div className="grid md:grid-cols-4 gap-6">
-              <Link href="/products">
+              <Link href="/boutique/products">
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
                     <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
@@ -199,7 +199,7 @@ export default function BoutiqueDashboard() {
                 </Card>
               </Link>
 
-              <Link href="/boutique-try-on">
+              <Link href="/boutique/tryon">
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
                     <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
@@ -244,7 +244,7 @@ export default function BoutiqueDashboard() {
                 </Card>
               </Link>
 
-              <Link href={`/boutique-settings/${selectedBoutique}`}>
+              <Link href="/boutique/settings">
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
                     <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">

@@ -32,7 +32,7 @@ export default function BoutiqueTryOnPage() {
     return (
       <DashboardLayout>
         <div className="space-y-6">
-          <Link href="/boutique-dashboard">
+          <Link href="/boutique/dashboard">
             <Button variant="ghost" className="cursor-pointer">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
@@ -62,7 +62,7 @@ export default function BoutiqueTryOnPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <Link href="/boutique-dashboard">
+            <Link href="/boutique/dashboard">
               <Button variant="ghost" className="cursor-pointer mb-4">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Dashboard

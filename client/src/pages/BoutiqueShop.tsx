@@ -30,7 +30,7 @@ export default function BoutiqueShop() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Fetch boutique details
-  const { data: boutique, isLoading: boutiqueLoding } = trpc.boutiques.getBoutiqueBySlug.useQuery(
+  const { data: boutique, isLoading: boutiqueLoding } = trpc.boutiques.getBySlug.useQuery(
     { slug: slug || "" },
     { enabled: !!slug }
   );

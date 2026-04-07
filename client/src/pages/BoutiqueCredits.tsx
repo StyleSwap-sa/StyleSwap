@@ -98,7 +98,7 @@ export default function BoutiqueCredits() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setLocation("/boutique-dashboard")}
+            onClick={() => setLocation("/boutique/dashboard")}
             className="cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

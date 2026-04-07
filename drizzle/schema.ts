@@ -62,13 +62,14 @@ export const boutiques = pgTable(
 		name: varchar({ length: 255 }).notNull(),
 		slug: varchar({ length: 255 }).unique().notNull(),
 		description: text(),
-		logo: varchar({ length: 500 }),
-			ownerId: integer().notNull().references(() => users.id),
-		website: varchar({ length: 500 }),
-		instagram: varchar({ length: 255 }),
-		tiktok: varchar({ length: 255 }),
-		facebook: varchar({ length: 255 }),
-		whatsapp: varchar({ length: 255 }),
+		// Map to actual database column names
+		logo: varchar("logoUrl", { length: 500 }),           // DB column is 'logoUrl'
+		ownerId: integer().notNull().references(() => users.id),
+		website: varchar("websiteUrl", { length: 500 }),     // DB column is 'websiteUrl'
+		instagram: varchar("instagramHandle", { length: 255 }), // DB column is 'instagramHandle'
+		tiktok: varchar("tiktokHandle", { length: 255 }),    // DB column is 'tiktokHandle'
+		facebook: varchar("facebookUrl", { length: 500 }),   // DB column is 'facebookUrl'
+		whatsapp: varchar("whatsappNumber", { length: 255 }), // DB column is 'whatsappNumber'
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
@@ -80,43 +81,46 @@ export const boutiques = pgTable(
 	]
 );
 
-// Boutique Credits Table
 export const boutiqueCredits = pgTable(
-	"boutiqueCredits",
+	"boutiquecredits",  // lowercase to match database
 	{
 		id: serial().primaryKey().notNull(),
-			boutiqueId: integer().notNull().references(() => boutiques.id),
-			credits: decimal({ precision: 10, scale: 2 }).default("0").notNull(),
-		createdAt: timestamp({ mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
-			.notNull(),
-		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
-	},
-	(table) => [index("idx_boutique_credits_boutique").on(table.boutiqueId)]
-);
-
-// Boutique Settings Table
-export const boutiqueSettings = pgTable(
-	"boutiqueSettings",
-	{
-		id: serial().primaryKey().notNull(),
-			boutiqueId: integer().notNull().references(() => boutiques.id),
-			setting_key: varchar({ length: 255 }).notNull(),
-		setting_value: text().notNull(),
+		boutiqueId: integer().notNull().unique().references(() => boutiques.id),
+		totalCredits: integer().default(0).notNull(),
+		usedCredits: integer().default(0).notNull(),
+		remainingCredits: integer().default(0).notNull(),
+		expiresAt: timestamp({ mode: "string" }),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
 		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
 	},
 	(table) => [
-		index("idx_boutique_settings_boutique").on(table.boutiqueId),
-		index("idx_boutique_settings_key").on(table.setting_key),
+		index("idx_boutique_credits_boutique").on(table.boutiqueId),
 	]
+);
+// Boutique Settings Table - Match actual database columns
+export const boutiqueSettings = pgTable(
+  "boutiquesettings",
+  {
+    id: serial("id").primaryKey().notNull(),
+    boutiqueId: integer("boutiqueId").notNull().unique().references(() => boutiques.id),
+    brandingColor: varchar("brandingColor", { length: 7 }).default('#FF6B35'),
+    customDomain: varchar("customDomain", { length: 255 }).default(''),
+    enableSharing: integer("enableSharing").default(1),
+    enableAnalytics: integer("enableAnalytics").default(1),
+    webhookUrl: varchar("webhookUrl", { length: 500 }).default(''),
+    createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_boutique_settings_boutique").on(table.boutiqueId),
+  ]
 );
 
 // Boutique Subscriptions Table
 export const boutiqueSubscriptions = pgTable(
-	"boutiqueSubscriptions",
+	"boutiquesubscriptions",
 	{
 		id: serial().primaryKey().notNull(),
 			boutiqueId: integer().notNull().references(() => boutiques.id),
@@ -132,7 +136,7 @@ export const boutiqueSubscriptions = pgTable(
 
 // Boutique Transactions Table
 export const boutiqueTransactions = pgTable(
-	"boutiqueTransactions",
+	"boutiquetransactions",
 	{
 		id: serial().primaryKey().notNull(),
 			boutiqueId: integer().notNull().references(() => boutiques.id),
@@ -149,7 +153,7 @@ export const boutiqueTransactions = pgTable(
 
 // Boutique Users Table
 export const boutiqueUsers = pgTable(
-	"boutiqueUsers",
+	"boutiqueusers",
 	{
 		id: serial().primaryKey().notNull(),
 			boutiqueId: integer().notNull().references(() => boutiques.id),
@@ -158,7 +162,6 @@ export const boutiqueUsers = pgTable(
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
-		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
 	},
 	(table) => [
 		index("idx_boutique_users_boutique").on(table.boutiqueId),
@@ -203,7 +206,7 @@ export const products = pgTable(
 
 // User Credits Table
 	export const userCredits = pgTable(
-		"userCredits",
+		"usercredits",
 		{
 			id: serial().primaryKey().notNull(),
 			userId: integer().notNull().references(() => users.id),
