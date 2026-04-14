@@ -244,7 +244,7 @@ export default function BoutiqueDashboard() {
                 </Card>
               </Link>
 
-              <Link href="/boutique/settings">
+              <Link href={`/boutique/settings/${selectedBoutique}`}>
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
                     <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">

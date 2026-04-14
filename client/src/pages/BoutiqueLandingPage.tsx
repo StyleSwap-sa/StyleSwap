@@ -1,18 +1,19 @@
-import { useLocation } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Instagram, Music, Facebook, MessageCircle, ExternalLink, ShoppingBag } from "lucide-react";
 import { useMetaTags } from "@/hooks/useMetaTags";
 
-interface BoutiqueLandingPageProps {
-  slug: string;
-}
 
-export default function BoutiqueLandingPage({ slug }: BoutiqueLandingPageProps) {
+
+export default function BoutiqueLandingPage() {
+  const { slug } = useParams<{ slug: string }>();
   const [, setLocation] = useLocation();
-  const { data: boutique, isLoading, error } = trpc.boutiques.getBySlug.useQuery({ slug });
-
+  const { data: boutique, isLoading, error } = trpc.boutiques.getBySlug.useQuery(
+    { slug: slug || "" },
+    { enabled: !!slug }
+  );
   // Update meta tags for social media sharing
   useMetaTags({
     title: boutique?.name ? `${boutique.name} - Virtual Try-On` : "Virtual Try-On Boutique",

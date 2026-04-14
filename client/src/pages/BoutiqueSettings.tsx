@@ -8,7 +8,7 @@ import { Loader2, ArrowLeft, Settings, Save, AlertCircle } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function BoutiqueSettings() {
-  const [, params] = useRoute("/boutique-settings/:boutiqueId");
+  const [, params] = useRoute("/boutique/settings/:boutiqueId");
   const [, setLocation] = useLocation();
   const boutiqueId = params?.boutiqueId ? parseInt(params.boutiqueId) : null;
 

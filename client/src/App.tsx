@@ -117,10 +117,10 @@ export default function App() {
               <Route path="/b2b" component={B2BLanding} />
               <Route path="/b2b/signup" component={B2BSignup} />
               <Route path="/boutique/dashboard" component={BoutiqueDashboard} />
-              <Route path="/boutique/landing" component={BoutiqueLandingPage} />
+              <Route path="/boutique/:slug" component={BoutiqueLandingPage} />
               <Route path="/boutique/products" component={ProductManagement} />
               <Route path="/boutique/credits" component={BoutiqueCredits} />
-              <Route path="/boutique/settings" component={BoutiqueSettings} />
+              <Route path="/boutique/settings/:boutiqueId" component={BoutiqueSettings} />
               <Route path="/admin/dashboard" component={AdminDashboard} />
               <Route path="/boutique/performance" component={BoutiquePerformanceExport} />
               <Route path="/boutique/features" component={BoutiqueFeatures} />
