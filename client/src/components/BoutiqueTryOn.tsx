@@ -328,7 +328,7 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Available Credits</p>
-              <p className="text-3xl font-bold">{credits || 0}</p>
+              <p className="text-3xl font-bold">{credits?.remainingCredits ?? 0}</p>
             </div>
             <Sparkles className="w-8 h-8 text-primary" />
           </div>
