@@ -1,5 +1,6 @@
 import { storagePut } from './storage';
 import crypto from 'crypto';
+import { ENV } from './_core/env';
 
 /**
  * Generate a unique filename for product image
@@ -23,6 +24,9 @@ export async function uploadProductImage(options: {
   mimeType: string;
 }): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
+    console.log("[Product Upload] Starting upload, checking ENV:");
+    console.log("  - ENV.awsAccessKeyId exists:", !!ENV.awsAccessKeyId);
+    
     const fileKey = generateImageFilename(options.boutiqueId, options.productName, options.filename);
     
     const result = await storagePut(fileKey, options.fileBuffer, options.mimeType);

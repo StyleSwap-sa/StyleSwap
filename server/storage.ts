@@ -9,17 +9,24 @@ let s3Client: S3Client | null = null;
 
 function getS3Client(): S3Client {
   if (!s3Client) {
-    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+    console.log("[S3] Checking AWS credentials from ENV:");
+    console.log("  - ENV.awsAccessKeyId exists:", !!ENV.awsAccessKeyId);
+    console.log("  - ENV.awsSecretAccessKey exists:", !!ENV.awsSecretAccessKey);
+    console.log("  - ENV.awsRegion:", ENV.awsRegion);
+    console.log("  - ENV.awsS3Bucket:", ENV.awsS3Bucket);
+    
+    // 🔥 Use ENV instead of process.env
+    if (!ENV.awsAccessKeyId || !ENV.awsSecretAccessKey) {
       throw new Error(
         "AWS credentials missing: set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY"
       );
     }
 
     s3Client = new S3Client({
-      region: process.env.AWS_REGION || 'us-east-1',
+      region: ENV.awsRegion || 'us-east-1',
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: ENV.awsAccessKeyId,
+        secretAccessKey: ENV.awsSecretAccessKey,
       },
     });
   }
@@ -27,7 +34,8 @@ function getS3Client(): S3Client {
 }
 
 function getBucketName(): string {
-  const bucket = process.env.AWS_S3_BUCKET;
+  // 🔥 Use ENV instead of process.env
+  const bucket = ENV.awsS3Bucket;
   if (!bucket) {
     throw new Error("AWS_S3_BUCKET environment variable is not set");
   }
@@ -40,10 +48,6 @@ function normalizeKey(relKey: string): string {
 
 /**
  * Upload file to S3
- * @param relKey Relative path in S3 bucket (e.g., "uploads/user-123/image.jpg")
- * @param data File content as Buffer, Uint8Array, or string
- * @param contentType MIME type (e.g., "image/jpeg")
- * @returns Object with key and public URL
  */
 export async function storagePut(
   relKey: string,
@@ -54,7 +58,6 @@ export async function storagePut(
   const bucket = getBucketName();
   const key = normalizeKey(relKey);
 
-  // Convert string to Buffer if needed
   const body = typeof data === 'string' ? Buffer.from(data) : data;
 
   try {
@@ -63,15 +66,13 @@ export async function storagePut(
       Key: key,
       Body: body,
       ContentType: contentType,
-      // Make object publicly readable
       ACL: 'public-read',
     });
 
     await client.send(command);
 
-    // Construct public URL
-    const region = process.env.AWS_REGION || 'us-east-1';
-    const url = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+    // 🔥 Use ENV for region
+    const url = `https://${bucket}.s3.${ENV.awsRegion || 'us-east-1'}.amazonaws.com/${key}`;
 
     console.log(`[Storage] ✓ Uploaded to S3: ${key}`);
     return { key, url };
@@ -84,9 +85,6 @@ export async function storagePut(
 
 /**
  * Get signed download URL for S3 object
- * @param relKey Relative path in S3 bucket
- * @param expiresIn Expiration time in seconds (default: 3600 = 1 hour)
- * @returns Object with key and signed URL
  */
 export async function storageGet(
   relKey: string,
@@ -114,20 +112,17 @@ export async function storageGet(
 }
 
 /**
- * Get public URL for S3 object (works for public-read objects)
- * @param relKey Relative path in S3 bucket
- * @returns Public URL
+ * Get public URL for S3 object
  */
 export function getPublicUrl(relKey: string): string {
   const bucket = getBucketName();
   const key = normalizeKey(relKey);
-  const region = process.env.AWS_REGION || 'us-east-1';
-  return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+  // 🔥 Use ENV for region
+  return `https://${bucket}.s3.${ENV.awsRegion || 'us-east-1'}.amazonaws.com/${key}`;
 }
 
 /**
  * Delete object from S3
- * @param relKey Relative path in S3 bucket
  */
 export async function storageDelete(relKey: string): Promise<void> {
   const client = getS3Client();

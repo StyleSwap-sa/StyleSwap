@@ -1,4 +1,4 @@
-import { pgTable, integer, boolean, date, uniqueIndex, pgSchema, AnyPgColumn, index, foreignKey, serial, varchar, text, timestamp, pgEnum, decimal, primaryKey, unique } from "drizzle-orm/pg-core"
+import { pgTable, integer, boolean, date, uniqueIndex, pgSchema, AnyPgColumn, index, foreignKey, serial, varchar, text, timestamp, pgEnum, decimal, primaryKey, unique, numeric } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -139,16 +139,24 @@ export const boutiqueTransactions = pgTable(
 	"boutiquetransactions",
 	{
 		id: serial().primaryKey().notNull(),
-			boutiqueId: integer().notNull().references(() => boutiques.id),
-			transaction_type: varchar({ length: 50 }).notNull(),
+		boutiqueId: integer().notNull().references(() => boutiques.id),
+		type: varchar({ length: 50 }).notNull(),  // ← Changed from transaction_type to type
 		amount: decimal({ precision: 10, scale: 2 }).notNull(),
+		price: decimal({ precision: 10, scale: 2 }),
+		currency: varchar({ length: 3 }).default("ZAR"),
+		productId: integer(),
+		fitRoomRequestId: varchar({ length: 255 }),
+		initiatedBy: integer().references(() => users.id),
+		description: text(),
 		status: varchar({ length: 50 }).default("pending").notNull(),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
 		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
 	},
-	(table) => [index("idx_boutique_transactions_boutique").on(table.boutiqueId)]
+	(table) => [
+		index("idx_boutique_transactions_boutique").on(table.boutiqueId),
+	]
 );
 
 // Boutique Users Table
@@ -188,20 +196,26 @@ export const garments = pgTable(
 
 // Products Table
 export const products = pgTable(
-	"products",
-	{
-		id: serial().primaryKey().notNull(),
-			boutiqueId: integer().notNull().references(() => boutiques.id),
-			name: varchar({ length: 255 }).notNull(),
-			description: text(),
-			price: decimal({ precision: 10, scale: 2 }).notNull(),
-		image_url: varchar({ length: 500 }),
-		createdAt: timestamp({ mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
-			.notNull(),
-		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
-	},
-	(table) => [index("idx_products_boutique").on(table.boutiqueId)]
+  "products",
+  {
+    id: serial("id").primaryKey().notNull(),
+    boutiqueId: integer("boutiqueId").notNull().references(() => boutiques.id),
+    name: varchar("name", { length: 255 }).notNull(),
+    sku: varchar("sku", { length: 100 }),
+    description: text("description"),
+    category: varchar("category", { length: 100 }).notNull(),
+    imageUrl: varchar("imageUrl", { length: 500 }).notNull(),  // ← NOT 'image_url'
+	price: decimal("price", { precision: 10, scale: 2 }),
+    currency: varchar("currency", { length: 3 }).default("ZAR"),
+    isActive: integer("isActive").default(1),  // ← NOT 'is_active'
+    hasSizeVariants: integer("hasSizeVariants").default(0),
+    createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updatedAt").defaultNow(),
+  },
+  (table) => [
+    index("idx_products_boutique").on(table.boutiqueId),
+    index("idx_products_active").on(table.isActive),
+  ]
 );
 
 // User Credits Table
