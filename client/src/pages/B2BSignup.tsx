@@ -29,15 +29,15 @@ export default function B2BSignup() {
     country: "South Africa",
     referralCode: "",
   });
-
+  const utils = trpc.useUtils();
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const createBoutiqueMutation = trpc.boutiques.create.useMutation();
   const validateReferralCodeMutation = trpc.referral.validateCode.useMutation();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [suggestedSlug, setSuggestedSlug] = useState<string | null>(null);
   const [referralError, setReferralError] = useState("");
+
 
   if (!isAuthenticated) {
     return (
@@ -88,33 +88,10 @@ export default function B2BSignup() {
       }
       setStep(3);
       setError("");
-    } else if (step === 3) {
+   } else if (step === 3) {
       try {
         setError("");
-        const baseSlug = formData.businessName.toLowerCase().replace(/\s+/g, '-');
-        let finalSlug = baseSlug;
-        
-        try {
-          const inputStr = JSON.stringify({ slug: baseSlug });
-          const encodedInput = encodeURIComponent(inputStr);
-          const url = '/api/trpc/boutiques.checkSlugAvailability?input=' + encodedInput;
-          console.log('Checking slug:', baseSlug, 'URL:', url);
-          
-          const response = await fetch(url, { credentials: 'include' });
-          const result = await response.json();
-          console.log('Slug check result:', result);
-          
-          if (result.result && result.result.data) {
-            const slugCheckResult = result.result.data;
-            if (!slugCheckResult.available && slugCheckResult.suggestion) {
-              finalSlug = slugCheckResult.suggestion;
-              setSuggestedSlug(finalSlug);
-              console.log('Using suggested slug:', finalSlug);
-            }
-          }
-        } catch (slugErr) {
-          console.warn('Slug check error:', slugErr);
-        }
+       const finalSlug = formData.businessName.toLowerCase().replace(/\s+/g, '-');
         
         // Validate referral code if provided
         if (formData.referralCode) {
@@ -143,9 +120,12 @@ export default function B2BSignup() {
           whatsappNumber: formData.whatsappNumber || undefined,
           referralCode: formData.referralCode || undefined,
         });
+        await utils.boutiques.myBoutiques.invalidate();
+
         setSuccess(true);
         setTimeout(() => {
-          setLocation("/boutique/dashboard");
+          // Hard redirect to ensure fresh page load
+          window.location.href = "/boutique/dashboard";
         }, 2000);
       } catch (err: any) {
         setError(err.message || "Failed to create boutique");
