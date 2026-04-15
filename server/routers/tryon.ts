@@ -160,49 +160,45 @@ export const tryonRouter = router({
       }
     }),
 
-  /**
-   * Poll for try-on task status and results
-   * CRITICAL FIX: Return FAILED status with error message instead of throwing
-   * This prevents frontend polling from hanging indefinitely
-   */
   pollTryOnStatus: protectedProcedure
-    .input(z.object({ taskId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const fitroomClient = getFitroomClient();
-      const status = await fitroomClient.getTryOnStatus(input.taskId);
+  .input(z.object({ taskId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const fitroomClient = getFitroomClient();
+    const status = await fitroomClient.getTryOnStatus(input.taskId);
 
-      // If task failed, return the failure status with error message (don't throw)
-      // This allows frontend to detect failure immediately and refund credits
-      if (status.status === "FAILED") {
-        return {
-          taskId: input.taskId,
-          status: "FAILED",
-          error: status.error || "Try-on generation failed",
-          progress: 100,
-          isComplete: false,
-          isFailed: true,
-        };
-      }
-
-      // If there was an error getting status (not a task failure), throw error
-      if (!status.success) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: status.error || "Failed to get task status",
-        });
-      }
-
+    // If task failed, return the failure status
+    if (status.status === "FAILED") {
       return {
         taskId: input.taskId,
-        status: status.status,
-        resultImage: status.resultImage,
-        resultImageUrl: status.resultImage,
-        error: status.error,
-        progress: status.progress || 0,
-        isComplete: status.status === "COMPLETED",
-        isFailed: status.status === "FAILED",
+        status: "FAILED",
+        error: status.error || "Try-on generation failed",
+        progress: 100,
+        isComplete: false,
+        isFailed: true,
       };
-    }),
+    }
+
+    // If there was an error getting status
+    if (!status.success) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: status.error || "Failed to get task status",
+      });
+    }
+
+    // 🔥 FIX: Add resultUrl field that frontend expects
+    return {
+      taskId: input.taskId,
+      status: status.status,
+      resultImage: status.resultImage,
+      resultImageUrl: status.resultImage,
+      resultUrl: status.resultImage,  // ← Add this line
+      error: status.error,
+      progress: status.progress || 0,
+      isComplete: status.status === "COMPLETED",
+      isFailed: status.status === "FAILED",
+    };
+  }),
 
   /**
    * Get try-on task status (alias for frontend compatibility)

@@ -8,11 +8,7 @@ interface CreditsData {
   percentage: number;
 }
 
-interface WidgetProps {
-  apiKey: string;
-}
-
-export function FitroomCreditsWidget({ apiKey }: WidgetProps) {
+export function FitroomCreditsWidget() {  // Remove apiKey prop
   const [credits, setCredits] = useState<CreditsData | null>(null);
   const [isLow, setIsLow] = useState(false);
   const [isCritical, setIsCritical] = useState(false);
@@ -25,12 +21,9 @@ export function FitroomCreditsWidget({ apiKey }: WidgetProps) {
         setLoading(true);
         setError(null);
 
+        // tRPC query should be GET
         const response = await fetch("/api/trpc/fitroom.getCredits", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ apiKey }),
+          method: "GET",
         });
 
         const data = await response.json();
@@ -51,13 +44,12 @@ export function FitroomCreditsWidget({ apiKey }: WidgetProps) {
       }
     };
 
-    if (apiKey) {
-      fetchCredits();
-      // Refresh every 5 minutes
-      const interval = setInterval(fetchCredits, 5 * 60 * 1000);
-      return () => clearInterval(interval);
-    }
-  }, [apiKey]);
+    fetchCredits();
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchCredits, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []); // No dependencies
+
 
   if (loading) {
     return (

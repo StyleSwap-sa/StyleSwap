@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { getImageDimensions } from "@/lib/imageUtils";
+import { getImageDimensions, resizeImage } from "@/lib/imageUtils";
 
 interface TryOnResult {
   taskId: string;
@@ -161,50 +161,109 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
       console.error("Error reading file:", err);
     }
   };
+  
 
-  // Handle try-on submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Add these helper functions inside your component (before handleSubmit)
 
-    if (!modelPhoto || !clothImage) {
-      setError("Please upload both body photo and clothing image");
-      return;
+// Validate and resize image before processing
+const validateAndResizeImage = async (file: File, maxDimension: number = 2048): Promise<File> => {
+  // Check file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error(`Image too large. Max 5MB. Your image is ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+  }
+  
+  // Check format
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    throw new Error(`Invalid format: ${file.type}. Use JPEG, PNG, or WebP`);
+  }
+  
+  // Get dimensions
+  const dimensions = await getImageDimensions(file);
+  console.log(`[Image Validation] Original dimensions: ${dimensions.width}x${dimensions.height}`);
+  
+  // Resize if too large
+  if (dimensions.width > maxDimension || dimensions.height > maxDimension) {
+    console.log(`[Image Validation] Resizing image from ${dimensions.width}x${dimensions.height} to max ${maxDimension}px`);
+    const resizedBlob = await resizeImage(file, maxDimension);
+    const resizedFile = new File([resizedBlob], file.name, { type: 'image/jpeg' });
+    
+    // Get new dimensions
+    const newDimensions = await getImageDimensions(resizedFile);
+    console.log(`[Image Validation] Resized dimensions: ${newDimensions.width}x${newDimensions.height}`);
+    return resizedFile;
+  }
+  
+  return file;
+};
+
+// Updated handleSubmit
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!modelPhoto || !clothImage) {
+    setError("Please upload both body photo and clothing image");
+    return;
+  }
+
+  setIsLoading(true);
+  setError("");
+  setWarning("");
+
+  try {
+    // Validate and resize images before processing
+    setProcessingProgress(10);
+    console.log("[Try-On] Validating and resizing model photo...");
+    const validatedModelPhoto = await validateAndResizeImage(modelPhoto, 2048);
+    
+    setProcessingProgress(20);
+    console.log("[Try-On] Validating and resizing clothing image...");
+    const validatedClothImage = await validateAndResizeImage(clothImage, 1024);
+    
+    let validatedLowerClothImage = null;
+    if (clothType === "combo" && lowerClothImage) {
+      setProcessingProgress(30);
+      console.log("[Try-On] Validating and resizing lower clothing image...");
+      validatedLowerClothImage = await validateAndResizeImage(lowerClothImage, 1024);
+    }
+    
+    setProcessingProgress(40);
+    console.log("[Try-On] Converting images to base64...");
+    
+    // Convert files to base64 (without prefix)
+    const modelBase64 = await fileToBase64(validatedModelPhoto);
+    const clothBase64 = await fileToBase64(validatedClothImage);
+    let lowerClothBase64 = null;
+
+    if (clothType === "combo" && validatedLowerClothImage) {
+      lowerClothBase64 = await fileToBase64(validatedLowerClothImage);
     }
 
-    setIsLoading(true);
-    setError("");
-    setWarning("");
+    setProcessingProgress(50);
+    console.log("[Try-On] Sending to Fitroom API...");
 
-    try {
-      // Convert files to base64
-      const modelBase64 = await fileToBase64(modelPhoto);
-      let clothBase64 = await fileToBase64(clothImage);
-      let lowerClothBase64 = null;
+    // Create try-on with correct parameter names
+    const response = await createTryOnMutation.mutateAsync({
+      modelImageBase64: modelBase64,
+      clothImageBase64: clothBase64,
+      lowerClothImageBase64: lowerClothBase64 || undefined,
+      clothType,
+      boutiqueId,
+      testMode,
+    });
 
-      if (clothType === "combo" && lowerClothImage) {
-        lowerClothBase64 = await fileToBase64(lowerClothImage);
-      }
+    setCurrentTaskId(response.taskId);
+    setIsPolling(true);
+    setProcessingProgress(0);
+    pollingStartTimeRef.current = Date.now();
 
-      // Create try-on
-      const response = await createTryOnMutation.mutateAsync({
-        modelImage: modelBase64,
-        clothImage: clothBase64,
-        lowerClothImage: lowerClothBase64 || undefined,
-        clothType,
-        boutiqueId,
-        testMode,
-      });
-
-      setCurrentTaskId(response.taskId);
-      setIsPolling(true);
-      setProcessingProgress(0);
-      pollingStartTimeRef.current = Date.now();
-
-    } catch (err: any) {
-      setError(err.message || "Failed to create try-on");
-      setIsLoading(false);
-    }
-  };
+  } catch (err: any) {
+    console.error("[Try-On] Error:", err);
+    setError(err.message || "Failed to create try-on");
+    setIsLoading(false);
+    setProcessingProgress(0);
+  }
+};
 
   // Handle polling
   useEffect(() => {
@@ -272,18 +331,21 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
     }
   }, [getTryOnStatusQuery.data, isPolling]);
 
-  // Helper function to convert file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const result = reader.result as string;
-        resolve(result);
-      };
-      reader.onerror = reject;
-    });
-  };
+
+  // Helper function to convert file to base64 (without prefix)
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Remove the data:image/...;base64, prefix
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+  });
+};
 
   // Handle download
   const handleDownload = async () => {

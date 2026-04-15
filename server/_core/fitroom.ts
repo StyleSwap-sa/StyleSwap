@@ -3,6 +3,7 @@ import FormData from "form-data";
 import fs from "fs";
 import path from "path";
 import https from "https";
+import { ENV } from './../_core/env'; 
 
 export interface FitroomTryOnRequest {
   modelImagePath: string;
@@ -80,49 +81,37 @@ export class FitroomClient {
    * This method sends base64 images directly in JSON body to avoid BytesIO issues
    */
   async createTryOnWithBase64(request: FitroomTryOnBase64Request): Promise<FitroomTryOnResponse> {
-    try {
-      console.log("[Fitroom] Creating try-on with base64 encoded images");
-      console.log("[Fitroom] Cloth type:", request.clothType);
-      console.log("[Fitroom] HD mode:", request.hdMode !== false ? "enabled" : "disabled");
-      
-      // Calculate base64 sizes for logging
-      const modelBase64Size = Buffer.byteLength(request.modelImageBase64, 'utf8');
-      const clothBase64Size = Buffer.byteLength(request.clothImageBase64, 'utf8');
-      
-      console.log("[Fitroom] Model image base64 size:", modelBase64Size, "bytes");
-      console.log("[Fitroom] Cloth image base64 size:", clothBase64Size, "bytes");
-      
-      // Debug: Check base64 format
-      console.log("[Fitroom] Model base64 first 50 chars:", request.modelImageBase64.substring(0, 50));
-      console.log("[Fitroom] Cloth base64 first 50 chars:", request.clothImageBase64.substring(0, 50));
-
-      // Send base64 images directly in JSON body instead of multipart form data
-      const payload = {
-        model_image: request.modelImageBase64,
-        cloth_image: request.clothImageBase64,
-        cloth_type: request.clothType,
-      };
-
-      // For combo try-ons, add lower clothing image
-      if (request.clothType === "combo" && request.lowerClothImageBase64) {
-        (payload as any).lower_cloth_image = request.lowerClothImageBase64;
-      }
-
-      // HD mode is optional - only enable if explicitly requested
-      // Standard mode: 1 credit, ~9s processing
-      // HD mode: 2 credits, ~30s processing
-      (payload as any).hd_mode = request.hdMode || false;
-
-      console.log("[Fitroom] Sending POST to /api/tryon/v2/tasks with base64 JSON payload");
-      console.log("[Fitroom] Payload keys:", Object.keys(payload));
-      console.log("[Fitroom] Payload:", { ...payload, model_image: payload.model_image.substring(0, 50) + "...", cloth_image: payload.cloth_image.substring(0, 50) + "..." });
-      
-      const response = await this.client.post("/api/tryon/v2/tasks", payload, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        timeout: 120000, // 120 seconds for Fitroom API
-      });
+   try {
+    console.log("[Fitroom] Creating try-on with base64 images (converted to multipart)");
+    
+    // Create FormData instance
+    const form = new FormData();
+    
+    // Convert base64 strings to buffers and append as files
+    const modelBuffer = Buffer.from(request.modelImageBase64, 'base64');
+    const clothBuffer = Buffer.from(request.clothImageBase64, 'base64');
+    
+    form.append("model_image", modelBuffer, { filename: "model.jpg", contentType: "image/jpeg" });
+    form.append("cloth_image", clothBuffer, { filename: "cloth.jpg", contentType: "image/jpeg" });
+    form.append("cloth_type", request.clothType);
+    
+    if (request.clothType === "combo" && request.lowerClothImageBase64) {
+      const lowerBuffer = Buffer.from(request.lowerClothImageBase64, 'base64');
+      form.append("lower_cloth_image", lowerBuffer, { filename: "lower.jpg", contentType: "image/jpeg" });
+    }
+    
+    if (request.hdMode) {
+      form.append("hd_mode", "true");
+    }
+    
+    const response = await this.client.post("/api/tryon/v2/tasks", form, {
+      headers: {
+        ...form.getHeaders(),
+        "Content-Length": form.getLengthSync(),
+      },
+      timeout: 120000,
+    });
+    
 
       console.log("[Fitroom] SUCCESS - Response status:", response.status);
       console.log("[Fitroom] SUCCESS - Response data:", JSON.stringify(response.data));
@@ -335,7 +324,7 @@ export class FitroomClient {
       return {
         success: true,
         status,
-        resultImage,
+        resultImage: resultImage,
         downloadSignedUrl: resultImage,
         progress,
       };
@@ -351,10 +340,11 @@ export class FitroomClient {
 }
 
 export function getFitroomClient(): FitroomClient | null {
-  const apiKey = process.env.FITROOM_API_KEY;
+  const apiKey = ENV.fitroomApiKey;  // ← Use ENV instead of process.env
   if (!apiKey) {
     console.warn("[Fitroom] FITROOM_API_KEY environment variable is not set - Fitroom features will be unavailable");
     return null;
   }
+  console.log("[Fitroom] Client initialized with API key present");
   return new FitroomClient(apiKey);
 }

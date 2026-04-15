@@ -63,13 +63,15 @@ export const boutiques = pgTable(
 		slug: varchar({ length: 255 }).unique().notNull(),
 		description: text(),
 		// Map to actual database column names
-		logo: varchar("logoUrl", { length: 500 }),           // DB column is 'logoUrl'
+		logo: varchar("logoUrl", { length: 500 }),
 		ownerId: integer().notNull().references(() => users.id),
-		website: varchar("websiteUrl", { length: 500 }),     // DB column is 'websiteUrl'
-		instagram: varchar("instagramHandle", { length: 255 }), // DB column is 'instagramHandle'
-		tiktok: varchar("tiktokHandle", { length: 255 }),    // DB column is 'tiktokHandle'
-		facebook: varchar("facebookUrl", { length: 500 }),   // DB column is 'facebookUrl'
-		whatsapp: varchar("whatsappNumber", { length: 255 }), // DB column is 'whatsappNumber'
+		website: varchar("websiteUrl", { length: 500 }),
+		instagram: varchar("instagramHandle", { length: 255 }),
+		tiktok: varchar("tiktokHandle", { length: 255 }),
+		facebook: varchar("facebookUrl", { length: 500 }),
+		whatsapp: varchar("whatsappNumber", { length: 255 }),
+		// 🔥 ADD THIS - status column
+		status: varchar("status", { length: 20 }).default("active").notNull(),
 		createdAt: timestamp({ mode: "string" })
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
@@ -78,6 +80,7 @@ export const boutiques = pgTable(
 	(table) => [
 		index("idx_boutiques_owner").on(table.ownerId),
 		index("idx_boutiques_slug").on(table.slug),
+		index("idx_boutiques_status").on(table.status),  // Optional: add index for status
 	]
 );
 
@@ -119,19 +122,28 @@ export const boutiqueSettings = pgTable(
 );
 
 // Boutique Subscriptions Table
+// Boutique Subscriptions Table
 export const boutiqueSubscriptions = pgTable(
 	"boutiquesubscriptions",
 	{
 		id: serial().primaryKey().notNull(),
-			boutiqueId: integer().notNull().references(() => boutiques.id),
-			subscription_type: varchar({ length: 50 }).notNull(),
-		status: varchar({ length: 50 }).default("active").notNull(),
-		createdAt: timestamp({ mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
-			.notNull(),
-		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
+		boutiqueId: integer().notNull().references(() => boutiques.id),
+		planId: varchar("planId", { length: 50 }).notNull(),
+		planName: varchar("planName", { length: 100 }).notNull(),
+		monthlyLimit: integer("monthlyLimit").default(0).notNull(),
+		currentMonthUsage: integer("currentMonthUsage").default(0).notNull(),
+		usagePeriodStart: varchar("usagePeriodStart", { length: 10 }).notNull(),
+		usagePeriodEnd: varchar("usagePeriodEnd", { length: 10 }).notNull(),
+		status: varchar("status", { length: 20 }).default("active").notNull(),
+		billingCycle: varchar("billingCycle", { length: 20 }).default("monthly").notNull(),
+		autoRenew: integer("autoRenew").default(1).notNull(),
+		createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
+		updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 	},
-	(table) => [index("idx_boutique_subscriptions_boutique").on(table.boutiqueId)]
+	(table) => [
+		index("idx_boutique_subscriptions_boutique").on(table.boutiqueId),
+		index("idx_boutique_subscriptions_status").on(table.status),
+	]
 );
 
 // Boutique Transactions Table
