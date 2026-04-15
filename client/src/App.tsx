@@ -117,7 +117,6 @@ export default function App() {
               <Route path="/b2b" component={B2BLanding} />
               <Route path="/b2b/signup" component={B2BSignup} />
               <Route path="/boutique/dashboard" component={BoutiqueDashboard} />
-              <Route path="/boutique/:slug" component={BoutiqueLandingPage} />
               <Route path="/boutique/products" component={ProductManagement} />
               <Route path="/boutique/credits" component={BoutiqueCredits} />
               <Route path="/boutique/settings/:boutiqueId" component={BoutiqueSettings} />
@@ -165,6 +164,7 @@ export default function App() {
               <Route path="/blog" component={Blog} />
               <Route path="/polls" component={Polls} />
               <Route path="/polls/:pollId" component={Polls} />
+              <Route path="/boutique/:slug" component={BoutiqueLandingPage} />
               <Route component={NotFound} />
             </Switch>
           </Suspense>
