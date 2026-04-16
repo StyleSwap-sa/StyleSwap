@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
+import { ENV } from "../_core/env";
+import { createPaymentIntent } from "../yoko-payment";
 import { TRPCError } from "@trpc/server";
 import {
   CREDIT_TIERS,
@@ -71,52 +73,57 @@ export const billingRouter = router({
    * Initiate credit purchase
    */
   initiatePurchase: protectedProcedure
-    .input(
-      z.object({
-        boutiqueId: z.number(),
-        creditAmount: z.number(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      // Check authorization - owner/manager only
-      const userRole = await getBoutiqueUserRole(input.boutiqueId, ctx.user.id);
-      if (!userRole || (userRole.role !== "owner" && userRole.role !== "manager")) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only owner/manager can purchase credits",
-        });
-      }
+  .input(
+    z.object({
+      boutiqueId: z.number().optional(), // Make optional for customers
+      creditAmount: z.number(),
+    })
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { creditAmount, boutiqueId } = input;
+    const userId = ctx.user.id;
 
-      // Validate credit tier
-      const tier = getCreditTier(input.creditAmount);
-      if (!tier) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Invalid credit amount. Available tiers: ${CREDIT_TIERS.map(t => t.credits).join(", ")}`,
-        });
-      }
+    // Validate credit tier
+    const tier = getCreditTier(creditAmount);
+    if (!tier) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: `Invalid credit amount`,
+      });
+    }
 
-      // Create purchase transaction (pending)
-      const result = await createCreditPurchase({
-        boutiqueId: input.boutiqueId,
-        credits: input.creditAmount,
+    const baseUrl = ENV.oAuthPortalUrl || "http://localhost:3000";
+
+    // Create payment intent using existing function
+    const paymentIntent = await createPaymentIntent({
+      userId,
+      packageId: `pkg_${creditAmount}_credits`,
+      userEmail: ctx.user.email || "",
+      userName: ctx.user.name || "Customer",
+      successUrl: `${baseUrl}/dashboard?payment=success&credits=${creditAmount}`,
+      cancelUrl: `${baseUrl}/dashboard?payment=cancelled`,
+    });
+
+    // If boutiqueId exists, create a pending transaction record
+    if (boutiqueId) {
+      await createCreditPurchase({
+        boutiqueId,
+        credits: creditAmount,
         price: tier.price,
         currency: "ZAR",
-        initiatedBy: ctx.user.id,
+        initiatedBy: userId,
         status: "pending",
       });
+    }
 
-      const transactionId = (result as any).insertId;
-
-      return {
-        transactionId,
-        credits: input.creditAmount,
-        price: tier.price,
-        currency: "ZAR",
-        pricePerCredit: tier.pricePerCredit,
-        message: "Purchase initiated. Please proceed to payment.",
-      };
-    }),
+    return {
+      credits: creditAmount,
+      price: tier.price,
+      currency: "ZAR",
+      pricePerCredit: tier.pricePerCredit,
+      paymentUrl: paymentIntent.checkoutUrl,
+    };
+  }),
 
   /**
    * Complete credit purchase (after payment confirmation)

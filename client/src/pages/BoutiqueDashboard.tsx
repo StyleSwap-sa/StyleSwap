@@ -18,12 +18,8 @@ export default function BoutiqueDashboard() {
   const { data: boutiques, isLoading: boutiquesLoading } =
     trpc.boutiques.myBoutiques.useQuery();
 
-  // Fetch billing summary
-  const { data: billingSummary, isLoading: billingSummaryLoading } =
-    trpc.billing.getBillingSummary.useQuery(
-      { boutiqueId: selectedBoutique || 0 },
-      { enabled: !!selectedBoutique }
-    );
+  const { data: tryonCredits, isLoading: tryonLoading } =
+  trpc.tryon.getCredits.useQuery();
 
   // Set first boutique as default
   useEffect(() => {
@@ -81,7 +77,7 @@ export default function BoutiqueDashboard() {
   }
 
   const currentBoutique = boutiques.find((b) => b.id === selectedBoutique);
-  const isLoading = billingSummaryLoading;
+
 
   return (
     <DashboardLayout>
@@ -126,7 +122,7 @@ export default function BoutiqueDashboard() {
           </div>
         )}
 
-        {isLoading ? (
+        {tryonLoading ? (
           <div className="flex items-center justify-center h-96">
             <Loader2 className="w-8 h-8 animate-spin" />
           </div>
@@ -142,11 +138,8 @@ export default function BoutiqueDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">
-                    {billingSummary?.totalCredits || 0}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    All time
-                  </p>
+                      {tryonCredits?.totalCredits ?? 0}
+                    </div>
                 </CardContent>
               </Card>
 
@@ -157,28 +150,23 @@ export default function BoutiqueDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">
-                    {billingSummary?.usedCredits || 0}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    For try-ons
-                  </p>
+                    <div className="text-3xl font-bold">
+                      {tryonCredits?.usedCredits ?? 0}
+                    </div>
                 </CardContent>
               </Card>
 
               <Card className="premium-card">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Status
+                    Boutique Status
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold capitalize">
                     Active
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Boutique status
-                  </p>
+
                 </CardContent>
               </Card>
             </div>
@@ -270,7 +258,7 @@ export default function BoutiqueDashboard() {
                   <div className="border-b pb-6">
                     <h4 className="font-bold mb-3">🎁 Free Landing Page</h4>
                     <p className="text-sm text-muted-foreground mb-4">
-                      {currentBoutique.websiteUrl 
+                      {currentBoutique.website 
                         ? "You have a website. You can also use this free landing page to share on social media:"
                         : "Since you don't have a website, we've created a free landing page for you!"}
                     </p>
@@ -300,32 +288,32 @@ export default function BoutiqueDashboard() {
                   </div>
 
                   {/* Social Media Links */}
-                  {(currentBoutique.instagramHandle || currentBoutique.tiktokHandle || currentBoutique.facebookUrl || currentBoutique.whatsappNumber) && (
+                  {(currentBoutique.instagram || currentBoutique.tiktok || currentBoutique.facebook || currentBoutique.whatsapp) && (
                     <div>
                       <h4 className="font-bold mb-3">📱 Connected Social Media</h4>
                       <div className="space-y-2">
-                        {currentBoutique.instagramHandle && (
+                        {currentBoutique.instagram && (
                           <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                             <Instagram className="w-4 h-4 text-pink-600" />
-                            <span className="text-sm">{currentBoutique.instagramHandle}</span>
+                            <span className="text-sm">{currentBoutique.instagram}</span>
                           </div>
                         )}
-                        {currentBoutique.tiktokHandle && (
+                        {currentBoutique.tiktok && (
                           <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                             <Music className="w-4 h-4" />
-                            <span className="text-sm">{currentBoutique.tiktokHandle}</span>
+                            <span className="text-sm">{currentBoutique.tiktok}</span>
                           </div>
                         )}
-                        {currentBoutique.facebookUrl && (
+                        {currentBoutique.facebook && (
                           <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                             <Facebook className="w-4 h-4 text-blue-600" />
                             <span className="text-sm">Facebook</span>
                           </div>
                         )}
-                        {currentBoutique.whatsappNumber && (
+                        {currentBoutique.whatsapp && (
                           <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                             <MessageCircle className="w-4 h-4 text-green-600" />
-                            <span className="text-sm">{currentBoutique.whatsappNumber}</span>
+                            <span className="text-sm">{currentBoutique.whatsapp}</span>
                           </div>
                         )}
                       </div>

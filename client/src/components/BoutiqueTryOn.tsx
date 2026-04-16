@@ -50,10 +50,8 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
   const POLLING_TIMEOUT_MS = 150000; // 2.5 minutes max
 
   // Fetch boutique credits
-  const { data: credits, refetch: refetchCredits } = trpc.boutiques.getCredits.useQuery(
-    { boutiqueId },
-    { enabled: !!boutiqueId }
-  );
+  const { data: credits, refetch: refetchCredits } =
+    trpc.tryon.getCredits.useQuery();
 
   // Refetch credits on component mount
   useEffect(() => {

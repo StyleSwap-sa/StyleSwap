@@ -11,10 +11,13 @@ import { eq, and, desc, gte, lte } from "drizzle-orm";
  * Credit pricing tiers (South African Rand)
  */
 export const CREDIT_TIERS = [
+  { credits: 10, price: 45, pricePerCredit: 4.50 },
+  { credits: 20, price: 80, pricePerCredit: 4.00 },
+  { credits: 50, price: 150, pricePerCredit: 3.00 },
   { credits: 100, price: 385, pricePerCredit: 3.85 },
   { credits: 200, price: 750, pricePerCredit: 3.75 },
-  { credits: 500, price: 1350, pricePerCredit: 2.7 },
-  { credits: 1000, price: 2200, pricePerCredit: 2.2 },
+  { credits: 500, price: 1350, pricePerCredit: 2.70 },
+  { credits: 1000, price: 2200, pricePerCredit: 2.20 },
   { credits: 5000, price: 6250, pricePerCredit: 1.25 },
   { credits: 20000, price: 18600, pricePerCredit: 0.93 },
 ];

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, ShoppingCart, Zap } from "lucide-react";
+import { Loader2, ShoppingCart, Zap, AlertCircle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 interface CreditPurchaseModalProps {
@@ -20,11 +20,12 @@ export function CreditPurchaseModal({
 }: CreditPurchaseModalProps) {
   const [selectedTier, setSelectedTier] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Get credit tiers
   const { data: tiers, isLoading: tiersLoading } = trpc.billing.getCreditTiers.useQuery();
 
-  // Initiate purchase mutation
+  // Initiate purchase mutation (works for both customer and boutique)
   const initiatePurchase = trpc.billing.initiatePurchase.useMutation();
 
   const handlePurchase = async () => {
@@ -34,30 +35,36 @@ export function CreditPurchaseModal({
     if (!tier) return;
 
     setIsProcessing(true);
+    setError(null);
 
     try {
-      // For customers (no boutiqueId), we'll handle direct payment
-      // For boutiques, use boutique ID
+      let result;
+      
       if (boutiqueId) {
-        const result = await initiatePurchase.mutateAsync({
+        // Boutique credit purchase
+        result = await initiatePurchase.mutateAsync({
           boutiqueId,
           creditAmount: selectedTier,
         });
-
-        // Redirect to payment
-        if (result && (result as any).paymentUrl) {
-          window.location.href = (result as any).paymentUrl;
-        }
       } else {
-        // Customer credit purchase - would need separate payment flow
-        console.log("Customer credit purchase initiated:", selectedTier);
-        // TODO: Implement customer payment flow
+        // Customer credit purchase - use userId instead
+        result = await initiatePurchase.mutateAsync({
+          creditAmount: selectedTier,
+          // No boutiqueId - backend will treat as customer purchase
+        });
+      }
+
+      // Redirect to payment if URL returned
+      if (result && (result as any).paymentUrl) {
+        window.location.href = (result as any).paymentUrl;
+      } else {
+        setError("Payment system error. No payment URL returned.");
       }
 
       onPurchaseSuccess?.();
-      onClose();
-    } catch (error) {
-      console.error("Purchase error:", error);
+    } catch (err: any) {
+      console.error("Purchase error:", err);
+      setError(err.message || "Failed to initiate purchase");
     } finally {
       setIsProcessing(false);
     }
@@ -69,7 +76,7 @@ export function CreditPurchaseModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5 text-primary" />
@@ -79,6 +86,14 @@ export function CreditPurchaseModal({
             Choose a credit package and instantly add credits to your account. No waiting, no monthly limits.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-500" />
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
           {tiers.map((tier) => (
