@@ -38,6 +38,9 @@ import { subscriptionRouter } from "./routers/subscription";
 import { freeTrialRouter } from "./routers/freetrial";
 import { widgetRouter } from "./routers/widget";
 import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-integration";
+import { globalFeedRouter } from "./routers/global-feed";
+import { globalRecommendationsRouter } from "./routers/global-recommendations";
+
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -197,6 +200,8 @@ export const appRouter = router({
   api: apiRouter,
   apiKeys: apiKeysRouter,
   webhookEvents: webhookEventsRouter,
+  globalFeed: globalFeedRouter,
+  globalRecommendations: globalRecommendationsRouter,
   protectedApi: protectedApiRouter,
   verification: verificationRouter,
   freeTrial: freeTrialRouter,

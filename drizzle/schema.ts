@@ -47,6 +47,9 @@ export const users = pgTable("users", {
 	freeTrialUsed: serial().default(0).notNull(),
 	freeTrialUsedAt: timestamp({ mode: 'string' }),
 	freeTrialExpiresAt: timestamp({ mode: 'string' }),
+	campus: varchar({ length: 255 }),  // Campus/school name for filtering
+	country: varchar({ length: 100 }), // Country for global feed filtering
+	isInfluencer: boolean().default(false).notNull(), // Verified influencer flag
 },
 (table) => [
 	unique("users_openId_unique").on(table.openId),
@@ -267,32 +270,6 @@ export const tryOnResults = pgTable(
 	]
 );
 
-// Saved Outfits (Closet) Table
-export const savedOutfits = pgTable(
-	"savedOutfits",
-	{
-		id: serial().primaryKey().notNull(),
-			userId: integer().notNull().references(() => users.id),
-			tryOnResultId: integer().notNull().references(() => tryOnResults.id),
-		title: varchar({ length: 255 }).notNull(),
-		description: text(),
-		watermarkedImageUrl: varchar({ length: 500 }).notNull(),
-			isFavorite: integer().default(0).notNull(),
-			comparisonNotes: text(),
-			shareCount: integer().default(0).notNull(),
-		tags: text().default("[]"),
-		createdAt: timestamp({ mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
-			.notNull(),
-		updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
-	},
-	(table) => [
-		index("idx_saved_outfits_user").on(table.userId),
-		index("idx_saved_outfits_tryon").on(table.tryOnResultId),
-		index("idx_saved_outfits_created").on(table.createdAt),
-		index("idx_saved_outfits_favorite").on(table.isFavorite),
-	]
-);
 
 // Remaining tables (abbreviated for brevity)
 export const auditLogs = pgTable("auditLogs", {
@@ -635,12 +612,7 @@ export const outfitDiscoveryFeed = pgTable("outfitDiscoveryFeed", {
 	updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
 });
 
-export const outfitLikes = pgTable("outfitLikes", {
-	id: serial().primaryKey().notNull(),
-	outfitId: integer().notNull(),
-	userId: integer().notNull(),
-	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-});
+
 
 export const outfitReports = pgTable("outfitReports", {
 	id: serial().primaryKey().notNull(),
@@ -650,18 +622,6 @@ export const outfitReports = pgTable("outfitReports", {
 	description: text(),
 	status: varchar({ length: 50 }).default("pending"),
 	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-});
-
-
-// Outfit Comments Table
-export const outfitComments = pgTable("outfitComments", {
-	id: serial().primaryKey().notNull(),
-	outfitId: integer().notNull(),
-	userId: integer().notNull(),
-	comment: text().notNull(),
-	likes: integer().default(0).notNull(),
-	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
 });
 
 
@@ -703,29 +663,9 @@ export const moderationLogs = pgTable("moderationLogs", {
 });
 
 
-// User Follows Table
-export const userFollows = pgTable("userFollows", {
-	id: serial("id").primaryKey(),
-	followerId: integer("followerId").notNull().references(() => users.id),
-	followingId: integer("followingId").notNull().references(() => users.id),
-	createdAt: timestamp("createdAt").defaultNow(),
-});
 
-// User Profiles Table
-export const userProfiles = pgTable("userProfiles", {
-	id: serial("id").primaryKey(),
-	userId: integer("userId").notNull().unique().references(() => users.id),
-	bio: text("bio"),
-	avatar: text("avatar"),
-	website: text("website"),
-	location: text("location"),
-	favoriteStyle: text("favoriteStyle"),
-	followerCount: integer("followerCount").default(0),
-	followingCount: integer("followingCount").default(0),
-	outfitCount: integer("outfitCount").default(0),
-	createdAt: timestamp("createdAt").defaultNow(),
-	updatedAt: timestamp("updatedAt").defaultNow(),
-});
+
+
 
 // User Mentions Table
 export const userMentions = pgTable("userMentions", {
@@ -1017,6 +957,92 @@ export const appRegistrations = pgTable(
 		index("idx_app_registrations_status").on(table.status),
 	]
 );
+// ===== GLOBAL FEED TABLES =====
+
+// Saved Outfits (public outfits from try-on results)
+export const savedOutfits = pgTable("saved_outfits", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  watermarkedImageUrl: varchar("watermarked_image_url", { length: 500 }).notNull(),
+  isFavorite: integer("is_favorite").default(1), // 1 = public
+  style: varchar("style", { length: 100 }),
+  brand: varchar("brand", { length: 255 }),
+  country: varchar("country", { length: 100 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Outfit Likes
+export const outfitLikes = pgTable("outfit_likes", {
+  id: serial("id").primaryKey(),
+  outfitId: integer("outfit_id").notNull().references(() => savedOutfits.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Outfit Comments
+export const outfitComments = pgTable("outfit_comments", {
+  id: serial("id").primaryKey(),
+  outfitId: integer("outfit_id").notNull().references(() => savedOutfits.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  comment: text("comment").notNull(),
+  likes: integer("likes").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User Follows
+export const userFollows = pgTable("user_follows", {
+  id: serial("id").primaryKey(),
+  followerId: integer("follower_id").notNull().references(() => users.id),
+  followingId: integer("following_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User Profiles (extended)
+export const userProfiles = pgTable("user_profiles", {
+	userId: integer("user_id").primaryKey().references(() => users.id),
+	avatar: varchar("avatar", { length: 500 }),
+	bio: text("bio"),
+	campus: varchar("campus", { length: 255 }),
+	country: varchar("country", { length: 100 }),
+	followerCount: integer("follower_count").default(0),
+	outfitCount: integer("outfit_count").default(0),
+	isInfluencer: integer("is_influencer").default(0),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Outfit Collections
+export const outfitCollections = pgTable("outfit_collections", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  isPublic: integer("is_public").default(1),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Collection Items
+export const collectionItems = pgTable("collection_items", {
+  id: serial("id").primaryKey(),
+  collectionId: integer("collection_id").notNull().references(() => outfitCollections.id),
+  outfitId: integer("outfit_id").notNull().references(() => savedOutfits.id),
+  addedAt: timestamp("added_at").defaultNow().notNull(),
+});
+
+// Feed Metrics
+export const feedMetrics = pgTable("feed_metrics", {
+  id: serial("id").primaryKey(),
+  outfitId: integer("outfit_id").notNull().references(() => savedOutfits.id),
+  viewCount: integer("view_count").default(0),
+  likeCount: integer("like_count").default(0),
+  commentCount: integer("comment_count").default(0),
+  shareCount: integer("share_count").default(0),
+  saveCount: integer("save_count").default(0),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+});
 
 
 // Type exports for insert operations
