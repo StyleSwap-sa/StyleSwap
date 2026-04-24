@@ -211,15 +211,17 @@ function CustomerDashboardLayoutContent({
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
-                      isActive={isActive}
-                      onClick={() => setLocation(item.path)}
-                      tooltip={item.label}
-                      className={`h-10 transition-all font-normal`}
-                    >
-                      <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
-                      />
-                      <span>{item.label}</span>
+                        isActive={isActive}
+                        onClick={() => setLocation(item.path)}
+                        tooltip={item.label}
+                        className="h-10 transition-all font-normal group-data-[collapsible=icon]:justify-center"
+                        >
+                        <item.icon
+                            className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                        />
+                        <span className="group-data-[collapsible=icon]:hidden">
+                            {item.label}
+                        </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
