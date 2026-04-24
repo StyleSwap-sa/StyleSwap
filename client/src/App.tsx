@@ -235,7 +235,6 @@ export default function App() {
   <Route path="/notifications" component={NotificationCenterWithLayout} />
   <Route path="/profile/:userId" component={UserProfileWithLayout} />
   <Route path="/buy-credits" component={BuyCreditsWithLayout} />
-  <Route path="/globalfeed" component={GlobalFeedWithLayout} />
   <Route path="/global-feed" component={GlobalFeedWithLayout} />
   
   {/* Other routes */}

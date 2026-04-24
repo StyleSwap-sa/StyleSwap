@@ -63,10 +63,13 @@ export default function CustomerDashboardLayout({
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
   }, [sidebarWidth]);
+    // Add this inside CustomerDashboardLayoutContent component
+    
 
   if (loading) {
     return <DashboardLayoutSkeleton />
@@ -106,6 +109,7 @@ export default function CustomerDashboardLayout({
 
   return (
     <SidebarProvider
+      defaultOpen={!isMobile}
       style={
         {
           "--sidebar-width": `${sidebarWidth}px`,

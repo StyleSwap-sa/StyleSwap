@@ -189,7 +189,6 @@ export default function GlobalFeed() {
     <div className="space-y-6">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-8 rounded-lg">
-        <h1 className="text-4xl font-bold mb-2">Global Fashion Feed</h1>
         <p className="text-muted-foreground">Discover inspiring outfits from stylists around the world</p>
       </div>
 

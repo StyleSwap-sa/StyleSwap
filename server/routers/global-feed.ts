@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { savedOutfits, outfitLikes, outfitComments, userFollows, userProfiles, users } from "../../drizzle/schema";
-import { eq, and, desc, sql, or, isNotNull } from "drizzle-orm";
+import { eq, and, desc, sql, or, isNotNull, ne} from "drizzle-orm";
 
 export const globalFeedRouter = router({
   // Get global feed
@@ -22,6 +22,30 @@ export const globalFeedRouter = router({
     
     try {
       const userId = ctx.user?.id;
+      console.log("[Global Feed] User ID:", userId); // 👈 Debug log
+
+      const filterConditions: any[] = [
+        eq(savedOutfits.isFavorite, 1),
+        userId ? ne(savedOutfits.userId, userId) : undefined,
+      ];
+
+      if (input.styleCategory) {
+        filterConditions.push(eq(savedOutfits.style, input.styleCategory));
+      }
+
+      if (input.country) {
+        filterConditions.push(eq(users.country, input.country));
+      }
+
+      if (input.searchQuery) {
+        filterConditions.push(
+          or(
+            sql`${savedOutfits.title} LIKE ${`%${input.searchQuery}%`}`,
+            sql`${savedOutfits.description} LIKE ${`%${input.searchQuery}%`}`,
+            sql`${savedOutfits.brand} LIKE ${`%${input.searchQuery}%`}`
+          )
+        );
+      }
 
       let query = db
         .select({
@@ -44,33 +68,7 @@ export const globalFeedRouter = router({
         .from(savedOutfits)
         .innerJoin(users, eq(savedOutfits.userId, users.id))
         .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
-        .where(
-          and(
-            eq(savedOutfits.isFavorite, 1), // Only public outfits
-            userId ? ne(savedOutfits.userId, userId) : undefined // Exclude own outfits if logged in
-          )
-        );
-
-      // Filter by style category
-      if (input.styleCategory) {
-        query = query.where(eq(savedOutfits.style, input.styleCategory));
-      }
-
-      // Filter by country
-      if (input.country) {
-        query = query.where(eq(users.country, input.country));
-      }
-
-      // Search query
-      if (input.searchQuery) {
-        query = query.where(
-          or(
-            sql`${savedOutfits.title} LIKE ${`%${input.searchQuery}%`}`,
-            sql`${savedOutfits.description} LIKE ${`%${input.searchQuery}%`}`,
-            sql`${savedOutfits.brand} LIKE ${`%${input.searchQuery}%`}`
-          )
-        );
-      }
+        .where(and(...filterConditions));
 
       // Sort by selected option
       if (input.sortBy === "latest") {
@@ -90,6 +88,9 @@ export const globalFeedRouter = router({
       }
 
       const results = await query.limit(input.limit).offset(input.offset);
+      console.log("[Global Feed] Results count:", results.length); // 👈 Debug log
+      console.log("[Global Feed] First result:", results[0]); // 👈 Debug log
+      
 
       return {
         success: true,
@@ -120,6 +121,9 @@ export const globalFeedRouter = router({
   )
   .query(async ({ ctx, input }) => {
     try {
+      const db = await getDb();
+      if (!db) return { success: false, outfits: [], count: 0, error: "Database not available" };
+
       const userId = ctx.user?.id;
       const timeRangeMs = 
         input.timeRange === "24h" ? 24 * 60 * 60 * 1000 :
@@ -194,9 +198,37 @@ export const globalFeedRouter = router({
   )
   .query(async ({ ctx, input }) => {
     try {
+      const db = await getDb();
+      if (!db) return { success: false, outfits: [], count: 0, error: "Database not available" };
+
       const userId = ctx.user?.id;
 
-      let query = db
+      const filterConditions: any[] = [
+        eq(savedOutfits.isFavorite, 1),
+        or(
+          sql`${savedOutfits.title} LIKE ${`%${input.query}%`}`,
+          sql`${savedOutfits.description} LIKE ${`%${input.query}%`}`,
+          sql`${savedOutfits.brand} LIKE ${`%${input.query}%`}`,
+          sql`${savedOutfits.style} LIKE ${`%${input.query}%`}`
+        ),
+      ];
+
+      if (input.filters?.styleCategory) {
+        filterConditions.push(eq(savedOutfits.style, input.filters.styleCategory));
+      }
+      if (input.filters?.country) {
+        filterConditions.push(eq(users.country, input.filters.country));
+      }
+      if (input.filters?.brand) {
+        filterConditions.push(eq(savedOutfits.brand, input.filters.brand));
+      }
+      if (input.filters?.minLikes) {
+        filterConditions.push(
+          sql`(SELECT COUNT(*) FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id}) >= ${input.filters.minLikes}`
+        );
+      }
+
+      const query = db
         .select({
           id: savedOutfits.id,
           title: savedOutfits.title,
@@ -214,33 +246,7 @@ export const globalFeedRouter = router({
         .from(savedOutfits)
         .innerJoin(users, eq(savedOutfits.userId, users.id))
         .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
-        .where(
-          and(
-            eq(savedOutfits.isFavorite, 1),
-            or(
-              sql`${savedOutfits.title} LIKE ${`%${input.query}%`}`,
-              sql`${savedOutfits.description} LIKE ${`%${input.query}%`}`,
-              sql`${savedOutfits.brand} LIKE ${`%${input.query}%`}`,
-              sql`${savedOutfits.style} LIKE ${`%${input.query}%`}`
-            )
-          )
-        );
-
-      // Apply filters
-      if (input.filters?.styleCategory) {
-        query = query.where(eq(savedOutfits.style, input.filters.styleCategory));
-      }
-      if (input.filters?.country) {
-        query = query.where(eq(users.country, input.filters.country));
-      }
-      if (input.filters?.brand) {
-        query = query.where(eq(savedOutfits.brand, input.filters.brand));
-      }
-      if (input.filters?.minLikes) {
-        query = query.where(
-          sql`(SELECT COUNT(*) FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id}) >= ${input.filters.minLikes}`
-        );
-      }
+        .where(and(...filterConditions));
 
       const results = await query
         .orderBy(desc(savedOutfits.createdAt))
@@ -267,6 +273,9 @@ export const globalFeedRouter = router({
   getStyleCategories: publicProcedure
   .query(async ({ ctx }) => {
     try {
+      const db = await getDb();
+      if (!db) return { success: false, error: "Database not available", categories: [] };
+
       const categories = await db
         .selectDistinct({ style: savedOutfits.style })
         .from(savedOutfits)
@@ -310,6 +319,9 @@ export const globalFeedRouter = router({
   .input(z.object({ outfitId: z.number() }))
   .mutation(async ({ ctx, input }) => {
     try {
+      const db = await getDb();
+      if (!db) return { success: false, error: "Database not available" };
+
       const existingLike = await db.query.outfitLikes.findFirst({
         where: and(
           eq(outfitLikes.outfitId, input.outfitId),
@@ -339,6 +351,9 @@ export const globalFeedRouter = router({
   .input(z.object({ limit: z.number().default(5) }))
   .query(async ({ ctx, input }) => {
     try {
+      const db = await getDb();
+      if (!db) return { success: false, error: "Database not available", suggestions: [] };
+
       // Get users with most outfits and followers (influencers)
       const suggestions = await db
         .select({
@@ -419,6 +434,9 @@ export const globalFeedRouter = router({
   )
   .query(async ({ ctx, input }) => {
     try {
+      const db = await getDb();
+      if (!db) return { success: false, error: "Database not available", brands: [], count: 0 };
+
       const timeRangeMs = 
         input.timeRange === "24h" ? 24 * 60 * 60 * 1000 :
         input.timeRange === "7d" ? 7 * 24 * 60 * 60 * 1000 :
