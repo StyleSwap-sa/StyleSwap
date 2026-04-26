@@ -8,6 +8,8 @@ import { storagePut, storageGet } from "../storage";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { getDb } from "../db";
+import { savedOutfits } from "../../drizzle/schema";
 
 export const tryonRouter = router({
   /**
@@ -243,16 +245,34 @@ export const tryonRouter = router({
    * Save try-on result to user's history
    */
   saveTryOnResult: protectedProcedure
-    .input(
-      z.object({
-        taskId: z.string(),
-        resultImageUrl: z.string(),
+  .input(z.object({
+    resultImageUrl: z.string(),
+    title: z.string().optional(),
+    style: z.string().optional(),
+    brand: z.string().optional(),
+  }))
+  .mutation(async ({ ctx, input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+
+    const result = await db
+      .insert(savedOutfits)
+      .values({
+        userId: ctx.user.id,
+        title: input.title || "My Try-On",
+        description: "Generated with StyleSwap AI",
+        watermarkedImageUrl: input.resultImageUrl,
+        isFavorite: 1,
+        style: input.style,
+        brand: input.brand,
+        source: "tryon",
+        createdAt: new Date(),
       })
-    )
-    .mutation(async ({ ctx, input }) => {
-      // TODO: Save to database
-      return { success: true };
-    }),
+      .returning({ id: savedOutfits.id });
+
+    return { success: true, outfitId: result[0]?.id };
+  }),
+
 
   /**
    * Refund credits for failed try-on
@@ -271,6 +291,7 @@ export const tryonRouter = router({
         });
       }
     }),
+    
 });
 
 /**

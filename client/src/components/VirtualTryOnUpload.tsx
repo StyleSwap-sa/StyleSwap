@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles } from "lucide-react";
+import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles, Globe } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { SizeSelector } from "@/components/SizeSelector";
 import { SaveToGalleryButton } from "@/components/SaveToGalleryButton";
+import { toast } from "./ui/use-toast";
 
 interface TryOnResult {
   taskId: string;
@@ -67,6 +68,18 @@ export function VirtualTryOnUpload() {
 
   // Refund credits mutation
   const refundCreditsMutation = trpc.tryon.refundTryOnCredits.useMutation();
+  const saveToFeedMutation = trpc.tryon.saveTryOnResult.useMutation();
+
+  const handleSaveToFeed = async () => {
+    await saveToFeedMutation.mutateAsync({
+      resultImageUrl: result.resultImageUrl,
+      title: "My Summer Look",
+      style: "Casual",
+    });
+    toast({
+      title: "Saved to Global Feed!",
+    });
+  };
 
   const handleCreateTryOn = async () => {
     if (!modelPhoto || !clothImage) {
@@ -410,6 +423,10 @@ export function VirtualTryOnUpload() {
               <Button onClick={handleReset} className="flex-1">
                 <Sparkles className="w-4 h-4 mr-2" />
                 Try Another
+              </Button>
+              <Button onClick={handleSaveToFeed} variant="outline">
+                <Globe className="w-4 h-4 mr-2" />
+                Share to Global Feed
               </Button>
             </div>
           </CardContent>

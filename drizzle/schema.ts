@@ -970,6 +970,7 @@ export const savedOutfits = pgTable("saved_outfits", {
   style: varchar("style", { length: 100 }),
   brand: varchar("brand", { length: 255 }),
   country: varchar("country", { length: 100 }),
+  source: varchar("source", { length: 50 }).default("boutique"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
