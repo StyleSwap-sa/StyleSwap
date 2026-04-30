@@ -959,20 +959,19 @@ export const appRegistrations = pgTable(
 );
 // ===== GLOBAL FEED TABLES =====
 
-// Saved Outfits (public outfits from try-on results)
 export const savedOutfits = pgTable("saved_outfits", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   watermarkedImageUrl: varchar("watermarked_image_url", { length: 500 }).notNull(),
-  isFavorite: integer("is_favorite").default(1), // 1 = public
+  isFavorite: integer("is_favorite").default(1),
   style: varchar("style", { length: 100 }),
   brand: varchar("brand", { length: 255 }),
-  country: varchar("country", { length: 100 }),
-  source: varchar("source", { length: 50 }).default("boutique"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  country: varchar("country", { length: 100 }),          
+  source: varchar("source", { length: 50 }).default("tryon"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),      
 });
 
 // Outfit Likes
