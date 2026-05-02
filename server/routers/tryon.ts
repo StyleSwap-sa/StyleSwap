@@ -4,7 +4,7 @@ import { getFitroomClient } from "../_core/fitroom";
 import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
 import { enforceSubscriptionCheck } from "../middleware/subscriptionValidation";
 import { TRPCError } from "@trpc/server";
-import { storagePut, storageGet } from "../storage";
+import { storagePut, storageGet, copyImageToS3 } from "../storage";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
@@ -255,22 +255,36 @@ export const tryonRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
 
-    const result = await db
-      .insert(savedOutfits)
-      .values({
+    // Generate a permanent key for this image
+    const timestamp = Date.now();
+    const userId = ctx.user.id;
+    const destinationKey = `saved-outfits/user-${userId}/tryon-${timestamp}.jpg`;
+    
+    try {
+      // Copy the temporary Fitroom image to your permanent S3 bucket
+      const permanentUrl = await copyImageToS3(input.resultImageUrl, destinationKey);
+      
+      // Save the permanent URL to the database
+      const result = await db.insert(savedOutfits).values({
         userId: ctx.user.id,
         title: input.title || "My Try-On",
         description: "Generated with StyleSwap AI",
-        watermarkedImageUrl: input.resultImageUrl,
+        watermarkedImageUrl: permanentUrl,  // ← Now using permanent S3 URL
         isFavorite: 1,
         style: input.style,
         brand: input.brand,
         source: "tryon",
         createdAt: new Date(),
-      })
-      .returning({ id: savedOutfits.id });
-
-    return { success: true, outfitId: result[0]?.id };
+      });
+      const insertedRow = (result as { id: number }[])[0];
+      return { success: true, outfitId: insertedRow?.id };
+    } catch (error) {
+      console.error("[SaveToFeed] Error copying image to S3:", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to save image to feed. Please try again.",
+      });
+    }
   }),
 
 

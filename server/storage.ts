@@ -1,6 +1,8 @@
 // AWS S3 Storage Integration
 // Direct S3 upload/download without Manus proxy
-
+import https from 'https';
+import http from 'http';
+import { PassThrough } from 'stream';
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ENV } from './_core/env';
@@ -120,7 +122,35 @@ export function getPublicUrl(relKey: string): string {
   // 🔥 Use ENV for region
   return `https://${bucket}.s3.${ENV.awsRegion || 'us-east-1'}.amazonaws.com/${key}`;
 }
-
+export async function downloadImageFromUrl(url: string): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const client = url.startsWith('https') ? https : http;
+    
+    client.get(url, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`Failed to download image: ${response.statusCode}`));
+        return;
+      }
+      
+      const chunks: Buffer[] = [];
+      response.on('data', (chunk) => chunks.push(chunk));
+      response.on('end', () => resolve(Buffer.concat(chunks)));
+      response.on('error', reject);
+    }).on('error', reject);
+  });
+}
+export async function copyImageToS3(
+  imageUrl: string,
+  destinationKey: string
+): Promise<string> {
+  // Download the image
+  const imageBuffer = await downloadImageFromUrl(imageUrl);
+  
+  // Upload to S3
+  const result = await storagePut(destinationKey, imageBuffer, 'image/jpeg');
+  
+  return result.url;
+}
 /**
  * Delete object from S3
  */
