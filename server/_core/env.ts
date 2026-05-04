@@ -20,3 +20,8 @@ export const ENV = {
   awsRegion: process.env.AWS_REGION ?? "us-east-1",
   awsS3Bucket: process.env.AWS_S3_BUCKET ?? "",
 };
+
+console.log("[ENV Debug] AWS_ACCESS_KEY_ID from process.env:", !!process.env.AWS_ACCESS_KEY_ID);
+console.log("[ENV Debug] AWS_SECRET_ACCESS_KEY from process.env:", !!process.env.AWS_SECRET_ACCESS_KEY);
+console.log("[ENV Debug] AWS_ACCESS_KEY_ID from ENV object:", !!ENV.awsAccessKeyId);
+console.log("[ENV Debug] AWS_SECRET_ACCESS_KEY from ENV object:", !!ENV.awsSecretAccessKey);
