@@ -26,7 +26,7 @@ export function VirtualTryOnUpload() {
   const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
-  const [selectedSize, setSelectedSize] = useState<string>("M");
+  const [selectedSize, setSelectedSize] = useState<"XS" | "S" | "M" | "L" | "XL" | "XXL" | "XXXL" | undefined>("M");
   const [hdMode, setHdMode] = useState(false);
   
   // State for processing
@@ -60,6 +60,22 @@ export function VirtualTryOnUpload() {
     enabled: isAuthenticated,
   });
 
+  const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
+  
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove the data:image/...;base64, prefix
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+    });
+  };
+
   // Fetch try-on status
   const getTryOnStatusQuery = trpc.tryon.getTryOnStatus.useQuery(
     { taskId: currentTaskId || "" },
@@ -81,247 +97,160 @@ export function VirtualTryOnUpload() {
     });
   };
 
-  const handleCreateTryOn = async () => {
-    if (!modelPhoto || !clothImage) {
-      setError("Please upload both a body photo and a clothing image");
-      return;
-    }
+ const handleCreateTryOn = async () => {
+  if (!modelPhoto || !clothImage) {
+    setError("Please upload both a body photo and a clothing image");
+    return;
+  }
 
-    if (!selectedSize || selectedSize === "") {
-      setError("Please select a size before generating the try-on.");
-      return;
-    }
+  if (!selectedSize) {
+    setError("Please select a size before generating the try-on.");
+    return;
+  }
 
-    const creditsNeeded = hdMode ? 2 : 1;
-    if (!testMode && (!credits || credits.remainingCredits < creditsNeeded)) {
-      setError(`Insufficient credits. You need ${creditsNeeded} credits for ${hdMode ? "HD" : "standard"} try-on, but only have ${credits?.remainingCredits || 0} remaining.`);
-      return;
-    }
+  const creditsNeeded = hdMode ? 2 : 1;
+  if (!testMode && (!credits || credits.remainingCredits < creditsNeeded)) {
+    setError(`Insufficient credits. You need ${creditsNeeded} credits for ${hdMode ? "HD" : "standard"} try-on, but only have ${credits?.remainingCredits || 0} remaining.`);
+    return;
+  }
 
-    setIsLoading(true);
-    setError("");
-    setWarning("");
-    setProcessingProgress(0);
+  setIsLoading(true);
+  setError("");
+  setWarning("");
+  setProcessingProgress(0);
+  
+  console.log(`[VirtualTryOn] Selected size: ${selectedSize}`);
+
+  try {
+    setProcessingProgress(10);
     
-    // Log selected size
-    console.log(`[VirtualTryOn] Selected size: ${selectedSize}`);
-
+    // Process clothing image based on type
+    let finalClothImage = clothImage;
+    let finalLowerClothImage: File | null = null;
+    let finalClothTypeForBackend = clothType;
+    
     try {
-      // Auto-resize images if they exceed Fitroom limits
-      setProcessingProgress(5);
-      
-      let finalModelPhoto = modelPhoto;
-      let finalClothImage = clothImage;
-      
-      // Check and resize model photo if needed
-      const modelDimensions = await getImageDimensions(modelPhoto);
-      if (modelDimensions.width > 1024 || modelDimensions.height > 1024) {
-        console.log("[VirtualTryOn] Model photo exceeds 1024px, auto-resizing...");
-        const resizedBlob = await resizeImage(modelPhoto, 1024);
-        finalModelPhoto = new File([resizedBlob], modelPhoto.name, { type: "image/jpeg" });
-        setWarning(`Model photo auto-resized from ${modelDimensions.width}x${modelDimensions.height}px`);
-      }
-      
-      setProcessingProgress(10);
-      
-      // Crop clothing image based on selected type
-      console.log("[VirtualTryOn] Processing clothing image for type:", clothType);
-      let finalClothTypeForBackend = clothType;
-      let finalLowerClothImage: File | null = null;
-      
-      try {
-        if (clothType === "upper") {
-          console.log("[VirtualTryOn] Cropping top portion of clothing image");
-          finalClothImage = await cropTopClothing(finalClothImage);
-          setWarning("Clothing image cropped to top portion for better fitting");
-        } else if (clothType === "lower") {
-          console.log("[VirtualTryOn] Cropping bottom portion of clothing image");
-          finalClothImage = await cropBottomClothing(finalClothImage);
-          setWarning("Clothing image cropped to bottom portion for better fitting");
-        } else if (clothType === "full") {
-          console.log("[VirtualTryOn] Splitting full dress");
-          const split = await splitDressImage(finalClothImage);
-          finalClothImage = split.topImage;
-          finalLowerClothImage = split.bottomImage;
-          finalClothTypeForBackend = "combo";
-          setWarning("Full dress split for fitting");
+      if (clothType === "upper") {
+        console.log("[VirtualTryOn] Using upper clothing");
+      } else if (clothType === "lower") {
+        console.log("[VirtualTryOn] Using lower clothing");
+      } else if (clothType === "full") {
+        console.log("[VirtualTryOn] Using full dress");
+      } else if (clothType === "combo") {
+        console.log("[VirtualTryOn] Using combo mode (top + bottom)");
+        if (!lowerClothImage) {
+          setError("Please upload a bottom image for combo try-on");
+          setIsLoading(false);
+          return;
         }
-      } catch (cropError) {
-        console.error("[VirtualTryOn] Error processing image:", cropError);
-        // Continue with original image if processing fails
-        setWarning("Could not optimize clothing image, using original");
+        finalLowerClothImage = lowerClothImage;
       }
+    } catch (cropError) {
+      console.error("[VirtualTryOn] Error processing image:", cropError);
+      setWarning("Could not optimize clothing image, using original");
+    }
+    
+    setProcessingProgress(30);
+    console.log("[VirtualTryOn] Converting images to base64...");
+    
+    // Convert files to base64
+    const modelBase64 = await fileToBase64(modelPhoto);
+    const clothBase64 = await fileToBase64(finalClothImage);
+    let lowerClothBase64: string | null = null;
+    
+    if (clothType === "combo" && finalLowerClothImage) {
+      lowerClothBase64 = await fileToBase64(finalLowerClothImage);
+    }
+    
+    setProcessingProgress(50);
+    console.log("[VirtualTryOn] Sending to Fitroom API via tRPC...");
+
+    // 🔥 Use tRPC mutation instead of fetch
+    const response = await createTryOnMutation.mutateAsync({
+      modelImageBase64: modelBase64,
+      clothImageBase64: clothBase64,
+      lowerClothImageBase64: lowerClothBase64 || undefined,
+      clothType: finalClothTypeForBackend,
+      selectedSize: selectedSize,
+      hdMode: hdMode,
+      testMode: testMode,
+    });
+
+    if (response.success && response.taskId) {
+      setCurrentTaskId(response.taskId);
+      setIsPolling(true);
+      setProcessingProgress(60);
       
-      setProcessingProgress(15);
-      console.log("[VirtualTryOn] Ready to send images to backend");
-
-      // Send resized files using FormData
-      const formData = new FormData();
-      formData.append("modelImage", finalModelPhoto);
-      
-      // For combo, send as upper+lower. For single garments, send only cloth image
-      if (finalClothTypeForBackend === "combo") {
-        formData.append("upperClothImage", finalClothImage);
-        if (finalLowerClothImage) {
-          formData.append("lowerClothImage", finalLowerClothImage);
-        }
-      } else {
-        // For single garments (upper/lower), send only the cloth image
-        formData.append("clothImage", finalClothImage);
+      if (!testMode) {
+        refetchCredits();
       }
-      
-      // Use mapped cloth type (Fitroom API expects: upper, lower, or combo)
-      formData.append("clothType", finalClothTypeForBackend);
-      // Pass test mode and HD mode to backend
-      formData.append("testMode", testMode.toString());
-      formData.append("hdMode", hdMode.toString());
-      console.log("[VirtualTryOn] FormData clothType:", clothType);
-      console.log("[VirtualTryOn] FormData testMode:", testMode);
-      console.log("[VirtualTryOn] FormData hdMode:", hdMode);
-      console.log("[VirtualTryOn] FormData modelImage:", finalModelPhoto?.name, finalModelPhoto?.size);
-      console.log("[VirtualTryOn] FormData clothImage:", finalClothImage?.name, finalClothImage?.size);
-      setProcessingProgress(20);
-
-      // Call the dedicated file upload endpoint
-      const response = await fetch("/api/tryon/upload?testMode=" + testMode, {
-        method: "POST",
-        body: formData,
-        credentials: "include", // Include session cookie
-      });
-
-      if (!response.ok) {
-        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-        try {
-          const errorData = await response.json();
-          if (errorData.error && typeof errorData.error === 'string') {
-            errorMessage = errorData.error;
-          }
-        } catch (e) {
-          // If response is not JSON, use default error message
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-
-      if (data.success && data.taskId) {
-        setCurrentTaskId(data.taskId);
-        setIsPolling(true);
-        setProcessingProgress(20);
-        
-        // Refetch credits to show updated balance (only if not in test mode)
-        if (!testMode) {
-          refetchCredits();
-        } else {
-          console.log("[VirtualTryOn] Test mode active - credits not deducted");
-        }
-      } else {
-        // Ensure error is always a string, not a boolean
-        console.log('[VirtualTryOn] Response not successful:', { success: data.success, taskId: data.taskId, error: data.error, errorType: typeof data.error });
-        let errorMsg = "Failed to create try-on task";
-        if (data.error) {
-          console.log('[VirtualTryOn] data.error exists:', data.error, 'type:', typeof data.error);
-          if (typeof data.error === 'string') {
-            errorMsg = data.error;
-          } else if (typeof data.error === 'object' && data.error.message) {
-            errorMsg = data.error.message;
-          } else if (typeof data.error === 'boolean') {
-            errorMsg = "Try-on generation failed. Please check your images and try again.";
-          } else {
-            errorMsg = String(data.error);
-          }
-        }
-        console.log('[VirtualTryOn] Final error message:', errorMsg);
-        setError(errorMsg);
-        setIsLoading(false);
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "An error occurred";
-      setError(errorMsg);
+    } else {
+      setError("Failed to create try-on task");
       setIsLoading(false);
     }
-  };
+  } catch (err: any) {
+    console.error("[VirtualTryOn] Error:", err);
+    setError(err.message || "Failed to create try-on");
+    setIsLoading(false);
+    setProcessingProgress(0);
+  }
+};
+// monitor tryon status 
+useEffect(() => {
+  if (!isPolling || !getTryOnStatusQuery.data) return;
 
-  // Monitor polling status with timeout protection
-  useEffect(() => {
-    if (!isPolling || !getTryOnStatusQuery.data) return;
+  if (!pollingStartTimeRef.current) {
+    pollingStartTimeRef.current = Date.now();
+  }
 
-    // Initialize polling start time on first poll
-    if (!pollingStartTimeRef.current) {
-      pollingStartTimeRef.current = Date.now();
+  const elapsedTime = Date.now() - (pollingStartTimeRef.current || Date.now());
+  if (elapsedTime > POLLING_TIMEOUT_MS) {
+    console.log("[VirtualTryOn] Polling timeout after", elapsedTime, "ms");
+    setError("Try-on generation timed out. Please try again.");
+    setIsPolling(false);
+    pollingStartTimeRef.current = null;
+    setProcessingProgress(100);
+    
+    if (currentTaskId && !testMode) {
+      refundCreditsMutation.mutate({ taskId: currentTaskId });
     }
+    return;
+  }
 
-    // Check if polling has exceeded timeout
-    const elapsedTime = Date.now() - (pollingStartTimeRef.current || Date.now());
-    if (elapsedTime > POLLING_TIMEOUT_MS) {
-      console.log("[VirtualTryOn] Polling timeout after", elapsedTime, "ms");
-      setError("Try-on generation timed out. Please try again. Credit has been refunded.");
+  const status = getTryOnStatusQuery.data;
+  
+  if (status.status === "COMPLETED") {
+    console.log("[VirtualTryOn] Try-on completed successfully!");
+    const imageUrl = status.resultImageUrl || status.resultImage;
+    if (!imageUrl) {
+      setError("No result image URL found");
       setIsPolling(false);
       pollingStartTimeRef.current = null;
-      setProcessingProgress(100);
-      
-      if (currentTaskId) {
-        console.log("[VirtualTryOn] Refunding credit due to timeout", currentTaskId);
-        refundCreditsMutation.mutate(
-          { taskId: currentTaskId },
-          {
-            onSuccess: () => {
-              console.log("[VirtualTryOn] Credit refunded successfully after timeout");
-              refetchCredits();
-            },
-            onError: (err) => {
-              console.error("[VirtualTryOn] Failed to refund credit after timeout:", err);
-            },
-          }
-        );
-      }
       return;
     }
-
-    const status = getTryOnStatusQuery.data.status;
-    const progress = getTryOnStatusQuery.data.progress || 0;
+    setResult({
+      taskId: status.taskId,
+      resultImageUrl: imageUrl,
+      createdAt: new Date(),
+    });
+    setIsPolling(false);
+    setProcessingProgress(100);
+    pollingStartTimeRef.current = null;
+  } else if (status.status === "PROCESSING") {
+    setProcessingProgress(Math.min(60 + (status.progress || 0) * 0.35, 95));
+  } else if (status.status === "FAILED") {
+    const errorMsg = status.error || "Try-on generation failed";
+    console.log("[VirtualTryOn] Try-on failed:", errorMsg);
+    setError(errorMsg);
+    setIsPolling(false);
+    pollingStartTimeRef.current = null;
+    setProcessingProgress(100);
     
-    // Update progress bar with API progress (cap at 95% until complete)
-    const displayProgress = Math.min(20 + (progress * 0.75), 95);
-    setProcessingProgress(displayProgress);
-
-    if (status?.toUpperCase() === "COMPLETED") {
-      console.log("[VirtualTryOn] Try-on completed successfully!");
-      setResult({
-        taskId: getTryOnStatusQuery.data.taskId,
-        resultImageUrl: getTryOnStatusQuery.data.resultImage || getTryOnStatusQuery.data.resultImageUrl,
-        createdAt: new Date(),
-      });
-      setIsPolling(false);
-      setProcessingProgress(100);
-      pollingStartTimeRef.current = null;
-    } else if (status?.toUpperCase() === "FAILED") {
-      const errorMsg = getTryOnStatusQuery.data.error || "Try-on generation failed";
-      console.log("[VirtualTryOn] Try-on failed:", errorMsg);
-      setError(errorMsg);
-      setIsPolling(false);
-      pollingStartTimeRef.current = null;
-      setProcessingProgress(100);
-      
-      if (currentTaskId) {
-        console.log("[VirtualTryOn] Refunding credit for failed try-on", currentTaskId);
-        refundCreditsMutation.mutate(
-          { taskId: currentTaskId },
-          {
-            onSuccess: () => {
-              console.log("[VirtualTryOn] Credit refunded successfully");
-              refetchCredits();
-              setError(`${errorMsg} - Credit refunded.`);
-            },
-            onError: (err) => {
-              console.error("[VirtualTryOn] Failed to refund credit:", err);
-              setError(`${errorMsg} - Failed to refund credit. Please contact support.`);
-            },
-          }
-        );
-      }
+    if (currentTaskId && !testMode) {
+      refundCreditsMutation.mutate({ taskId: currentTaskId });
     }
-  }, [getTryOnStatusQuery.data, isPolling]);
+  }
+}, [getTryOnStatusQuery.data, isPolling]);
 
   const handleReset = () => {
     setModelPhoto(null);
