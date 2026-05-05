@@ -60,7 +60,7 @@ export function VirtualTryOnUpload() {
     enabled: isAuthenticated,
   });
 
-
+  const { user, isAuthenticated } = useAuth();
   
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -86,7 +86,7 @@ export function VirtualTryOnUpload() {
   const refundCreditsMutation = trpc.tryon.refundTryOnCredits.useMutation();
   const saveToFeedMutation = trpc.tryon.saveTryOnResult.useMutation();
   // Determine which mutation to use based on user type
-  const { user, isAuthenticated } = useAuth();
+  
   const isMerchant = user?.userType === 'merchant' || user?.role === 'merchant';
 
   const createTryOnMutation = isMerchant 
