@@ -36,9 +36,9 @@ export const globalFeedRouter = router({
         eq(savedOutfits.isFavorite, 1),
       ];
       
-      if (userId) {
-        filterConditions.push(ne(savedOutfits.userId, userId));
-      }
+      //if (userId) {
+        //filterConditions.push(ne(savedOutfits.userId, userId));
+      //}
       if (input.styleCategory) {
         filterConditions.push(eq(savedOutfits.style, input.styleCategory));
       }
