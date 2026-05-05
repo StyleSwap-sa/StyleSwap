@@ -52,7 +52,7 @@ export function VirtualTryOnUpload() {
   const POLLING_TIMEOUT_MS = 300000; // 5 minutes max (Fitroom API can take up to 120 seconds, plus polling time)
 
   // Fetch user info
-
+  const { user, isAuthenticated } = useAuth();
   const isAdmin = user?.role === "admin";
 
   // Fetch credits
@@ -60,7 +60,7 @@ export function VirtualTryOnUpload() {
     enabled: isAuthenticated,
   });
 
-  const { user, isAuthenticated } = useAuth();
+  
   
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -94,6 +94,11 @@ export function VirtualTryOnUpload() {
     : trpc.tryon.customerCreateTryOn.useMutation();
 
   const handleSaveToFeed = async () => {
+    if (!result) {
+      setError("No try-on result available to save.");
+      return;
+    }
+
     await saveToFeedMutation.mutateAsync({
       resultImageUrl: result.resultImageUrl,
       title: "My Summer Look",
