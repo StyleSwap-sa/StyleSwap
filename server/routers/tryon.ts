@@ -451,19 +451,20 @@ export const tryonRouter = router({
       const permanentUrl = await copyImageToS3(input.resultImageUrl, destinationKey);
       
       // Save the permanent URL to the database
-      const result = await db.insert(savedOutfits).values({
-        userId: ctx.user.id,
-        title: input.title || "My Try-On",
-        description: "Generated with StyleSwap AI",
-        watermarkedImageUrl: permanentUrl,  // ← Now using permanent S3 URL
-        isFavorite: 1,
-        style: input.style,
-        brand: input.brand,
-        source: "tryon",
-        createdAt: new Date(),
-      });
-      const insertedRow = (result as { id: number }[])[0];
-      return { success: true, outfitId: insertedRow?.id };
+      const [inserted] = await db.insert(savedOutfits).values({
+      userId: ctx.user.id,
+      title: input.title || "My Try-On",
+      description: "Generated with StyleSwap AI",
+      watermarkedImageUrl: permanentUrl,
+      isFavorite: 1,
+      style: input.style,
+      brand: input.brand,
+      source: "tryon",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }).returning({ id: savedOutfits.id });
+
+    return { success: true, outfitId: inserted?.id };
     } catch (error) {
       console.error("[SaveToFeed] Error copying image to S3:", error);
       throw new TRPCError({
