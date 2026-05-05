@@ -68,7 +68,6 @@ export async function storagePut(
       Key: key,
       Body: body,
       ContentType: contentType,
-      ACL: 'public-read',
     });
 
     await client.send(command);
