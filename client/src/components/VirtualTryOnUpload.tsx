@@ -52,7 +52,7 @@ export function VirtualTryOnUpload() {
   const POLLING_TIMEOUT_MS = 300000; // 5 minutes max (Fitroom API can take up to 120 seconds, plus polling time)
 
   // Fetch user info
-  const { user, isAuthenticated } = useAuth();
+
   const isAdmin = user?.role === "admin";
 
   // Fetch credits
@@ -60,7 +60,7 @@ export function VirtualTryOnUpload() {
     enabled: isAuthenticated,
   });
 
-  const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
+
   
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -85,6 +85,13 @@ export function VirtualTryOnUpload() {
   // Refund credits mutation
   const refundCreditsMutation = trpc.tryon.refundTryOnCredits.useMutation();
   const saveToFeedMutation = trpc.tryon.saveTryOnResult.useMutation();
+  // Determine which mutation to use based on user type
+  const { user, isAuthenticated } = useAuth();
+  const isMerchant = user?.userType === 'merchant' || user?.role === 'merchant';
+
+  const createTryOnMutation = isMerchant 
+    ? trpc.tryon.boutiqueCreateTryOn.useMutation()
+    : trpc.tryon.customerCreateTryOn.useMutation();
 
   const handleSaveToFeed = async () => {
     await saveToFeedMutation.mutateAsync({

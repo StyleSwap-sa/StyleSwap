@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { getFitroomClient } from "../_core/fitroom";
 import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
 import { enforceSubscriptionCheck } from "../middleware/subscriptionValidation";
@@ -26,26 +26,115 @@ export const tryonRouter = router({
   }),
 
   /**
-   * Create a virtual try-on task
+   * Create a virtual try-on task for CUSTOMERS (no subscription check)
    * Accepts base64 encoded images and creates async task with Fitroom
-   * Returns task ID for polling results
    */
-  createTryOn: protectedProcedure
+  customerCreateTryOn: protectedProcedure
     .input(
       z.object({
-        modelImageBase64: z.string().describe("Base64 encoded customer body photo"),
-        clothImageBase64: z.string().describe("Base64 encoded garment image"),
-        lowerClothImageBase64: z.string().optional().describe("Base64 encoded lower garment image for combo"),
-        clothType: z.enum(["upper", "lower", "combo", "full"]).default("upper"), // "upper" for tops, "lower" for bottoms, "combo" for top+bottom, "full" for dresses/jumpsuits
+        modelImageBase64: z.string(),
+        clothImageBase64: z.string(),
+        lowerClothImageBase64: z.string().optional(),
+        clothType: z.enum(["upper", "lower", "combo", "full"]).default("upper"),
         selectedSize: z.enum(["XS", "S", "M", "L", "XL", "XXL", "XXXL"]).optional().default("M"),
         hdMode: z.boolean().optional().default(false),
-        testMode: z.boolean().optional().default(false).describe("Skip credit deduction for testing"),
+        testMode: z.boolean().optional().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {
       let tempDir: string | null = null;
       try {
-        // Check if user's boutique has an active paid subscription
+        // Calculate credits needed based on HD mode
+        const creditsNeeded = input.hdMode ? 2 : 1;
+        
+        // Skip credit check in test mode
+        if (!input.testMode) {
+          const credits = await getUserCredits(ctx.user.id);
+          if (credits.remainingCredits < creditsNeeded) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: `Insufficient credits. You need ${creditsNeeded} credits for ${input.hdMode ? "HD" : "standard"} try-on, but only have ${credits.remainingCredits} remaining.`,
+            });
+          }
+        }
+
+        // Create temp directory for image files
+        tempDir = path.join("/tmp", `fitroom-${crypto.randomBytes(8).toString("hex")}`);
+        fs.mkdirSync(tempDir, { recursive: true });
+
+        console.log("[Try-On] Customer creating try-on task with base64 images...");
+
+        const fitroomClient = getFitroomClient();
+        
+        const taskResult = await fitroomClient.createTryOnWithBase64({
+          modelImageBase64: input.modelImageBase64,
+          clothImageBase64: input.clothImageBase64,
+          lowerClothImageBase64: input.lowerClothImageBase64,
+          clothType: input.clothType,
+          hdMode: input.hdMode || false,
+        });
+
+        // Clean up temp files
+        try {
+          if (tempDir && fs.existsSync(tempDir)) {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+          }
+        } catch (e) {
+          console.warn("[Try-On] Failed to clean temp files:", e);
+        }
+
+        if (!taskResult.success || !taskResult.taskId) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: taskResult.error || "Failed to create try-on task",
+          });
+        }
+
+        // Deduct credits after successful task creation (skip in test mode)
+        if (!input.testMode) {
+          await deductCredits(ctx.user.id, creditsNeeded);
+          console.log(`[Try-On] Deducted ${creditsNeeded} credit(s) for customer ${input.hdMode ? "HD" : "standard"} try-on`);
+        }
+
+        console.log(`[Try-On] Customer task created successfully: ${taskResult.taskId}`);
+        
+        return {
+          success: true,
+          taskId: taskResult.taskId,
+          status: taskResult.status || "CREATED",
+        };
+      } catch (error) {
+        console.error("[Try-On] Customer error:", error);
+        if (tempDir && fs.existsSync(tempDir)) {
+          try {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+          } catch (e) {
+            console.warn("[Try-On] Failed to clean temp files on error:", e);
+          }
+        }
+        throw error;
+      }
+    }),
+
+  /**
+   * Create a virtual try-on task for BOUTIQUES (with subscription check)
+   */
+  boutiqueCreateTryOn: protectedProcedure
+    .input(
+      z.object({
+        modelImageBase64: z.string(),
+        clothImageBase64: z.string(),
+        lowerClothImageBase64: z.string().optional(),
+        clothType: z.enum(["upper", "lower", "combo", "full"]).default("upper"),
+        selectedSize: z.enum(["XS", "S", "M", "L", "XL", "XXL", "XXXL"]).optional().default("M"),
+        hdMode: z.boolean().optional().default(false),
+        testMode: z.boolean().optional().default(false),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      let tempDir: string | null = null;
+      try {
+        // Check subscription for boutiques
         if (!input.testMode) {
           await enforceSubscriptionCheck(ctx.user.id);
         }
@@ -68,50 +157,15 @@ export const tryonRouter = router({
         tempDir = path.join("/tmp", `fitroom-${crypto.randomBytes(8).toString("hex")}`);
         fs.mkdirSync(tempDir, { recursive: true });
 
-        // Helper function to detect image format from base64
-        const detectImageFormat = (base64: string): string => {
-          if (base64.startsWith("/9j/")) return "jpg"; // JPEG
-          if (base64.startsWith("iVBORw0KGgo")) return "png"; // PNG
-          if (base64.startsWith("R0lGODlh")) return "gif"; // GIF
-          if (base64.startsWith("UklGR")) return "webp"; // WebP
-          return "jpg"; // Default to JPG
-        };
-
-        const modelFormat = detectImageFormat(input.modelImageBase64);
-        const clothFormat = detectImageFormat(input.clothImageBase64);
-
-        const modelImagePath = path.join(tempDir, `model.${modelFormat}`);
-        const clothImagePath = path.join(tempDir, `cloth.${clothFormat}`);
-
-        // Decode base64 images to binary
-        let modelBuffer = Buffer.from(input.modelImageBase64, "base64");
-        let clothBuffer = Buffer.from(input.clothImageBase64, "base64");
-        
-        // Log original sizes
-        console.log(`[Try-On] Original model image size: ${modelBuffer.length} bytes`);
-        console.log(`[Try-On] Original cloth image size: ${clothBuffer.length} bytes`);
-        
-        // Log if images exceed typical API limits
-        const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
-        if (modelBuffer.length > MAX_IMAGE_SIZE) {
-          console.log(`[Try-On] WARNING: Model image exceeds ${MAX_IMAGE_SIZE} bytes (${modelBuffer.length} bytes)`);
-        }
-        if (clothBuffer.length > MAX_IMAGE_SIZE) {
-          console.log(`[Try-On] WARNING: Cloth image exceeds ${MAX_IMAGE_SIZE} bytes (${clothBuffer.length} bytes)`);
-        }
-
-
-        console.log("[Try-On] Using base64 encoded images for try-on task creation");
+        console.log("[Try-On] Boutique creating try-on task with base64 images...");
 
         const fitroomClient = getFitroomClient();
         
-        // Create try-on task with base64 encoded images
-        console.log("[Try-On] Creating try-on task with base64 images...");
         const taskResult = await fitroomClient.createTryOnWithBase64({
           modelImageBase64: input.modelImageBase64,
           clothImageBase64: input.clothImageBase64,
           lowerClothImageBase64: input.lowerClothImageBase64,
-          clothType: input.clothType as "upper" | "lower" | "combo" | "full",
+          clothType: input.clothType,
           hdMode: input.hdMode || false,
         });
 
@@ -119,16 +173,12 @@ export const tryonRouter = router({
         try {
           if (tempDir && fs.existsSync(tempDir)) {
             fs.rmSync(tempDir, { recursive: true, force: true });
-            console.log("[Try-On] Cleaned up temp files");
           }
         } catch (e) {
           console.warn("[Try-On] Failed to clean temp files:", e);
         }
 
-        console.log("[Try-On] Fitroom response:", JSON.stringify(taskResult));
-        
         if (!taskResult.success || !taskResult.taskId) {
-          console.error("[Try-On] Fitroom failed:", taskResult.error);
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: taskResult.error || "Failed to create try-on task",
@@ -138,12 +188,10 @@ export const tryonRouter = router({
         // Deduct credits after successful task creation (skip in test mode)
         if (!input.testMode) {
           await deductCredits(ctx.user.id, creditsNeeded);
-          console.log(`[Try-On] Deducted ${creditsNeeded} credit(s) for ${input.hdMode ? "HD" : "standard"} try-on`);
-        } else {
-          console.log(`[Try-On] Test mode - skipping ${creditsNeeded} credit deduction`);
+          console.log(`[Try-On] Deducted ${creditsNeeded} credit(s) for boutique ${input.hdMode ? "HD" : "standard"} try-on`);
         }
 
-        console.log(`[Try-On] Task created successfully: ${taskResult.taskId}`);
+        console.log(`[Try-On] Boutique task created successfully: ${taskResult.taskId}`);
         
         return {
           success: true,
@@ -151,8 +199,7 @@ export const tryonRouter = router({
           status: taskResult.status || "CREATED",
         };
       } catch (error) {
-        console.error("[Try-On] Error:", error);
-        // Clean up temp files on error
+        console.error("[Try-On] Boutique error:", error);
         if (tempDir && fs.existsSync(tempDir)) {
           try {
             fs.rmSync(tempDir, { recursive: true, force: true });
@@ -161,6 +208,143 @@ export const tryonRouter = router({
           }
         }
         throw error;
+      }
+    }),
+
+  /**
+   * Legacy createTryOn - determines which procedure to use based on user type
+   */
+  createTryOn: protectedProcedure
+    .input(
+      z.object({
+        modelImageBase64: z.string(),
+        clothImageBase64: z.string(),
+        lowerClothImageBase64: z.string().optional(),
+        clothType: z.enum(["upper", "lower", "combo", "full"]).default("upper"),
+        selectedSize: z.enum(["XS", "S", "M", "L", "XL", "XXL", "XXXL"]).optional().default("M"),
+        hdMode: z.boolean().optional().default(false),
+        testMode: z.boolean().optional().default(false),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Route to appropriate procedure based on user type
+      const isMerchant = ctx.user.userType === 'merchant' || ctx.user.role === 'merchant';
+      
+      if (isMerchant) {
+        // Use the legacy router directly (or call boutiqueCreateTryOn)
+        // For now, we'll keep the existing logic
+        let tempDir: string | null = null;
+        try {
+          if (!input.testMode) {
+            await enforceSubscriptionCheck(ctx.user.id);
+          }
+
+          const creditsNeeded = input.hdMode ? 2 : 1;
+          if (!input.testMode) {
+            const credits = await getUserCredits(ctx.user.id);
+            if (credits.remainingCredits < creditsNeeded) {
+              throw new TRPCError({
+                code: "FORBIDDEN",
+                message: `Insufficient credits. You need ${creditsNeeded} credits for ${input.hdMode ? "HD" : "standard"} try-on, but only have ${credits.remainingCredits} remaining.`,
+              });
+            }
+          }
+
+          tempDir = path.join("/tmp", `fitroom-${crypto.randomBytes(8).toString("hex")}`);
+          fs.mkdirSync(tempDir, { recursive: true });
+
+          const fitroomClient = getFitroomClient();
+          const taskResult = await fitroomClient.createTryOnWithBase64({
+            modelImageBase64: input.modelImageBase64,
+            clothImageBase64: input.clothImageBase64,
+            lowerClothImageBase64: input.lowerClothImageBase64,
+            clothType: input.clothType,
+            hdMode: input.hdMode || false,
+          });
+
+          if (tempDir && fs.existsSync(tempDir)) {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+          }
+
+          if (!taskResult.success || !taskResult.taskId) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: taskResult.error || "Failed to create try-on task",
+            });
+          }
+
+          if (!input.testMode) {
+            await deductCredits(ctx.user.id, creditsNeeded);
+          }
+
+          return {
+            success: true,
+            taskId: taskResult.taskId,
+            status: taskResult.status || "CREATED",
+          };
+        } catch (error) {
+          if (tempDir && fs.existsSync(tempDir)) {
+            try {
+              fs.rmSync(tempDir, { recursive: true, force: true });
+            } catch (e) {}
+          }
+          throw error;
+        }
+      } else {
+        // Customer flow - no subscription check
+        let tempDir: string | null = null;
+        try {
+          const creditsNeeded = input.hdMode ? 2 : 1;
+          if (!input.testMode) {
+            const credits = await getUserCredits(ctx.user.id);
+            if (credits.remainingCredits < creditsNeeded) {
+              throw new TRPCError({
+                code: "FORBIDDEN",
+                message: `Insufficient credits. You need ${creditsNeeded} credits for ${input.hdMode ? "HD" : "standard"} try-on, but only have ${credits.remainingCredits} remaining.`,
+              });
+            }
+          }
+
+          tempDir = path.join("/tmp", `fitroom-${crypto.randomBytes(8).toString("hex")}`);
+          fs.mkdirSync(tempDir, { recursive: true });
+
+          const fitroomClient = getFitroomClient();
+          const taskResult = await fitroomClient.createTryOnWithBase64({
+            modelImageBase64: input.modelImageBase64,
+            clothImageBase64: input.clothImageBase64,
+            lowerClothImageBase64: input.lowerClothImageBase64,
+            clothType: input.clothType,
+            hdMode: input.hdMode || false,
+          });
+
+          if (tempDir && fs.existsSync(tempDir)) {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+          }
+
+          if (!taskResult.success || !taskResult.taskId) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: taskResult.error || "Failed to create try-on task",
+            });
+          }
+
+          if (!input.testMode) {
+            await deductCredits(ctx.user.id, creditsNeeded);
+          }
+
+          return {
+            success: true,
+            taskId: taskResult.taskId,
+            status: taskResult.status || "CREATED",
+          };
+        } catch (error) {
+          if (tempDir && fs.existsSync(tempDir)) {
+            try {
+              fs.rmSync(tempDir, { recursive: true, force: true });
+            } catch (e) {}
+          }
+          throw error;
+        }
       }
     }),
 

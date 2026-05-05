@@ -60,7 +60,7 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
   }, [refetchCredits]);
 
   // Create try-on mutation
-  const createTryOnMutation = trpc.tryon.createTryOn.useMutation();
+  const createTryOnMutation = trpc.tryon.boutiqueCreateTryOn.useMutation();
   
   // Refund credits mutation
   const refundCreditsMutation = trpc.tryon.refundTryOnCredits.useMutation();
