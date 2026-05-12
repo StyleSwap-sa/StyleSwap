@@ -175,20 +175,23 @@ export async function storageDelete(relKey: string): Promise<void> {
 }
 
 export async function getPresignedUrlForImage(urlOrKey: string, expiresIn: number = 86400): Promise<string> {
+  console.log("[Storage] getPresignedUrlForImage input:", urlOrKey);
+  
   if (!urlOrKey) return "";
   
   // If it's an external URL (Unsplash, etc.), return as-is
   if (urlOrKey.startsWith('http') && !urlOrKey.includes('styleswap-production.s3')) {
+    console.log("[Storage] External URL, returning as-is");
     return urlOrKey;
   }
   
   // Extract the S3 key from the full URL if needed
   let s3Key = urlOrKey;
   if (urlOrKey.includes('styleswap-production.s3.eu-north-1.amazonaws.com')) {
-    // Extract everything after the bucket URL
     const match = urlOrKey.match(/\.amazonaws\.com\/(.+)$/);
     if (match && match[1]) {
       s3Key = match[1];
+      console.log("[Storage] Extracted S3 key:", s3Key);
     }
   }
   
@@ -202,9 +205,10 @@ export async function getPresignedUrlForImage(urlOrKey: string, expiresIn: numbe
     });
     
     const url = await getSignedUrl(client, command, { expiresIn });
+    console.log("[Storage] Generated presigned URL successfully");
     return url;
   } catch (error) {
     console.error('[Storage] Failed to generate presigned URL:', error);
-    return urlOrKey; // Fall back to original URL
+    return urlOrKey;
   }
 }

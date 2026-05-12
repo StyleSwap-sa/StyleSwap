@@ -117,14 +117,24 @@ export const globalFeedRouter = router({
 
       const results = await query.limit(input.limit).offset(input.offset);
       console.log("[Global Feed] Results count:", results.length);
+      
+      console.log("[Global Feed] Raw results count:", results.length);
+      console.log("[Global Feed] First raw URL:", results[0]?.watermarkedImageUrl);
 
       const processedResults = await Promise.all(
-      results.map(async (outfit) => ({
-          ...outfit,
-          watermarkedImageUrl: await getPresignedUrlForOutfit(outfit.watermarkedImageUrl),
-        }))
+        results.map(async (outfit) => {
+          const presignedUrl = await getPresignedUrlForImage(outfit.watermarkedImageUrl);
+          console.log("[Global Feed] Original:", outfit.watermarkedImageUrl);
+          console.log("[Global Feed] Presigned:", presignedUrl);
+          return {
+            ...outfit,
+            watermarkedImageUrl: presignedUrl,
+          };
+        })
       );
 
+      console.log("[Global Feed] First processed URL:", processedResults[0]?.watermarkedImageUrl);
+      
       return {
         success: true,
         outfits: processedResults,
