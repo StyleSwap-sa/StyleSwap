@@ -450,21 +450,24 @@ export const tryonRouter = router({
       // Copy the temporary Fitroom image to your permanent S3 bucket
       const permanentUrl = await copyImageToS3(input.resultImageUrl, destinationKey);
       
-      // Save the permanent URL to the database
+      const urlParts = permanentUrl.split('.amazonaws.com/');
+      const s3Key = urlParts.length > 1 ? urlParts[1] : destinationKey;
+      
+      // Save the S3 key (not the full URL) to the database
       const [inserted] = await db.insert(savedOutfits).values({
-      userId: ctx.user.id,
-      title: input.title || "My Try-On",
-      description: "Generated with StyleSwap AI",
-      watermarkedImageUrl: permanentUrl,
-      isFavorite: 1,
-      style: input.style,
-      brand: input.brand,
-      source: "tryon",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }).returning({ id: savedOutfits.id });
+        userId: ctx.user.id,
+        title: input.title || "My Try-On",
+        description: "Generated with StyleSwap AI",
+        watermarkedImageUrl: s3Key, // ← Store the S3 key
+        isFavorite: 1,
+        style: input.style,
+        brand: input.brand,
+        source: "tryon",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }).returning({ id: savedOutfits.id });
 
-    return { success: true, outfitId: inserted?.id };
+      return { success: true, outfitId: inserted?.id };
     } catch (error) {
       console.error("[SaveToFeed] Error copying image to S3:", error);
       throw new TRPCError({

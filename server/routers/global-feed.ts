@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { getPresignedUrlForImage } from "../storage";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { 
@@ -11,6 +12,21 @@ import {
   users 
 } from "../../drizzle/schema";
 import { eq, and, desc, sql, or, isNotNull, ne } from "drizzle-orm";
+
+async function getPresignedUrlForOutfit(s3Key: string): Promise<string> {
+  if (!s3Key) return "";
+  try {
+    // If it's already a full URL (like Unsplash images), return as-is
+    if (s3Key.startsWith('http://') || s3Key.startsWith('https://')) {
+      return s3Key;
+    }
+    // Generate presigned URL for S3 objects
+    return await getPresignedUrlForImage(s3Key, 86400); // 24 hours expiration
+  } catch (error) {
+    console.error("[Global Feed] Error generating presigned URL:", error);
+    return "";
+  }
+}
 
 export const globalFeedRouter = router({
   // Get global feed
@@ -102,10 +118,17 @@ export const globalFeedRouter = router({
       const results = await query.limit(input.limit).offset(input.offset);
       console.log("[Global Feed] Results count:", results.length);
 
+      const processedResults = await Promise.all(
+      results.map(async (outfit) => ({
+          ...outfit,
+          watermarkedImageUrl: await getPresignedUrlForOutfit(outfit.watermarkedImageUrl),
+        }))
+      );
+
       return {
         success: true,
-        outfits: results,
-        count: results.length,
+        outfits: processedResults,
+        count: processedResults.length,
       };
     } catch (error) {
       console.error("[Global Feed] Error fetching feed:", error);
@@ -169,11 +192,16 @@ export const globalFeedRouter = router({
           .orderBy(desc(sql<number>`(SELECT COALESCE(COUNT(*), 0) FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id}) + (SELECT COALESCE(COUNT(*), 0) FROM ${outfitComments} WHERE ${outfitComments.outfitId} = ${savedOutfits.id}) * 2`));
 
         const results = await query.limit(input.limit).offset(input.offset);
-
+        const processedResults = await Promise.all(
+        results.map(async (outfit) => ({
+            ...outfit,
+            watermarkedImageUrl: await getPresignedUrlForImage(outfit.watermarkedImageUrl),
+          }))
+        );
         return {
           success: true,
-          outfits: results,
-          count: results.length,
+          outfits: processedResults,
+          count: processedResults.length,
         };
       } catch (error) {
         console.error("[Global Feed] Error fetching trending:", error);

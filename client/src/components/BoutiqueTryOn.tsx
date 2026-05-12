@@ -5,7 +5,16 @@ import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles, 
 import { trpc } from "@/lib/trpc";
 import { getImageDimensions, resizeImage } from "@/lib/imageUtils";
 import { toast } from "./ui/use-toast";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 interface TryOnResult {
   taskId: string;
   resultImageUrl: string;
@@ -27,6 +36,14 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
   const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
+
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveTitle, setSaveTitle] = useState("");
+  const [saveStyle, setSaveStyle] = useState("Casual");
+  const [isSaving, setIsSaving] = useState(false);
+  
+  const styleOptions = ["Casual", "Formal", "Sports", "Business", "Party", "Beach", "Streetwear"];
+      
   
   // State for processing
   const [isLoading, setIsLoading] = useState(false);
@@ -72,16 +89,39 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
   );
   const saveToFeedMutation = trpc.tryon.saveTryOnResult.useMutation();
 
-  const handleSaveToFeed = async () => {
-    await saveToFeedMutation.mutateAsync({
-      resultImageUrl: result.resultImageUrl,
-      title: "My Summer Look",
-      style: "Casual",
-    });
-    toast({
-      title: "Saved to Global Feed!",
-    });
+  const handleSaveToFeed = () => {
+    setSaveTitle("My Summer Look");
+    setSaveStyle("Casual");
+    setShowSaveDialog(true);
   };
+
+  const handleSaveConfirm = async () => {
+    if (!result) {
+        setError("No try-on result available to save.");
+        return;
+      }
+    if (!saveTitle.trim()) {
+      toast({ title: "Please enter a title", variant: "destructive" });
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      await saveToFeedMutation.mutateAsync({
+        resultImageUrl: result.resultImageUrl,
+        title: saveTitle,
+        style: saveStyle,
+      });
+      toast({ title: "Saved to Global Feed!" });
+      setShowSaveDialog(false);
+    } catch (error) {
+      console.error("Save error:", error);
+      toast({ title: "Failed to save to feed", variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
 
   // Handle model photo upload
   const handleModelPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -436,6 +476,51 @@ const fileToBase64 = (file: File): Promise<string> => {
           </CardContent>
         </Card>
       )}
+      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Share to Global Feed</DialogTitle>
+                  <DialogDescription>
+                    Share your try-on result with the StyleSwap community
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      value={saveTitle}
+                      onChange={(e) => setSaveTitle(e.target.value)}
+                      placeholder="My Summer Look"
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="style">Style Category</Label>
+                    <select
+                      id="style"
+                      value={saveStyle}
+                      onChange={(e) => setSaveStyle(e.target.value)}
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                    >
+                      {styleOptions.map((style) => (
+                        <option key={style} value={style}>
+                          {style}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <DialogFooter className="flex gap-2 sm:justify-end">
+                  <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveConfirm} disabled={isSaving}>
+                    {isSaving ? "Saving..." : "Share to Feed"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
       {/* Processing State */}
       {isLoading && (

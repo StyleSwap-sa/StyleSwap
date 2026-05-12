@@ -173,3 +173,38 @@ export async function storageDelete(relKey: string): Promise<void> {
     throw new Error(`S3 delete failed: ${errorMsg}`);
   }
 }
+
+export async function getPresignedUrlForImage(urlOrKey: string, expiresIn: number = 86400): Promise<string> {
+  if (!urlOrKey) return "";
+  
+  // If it's an external URL (Unsplash, etc.), return as-is
+  if (urlOrKey.startsWith('http') && !urlOrKey.includes('styleswap-production.s3')) {
+    return urlOrKey;
+  }
+  
+  // Extract the S3 key from the full URL if needed
+  let s3Key = urlOrKey;
+  if (urlOrKey.includes('styleswap-production.s3.eu-north-1.amazonaws.com')) {
+    // Extract everything after the bucket URL
+    const match = urlOrKey.match(/\.amazonaws\.com\/(.+)$/);
+    if (match && match[1]) {
+      s3Key = match[1];
+    }
+  }
+  
+  try {
+    const client = getS3Client();
+    const bucket = ENV.awsS3Bucket;
+    
+    const command = new GetObjectCommand({
+      Bucket: bucket,
+      Key: s3Key,
+    });
+    
+    const url = await getSignedUrl(client, command, { expiresIn });
+    return url;
+  } catch (error) {
+    console.error('[Storage] Failed to generate presigned URL:', error);
+    return urlOrKey; // Fall back to original URL
+  }
+}
