@@ -1,189 +1,199 @@
-import { useParams } from "wouter";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useState, useEffect } from "react";
+import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FollowButton } from "@/components/FollowButton";
-import { Loader2, Shirt } from "lucide-react";
-import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, MapPin, Link2, Calendar, Users, Heart, MessageCircle, Share2 } from "lucide-react";
+import CustomerDashboardLayout from "@/components/CustomerDashboardLayout";
 
 export default function UserProfile() {
-  const { userId: userIdParam } = useParams();
-  const userId = userIdParam ? parseInt(userIdParam) : null;
+  const { userId } = useParams<{ userId: string }>();
+  const [, setLocation] = useLocation();
   const { user: currentUser } = useAuth();
-  const [isFollowing, setIsFollowing] = useState(false);
-
-  // Get user info
+  const [activeTab, setActiveTab] = useState("outfits");
+  
+  const userIdNum = parseInt(userId);
+  
+  // Fetch user info
   const { data: userInfo, isLoading: userLoading } = trpc.profiles.getUserInfo.useQuery(
-    { userId: userId! },
-    { enabled: !!userId }
+    { userId: userIdNum },
+    { enabled: !!userIdNum }
   );
-
-  // Get user profile
+  
+  // Fetch user profile
   const { data: profile, isLoading: profileLoading } = trpc.profiles.getUserProfile.useQuery(
-    { userId: userId! },
-    { enabled: !!userId }
+    { userId: userIdNum },
+    { enabled: !!userIdNum }
   );
-
-  // Get user's outfits
+  
+  // Fetch user's outfits
   const { data: outfits, isLoading: outfitsLoading } = trpc.profiles.getUserOutfits.useQuery(
-    { userId: userId!, limit: 20, page: 1 },
-    { enabled: !!userId }
+    { userId: userIdNum, limit: 20 },
+    { enabled: !!userIdNum }
   );
-
-  // Get follower count
+  
+  // Fetch follower/following counts
   const { data: followerCount } = trpc.profiles.getFollowerCount.useQuery(
-    { userId: userId! },
-    { enabled: !!userId }
+    { userId: userIdNum },
+    { enabled: !!userIdNum }
   );
-
-  // Get following count
+  
   const { data: followingCount } = trpc.profiles.getFollowingCount.useQuery(
-    { userId: userId! },
-    { enabled: !!userId }
+    { userId: userIdNum },
+    { enabled: !!userIdNum }
   );
-
-  if (!userId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">User not found</p>
-      </div>
-    );
-  }
-
+  
+  // Follow/unfollow mutation
+  const followMutation = trpc.globalFeed.toggleFollow.useMutation({
+    onSuccess: () => {
+      // Refetch counts
+    },
+  });
+  
+  const isOwnProfile = currentUser?.id === userIdNum;
+  const isFollowing = false; // You'll need to add a query for this
+  
   if (userLoading || profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
+      <CustomerDashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+      </CustomerDashboardLayout>
     );
   }
-
+  
   if (!userInfo) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">User not found</p>
-      </div>
+      <CustomerDashboardLayout>
+        <div className="text-center py-20">
+          <h2 className="text-2xl font-bold mb-4">User not found</h2>
+          <Button onClick={() => setLocation("/global-feed")}>Back to Feed</Button>
+        </div>
+      </CustomerDashboardLayout>
     );
   }
-
-  const isOwnProfile = currentUser?.id === userId;
-
+  
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8 px-4">
-        {/* Profile Header */}
-        <Card className="mb-8">
-          <CardContent className="pt-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="flex-1">
-                <h1 className="text-4xl font-bold mb-2">{userInfo.name}</h1>
-                <p className="text-muted-foreground mb-4">{userInfo.email}</p>
-
-                {profile?.bio && (
-                  <p className="text-lg mb-4">{profile.bio}</p>
-                )}
-
-                {profile?.favoriteStyle && (
-                  <div className="mb-4">
-                    <p className="text-sm text-muted-foreground">
-                      Style: {profile.favoriteStyle}
-                    </p>
-                  </div>
-                )}
-
-                {/* Stats */}
-                <div className="flex gap-8 mb-6">
-                  <div>
-                    <p className="text-2xl font-bold">{outfits?.length || 0}</p>
-                    <p className="text-sm text-muted-foreground">Outfits</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{followerCount || 0}</p>
-                    <p className="text-sm text-muted-foreground">Followers</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{followingCount || 0}</p>
-                    <p className="text-sm text-muted-foreground">Following</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Profile Actions */}
-              <div className="flex gap-3">
-                {!isOwnProfile && (
-                  <FollowButton
-                    userId={userId}
-                    onFollowChange={setIsFollowing}
-                  />
-                )}
-                {isOwnProfile && (
-                  <Button variant="outline">Edit Profile</Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* User's Outfits */}
-        <div>
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <Shirt className="w-6 h-6" />
-            Saved Outfits
-          </h2>
-
-          {outfitsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin" />
-            </div>
-          ) : outfits && outfits.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {outfits.map((outfit) => (
-                <Card key={outfit.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="aspect-square overflow-hidden bg-muted">
-                    <img
-                      src={outfit.watermarkedImageUrl}
-                      alt={outfit.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform"
-                    />
-                  </div>
-                  <CardContent className="pt-4">
-                    <h3 className="font-semibold mb-2">{outfit.title}</h3>
-                    {outfit.description && (
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {outfit.description}
-                      </p>
-                    )}
-                    {outfit.tags && outfit.tags !== "[]" && (
-                      <div className="flex flex-wrap gap-2">
-                        {JSON.parse(outfit.tags).map((tag: string) => (
-                          <span
-                            key={tag}
-                            className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Shirt className="w-12 h-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">
-                  {isOwnProfile
-                    ? "You haven't saved any outfits yet"
-                    : "This user hasn't saved any outfits yet"}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+    <CustomerDashboardLayout>
+      <div className="max-w-4xl mx-auto">
+        {/* Cover & Profile Image */}
+        <div className="relative mb-16">
+          <div className="h-32 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-t-lg" />
+          <div className="absolute -bottom-12 left-6">
+            <Avatar className="w-24 h-24 border-4 border-background">
+              <AvatarImage src={profile?.profileImage || undefined} />
+              <AvatarFallback className="text-2xl bg-primary/20">
+                {userInfo.name?.charAt(0).toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+          </div>
         </div>
+        
+        {/* Profile Info */}
+        <div className="px-6 pt-4 pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-2xl font-bold">{userInfo.name}</h1>
+              <p className="text-muted-foreground">@{userInfo.email?.split('@')[0]}</p>
+            </div>
+            {!isOwnProfile && (
+              <Button
+                onClick={() => followMutation.mutate({ userId: userIdNum })}
+                variant={isFollowing ? "outline" : "default"}
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </Button>
+            )}
+          </div>
+          
+          {profile?.bio && (
+            <p className="text-muted-foreground mb-4">{profile.bio}</p>
+          )}
+          
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            {profile?.stylePreferences && (
+              <div className="flex items-center gap-1">
+                <Heart className="w-4 h-4" />
+                <span>{profile.stylePreferences}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" />
+              <span>Joined January 2026</span>
+            </div>
+          </div>
+          
+          <div className="flex gap-6 mt-4 text-sm">
+            <div className="text-center">
+              <div className="font-bold">{outfits?.length || 0}</div>
+              <div className="text-muted-foreground">Posts</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold">{followerCount || 0}</div>
+              <div className="text-muted-foreground">Followers</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold">{followingCount || 0}</div>
+              <div className="text-muted-foreground">Following</div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="px-6">
+          <TabsList className="w-full justify-start">
+            <TabsTrigger value="outfits">Outfits</TabsTrigger>
+            <TabsTrigger value="saved">Saved</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="outfits" className="py-6">
+            {outfitsLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin" />
+              </div>
+            ) : outfits?.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                No outfits yet
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {outfits?.map((outfit) => (
+                  <Card key={outfit.id} className="overflow-hidden group cursor-pointer hover:shadow-lg transition">
+                    <div className="aspect-square">
+                      <img
+                        src={outfit.watermarkedImageUrl}
+                        alt={outfit.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition"
+                      />
+                    </div>
+                    <CardContent className="p-3">
+                      <h3 className="font-semibold text-sm truncate">{outfit.title}</h3>
+                      <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Heart className="w-3 h-3" /> 0
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageCircle className="w-3 h-3" /> 0
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="saved" className="py-6">
+            <div className="text-center py-12 text-muted-foreground">
+              Coming soon - outfits you've saved
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
+    </CustomerDashboardLayout>
   );
 }

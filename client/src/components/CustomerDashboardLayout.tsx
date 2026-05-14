@@ -26,8 +26,7 @@ import {
   LogOut, 
   PanelLeft, 
   Shirt, 
-  Heart, 
-  Sparkles, 
+  Heart,  
   Globe,
   History,
   ShoppingBag,
@@ -249,6 +248,12 @@ function CustomerDashboardLayoutContent({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => setLocation(`/profile/${user?.id}`)}>
+                  My Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLocation('/dashboard')}>
+                  Dashboard
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={logout}
                   className="cursor-pointer text-destructive focus:text-destructive"

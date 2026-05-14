@@ -1,6 +1,12 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { LogOut, Menu, X, ChevronDown } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useState } from "react";
@@ -57,27 +63,28 @@ export default function Navigation() {
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
-              <span className="text-sm font-medium text-muted-foreground hidden sm:inline">
-                {user?.name}
-              </span>
-              <Button
-                onClick={() => handleNavClick('/profile')}
-                variant="outline"
-                className="gap-2 hidden sm:flex"
-              >
-                Profile
-              </Button>
-              <Button
-                onClick={() => {
-                  logout();
-                  handleNavClick('/');
-                }}
-                variant="outline"
-                className="gap-2 hidden sm:flex"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2 hidden sm:flex">
+                    <span className="text-sm font-medium">{user?.name}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => handleNavClick(`/profile/${user?.id}`)}>
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavClick('/dashboard')}>
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    logout();
+                    handleNavClick('/');
+                  }} className="text-destructive">
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <Button 
@@ -93,11 +100,7 @@ export default function Navigation() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2 hover:bg-background/80 rounded-lg transition-colors"
           >
-            {isMobileMenuOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
@@ -138,7 +141,7 @@ export default function Navigation() {
               {isAuthenticated ? (
                 <>
                   <Button
-                    onClick={() => handleNavClick('/profile')}
+                    onClick={() => handleNavClick(`/profile/${user?.id}`)}
                     variant="outline"
                     className="w-full justify-start"
                   >

@@ -10,6 +10,7 @@ import { GlobalRecommendations } from "@/components/GlobalRecommendations";
 import { PopularBrands } from "@/components/PopularBrands";
 import { StyleCategories } from "@/components/StyleCategories";
 import { TopInfluencers } from "@/components/TopInfluencers";
+import { useLocation } from "wouter";
 
 interface Outfit {
   id: number;
@@ -38,6 +39,7 @@ export default function GlobalFeed() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [selectedCountry, setSelectedCountry] = useState<string | undefined>();
   const [likedOutfits, setLikedOutfits] = useState<Set<number>>(new Set());
+  const [location, setLocation] = useLocation();
 
   // Fetch global feed
   const { data: feedData, isLoading: feedLoading } = trpc.globalFeed.getGlobalFeed.useQuery({
@@ -100,6 +102,20 @@ export default function GlobalFeed() {
     }
     shareMutation.mutate({ outfitId, platform });
   };
+  const followMutation = trpc.globalFeed.toggleFollow.useMutation({
+  onSuccess: () => {
+    // Refetch feed to update isFollowing status
+    refetch();
+  },
+});
+
+const handleFollow = (userId: number) => {
+  if (!user) {
+    toast({ title: "Please login to follow users", variant: "destructive" });
+    return;
+  }
+  followMutation.mutate({ userId });
+};
 
   const OutfitCard = ({ outfit }: { outfit: Outfit }) => (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -133,6 +149,11 @@ export default function GlobalFeed() {
 
       <CardContent className="p-4">
         <div className="flex items-center gap-3 mb-3">
+        {/* Make the user info clickable */}
+        <div 
+          className="flex items-center gap-3 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => setLocation(`/profile/${outfit.userId}`)}
+        >
           {outfit.userAvatar ? (
             <img
               src={outfit.userAvatar}
@@ -141,7 +162,7 @@ export default function GlobalFeed() {
             />
           ) : (
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <span className="text-white font-bold text-sm">{outfit.userName[0]}</span>
+              <span className="text-white font-bold text-sm">{outfit.userName?.[0] || "U"}</span>
             </div>
           )}
           <div className="flex-1">
@@ -151,12 +172,19 @@ export default function GlobalFeed() {
               {new Date(outfit.createdAt).toLocaleDateString()}
             </p>
           </div>
-          {user && (
-            <Button variant="outline" size="sm">
-              {outfit.isFollowing ? "Following" : "Follow"}
-            </Button>
-          )}
         </div>
+        
+        {/* Follow button stays separate */}
+        {user && user.id !== outfit.userId && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleFollow(outfit.userId)}
+          >
+            {outfit.isFollowing ? "Following" : "Follow"}
+          </Button>
+        )}
+      </div>
 
         <h2 className="font-bold text-lg mb-1">{outfit.title}</h2>
         {outfit.description && (

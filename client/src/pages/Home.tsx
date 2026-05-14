@@ -67,7 +67,7 @@ export default function Home() {
 
   const authenticatedNavItems = [
     { label: 'Dashboard', path: getDashboardPath() },
-    { label: 'Profile', path: '/profile' },
+    { label: 'Profile', path: `/profile/${user?.id}`},
   ];
 
   // For admin users, add a link to the customer dashboard for testing
@@ -151,9 +151,9 @@ export default function Home() {
                   {getDashboardLabel()}
                 </Button>
                 <Button
-                  onClick={() => setLocation('/profile')}
+                  onClick={() => setLocation(`/profile/${user?.id}`)}  // ← Dynamic path
+                  className="w-full"
                   variant="outline"
-                  className="gap-2"
                 >
                   Profile
                 </Button>
@@ -264,7 +264,7 @@ export default function Home() {
                   {user?.name}
                 </div>
                 <Button
-                  onClick={() => setLocation('/profile')}
+                  onClick={() => setLocation(`/profile/${user?.id}`)}
                   className="w-full"
                   variant="outline"
                 >
