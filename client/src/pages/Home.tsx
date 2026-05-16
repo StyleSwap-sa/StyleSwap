@@ -97,48 +97,16 @@ export default function Home() {
                 {item.label}
               </button>
             ))}
-            {isAuthenticated && (
-              <>
-                <div className="w-px bg-border/30"></div>
-                {authenticatedNavItems.map((item) => (
-                  <button
-                    key={item.path}
-                    onClick={() => setLocation(item.path)}
-                    className="hover:text-primary transition-colors uppercase tracking-wide text-primary font-bold"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-                {isAdmin && (
-                  <>
-                    <div className="w-px bg-border/30"></div>
-                    <button
-                      onClick={() => setLocation('/customer-try-on')}
-                      className="hover:text-secondary transition-colors uppercase tracking-wide text-secondary font-bold"
-                      title="Test the customer try-on dashboard"
-                    >
-                      Try Customer Dashboard
-                    </button>
-                    <button
-                      onClick={() => setLocation('/test-boutique')}
-                      className="hover:text-secondary transition-colors uppercase tracking-wide text-secondary font-bold"
-                      title="Test the boutique try-on dashboard"
-                    >
-                      Try Boutique Dashboard
-                    </button>
-                  </>
-                )}
-              </>
-            )}
+           
           </div>
 
           {/* Fitroom Credits Widget */}
           {isAuthenticated && (
             <FitroomCreditsWidget apiKey="744af8dfea9f4b04bc2ba36082c255049928648390bb4586a8fb157a2116e483" />
           )}
-
+          
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3 pl-4">
             {isAuthenticated ? (
               <>
                 <span className="text-sm font-medium text-muted-foreground">
@@ -149,13 +117,6 @@ export default function Home() {
                   className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
                 >
                   {getDashboardLabel()}
-                </Button>
-                <Button
-                  onClick={() => setLocation(`/profile/${user?.id}`)}  // ← Dynamic path
-                  className="w-full"
-                  variant="outline"
-                >
-                  Profile
                 </Button>
                 <Button
                   onClick={() => {

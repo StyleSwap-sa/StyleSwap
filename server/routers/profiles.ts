@@ -3,6 +3,8 @@ import { z } from "zod";
 import { getDb } from "../db";
 import { users, userProfiles, savedOutfits, userFollows } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
+import { getPresignedUrlForImage } from "../storage";
+
 
 export const profilesRouter = router({
   // Get user profile
@@ -37,7 +39,15 @@ export const profilesRouter = router({
         .limit(input.limit)
         .offset(offset);
 
-      return outfits;
+      // Generate presigned URLs for each outfit
+      const outfitsWithPresignedUrls = await Promise.all(
+        outfits.map(async (outfit) => ({
+          ...outfit,
+          watermarkedImageUrl: await getPresignedUrlForImage(outfit.watermarkedImageUrl),
+        }))
+      );
+
+      return outfitsWithPresignedUrls;
     }),
 
   // Update user profile

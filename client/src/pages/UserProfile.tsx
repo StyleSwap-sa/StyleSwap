@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, MapPin, Link2, Calendar, Users, Heart, MessageCircle, Share2 } from "lucide-react";
-import CustomerDashboardLayout from "@/components/CustomerDashboardLayout";
+
 
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
@@ -58,28 +58,23 @@ export default function UserProfile() {
   
   if (userLoading || profileLoading) {
     return (
-      <CustomerDashboardLayout>
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin" />
         </div>
-      </CustomerDashboardLayout>
     );
   }
   
   if (!userInfo) {
     return (
-      <CustomerDashboardLayout>
         <div className="text-center py-20">
           <h2 className="text-2xl font-bold mb-4">User not found</h2>
           <Button onClick={() => setLocation("/global-feed")}>Back to Feed</Button>
         </div>
-      </CustomerDashboardLayout>
     );
   }
   
   return (
-    <CustomerDashboardLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="mx-auto">
         {/* Cover & Profile Image */}
         <div className="relative mb-16">
           <div className="h-32 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-t-lg" />
@@ -194,6 +189,6 @@ export default function UserProfile() {
           </TabsContent>
         </Tabs>
       </div>
-    </CustomerDashboardLayout>
+
   );
 }
