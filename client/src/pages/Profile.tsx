@@ -2,9 +2,11 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Mail, Phone, MapPin, Heart, History, Settings, LogOut, Edit2, Save, X } from "lucide-react";
+import { User, Mail, MapPin, Heart, History, Settings, LogOut, Edit2, Save, X, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
+
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -15,6 +17,24 @@ export default function Profile() {
     name: user?.name || "",
     email: user?.email || "",
   });
+
+  // Fetch user's stats from database
+  const { data: userStats, isLoading: statsLoading } = trpc.profiles.getUserStats.useQuery(
+    { userId: user?.id || 0 },
+    { enabled: !!user }
+  );
+
+  // Fetch user's favorites (liked outfits)
+  const { data: likedOutfits, isLoading: favoritesLoading } = trpc.profiles.getLikedOutfits.useQuery(
+    { userId: user?.id || 0, limit: 10 },
+    { enabled: !!user }
+  );
+
+  // Fetch user's purchase history
+  const { data: purchaseHistory, isLoading: historyLoading } = trpc.profiles.getPurchaseHistory.useQuery(
+    { userId: user?.id || 0, limit: 10 },
+    { enabled: !!user }
+  );
 
   if (!user) {
     return (
@@ -41,48 +61,16 @@ export default function Profile() {
     setLocation("/");
   };
 
-  // Mock data for favorites
-  const favorites = [
-    { id: 1, name: "Black Evening Dress", category: "Dresses", price: "R2,500" },
-    { id: 2, name: "Blue Denim Jacket", category: "Jackets", price: "R1,200" },
-    { id: 3, name: "White Sneakers", category: "Shoes", price: "R800" },
-  ];
-
-  // Mock data for purchase history
-  const purchaseHistory = [
-    {
-      id: 1,
-      date: "2026-01-15",
-      description: "100 Try-Ons Package",
-      amount: "R385",
-      status: "Completed",
-    },
-    {
-      id: 2,
-      date: "2026-01-10",
-      description: "50 Try-Ons Package",
-      amount: "R150",
-      status: "Completed",
-    },
-    {
-      id: 3,
-      date: "2026-01-05",
-      description: "200 Try-Ons Package",
-      amount: "R750",
-      status: "Completed",
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-background text-foreground py-6 md:py-12">
       <div className="container mx-auto max-w-6xl px-4 md:px-0">
-        {/* Header - Responsive */}
+        {/* Header */}
         <div className="mb-6 md:mb-8">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2">My Profile</h1>
           <p className="text-sm md:text-base text-muted-foreground">Manage your account, favorites, and purchase history</p>
         </div>
 
-        {/* Profile Card - Responsive */}
+        {/* Profile Card */}
         <div className="grid md:grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-12">
           <Card className="premium-card rounded-2xl md:col-span-1">
             <CardHeader>
@@ -160,7 +148,6 @@ export default function Profile() {
                   </div>
                 </div>
               )}
-              {/* Admin Dashboard Link - Only visible to owner */}
               {(user?.role === 'admin' || user?.userType === 'admin') && (
                 <Button
                   onClick={() => setLocation('/admin/dashboard')}
@@ -190,19 +177,27 @@ export default function Profile() {
                 <div className="grid grid-cols-2 gap-2 md:gap-4">
                   <div className="p-3 md:p-4 bg-primary/10 rounded-lg">
                     <p className="text-xs md:text-sm text-muted-foreground mb-1">Total Try-Ons</p>
-                    <p className="text-2xl md:text-3xl font-bold text-primary">350</p>
+                    <p className="text-2xl md:text-3xl font-bold text-primary">
+                      {statsLoading ? "..." : userStats?.totalTryOns || 0}
+                    </p>
                   </div>
                   <div className="p-3 md:p-4 bg-secondary/10 rounded-lg">
                     <p className="text-xs md:text-sm text-muted-foreground mb-1">Remaining Credits</p>
-                    <p className="text-2xl md:text-3xl font-bold text-secondary">45</p>
+                    <p className="text-2xl md:text-3xl font-bold text-secondary">
+                      {statsLoading ? "..." : userStats?.remainingCredits || 0}
+                    </p>
                   </div>
                   <div className="p-3 md:p-4 bg-accent/10 rounded-lg">
                     <p className="text-xs md:text-sm text-muted-foreground mb-1">Total Spent</p>
-                    <p className="text-2xl md:text-3xl font-bold">R2,885</p>
+                    <p className="text-2xl md:text-3xl font-bold">
+                      R{statsLoading ? "..." : (userStats?.totalSpent || 0).toFixed(2)}
+                    </p>
                   </div>
                   <div className="p-3 md:p-4 bg-foreground/5 rounded-lg">
                     <p className="text-xs md:text-sm text-muted-foreground mb-1">Favorites</p>
-                    <p className="text-2xl md:text-3xl font-bold">{favorites.length}</p>
+                    <p className="text-2xl md:text-3xl font-bold">
+                      {favoritesLoading ? "..." : likedOutfits?.length || 0}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -214,11 +209,11 @@ export default function Profile() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2 md:gap-3">
-                  <Button variant="outline" className="gap-2 h-9 text-xs md:text-sm">
+                  <Button variant="outline" className="gap-2 h-9 text-xs md:text-sm" onClick={() => setLocation('/settings')}>
                     <Settings className="w-4 h-4" />
                     <span className="hidden xs:inline">Settings</span>
                   </Button>
-                  <Button variant="outline" className="gap-2 h-9 text-xs md:text-sm">
+                  <Button variant="outline" className="gap-2 h-9 text-xs md:text-sm" onClick={() => setLocation('/notifications')}>
                     <Mail className="w-4 h-4" />
                     <span className="hidden xs:inline">Notifications</span>
                   </Button>
@@ -228,7 +223,7 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Tabs - Responsive */}
+        {/* Tabs */}
         <div className="border-b border-border/20 mb-6 md:mb-8 overflow-x-auto">
           <div className="flex gap-2 md:gap-8 min-w-max md:min-w-0">
             <button
@@ -251,7 +246,7 @@ export default function Profile() {
               }`}
             >
               <Heart className="w-3 h-3 md:w-4 md:h-4 inline mr-1 md:mr-2" />
-              <span className="hidden xs:inline">Favorites</span> ({favorites.length})
+              <span className="hidden xs:inline">Favorites</span> ({likedOutfits?.length || 0})
             </button>
             <button
               onClick={() => setActiveTab("history")}
@@ -314,17 +309,30 @@ export default function Profile() {
               <CardTitle className="text-base md:text-lg">Your Favorites</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 md:space-y-4">
-                {favorites.map((item) => (
-                  <div key={item.id} className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-3 p-3 md:p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm md:text-base truncate">{item.name}</p>
-                      <p className="text-xs md:text-sm text-muted-foreground">{item.category}</p>
+              {favoritesLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+              ) : likedOutfits?.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No favorites yet</p>
+                  <p className="text-sm">Like some outfits on the Global Feed!</p>
+                </div>
+              ) : (
+                <div className="space-y-3 md:space-y-4">
+                  {likedOutfits?.map((outfit: any) => (
+                    <div key={outfit.id} className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-3 p-3 md:p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm md:text-base truncate">{outfit.title}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground">{outfit.style || "Outfit"}</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(outfit.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
-                    <p className="font-bold text-primary text-sm md:text-base">{item.price}</p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -335,20 +343,32 @@ export default function Profile() {
               <CardTitle className="text-base md:text-lg">Purchase History</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 md:space-y-4">
-                {purchaseHistory.map((item) => (
-                  <div key={item.id} className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-3 p-3 md:p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm md:text-base">{item.description}</p>
-                      <p className="text-xs md:text-sm text-muted-foreground">{item.date}</p>
+              {historyLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+              ) : purchaseHistory?.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No purchase history yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3 md:space-y-4">
+                  {purchaseHistory?.map((item: any) => (
+                    <div key={item.id} className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-3 p-3 md:p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm md:text-base">{item.description}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground">
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-bold text-sm md:text-base">R{item.amount.toFixed(2)}</p>
+                        <p className="text-xs text-green-600 capitalize">{item.status}</p>
+                      </div>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="font-bold text-sm md:text-base">{item.amount}</p>
-                      <p className="text-xs text-green-600">{item.status}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

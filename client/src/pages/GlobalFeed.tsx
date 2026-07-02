@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { GlobalRecommendations } from "@/components/GlobalRecommendations";
 import { PopularBrands } from "@/components/PopularBrands";
 import { StyleCategories } from "@/components/StyleCategories";
 import { TopInfluencers } from "@/components/TopInfluencers";
+import { CommentModal } from "@/components/CommentModal";
 import { useLocation } from "wouter";
 
 interface Outfit {
@@ -40,6 +41,11 @@ export default function GlobalFeed() {
   const [selectedCountry, setSelectedCountry] = useState<string | undefined>();
   const [likedOutfits, setLikedOutfits] = useState<Set<number>>(new Set());
   const [location, setLocation] = useLocation();
+  const utils = trpc.useUtils();
+  const [selectedOutfitId, setSelectedOutfitId] = useState<number | null>(null);
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+
+
 
   // Fetch global feed
   const { data: feedData, isLoading: feedLoading } = trpc.globalFeed.getGlobalFeed.useQuery({
@@ -61,21 +67,62 @@ export default function GlobalFeed() {
   });
 
   // Like mutation
-  const likeMutation = trpc.globalFeed.likeOutfit.useMutation({
-    onSuccess: (data, input) => {
-      if (data.success) {
-        if (data.liked) {
-          setLikedOutfits((prev) => new Set([...prev, input.outfitId]));
-        } else {
-          setLikedOutfits((prev) => {
-            const newSet = new Set(prev);
-            newSet.delete(input.outfitId);
-            return newSet;
-          });
-        }
+  // Update the likeMutation to include optimistic update
+const likeMutation = trpc.globalFeed.likeOutfit.useMutation({
+  onMutate: async ({ outfitId }) => {
+    // Cancel outgoing refetches
+    await utils.globalFeed.getGlobalFeed.cancel();
+    
+    // Snapshot previous value
+    const previousData = utils.globalFeed.getGlobalFeed.getData();
+    
+    // Optimistically update the like count
+    utils.globalFeed.getGlobalFeed.setData(
+      { limit: 20, offset: 0, sortBy, styleCategory: selectedCategory, country: selectedCountry, searchQuery: searchQuery || undefined },
+      (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          outfits: old.outfits.map((outfit) =>
+            outfit.id === outfitId
+              ? {
+                  ...outfit,
+                  likeCount: outfit.isLiked 
+                    ? Number(outfit.likeCount) - 1 
+                    : Number(outfit.likeCount) + 1,
+                  isLiked: !outfit.isLiked,
+                }
+              : outfit
+          ),
+        };
       }
-    },
-  });
+    );
+    
+    return { previousData };
+  },
+  onError: (err, input, context) => {
+    // Rollback on error
+    if (context?.previousData) {
+      utils.globalFeed.getGlobalFeed.setData(
+        { limit: 20, offset: 0, sortBy, styleCategory: selectedCategory, country: selectedCountry, searchQuery: searchQuery || undefined },
+        context.previousData
+      );
+    }
+  },
+  onSuccess: (data, input) => {
+    if (data.success) {
+      if (data.liked) {
+        setLikedOutfits((prev) => new Set([...prev, input.outfitId]));
+      } else {
+        setLikedOutfits((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(input.outfitId);
+          return newSet;
+        });
+      }
+    }
+  },
+});
 
   // Share mutation
   const shareMutation = trpc.globalFeed.shareOutfit.useMutation({
@@ -134,9 +181,16 @@ const handleFollow = (userId: number) => {
           >
             <Heart className="w-4 h-4" fill={likedOutfits.has(outfit.id) ? "currentColor" : "none"} />
           </Button>
-          <Button size="sm" variant="secondary">
+          <button
+            onClick={() => {
+              setSelectedOutfitId(outfit.id);
+              setIsCommentModalOpen(true);
+            }}
+            className="flex items-center gap-1 hover:text-primary transition-colors"
+          >
             <MessageCircle className="w-4 h-4" />
-          </Button>
+            {outfit.commentCount}
+          </button>
           <Button
             size="sm"
             variant="secondary"
@@ -202,9 +256,15 @@ const handleFollow = (userId: number) => {
             }`}
           >
             <Heart className="w-4 h-4" fill={likedOutfits.has(outfit.id) ? "currentColor" : "none"} />
-            {outfit.likeCount}
+            {Number(outfit.likeCount)}
           </button>
-          <button className="flex items-center gap-1 hover:text-primary">
+          <button
+            onClick={() => {
+              setSelectedOutfitId(outfit.id);
+              setIsCommentModalOpen(true);
+            }}
+            className="flex items-center gap-1 hover:text-primary transition-colors"
+          >
             <MessageCircle className="w-4 h-4" />
             {outfit.commentCount}
           </button>
@@ -315,6 +375,20 @@ const handleFollow = (userId: number) => {
           <TopInfluencers limit={5} />
         </div>
       </div>
+
+      <CommentModal
+      isOpen={isCommentModalOpen}
+      onClose={() => {
+        setIsCommentModalOpen(false);
+        setSelectedOutfitId(null);
+      }}
+      outfitId={selectedOutfitId || 0}
+      onCommentAdded={() => {
+        // Refetch feed to update comment count
+        feedData?.refetch();
+      }}
+    />
+
     </div>
   );
 }

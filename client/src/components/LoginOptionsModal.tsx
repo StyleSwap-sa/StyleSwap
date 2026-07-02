@@ -156,7 +156,7 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
             {/* 🔥 NEW: User Type Selection */}
             <div className="space-y-2">
               <Label>Account Type</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3">
                 <button
                   type="button"
                   onClick={() => setUserType("customer")}
@@ -170,7 +170,7 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
                   <span className="text-sm font-medium">Customer</span>
                   <span className="text-xs text-muted-foreground">Try on clothes</span>
                 </button>
-                <button
+                 {/* <button
                   type="button"
                   onClick={() => setUserType("merchant")}
                   className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
@@ -182,7 +182,7 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
                   <Store className="w-5 h-5" />
                   <span className="text-sm font-medium">Boutique</span>
                   <span className="text-xs text-muted-foreground">Sell clothes</span>
-                </button>
+               </button> */}
               </div>
             </div>
             

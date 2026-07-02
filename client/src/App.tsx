@@ -65,7 +65,7 @@ const WidgetDashboard = lazy(() => import("./pages/WidgetDashboard"));
 const MyCloset = lazy(() => import("./pages/MyCloset"));
 const OutfitVoting = lazy(() => import("./pages/OutfitVoting"));
 const OutfitDiscovery = lazy(() => import("./pages/OutfitDiscovery"));
-const NotificationCenter = lazy(() => import("./pages/NotificationCenter"));
+const Notifications = lazy(() => import("./pages/Notifications"));
 const ModerationDashboard = lazy(() => import("./pages/ModerationDashboard"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const ReferralSignup = lazy(() => import("./pages/ReferralSignup"));
@@ -74,6 +74,7 @@ const About = lazy(() => import("./pages/About"));
 const RegisterApp = lazy(() => import("./pages/RegisterApp"));
 const BoutiqueSignupWithVerification = lazy(() => import("./pages/BoutiqueSignupWithVerification"));
 const GlobalFeed = lazy(() => import("./pages/GlobalFeed"));
+const Following = lazy(() => import("./pages/Following"));
 
 const GlobalFeedWithLayout = () => {
   return (
@@ -129,10 +130,10 @@ const OutfitDiscoveryWithLayout = () => {
 };
 
 // Wrap NotificationCenter
-const NotificationCenterWithLayout = () => {
+const NotificationsWithLayout = () => {
   return (
     <CustomerDashboardLayout>
-      <NotificationCenter />
+      <Notifications />
     </CustomerDashboardLayout>
   );
 };
@@ -145,12 +146,25 @@ const UserProfileWithLayout = ({ params }: { params: { userId: string } }) => {
     </CustomerDashboardLayout>
   );
 };
-
+const ProfileWithLayout = ({ params }: { params: { userId: string } }) => {
+  return (
+    <CustomerDashboardLayout>
+      <Profile />
+    </CustomerDashboardLayout>
+  );
+};
 // Wrap BuyCredits
 const BuyCreditsWithLayout = () => {
   return (
     <CustomerDashboardLayout>
       <BuyCredits />
+    </CustomerDashboardLayout>
+  );
+};
+const FollowingWithLayout = () => {
+  return (
+    <CustomerDashboardLayout>
+      <Following />
     </CustomerDashboardLayout>
   );
 };
@@ -232,13 +246,15 @@ export default function App() {
   <Route path="/closet" component={MyClosetWithLayout} />
   <Route path="/voting" component={OutfitVotingWithLayout} />
   <Route path="/discover" component={OutfitDiscoveryWithLayout} />
-  <Route path="/notifications" component={NotificationCenterWithLayout} />
+  <Route path="/notifications" component={NotificationsWithLayout} />
   <Route path="/profile/:userId" component={UserProfileWithLayout} />
   <Route path="/buy-credits" component={BuyCreditsWithLayout} />
   <Route path="/global-feed" component={GlobalFeedWithLayout} />
+  <Route path="/profile" component={ProfileWithLayout} />
+  <Route path="/following" component={FollowingWithLayout} />
   
   {/* Other routes */}
-  <Route path="/profile" component={Profile} />
+  
   <Route path="/demo" component={DemoTryOn} />
   <Route path="/checkout" component={Checkout} />
   <Route path="/analytics" component={Analytics} />

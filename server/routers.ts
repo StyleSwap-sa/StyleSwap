@@ -41,6 +41,8 @@ import { getFitroomCredits, isCreditsLow, isCreditsCritical } from "./fitroom-in
 import { globalFeedRouter } from "./routers/global-feed";
 import { globalRecommendationsRouter } from "./routers/global-recommendations";
 import { profilesRouter } from "./routers/profiles";
+import { notificationsRouter } from "./routers/notifications";
+import { followsRouter } from "./routers/follows";
 
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -208,6 +210,8 @@ export const appRouter = router({
   freeTrial: freeTrialRouter,
   widget: widgetRouter,
   profiles: profilesRouter,
+  notifications: notificationsRouter,
+  follows : followsRouter,
   fitroom: router({
     getCredits: publicProcedure.query(async () => {
       try {

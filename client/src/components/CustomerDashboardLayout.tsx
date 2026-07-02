@@ -29,7 +29,7 @@ import {
   Heart,  
   Globe,
   History,
-  ShoppingBag,
+  Bell,
   Users
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -41,8 +41,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Globe, label: "Global Feed", path: "/global-feed" },
   { icon: Shirt, label: "Try On", path: "/try-on" },
-  { icon: Heart, label: "Saved Outfits", path: "/saved-outfits" },
-  { icon: ShoppingBag, label: "My Orders", path: "/my-orders" },
+  { icon: Bell, label: "Notifications", path: "/notifications" },
   { icon: Users, label: "Following", path: "/following" },
   { icon: History, label: "History", path: "/dashboard?tab=history" },
 ];
@@ -249,7 +248,7 @@ function CustomerDashboardLayoutContent({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => setLocation(`/profile/${user?.id}`)}>
+              <DropdownMenuItem onClick={() => setLocation(`/profile`)}>
                 My Profile
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setLocation('/dashboard')}>

@@ -9,7 +9,8 @@ import {
   outfitComments, 
   userFollows, 
   userProfiles, 
-  users 
+  users,
+  notifications
 } from "../../drizzle/schema";
 import { eq, and, desc, sql, or, isNotNull, ne } from "drizzle-orm";
 
@@ -70,6 +71,13 @@ export const globalFeedRouter = router({
           )
         );
       }
+      {/* Most liked shows >= 1 liked posts for now, subject to change, with the product growth */}
+      if (input.sortBy === "mostLiked") {
+        filterConditions.push(
+          sql`(SELECT COALESCE(COUNT(*), 0) FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id}) >= 1`
+        );
+      }
+
 
       // Define the select fields
       const selectFields = {
@@ -152,77 +160,92 @@ export const globalFeedRouter = router({
   }),
 
   // Get trending outfits
-  getGlobalTrending: publicProcedure
-    .input(z.object({
-      limit: z.number().default(10),
-      offset: z.number().default(0),
-      timeRange: z.enum(["24h", "7d", "30d"]).default("7d"),
-      styleCategory: z.string().optional(),
-      country: z.string().optional(),
-    }))
-    .query(async ({ ctx, input }) => {
-      try {
-        const db = await getDb();
-        if (!db) return { success: false, outfits: [], count: 0, error: "Database not available" };
+ getGlobalTrending: publicProcedure
+  .input(z.object({
+    limit: z.number().default(10),
+    offset: z.number().default(0),
+    timeRange: z.enum(["24h", "7d", "30d"]).default("7d"),
+    styleCategory: z.string().optional(),
+    country: z.string().optional(),
+  }))
+  .query(async ({ ctx, input }) => {
+    try {
+      const db = await getDb();
+      if (!db) return { success: false, outfits: [], count: 0, error: "Database not available" };
 
-        const userId = ctx.user?.id;
-        const timeRangeMs = 
-          input.timeRange === "24h" ? 24 * 60 * 60 * 1000 :
-          input.timeRange === "7d" ? 7 * 24 * 60 * 60 * 1000 :
-          30 * 24 * 60 * 60 * 1000;
+      const userId = ctx.user?.id;
+      const timeRangeMs = 
+        input.timeRange === "24h" ? 24 * 60 * 60 * 1000 :
+        input.timeRange === "7d" ? 7 * 24 * 60 * 60 * 1000 :
+        30 * 24 * 60 * 60 * 1000;
 
-        const cutoffTime = new Date(Date.now() - timeRangeMs);
+      const cutoffTime = new Date(Date.now() - timeRangeMs);
 
-        let query = db
-          .select({
-            id: savedOutfits.id,
-            title: savedOutfits.title,
-            description: savedOutfits.description,
-            watermarkedImageUrl: savedOutfits.watermarkedImageUrl,
-            userId: savedOutfits.userId,
-            userName: users.name,
-            userAvatar: userProfiles.avatar,
-            style: savedOutfits.style,
-            createdAt: savedOutfits.createdAt,
-            likeCount: sql<number>`(SELECT COALESCE(COUNT(*), 0) FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id})`,
-            commentCount: sql<number>`(SELECT COALESCE(COUNT(*), 0) FROM ${outfitComments} WHERE ${outfitComments.outfitId} = ${savedOutfits.id})`,
-            isLiked: userId ? sql<boolean>`EXISTS(SELECT 1 FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id} AND ${outfitLikes.userId} = ${userId})` : sql<boolean>`false`,
-          })
-          .from(savedOutfits)
-          .innerJoin(users, eq(savedOutfits.userId, users.id))
-          .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
-          .where(
-            and(
-              eq(savedOutfits.isFavorite, 1),
-              sql`${savedOutfits.createdAt} >= ${cutoffTime.toISOString()}`,
-              input.styleCategory ? eq(savedOutfits.style, input.styleCategory) : undefined,
-              input.country ? eq(users.country, input.country) : undefined
-            )
+      // Define engagement score calculation
+      const engagementScore = sql<number>`
+        COALESCE(
+          (SELECT COALESCE(COUNT(*), 0) FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id}) + 
+          (SELECT COALESCE(COUNT(*), 0) FROM ${outfitComments} WHERE ${outfitComments.outfitId} = ${savedOutfits.id}) * 2,
+          0
+        )
+      `;
+
+      let query = db
+        .select({
+          id: savedOutfits.id,
+          title: savedOutfits.title,
+          description: savedOutfits.description,
+          watermarkedImageUrl: savedOutfits.watermarkedImageUrl,
+          userId: savedOutfits.userId,
+          userName: users.name,
+          userAvatar: userProfiles.avatar,
+          style: savedOutfits.style,
+          createdAt: savedOutfits.createdAt,
+          likeCount: sql<number>`(SELECT COALESCE(COUNT(*), 0) FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id})`,
+          commentCount: sql<number>`(SELECT COALESCE(COUNT(*), 0) FROM ${outfitComments} WHERE ${outfitComments.outfitId} = ${savedOutfits.id})`,
+          isLiked: userId ? sql<boolean>`EXISTS(SELECT 1 FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id} AND ${outfitLikes.userId} = ${userId})` : sql<boolean>`false`,
+          engagementScore: engagementScore,
+        })
+        .from(savedOutfits)
+        .innerJoin(users, eq(savedOutfits.userId, users.id))
+        .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+        .where(
+          and(
+            eq(savedOutfits.isFavorite, 1),
+            // 🔥 Only show outfits with engagement > 0
+            sql`${engagementScore} > 0`,
+            sql`${savedOutfits.createdAt} >= ${cutoffTime.toISOString()}`,
+            input.styleCategory ? eq(savedOutfits.style, input.styleCategory) : undefined,
+            input.country ? eq(users.country, input.country) : undefined
           )
-          .orderBy(desc(sql<number>`(SELECT COALESCE(COUNT(*), 0) FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id}) + (SELECT COALESCE(COUNT(*), 0) FROM ${outfitComments} WHERE ${outfitComments.outfitId} = ${savedOutfits.id}) * 2`));
+        )
+        .orderBy(desc(engagementScore))
+        .limit(input.limit)
+        .offset(input.offset);
 
-        const results = await query.limit(input.limit).offset(input.offset);
-        const processedResults = await Promise.all(
+      const results = await query;
+      const processedResults = await Promise.all(
         results.map(async (outfit) => ({
-            ...outfit,
-            watermarkedImageUrl: await getPresignedUrlForImage(outfit.watermarkedImageUrl),
-          }))
-        );
-        return {
-          success: true,
-          outfits: processedResults,
-          count: processedResults.length,
-        };
-      } catch (error) {
-        console.error("[Global Feed] Error fetching trending:", error);
-        return {
-          success: false,
-          error: "Failed to fetch trending",
-          outfits: [],
-          count: 0,
-        };
-      }
-    }),
+          ...outfit,
+          watermarkedImageUrl: await getPresignedUrlForImage(outfit.watermarkedImageUrl),
+        }))
+      );
+      
+      return {
+        success: true,
+        outfits: processedResults,
+        count: processedResults.length,
+      };
+    } catch (error) {
+      console.error("[Global Feed] Error fetching trending:", error);
+      return {
+        success: false,
+        error: "Failed to fetch trending",
+        outfits: [],
+        count: 0,
+      };
+    }
+  }),
 
   // Get popular brands
   getPopularBrands: publicProcedure
@@ -319,40 +342,84 @@ export const globalFeedRouter = router({
   }),
 
   // Like outfit
-  likeOutfit: protectedProcedure
-    .input(z.object({ outfitId: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const db = await getDb();
-        if (!db) return { success: false, error: "Database not available" };
+likeOutfit: protectedProcedure
+  .input(z.object({ outfitId: z.number() }))
+  .mutation(async ({ ctx, input }) => {
+    try {
+      const db = await getDb();
+      if (!db) return { success: false, error: "Database not available" };
 
-        const existingLike = await db
-          .select()
-          .from(outfitLikes)
+      // First, get the outfit owner info (before we potentially delete the like)
+      const outfit = await db
+        .select({
+          userId: savedOutfits.userId,
+          title: savedOutfits.title,
+        })
+        .from(savedOutfits)
+        .where(eq(savedOutfits.id, input.outfitId))
+        .limit(1);
+
+      if (!outfit.length) {
+        return { success: false, error: "Outfit not found" };
+      }
+
+      const existingLike = await db
+        .select()
+        .from(outfitLikes)
+        .where(
+          and(
+            eq(outfitLikes.outfitId, input.outfitId),
+            eq(outfitLikes.userId, ctx.user.id)
+          )
+        )
+        .limit(1);
+
+      if (existingLike.length > 0) {
+        // Unlike: Remove the like
+        await db.delete(outfitLikes).where(eq(outfitLikes.id, existingLike[0].id));
+        
+        // Optionally: Remove the notification if it exists
+        await db
+          .delete(notifications)
           .where(
             and(
-              eq(outfitLikes.outfitId, input.outfitId),
-              eq(outfitLikes.userId, ctx.user.id)
+              eq(notifications.userId, outfit[0].userId),
+              eq(notifications.actorId, ctx.user.id),
+              eq(notifications.entityId, input.outfitId),
+              eq(notifications.entityType, 'outfit'),
+              eq(notifications.type, 'like')
             )
-          )
-          .limit(1);
+          );
+        
+        return { success: true, liked: false };
+      } else {
+        // Like: Add the like
+        await db.insert(outfitLikes).values({
+          outfitId: input.outfitId,
+          userId: ctx.user.id,
+          createdAt: new Date(),
+        });
 
-        if (existingLike.length > 0) {
-          await db.delete(outfitLikes).where(eq(outfitLikes.id, existingLike[0].id));
-          return { success: true, liked: false };
-        } else {
-          await db.insert(outfitLikes).values({
-            outfitId: input.outfitId,
-            userId: ctx.user.id,
+        // 🔥 Create notification for outfit owner (if not the same user)
+        if (outfit[0].userId !== ctx.user.id) {
+          await db.insert(notifications).values({
+            userId: outfit[0].userId,
+            type: 'like',
+            message: `${ctx.user.name || 'Someone'} liked your outfit "${outfit[0].title}"`,
+            actorId: ctx.user.id,
+            entityId: input.outfitId,
+            entityType: 'outfit',
             createdAt: new Date(),
           });
-          return { success: true, liked: true };
         }
-      } catch (error) {
-        console.error("[Global Feed] Error liking outfit:", error);
-        return { success: false, error: "Failed to like outfit" };
+
+        return { success: true, liked: true };
       }
-    }),
+    } catch (error) {
+      console.error("[Global Feed] Error liking outfit:", error);
+      return { success: false, error: "Failed to like outfit" };
+    }
+  }),
 
   // Get follow suggestions
   getFollowSuggestions: protectedProcedure
@@ -398,6 +465,145 @@ export const globalFeedRouter = router({
       }
     }),
 
+    getComments: publicProcedure
+      .input(z.object({ outfitId: z.number() }))
+      .query(async ({ input }) => {
+        const db = await getDb();
+        if (!db) return [];
+
+        const comments = await db
+          .select({
+            id: outfitComments.id,
+            comment: outfitComments.comment,
+            createdAt: outfitComments.createdAt,
+            userId: outfitComments.userId,
+            userName: users.name,
+            userAvatar: userProfiles.avatar,
+          })
+          .from(outfitComments)
+          .innerJoin(users, eq(outfitComments.userId, users.id))
+          .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+          .where(eq(outfitComments.outfitId, input.outfitId))
+          .orderBy(desc(outfitComments.createdAt));
+
+        return comments;
+      }),
+    // Add comment to outfit
+  addComment: protectedProcedure
+    .input(z.object({
+      outfitId: z.number(),
+      comment: z.string().min(1).max(500),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Get outfit owner
+      const outfit = await db
+        .select({
+          userId: savedOutfits.userId,
+          title: savedOutfits.title,
+        })
+        .from(savedOutfits)
+        .where(eq(savedOutfits.id, input.outfitId))
+        .limit(1);
+
+      if (!outfit.length) {
+        throw new Error("Outfit not found");
+      }
+
+      // Insert comment
+      const result = await db.insert(outfitComments).values({
+        outfitId: input.outfitId,
+        userId: ctx.user.id,
+        comment: input.comment,
+        createdAt: new Date(),
+      }).returning({ id: outfitComments.id });
+
+      // 🔥 Create notification for outfit owner (if not the same user)
+      if (outfit[0].userId !== ctx.user.id) {
+        await db.insert(notifications).values({
+          userId: outfit[0].userId,
+          type: 'comment',
+          message: `${ctx.user.name || 'Someone'} commented on your outfit "${outfit[0].title}"`,
+          actorId: ctx.user.id,
+          entityId: input.outfitId,
+          entityType: 'outfit',
+          createdAt: new Date(),
+        });
+      }
+
+      return { success: true, commentId: result[0]?.id };
+    }),
+
+  editComment: protectedProcedure
+    .input(z.object({
+      commentId: z.number(),
+      comment: z.string().min(1).max(500),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Verify the user owns this comment
+      const existing = await db
+        .select()
+        .from(outfitComments)
+        .where(eq(outfitComments.id, input.commentId))
+        .limit(1);
+
+      if (!existing.length) {
+        throw new Error("Comment not found");
+      }
+
+      if (existing[0].userId !== ctx.user.id) {
+        throw new Error("You can only edit your own comments");
+      }
+
+      await db
+        .update(outfitComments)
+        .set({ comment: input.comment })
+        .where(eq(outfitComments.id, input.commentId));
+
+      return { success: true };
+    }),
+
+  deleteComment: protectedProcedure
+    .input(z.object({ commentId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Verify the user owns this comment
+      const existing = await db
+        .select()
+        .from(outfitComments)
+        .where(eq(outfitComments.id, input.commentId))
+        .limit(1);
+
+      if (!existing.length) {
+        throw new Error("Comment not found");
+      }
+
+      if (existing[0].userId !== ctx.user.id) {
+        throw new Error("You can only delete your own comments");
+      }
+
+      // Also delete associated notifications
+      await db
+        .delete(notifications)
+        .where(
+          and(
+            eq(notifications.entityId, existing[0].outfitId),
+            eq(notifications.entityType, 'comment'),
+            eq(notifications.type, 'comment')
+          )
+        );
+
+      await db.delete(outfitComments).where(eq(outfitComments.id, input.commentId));
+
+      return { success: true };
+    }),
   // Toggle follow
   toggleFollow: protectedProcedure
     .input(z.object({ userId: z.number() }))
@@ -405,6 +611,13 @@ export const globalFeedRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       
+      // Get the user being followed
+      const targetUser = await db
+        .select({ name: users.name })
+        .from(users)
+        .where(eq(users.id, input.userId))
+        .limit(1);
+
       const existing = await db
         .select()
         .from(userFollows)
@@ -417,14 +630,43 @@ export const globalFeedRouter = router({
         .limit(1);
       
       if (existing.length > 0) {
+        // Unfollow
         await db.delete(userFollows).where(eq(userFollows.id, existing[0].id));
+        
+        // Decrement follower count
+        await db
+          .update(userProfiles)
+          .set({ followerCount: sql`${userProfiles.followerCount} - 1` })
+          .where(eq(userProfiles.userId, input.userId));
+        
         return { success: true, following: false };
       } else {
+        // Follow
         await db.insert(userFollows).values({
           followerId: ctx.user.id,
           followingId: input.userId,
           createdAt: new Date(),
         });
+
+        // Increment follower count
+        await db
+          .update(userProfiles)
+          .set({ followerCount: sql`${userProfiles.followerCount} + 1` })
+          .where(eq(userProfiles.userId, input.userId));
+
+        // Create notification
+        if (targetUser.length > 0 && targetUser[0].name) {
+          await db.insert(notifications).values({
+            userId: input.userId,
+            type: 'follow',
+            message: `${ctx.user.name || 'Someone'} started following you`,
+            actorId: ctx.user.id,
+            entityId: ctx.user.id,
+            entityType: 'user',
+            createdAt: new Date(),
+          });
+        }
+
         return { success: true, following: true };
       }
     }),

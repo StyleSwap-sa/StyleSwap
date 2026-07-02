@@ -1,6 +1,6 @@
 export const ENV = {
   appId: process.env.VITE_APP_ID ?? "",
-  oAuthPortalUrl: process.env.VITE_OAUTH_PORTAL_URL ?? "",
+  oAuthPortalUrl: process.env.VITE_OAUTH_PORTAL_URL ?? "https://styleswap.co.za",
   cookieSecret: process.env.JWT_SECRET ?? "",
   databaseUrl: process.env.DATABASE_URL ?? "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",

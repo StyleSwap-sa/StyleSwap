@@ -536,13 +536,6 @@ export const fraudFlags = pgTable("fraudFlags", {
 	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
-export const notifications = pgTable("notifications", {
-	id: serial().primaryKey().notNull(),
-	user_id: integer(),
-	title: varchar({ length: 255 }),
-	message: text(),
-	createdAt: timestamp({ mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-});
 
 export const onboardingStatus = pgTable("onboardingStatus", {
 	id: serial().primaryKey().notNull(),
@@ -793,6 +786,27 @@ export const affiliateCommissions = pgTable("affiliateCommissions", {
 	index("idx_commission_tracking").on(table.affiliateTrackingId),
 ]);
 
+// Notifications Table
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    type: varchar("type", { length: 50 }).notNull(),
+    message: text("message").notNull(),
+    actorId: integer("actor_id").references(() => users.id, { onDelete: "set null" }),
+    entityId: integer("entity_id"),
+    entityType: varchar("entity_type", { length: 50 }),
+    isRead: boolean("is_read").default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_notifications_user_id").on(table.userId),
+    index("idx_notifications_is_read").on(table.isRead),
+    index("idx_notifications_created_at").on(table.createdAt),
+    index("idx_notifications_user_read").on(table.userId, table.isRead),
+  ]
+);
 
 // Push Notifications Table for all notification types
 export const pushNotifications = pgTable("pushNotifications", {

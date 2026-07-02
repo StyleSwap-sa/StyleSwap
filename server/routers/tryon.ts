@@ -457,7 +457,7 @@ export const tryonRouter = router({
       const [inserted] = await db.insert(savedOutfits).values({
         userId: ctx.user.id,
         title: input.title || "My Try-On",
-        description: "Generated with StyleSwap AI",
+        description: "StyleSwap AI",
         watermarkedImageUrl: s3Key, // ← Store the S3 key
         isFavorite: 1,
         style: input.style,
