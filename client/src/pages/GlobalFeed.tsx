@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,10 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Heart, MessageCircle, Share2, Search, Loader2 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { GlobalRecommendations } from "@/components/GlobalRecommendations";
-import { PopularBrands } from "@/components/PopularBrands";
-import { StyleCategories } from "@/components/StyleCategories";
-import { TopInfluencers } from "@/components/TopInfluencers";
 import { CommentModal } from "@/components/CommentModal";
 import { useLocation } from "wouter";
 
@@ -48,7 +44,7 @@ export default function GlobalFeed() {
 
 
   // Fetch global feed
-  const { data: feedData, isLoading: feedLoading } = trpc.globalFeed.getGlobalFeed.useQuery({
+  const feedQuery = trpc.globalFeed.getGlobalFeed.useQuery({
     limit: 20,
     offset: 0,
     sortBy: sortBy,
@@ -56,6 +52,8 @@ export default function GlobalFeed() {
     country: selectedCountry,
     searchQuery: searchQuery || undefined,
   });
+  const feedData = feedQuery.data;
+  const feedLoading = feedQuery.isLoading;
 
   // Fetch global trending
   const { data: trendingData, isLoading: trendingLoading } = trpc.globalFeed.getGlobalTrending.useQuery({
@@ -150,11 +148,11 @@ const likeMutation = trpc.globalFeed.likeOutfit.useMutation({
     shareMutation.mutate({ outfitId, platform });
   };
   const followMutation = trpc.globalFeed.toggleFollow.useMutation({
-  onSuccess: () => {
-    // Refetch feed to update isFollowing status
-    refetch();
-  },
-});
+    onSuccess: () => {
+      // Refetch feed to update isFollowing status
+      feedQuery.refetch();
+    },
+  });
 
 const handleFollow = (userId: number) => {
   if (!user) {
@@ -170,7 +168,7 @@ const handleFollow = (userId: number) => {
         <img
           src={outfit.watermarkedImageUrl}
           alt={outfit.title}
-          className="w-full h-96 object-cover"
+          className="w-full h-96 object-contain bg-muted"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
           <Button
@@ -191,13 +189,6 @@ const handleFollow = (userId: number) => {
             <MessageCircle className="w-4 h-4" />
             {outfit.commentCount}
           </button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => handleShare(outfit.id, "whatsapp")}
-          >
-            <Share2 className="w-4 h-4" />
-          </Button>
         </div>
       </div>
 
@@ -294,7 +285,7 @@ const handleFollow = (userId: number) => {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="lg:col-span-2">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
@@ -368,12 +359,6 @@ const handleFollow = (userId: number) => {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
-          <GlobalRecommendations limit={6} />
-          <PopularBrands timeRange={timeRange} />
-          <StyleCategories onCategorySelect={setSelectedCategory} />
-          <TopInfluencers limit={5} />
-        </div>
       </div>
 
       <CommentModal
@@ -385,10 +370,45 @@ const handleFollow = (userId: number) => {
       outfitId={selectedOutfitId || 0}
       onCommentAdded={() => {
         // Refetch feed to update comment count
-        feedData?.refetch();
+        feedQuery.refetch();
       }}
     />
 
     </div>
   );
+}
+
+function toast({ title, variant }: { title: string; variant: string }) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const toastElement = document.createElement("div");
+  toastElement.textContent = title;
+  toastElement.style.position = "fixed";
+  toastElement.style.right = "1rem";
+  toastElement.style.bottom = "1rem";
+  toastElement.style.zIndex = "9999";
+  toastElement.style.padding = "0.75rem 1rem";
+  toastElement.style.borderRadius = "0.5rem";
+  toastElement.style.color = "#ffffff";
+  toastElement.style.fontSize = "0.875rem";
+  toastElement.style.boxShadow = "0 12px 24px rgba(0, 0, 0, 0.12)";
+  toastElement.style.transition = "opacity 0.25s ease";
+  toastElement.style.opacity = "1";
+  toastElement.style.pointerEvents = "auto";
+  toastElement.style.background =
+    variant === "destructive" ? "#dc2626" : "rgba(15, 23, 42, 0.95)";
+
+  document.body.appendChild(toastElement);
+
+  window.setTimeout(() => {
+    toastElement.style.opacity = "0";
+  }, 3000);
+
+  window.setTimeout(() => {
+    if (toastElement.parentNode) {
+      toastElement.parentNode.removeChild(toastElement);
+    }
+  }, 3400);
 }
