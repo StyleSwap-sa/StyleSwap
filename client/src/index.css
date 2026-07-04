@@ -101,10 +101,10 @@
 .dark {
   /* Dark Mode: Premium Dark */
   --background: oklch(0.12 0.02 200);
-  --foreground: oklch(0.95 0.01 60);
+  --foreground: rgb(244, 237, 232);
   
   --card: oklch(0.15 0.02 200);
-  --card-foreground: oklch(0.95 0.01 60);
+  --card-foreground: rgb(244, 237, 232);
   
   --popover: oklch(0.15 0.02 200);
   --popover-foreground: oklch(0.95 0.01 60);

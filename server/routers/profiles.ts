@@ -49,8 +49,8 @@ export const profilesRouter = router({
           style: savedOutfits.style,
           brand: savedOutfits.brand,
           createdAt: savedOutfits.createdAt,
-          likeCount: sql<number>`COALESCE((SELECT COUNT(*) FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = ${savedOutfits.id}), 0)`,
-          commentCount: sql<number>`COALESCE((SELECT COUNT(*) FROM ${outfitComments} WHERE ${outfitComments.outfitId} = ${savedOutfits.id}), 0)`,
+          likeCount: sql<number>`COALESCE((SELECT COUNT(*) FROM ${outfitLikes} WHERE ${outfitLikes.outfitId} = "saved_outfits"."id"), 0)`, //we have to use the table name "saved_outfits" here because Drizzle doesn't automatically alias the table in subqueries
+          commentCount: sql<number>`COALESCE((SELECT COUNT(*) FROM ${outfitComments} WHERE ${outfitComments.outfitId} = "saved_outfits"."id"), 0)`,
         })
         .from(savedOutfits)
         .where(eq(savedOutfits.userId, input.userId))
