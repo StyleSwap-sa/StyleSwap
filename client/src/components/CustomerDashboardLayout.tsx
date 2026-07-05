@@ -43,7 +43,6 @@ const menuItems = [
   { icon: Shirt, label: "Try On", path: "/try-on" },
   { icon: Bell, label: "Notifications", path: "/notifications" },
   { icon: Users, label: "Following", path: "/following" },
-  { icon: History, label: "History", path: "/dashboard?tab=history" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "customer-sidebar-width";
