@@ -54,8 +54,8 @@ export function MobileNavMenu({
 
       {/* Mobile Menu Dropdown with Animation */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-48 bg-background border border-border/20 rounded-lg shadow-lg z-50 transition-all duration-200 ease-in-out">
-          <div className="flex flex-col gap-1 p-2">
+        <div className="absolute top-full left-4 mt-2 w-66 bg-background border border-border/20 rounded-lg shadow-lg z-50 transition-all duration-200 ease-in-out">
+          <div className="flex flex-row gap-1 p-2">
             <Button
               onClick={() => handleTabClick("overview")}
               variant={activeTab === "overview" ? "default" : "ghost"}

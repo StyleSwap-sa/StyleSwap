@@ -232,9 +232,9 @@ const handleFollow = (userId: number) => {
       </div>
 
         <h2 className="font-bold text-lg mb-1">{outfit.title}</h2>
-        {outfit.description && (
+        {/* {outfit.description && (
           <p className="text-sm text-muted-foreground mb-2">{outfit.description}</p>
-        )}
+        )}  */}
         {outfit.style && (
           <p className="text-xs text-primary font-semibold mb-3">#{outfit.style}</p>
         )}
