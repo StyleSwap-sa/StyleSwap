@@ -330,19 +330,16 @@ export function verifyWebhookSignature(
       return false;
     }
 
-    const signature = parts[1];
+    const yocoSignature = parts[1];
 
     // Create HMAC-SHA256 hash using the webhook secret
     const hash = crypto
       .createHmac('sha256', secret)
       .update(payload)
-      .digest('hex');
+      .digest('base64');  // ← CHANGE: Use base64 instead of hex
 
-    // Compare using timing-safe comparison
-    const isValid = crypto.timingSafeEqual(
-      Buffer.from(hash),
-      Buffer.from(signature)
-    );
+    // Now both are base64, same length
+    const isValid = hash === yocoSignature;
 
     console.log(`[Yoko Payment] Signature verification: ${isValid ? '✅ PASSED' : '❌ FAILED'}`);
     return isValid;
