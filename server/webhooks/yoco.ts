@@ -15,24 +15,30 @@ import {
   matchPaymentWithCredits,
 } from "../webhookRetryService";
 
+export interface YokoWebhookNestedData {
+  id: string;
+  status: string;
+  amount: number;
+  currency: string;
+  metadata: {
+    userId?: string;
+    boutiqueId?: string;
+    packageId: string;
+    credits: number;
+    userName?: string;
+    userEmail?: string;
+  };
+  created_at?: string;
+}
+
+export interface YokoWebhookData extends YokoWebhookNestedData {
+  payload?: YokoWebhookNestedData;
+}
+
 export interface YokoWebhookPayload {
   id: string;
   type: string;
-  data: {
-    id: string;
-    status: string;
-    amount: number;
-    currency: string;
-    metadata: {
-      userId?: string;
-      boutiqueId?: string;
-      packageId: string;
-      credits: number;
-      userName?: string;
-      userEmail?: string;
-    };
-    created_at?: string;
-  };
+  data: YokoWebhookData;
 }
 
 /**
@@ -58,13 +64,18 @@ export async function handleYokoWebhook(req: Request, res: Response) {
     );
     console.log(`[Yoko Webhook] Recorded webhook event: ${externalEventId}`);
 
-    const signature = req.headers["x-yoko-signature"] as string;
+    const webhookSecret = process.env.YOCO_WEBHOOK_SECRET ?? "";
+
+    // Get the signature from the correct header
+    const rawSignature = req.headers["webhook-signature"];
+    const signature = Array.isArray(rawSignature)
+      ? rawSignature[0]
+      : rawSignature ?? ""; // ← Note: "webhook-signature", not "x-yoko-signature"
     const payload = JSON.stringify(req.body);
 
     // Verify webhook signature
-    if (!verifyWebhookSignature(payload, signature)) {
+    if (!signature || !webhookSecret || !verifyWebhookSignature(payload, signature, webhookSecret)) {
       console.warn("[Yoko Webhook] Invalid signature");
-      // Schedule for retry even with invalid signature
       await scheduleWebhookRetry(externalEventId, "Invalid webhook signature");
       return res.status(401).json({ error: "Invalid signature" });
     }
@@ -104,33 +115,28 @@ export async function handleYokoWebhook(req: Request, res: Response) {
  * Handle successful payment
  */
 async function handlePaymentSucceeded(data: YokoWebhookPayload["data"], externalEventId: string) {
-  console.log("[Yoko Webhook] handlePaymentSucceeded called with:", JSON.stringify(data, null, 2));
+  console.log("[Yoko Webhook] Processing payment succeeded");
   
   const db = await getDb();
   if (!db) {
     throw new Error("Database not available");
   }
 
-  // Handle different metadata structures
-  const metadata = data.metadata || {};
+  // 🔥 Handle both formats: direct and nested
+  const payload = data.payload || data;
+  const metadata = payload.metadata || data.metadata || {};
+
   const userId = metadata.userId ? parseInt(metadata.userId, 10) : null;
-  const boutiqueId = metadata.boutiqueId ? parseInt(metadata.boutiqueId, 10) : null;
-  // metadata.credits can be a string or number; normalize to number safely
   const credits = metadata.credits != null ? Number(metadata.credits) : 0;
   const userEmail = metadata.userEmail || "";
   const userName = metadata.userName || "Customer";
+  const paymentId = payload.id || data.id;
 
-  console.log(`[Yoko Webhook] Parsed: userId=${userId}, credits=${credits}, boutiqueId=${boutiqueId}`);
+  console.log(`[Yoko Webhook] Parsed: userId=${userId}, credits=${credits}, paymentId=${paymentId}`);
 
-  // Handle boutique credit purchase
-  if (boutiqueId) {
-    await handleBoutiqueCreditPurchase(db, boutiqueId, credits, data);
+  if (!userId || credits <= 0) {
+    console.error("[Yoko Webhook] Missing userId or credits in metadata");
     return;
-  }
-
-  // Handle user credit purchase
-  if (!userId) {
-    throw new Error("No userId or boutiqueId in metadata");
   }
 
   try {

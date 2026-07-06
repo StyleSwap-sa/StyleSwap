@@ -309,53 +309,39 @@ export async function handlePaymentSuccess(
 // In yoko-payment.ts
 export function verifyWebhookSignature(
   payload: string,
-  signature: string
+  signatureHeader: string,
+  secret: string
 ): boolean {
-  // Use the webhook secret from environment
-  const webhookSecret = process.env.YOCO_WEBHOOK_SECRET;
-  
-  if (!webhookSecret) {
+  if (!secret) {
     console.error("[Yoko Payment] Webhook secret not configured");
     return false;
   }
 
-  if (!signature) {
+  if (!signatureHeader) {
     console.error("[Yoko Payment] No signature provided");
     return false;
   }
 
   try {
-    // Parse the signature header (format: t=timestamp,v1=signature)
-    const parts = signature.split(',');
-    let timestamp = '';
-    let yocoSignature = '';
-
-    for (const part of parts) {
-      if (part.startsWith('t=')) {
-        timestamp = part.substring(2);
-      } else if (part.startsWith('v1=')) {
-        yocoSignature = part.substring(3);
-      }
-    }
-
-    if (!timestamp || !yocoSignature) {
-      console.error("[Yoko Payment] Invalid signature format");
+    // Svix signature format: "v1,<signature>"
+    const parts = signatureHeader.split(',');
+    if (parts.length !== 2 || parts[0] !== 'v1') {
+      console.error("[Yoko Payment] Invalid signature format:", signatureHeader);
       return false;
     }
 
-    // Recreate the signed payload: timestamp + "." + payload
-    const signedPayload = timestamp + '.' + payload;
+    const signature = parts[1];
 
     // Create HMAC-SHA256 hash using the webhook secret
     const hash = crypto
-      .createHmac('sha256', webhookSecret)
-      .update(signedPayload)
+      .createHmac('sha256', secret)
+      .update(payload)
       .digest('hex');
 
-    // Compare the hashes
+    // Compare using timing-safe comparison
     const isValid = crypto.timingSafeEqual(
       Buffer.from(hash),
-      Buffer.from(yocoSignature)
+      Buffer.from(signature)
     );
 
     console.log(`[Yoko Payment] Signature verification: ${isValid ? '✅ PASSED' : '❌ FAILED'}`);
