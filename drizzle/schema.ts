@@ -1,4 +1,4 @@
-import { pgTable, integer, boolean, date, uniqueIndex, pgSchema, AnyPgColumn, index, foreignKey, serial, varchar, text, timestamp, pgEnum, decimal, primaryKey, unique, numeric } from "drizzle-orm/pg-core"
+import { pgTable, integer, boolean, date, uniqueIndex,jsonb, pgSchema, AnyPgColumn, index, foreignKey, serial, varchar, text, timestamp, pgEnum, decimal, primaryKey, unique, numeric } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -451,24 +451,31 @@ export const webhookAlerts = pgTable("webhookAlerts", {
 		.notNull(),
 });
 
-export const webhookEvents = pgTable("webhookEvents", {
-	id: serial().primaryKey().notNull(),
-	source: varchar({ length: 255 }),
-	eventType: varchar({ length: 255 }),
-	externalEventId: varchar({ length: 255 }),
-	payload: text(),
-	webhook_event_status: varchar({ length: 50 }),
-	retryCount: integer().default(0),
-	maxRetries: integer().default(3),
-	lastRetryAt: timestamp({ mode: "string" }),
-	nextRetryAt: timestamp({ mode: "string" }),
-	error: text(),
-	processedAt: timestamp({ mode: "string" }),
-	createdAt: timestamp({ mode: "string" })
-		.default(sql`CURRENT_TIMESTAMP`)
-		.notNull(),
-	updatedAt: timestamp({ mode: "string" }).defaultNow().notNull(),
-});
+export const webhookEvents = pgTable(
+  "webhookevents",  // ← lowercase table name to match PostgreSQL
+  {
+    id: serial("id").primaryKey().notNull(),
+    source: varchar("source", { length: 255 }),
+    eventType: varchar("eventtype", { length: 255 }),  // ← lowercase column
+    externalEventId: varchar("externaleventid", { length: 255 }),  // ← lowercase column
+    payload: jsonb("payload"),  // ← your table uses jsonb, not text!
+    webhook_event_status: varchar("webhook_event_status", { length: 50 }).default("pending"),
+    retryCount: integer("retrycount").default(0),
+    maxRetries: integer("maxretries").default(3),
+    lastRetryAt: timestamp("lastretryat", { mode: "string" }),
+    nextRetryAt: timestamp("nextretryat", { mode: "string" }),
+    error: text("error"),
+    processedAt: timestamp("processedat", { mode: "string" }),
+    createdAt: timestamp("createdat", { mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: timestamp("updatedat", { mode: "string" }).defaultNow().notNull(),
+  },
+  (table) => [
+    // Add the indexes your queries need
+    index("idx_webhookevents_status").on(table.webhook_event_status),
+    index("idx_webhookevents_externalid").on(table.externalEventId),
+    index("idx_webhookevents_nextretry").on(table.nextRetryAt),
+  ]
+);
 
 export const drizzleMigrations = pgTable("__drizzle_migrations", {
 	id: serial().primaryKey().notNull(),
