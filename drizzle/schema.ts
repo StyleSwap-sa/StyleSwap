@@ -250,6 +250,28 @@ export const products = pgTable(
 		(table) => [index("idx_user_credits_user").on(table.userId)]
 	);
 
+// Coupon Redemptions Table
+// Tracks which promo codes each user has redeemed, so a code can only
+// ever be used once per user. The unique index is the real enforcement
+// mechanism (safe under concurrent requests) — app-level checks alone
+// aren't race-condition-proof.
+export const couponRedemptions = pgTable(
+	"coupon_redemptions",
+	{
+		id: serial().primaryKey().notNull(),
+		userId: integer().notNull().references(() => users.id),
+		code: varchar({ length: 50 }).notNull(),
+		creditsAdded: integer().notNull(),
+		createdAt: timestamp({ mode: "string" })
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull(),
+	},
+	(table) => [
+		uniqueIndex("idx_coupon_redemptions_user_code").on(table.userId, table.code),
+		index("idx_coupon_redemptions_user").on(table.userId),
+	]
+);
+
 // Try-On Results Table
 export const tryOnResults = pgTable(
 	"tryOnResults",
@@ -923,25 +945,6 @@ export const couponCodes = pgTable(
 		index("idx_coupon_codes_active").on(table.isActive),
 	]
 );
-
-// Coupon Redemptions Table
-export const couponRedemptions = pgTable(
-	"couponRedemptions",
-	{
-		id: serial().primaryKey().notNull(),
-			couponId: integer().notNull().references(() => couponCodes.id),
-			userId: integer().notNull().references(() => users.id),
-		redeemedAt: timestamp({ mode: "string" })
-			.default(sql`CURRENT_TIMESTAMP`)
-			.notNull(),
-	},
-	(table) => [
-		index("idx_coupon_redemptions_coupon").on(table.couponId),
-		index("idx_coupon_redemptions_user").on(table.userId),
-		uniqueIndex("idx_coupon_redemptions_unique").on(table.couponId, table.userId),
-	]
-);
-
 
 // App Registrations Table
 export const appRegistrations = pgTable(

@@ -1,5 +1,5 @@
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
-import { validateWits100Coupon, applyWits100Coupon } from "../db.promotional";
+import { validateCouponCode, applyCouponCode } from "../db.promotional";
 import { z } from "zod";
 
 export const promotionalRouter = router({
@@ -10,7 +10,7 @@ export const promotionalRouter = router({
   validateCoupon: publicProcedure
     .input(z.object({ code: z.string() }))
     .query(({ input }) => {
-      const creditsValue = validateWits100Coupon(input.code);
+      const creditsValue = validateCouponCode(input.code);
       const isValid = creditsValue > 0;
 
       return {
@@ -23,26 +23,14 @@ export const promotionalRouter = router({
     }),
 
   /**
-   * Apply WITS100 coupon code to current user
+   * Apply a coupon code to the current user.
    * Returns: { success, creditsAdded, message }
    */
   applyCoupon: protectedProcedure
     .input(z.object({ code: z.string() }))
     .mutation(async ({ input, ctx }) => {
       try {
-        // Validate coupon first
-        const creditsValue = validateWits100Coupon(input.code);
-        if (creditsValue === 0) {
-          return {
-            success: false,
-            creditsAdded: 0,
-            message: "Invalid coupon code",
-          };
-        }
-
-        // Apply the coupon
-        const result = await applyWits100Coupon(ctx.user.id);
-        return result;
+        return await applyCouponCode(ctx.user.id, input.code);
       } catch (error) {
         console.error("[Promotional] Failed to apply coupon:", error);
         return {

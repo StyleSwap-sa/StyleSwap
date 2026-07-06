@@ -39,6 +39,12 @@ export interface YokoWebhookPayload {
  * Handle Yoko payment webhooks
  */
 export async function handleYokoWebhook(req: Request, res: Response) {
+  console.log("[Yoko Webhook] ========== WEBHOOK RECEIVED ==========");
+  console.log("[Yoko Webhook] Method:", req.method);
+  console.log("[Yoko Webhook] URL:", req.url);
+  console.log("[Yoko Webhook] Headers:", JSON.stringify(req.headers, null, 2));
+  console.log("[Yoko Webhook] Body:", JSON.stringify(req.body, null, 2));
+  console.log("[Yoko Webhook] =======================================");
   const event: YokoWebhookPayload = req.body;
   const externalEventId = event.id;
 
@@ -98,17 +104,23 @@ export async function handleYokoWebhook(req: Request, res: Response) {
  * Handle successful payment
  */
 async function handlePaymentSucceeded(data: YokoWebhookPayload["data"], externalEventId: string) {
+  console.log("[Yoko Webhook] handlePaymentSucceeded called with:", JSON.stringify(data, null, 2));
+  
   const db = await getDb();
   if (!db) {
     throw new Error("Database not available");
   }
 
-  // Check if this is a boutique credit purchase or user credit purchase
-  const boutiqueId = data.metadata.boutiqueId ? parseInt(data.metadata.boutiqueId, 10) : null;
-  const userId = data.metadata.userId ? parseInt(data.metadata.userId, 10) : null;
-  const credits = data.metadata.credits;
-  const userEmail = data.metadata.userEmail;
-  const userName = data.metadata.userName;
+  // Handle different metadata structures
+  const metadata = data.metadata || {};
+  const userId = metadata.userId ? parseInt(metadata.userId, 10) : null;
+  const boutiqueId = metadata.boutiqueId ? parseInt(metadata.boutiqueId, 10) : null;
+  // metadata.credits can be a string or number; normalize to number safely
+  const credits = metadata.credits != null ? Number(metadata.credits) : 0;
+  const userEmail = metadata.userEmail || "";
+  const userName = metadata.userName || "Customer";
+
+  console.log(`[Yoko Webhook] Parsed: userId=${userId}, credits=${credits}, boutiqueId=${boutiqueId}`);
 
   // Handle boutique credit purchase
   if (boutiqueId) {
