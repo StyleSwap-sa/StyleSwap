@@ -2,6 +2,7 @@ import { ENV } from "./_core/env";
 import { getDb } from "./db";
 import { users, userCredits, transactions } from "../drizzle/schema";
 import { eq, sql } from "drizzle-orm";
+import crypto from 'crypto';
 
 export interface PaymentPackage {
   id: string;
@@ -297,21 +298,60 @@ export async function handlePaymentSuccess(
 /**
  * Verify webhook signature
  */
+// In yoko-payment.ts
 export function verifyWebhookSignature(
   payload: string,
   signature: string
 ): boolean {
-  if (!ENV.yocoSecretKey) {
-    console.error("[Yoko Payment] Yoko secret key not configured");
+  // Use the webhook secret from environment
+  const webhookSecret = process.env.YOCO_WEBHOOK_SECRET;
+  
+  if (!webhookSecret) {
+    console.error("[Yoko Payment] Webhook secret not configured");
     return false;
   }
 
-  // Yoko uses HMAC-SHA256 for webhook signatures
-  // The signature header format is typically: t=timestamp,v1=signature
+  if (!signature) {
+    console.error("[Yoko Payment] No signature provided");
+    return false;
+  }
+
   try {
-    // For now, we'll do basic validation
-    // In production, implement proper HMAC-SHA256 verification
-    return !!(signature && signature.length > 0);
+    // Parse the signature header (format: t=timestamp,v1=signature)
+    const parts = signature.split(',');
+    let timestamp = '';
+    let yocoSignature = '';
+
+    for (const part of parts) {
+      if (part.startsWith('t=')) {
+        timestamp = part.substring(2);
+      } else if (part.startsWith('v1=')) {
+        yocoSignature = part.substring(3);
+      }
+    }
+
+    if (!timestamp || !yocoSignature) {
+      console.error("[Yoko Payment] Invalid signature format");
+      return false;
+    }
+
+    // Recreate the signed payload: timestamp + "." + payload
+    const signedPayload = timestamp + '.' + payload;
+
+    // Create HMAC-SHA256 hash using the webhook secret
+    const hash = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(signedPayload)
+      .digest('hex');
+
+    // Compare the hashes
+    const isValid = crypto.timingSafeEqual(
+      Buffer.from(hash),
+      Buffer.from(yocoSignature)
+    );
+
+    console.log(`[Yoko Payment] Signature verification: ${isValid ? '✅ PASSED' : '❌ FAILED'}`);
+    return isValid;
   } catch (error) {
     console.error("[Yoko Payment] Error verifying webhook signature:", error);
     return false;

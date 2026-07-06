@@ -14,6 +14,7 @@ const COUPON_CODES: Record<string, number> = {
   STYLE20: 20,
   STYLE25: 25,
   STYLE30: 30,
+  SWAPONWA : 2, //must fix this one to 100 users only or tumi must issue to 100 users only. 
 };
 
 /**

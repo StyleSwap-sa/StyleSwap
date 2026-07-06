@@ -92,7 +92,7 @@ export const billingRouter = router({
       });
     }
 
-    const baseUrl = ENV.oAuthPortalUrl || "http://localhost:3000";
+    const baseUrl = ENV.oAuthPortalUrl || "https://styleswap.co.za";
 
     // Create payment intent using existing function
     const paymentIntent = await createPaymentIntent({
