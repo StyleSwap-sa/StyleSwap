@@ -30,6 +30,7 @@ export const payoutStatusEnum = pgEnum('payout_status', ['pending', 'processing'
 export const apiKeyStatusEnum = pgEnum('api_key_status', ['active', 'revoked']);
 export const payoutAuditActorTypeEnum = pgEnum('payout_audit_actor_type', ['system', 'admin', 'boutique']);
 
+
 export const users = pgTable("users", {
 	id: serial().primaryKey().notNull(),
 	openId: varchar({ length: 64 }).unique(),
@@ -366,14 +367,7 @@ export const deletionLogs = pgTable("deletionLogs", {
 		.notNull(),
 });
 
-export const paymentReconciliation = pgTable("paymentReconciliation", {
-	id: serial().primaryKey().notNull(),
-	transaction_id: varchar({ length: 255 }),
-	status: varchar({ length: 50 }),
-	createdAt: timestamp({ mode: "string" })
-		.default(sql`CURRENT_TIMESTAMP`)
-		.notNull(),
-});
+
 
 	export const productSizeVariants = pgTable("productSizeVariants", {
 		id: serial().primaryKey().notNull(),
@@ -437,15 +431,6 @@ export const tryOnUserMonthlyUsage = pgTable("userMonthlyUsage", {
 		userId: integer().references(() => users.id),
 	month: date(),
 	usage_count: integer(),
-	createdAt: timestamp({ mode: "string" })
-		.default(sql`CURRENT_TIMESTAMP`)
-		.notNull(),
-});
-
-export const webhookAlerts = pgTable("webhookAlerts", {
-	id: serial().primaryKey().notNull(),
-	webhook_event_id: integer(),
-	alert_message: text(),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),
@@ -685,6 +670,55 @@ export const moderationLogs = pgTable("moderationLogs", {
 });
 
 
+// ===== WEBHOOK ALERTS =====
+export const webhookAlerts = pgTable(
+  "webhookalerts",
+  {
+    id: serial("id").primaryKey().notNull(),
+    alertType: varchar("alerttype", { length: 50 }).notNull(),
+    severity: varchar("severity", { length: 20 }).notNull(),
+    webhookEventId: integer("webhookeventid"),
+    paymentReconciliationId: integer("paymentreconciliationid"),
+    title: varchar("title", { length: 255 }).notNull(),
+    description: text("description"),
+    isResolved: integer("isresolved").default(0),
+    resolvedAt: timestamp("resolvedat", { mode: "string" }),
+    resolvedBy: integer("resolvedby"),
+    createdAt: timestamp("createdat", { mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: timestamp("updatedat", { mode: "string" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_webhookalerts_type").on(table.alertType),
+    index("idx_webhookalerts_severity").on(table.severity),
+    index("idx_webhookalerts_resolved").on(table.isResolved),
+  ]
+);
+
+// ===== PAYMENT RECONCILIATION =====
+export const paymentReconciliation = pgTable(
+  "paymentreconciliation",
+  {
+    id: serial("id").primaryKey().notNull(),
+    yocoTransactionId: varchar("yocotransactionid", { length: 255 }).unique().notNull(),
+    yocoAmount: decimal("yocoamount", { precision: 10, scale: 2 }).notNull(),
+    yocoCurrency: varchar("yococurrency", { length: 3 }).default("ZAR"),
+    yocoStatus: varchar("yocostatus", { length: 50 }).notNull(),
+    yocoTimestamp: timestamp("yocotimestamp", { mode: "string" }).notNull(),
+    styleswapUserId: integer("styleswapuserid").references(() => users.id),
+    styleswapTransactionId: integer("styleswaptransactionid"),
+    styleswapCreditsAdded: integer("styleswapcreditsadded"),
+    styleswapTimestamp: timestamp("styleswaptimestamp", { mode: "string" }),
+    reconciliationStatus: varchar("reconciliationstatus", { length: 20 }).default("unmatched"),
+    notes: text("notes"),
+    createdAt: timestamp("createdat", { mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+    updatedAt: timestamp("updatedat", { mode: "string" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_paymentreconciliation_status").on(table.reconciliationStatus),
+    index("idx_paymentreconciliation_yoco").on(table.yocoTransactionId),
+    index("idx_paymentreconciliation_user").on(table.styleswapUserId),
+  ]
+);
 
 
 

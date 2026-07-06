@@ -50,10 +50,12 @@ export async function recordWebhookEvent(
       eventType,
       externalEventId,
       payload: JSON.stringify(payload),
-      status: 'pending',
+      webhook_event_status: 'pending',
       retryCount: 0,
       maxRetries: WEBHOOK_CONFIG.maxRetries,
-      nextRetryAt: new Date(),
+      nextRetryAt: new Date().toISOString(), 
+      createdAt: new Date().toISOString(),    
+      updatedAt: new Date().toISOString(),    
     });
 
     console.log(`[Webhook] Recorded event: ${source}/${eventType}/${externalEventId}`);
@@ -74,9 +76,9 @@ export async function markWebhookSuccess(externalEventId: string) {
     await db
       .update(webhookEvents)
       .set({
-        status: 'success',
-        processedAt: new Date(),
-        updatedAt: new Date(),
+        webhook_event_status: 'success',
+        processedAt: new Date().toISOString(),  // ✅ Convert to ISO string
+        updatedAt: new Date().toISOString(),    // ✅ Convert to ISO string
       })
       .where(eq(webhookEvents.externalEventId, externalEventId));
 
@@ -95,7 +97,6 @@ export async function scheduleWebhookRetry(externalEventId: string, error: strin
     const db = await getDb();
     if (!db) throw new Error('Database not available');
     
-    // Get the event
     const events = await db
       .select()
       .from(webhookEvents)
@@ -108,33 +109,33 @@ export async function scheduleWebhookRetry(externalEventId: string, error: strin
     }
 
     const event = events[0];
-    const newRetryCount = event.retryCount + 1;
-    const shouldRetry = newRetryCount <= event.maxRetries;
+    const newRetryCount = (event.retryCount ?? 0) + 1;
+    const maxRetries = event.maxRetries ?? WEBHOOK_CONFIG.maxRetries;
+    const shouldRetry = newRetryCount <= maxRetries;
 
     if (shouldRetry) {
       const nextRetryTime = calculateNextRetryTime(newRetryCount);
       
       await db.update(webhookEvents)
         .set({
-          status: 'retrying',
+          webhook_event_status: 'retrying',
           retryCount: newRetryCount,
-          lastRetryAt: new Date(),
-          nextRetryAt: nextRetryTime,
+          lastRetryAt: new Date().toISOString(),     
+          nextRetryAt: nextRetryTime.toISOString(),  
           error,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),     
         })
         .where(eq(webhookEvents.externalEventId, externalEventId));
 
       console.log(
-        `[Webhook] Scheduled retry ${newRetryCount}/${event.maxRetries} for ${externalEventId}`
+        `[Webhook] Scheduled retry ${newRetryCount}/${maxRetries} for ${externalEventId}`
       );
     } else {
-      // Max retries exceeded - mark as failed and create alert
       await db.update(webhookEvents)
         .set({
-          status: 'failed',
+          webhook_event_status: 'failed',
           error: `Max retries exceeded: ${error}`,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(webhookEvents.externalEventId, externalEventId));
 
@@ -143,7 +144,7 @@ export async function scheduleWebhookRetry(externalEventId: string, error: strin
         'critical',
         event.id,
         null,
-        `Webhook ${externalEventId} failed after ${event.maxRetries} retries`,
+        `Webhook ${externalEventId} failed after ${maxRetries} retries`,
         error
       );
 
@@ -215,7 +216,7 @@ export async function matchPaymentWithCredits(
         reconciliationStatus: 'matched',
         styleswapUserId: userId,
         styleswapCreditsAdded: credits,
-        styleswapTimestamp: new Date(),
+        styleswapTimestamp: new Date().toISOString(),
       })
       .where(eq(paymentReconciliation.yocoTransactionId, yocoTransactionId));
 
@@ -275,7 +276,8 @@ export async function retryFailedWebhooks() {
     const db = await getDb();
     if (!db) throw new Error('Database not available');
     
-    const now = new Date();
+    // 🔥 FIX: Convert to ISO string
+    const now = new Date().toISOString();
     
     // Find webhooks ready for retry
     const failedEvents = await db
@@ -284,7 +286,7 @@ export async function retryFailedWebhooks() {
       .where(
         and(
           eq(webhookEvents.webhook_event_status, 'retrying'),
-          lt(webhookEvents.nextRetryAt, now)
+          lt(webhookEvents.nextRetryAt, now)  // ← now is a string, not a Date
         )
       );
 
@@ -311,7 +313,7 @@ export async function dailyPaymentReconciliation() {
     console.log('[Reconciliation] Starting daily reconciliation...');
     
     // Find unmatched payments older than 1 hour
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const unmatchedPayments = await db
       .select()
       .from(paymentReconciliation)
