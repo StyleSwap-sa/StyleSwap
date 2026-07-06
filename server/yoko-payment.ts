@@ -15,14 +15,14 @@ export interface PaymentPackage {
 
 export const PAYMENT_PACKAGES: PaymentPackage[] = [
   // Individual Plans
-  {
-      id: "pkg_1_credits",
-      name: "1 Credit Test",
-      credits: 1,
-      price: 100, // R1.00 (100 cents)
-      currency: "ZAR",
-      description: "Test payment for webhook validation",
-    },
+   {
+    id: "pkg_5_credits",
+    name: "5 Credit Test",
+    credits: 5,
+    price: 500, // R5.00 in cents
+    currency: "ZAR",
+    description: "Test payment - REMOVE AFTER TESTING",
+  },
   {
     id: "pkg_10_credits",
     name: "10 Try-Ons",
