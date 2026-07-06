@@ -7,6 +7,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { MobileNavMenu } from "@/components/MobileNavMenu";
 import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
 import { LowCreditAlert } from "@/components/LowCreditAlert";
+import { toast } from "sonner";
 import { Footer } from "@/components/Footer";
 import { CouponCodeInput } from "@/components/CouponCodeInput";
 import { InviteReferralCard } from "@/components/InviteReferralCard";
@@ -51,6 +52,22 @@ export default function Dashboard() {
   // Fetch user credits
   const { data: credits, isLoading: creditsLoading, refetch: refetchCredits } = 
     trpc.tryon.getCredits.useQuery();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+    const credits = params.get('credits');
+    
+    if (paymentStatus === 'success' && credits) {
+      toast.success(`🎉 Payment successful! ${credits} credits added.`);
+      // Remove query params
+      window.history.replaceState({}, '', window.location.pathname);
+      refetchCredits();
+    } else if (paymentStatus === 'cancelled') {
+      toast.info('Payment was cancelled.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [refetchCredits]);
 
   const transactions: any[] = [];
   const transactionsLoading = false;
