@@ -1,6 +1,6 @@
 import 'dotenv/config';
-import express, { type Express } from "express";
-const app = express();
+import * as expressNamespace from "express";
+const express = expressNamespace as unknown as (typeof expressNamespace & (() => expressNamespace.Express));
 import { createServer } from "http";
 import net from "net";
 import multer from "multer";
@@ -235,12 +235,21 @@ export async function startServer() {
   console.log("[Server] Client error logging endpoint registered:");
   console.log("  - POST /api/client-error");
   
-  // Webhook endpoints
-  app.post("/api/yoco/webhook", handleYokoWebhook);
+  app.post(
+    "/api/yoco/webhook",
+    express.json({
+      verify: (req: any, _res, buf) => {
+        req.rawBody = buf.toString();
+      },
+    }),
+    handleYokoWebhook
+  );
+
+  // Keep your other webhook endpoints as they are
   app.post("/api/yoco-boutique/webhook", handleYocoBoutiqueWebhook);
   app.post("/api/test-webhook", testYocoBoutiqueWebhook);
   app.use("/api/webhooks", yocoPayoutsRouter);
-  
+
   console.log("[Server] Webhook endpoints registered:");
   console.log("  - POST /api/yoco/webhook");
   console.log("  - POST /api/yoco-boutique/webhook");

@@ -64,7 +64,10 @@ export async function handleYokoWebhook(req: Request, res: Response) {
     );
     console.log(`[Yoko Webhook] Recorded webhook event: ${externalEventId}`);
 
-    const webhookSecret = process.env.YOCO_WEBHOOK_SECRET ?? "";
+    // In yoco.ts, inside handleYokoWebhook:
+    const webhookSecret = process.env.YOCO_WEBHOOK_SECRET;
+    console.log("[Yoko Webhook] 🔑 Webhook secret loaded:", !!webhookSecret);
+    console.log("[Yoko Webhook] 🔑 Webhook secret length:", webhookSecret?.length);
 
     // Get the signature from the correct header
     const rawSignature = req.headers["webhook-signature"];
@@ -72,6 +75,8 @@ export async function handleYokoWebhook(req: Request, res: Response) {
       ? rawSignature[0]
       : rawSignature ?? ""; // ← Note: "webhook-signature", not "x-yoko-signature"
     const payload = JSON.stringify(req.body);
+    
+    console.log("[Yoko Webhook] Payload for signature:", payload.substring(0, 200) + "...");
 
     // Verify webhook signature
     if (!signature || !webhookSecret || !verifyWebhookSignature(payload, signature, webhookSecret)) {

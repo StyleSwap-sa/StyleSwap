@@ -312,39 +312,53 @@ export function verifyWebhookSignature(
   signatureHeader: string,
   secret: string
 ): boolean {
+  console.log("[Yoko Payment] 🔍 VERIFYING SIGNATURE");
+  console.log("[Yoko Payment] Secret exists:", !!secret);
+  console.log("[Yoko Payment] Secret length:", secret?.length);
+  console.log("[Yoko Payment] Signature header:", signatureHeader);
+  console.log("[Yoko Payment] Payload length:", payload.length);
+  console.log("[Yoko Payment] Payload preview:", payload.substring(0, 200) + "...");
+
   if (!secret) {
-    console.error("[Yoko Payment] Webhook secret not configured");
+    console.error("[Yoko Payment] ❌ Webhook secret not configured");
     return false;
   }
 
   if (!signatureHeader) {
-    console.error("[Yoko Payment] No signature provided");
+    console.error("[Yoko Payment] ❌ No signature provided");
     return false;
   }
 
   try {
     // Svix signature format: "v1,<signature>"
     const parts = signatureHeader.split(',');
+    console.log("[Yoko Payment] Signature parts:", parts);
+    
     if (parts.length !== 2 || parts[0] !== 'v1') {
-      console.error("[Yoko Payment] Invalid signature format:", signatureHeader);
+      console.error("[Yoko Payment] ❌ Invalid signature format");
       return false;
     }
 
-    const yocoSignature = parts[1];
+    const yocoSignatureBase64 = parts[1];
+    console.log("[Yoko Payment] Yoco signature (base64):", yocoSignatureBase64);
 
-    // Create HMAC-SHA256 hash using the webhook secret
+    // Compute HMAC-SHA256 in base64
     const hash = crypto
       .createHmac('sha256', secret)
       .update(payload)
-      .digest('base64');  // ← CHANGE: Use base64 instead of hex
+      .digest('base64');
+    
+    console.log("[Yoko Payment] Computed hash (base64):", hash);
+    console.log("[Yoko Payment] Hash length:", hash.length);
+    console.log("[Yoko Payment] Yoco signature length:", yocoSignatureBase64.length);
+    console.log("[Yoko Payment] Hash === Yoco signature:", hash === yocoSignatureBase64);
 
-    // Now both are base64, same length
-    const isValid = hash === yocoSignature;
+    const isValid = hash === yocoSignatureBase64;
 
     console.log(`[Yoko Payment] Signature verification: ${isValid ? '✅ PASSED' : '❌ FAILED'}`);
     return isValid;
   } catch (error) {
-    console.error("[Yoko Payment] Error verifying webhook signature:", error);
+    console.error("[Yoko Payment] ❌ Error verifying signature:", error);
     return false;
   }
 }
