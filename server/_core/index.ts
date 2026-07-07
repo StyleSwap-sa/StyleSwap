@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import * as expressNamespace from "express";
-const express = expressNamespace as unknown as (typeof expressNamespace & (() => expressNamespace.Express));
+const express = ((expressNamespace as any).default || expressNamespace) as unknown as (typeof expressNamespace & (() => expressNamespace.Express));
 import { createServer } from "http";
 import net from "net";
 import multer from "multer";
