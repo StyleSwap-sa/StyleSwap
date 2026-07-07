@@ -66,20 +66,17 @@ export async function handleYokoWebhook(req: Request, res: Response) {
 
     // In yoco.ts, inside handleYokoWebhook:
     const webhookSecret = process.env.YOCO_WEBHOOK_SECRET;
-    console.log("[Yoko Webhook] 🔑 Webhook secret loaded:", !!webhookSecret);
-    console.log("[Yoko Webhook] 🔑 Webhook secret length:", webhookSecret?.length);
 
-    // Get the signature from the correct header
-    const rawSignature = req.headers["webhook-signature"];
-    const signature = Array.isArray(rawSignature)
-      ? rawSignature[0]
-      : rawSignature ?? ""; // ← Note: "webhook-signature", not "x-yoko-signature"
-    const payload = JSON.stringify(req.body);
+    // Get the required Svix headers
+    const signature = (req.headers["webhook-signature"] as string) || "";
+    const webhookId = (req.headers["webhook-id"] as string) || "";
+    const webhookTimestamp = (req.headers["webhook-timestamp"] as string) || "";
     
-    console.log("[Yoko Webhook] Payload for signature:", payload.substring(0, 200) + "...");
+    // Use the exact un-stringified raw body text if available, or fall back to req.body
+    const payload = (req as any).rawBody || JSON.stringify(req.body);
 
-    // Verify webhook signature
-    if (!signature || !webhookSecret || !verifyWebhookSignature(payload, signature, webhookSecret)) {
+    // Verify webhook signature with the new arguments
+    if (!signature || !webhookSecret || !verifyWebhookSignature(payload, signature, webhookSecret, webhookId, webhookTimestamp)) {
       console.warn("[Yoko Webhook] Invalid signature");
       await scheduleWebhookRetry(externalEventId, "Invalid webhook signature");
       return res.status(401).json({ error: "Invalid signature" });

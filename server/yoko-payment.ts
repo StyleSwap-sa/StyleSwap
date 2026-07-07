@@ -310,49 +310,50 @@ export async function handlePaymentSuccess(
 export function verifyWebhookSignature(
   payload: string,
   signatureHeader: string,
-  secret: string
+  secret: string,
+  webhookId: string,
+  webhookTimestamp: string
 ): boolean {
-  console.log("[Yoko Payment] 🔍 VERIFYING SIGNATURE");
-  console.log("[Yoko Payment] Secret exists:", !!secret);
-  console.log("[Yoko Payment] Secret length:", secret?.length);
-  console.log("[Yoko Payment] Signature header:", signatureHeader);
-  console.log("[Yoko Payment] Payload length:", payload.length);
-  console.log("[Yoko Payment] Payload preview:", payload.substring(0, 200) + "...");
+  console.log("[Yoko Payment] 🔍 VERIFYING SVIX/YOCO SIGNATURE");
 
   if (!secret) {
     console.error("[Yoko Payment] ❌ Webhook secret not configured");
     return false;
   }
 
-  if (!signatureHeader) {
-    console.error("[Yoko Payment] ❌ No signature provided");
+  if (!signatureHeader || !webhookId || !webhookTimestamp) {
+    console.error("[Yoko Payment] ❌ Missing required webhook headers");
     return false;
   }
 
   try {
     // Svix signature format: "v1,<signature>"
     const parts = signatureHeader.split(',');
-    console.log("[Yoko Payment] Signature parts:", parts);
-    
     if (parts.length !== 2 || parts[0] !== 'v1') {
       console.error("[Yoko Payment] ❌ Invalid signature format");
       return false;
     }
 
     const yocoSignatureBase64 = parts[1];
-    console.log("[Yoko Payment] Yoco signature (base64):", yocoSignatureBase64);
+
+    // Svix/Yoco requires signing a combined string of: msg_id.timestamp.body
+    const toSign = `${webhookId}.${webhookTimestamp}.${payload}`;
+
+    // Clean the secret key if it contains the Svix 'whsec_' prefix
+    let cleanSecret = secret;
+    if (cleanSecret.startsWith('whsec_')) {
+      cleanSecret = cleanSecret.substring(6);
+    }
+
+    // Svix secrets are base64-encoded strings, we need to sign using the decoded buffer
+    const secretBuffer = Buffer.from(cleanSecret, 'base64');
 
     // Compute HMAC-SHA256 in base64
     const hash = crypto
-      .createHmac('sha256', secret)
-      .update(payload)
+      .createHmac('sha256', secretBuffer)
+      .update(toSign)
       .digest('base64');
     
-    console.log("[Yoko Payment] Computed hash (base64):", hash);
-    console.log("[Yoko Payment] Hash length:", hash.length);
-    console.log("[Yoko Payment] Yoco signature length:", yocoSignatureBase64.length);
-    console.log("[Yoko Payment] Hash === Yoco signature:", hash === yocoSignatureBase64);
-
     const isValid = hash === yocoSignatureBase64;
 
     console.log(`[Yoko Payment] Signature verification: ${isValid ? '✅ PASSED' : '❌ FAILED'}`);
