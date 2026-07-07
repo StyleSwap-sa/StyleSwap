@@ -84,14 +84,17 @@ export async function handleYokoWebhook(req: Request, res: Response) {
 
     // Handle different event types
     switch (event.type) {
-      case "payment.succeeded": // Changed from "payment_intent.succeeded"
-        await handlePaymentSucceeded(event.data, externalEventId);
+      case "payment.succeeded":
+        // Pass 'event' instead of 'event.data'
+        await handlePaymentSucceeded(event as any, externalEventId); 
         break;
-      case "payment.failed":    // Changed from "payment_intent.failed"
-        await handlePaymentFailed(event.data);
+      case "payment.failed":
+        // Pass 'event' instead of 'event.data'
+        await handlePaymentFailed(event as any);
         break;
-      case "payment.canceled":  // Changed from "payment_intent.canceled"
-        await handlePaymentCanceled(event.data);
+      case "payment.canceled":
+        // Pass 'event' instead of 'event.data'
+        await handlePaymentCanceled(event as any);
         break;
       default:
         console.log(`[Yoko Webhook] Unhandled event type: ${event.type}`);
