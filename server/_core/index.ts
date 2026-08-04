@@ -51,6 +51,36 @@ export async function startServer() {
   app.get("/health", (req, res) => {
     res.json({ status: "ok" });
   });
+
+  app.get("/api/presigned-url", async (req, res) => {
+    try {
+      const { key } = req.query;
+      
+      if (!key || typeof key !== "string") {
+        return res.status(400).json({ error: "Missing or invalid key parameter" });
+      }
+  
+      console.log("[Presigned URL] Generating for key:", key);
+  
+      // Import the presigned URL function from storage.ts
+      const { getPresignedUrlForImage } = await import("../storage");
+      const presignedUrl = await getPresignedUrlForImage(key);
+  
+      if (!presignedUrl) {
+        return res.status(500).json({ error: "Failed to generate presigned URL" });
+      }
+  
+      console.log("[Presigned URL] Generated successfully");
+      res.json({ url: presignedUrl });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("[Presigned URL] Error:", errorMsg);
+      res.status(500).json({ error: "Failed to generate presigned URL: " + errorMsg });
+    }
+  });
+  
+  console.log("[Server] Presigned URL endpoint registered:");
+  console.log("  - GET /api/presigned-url");
   
 
 

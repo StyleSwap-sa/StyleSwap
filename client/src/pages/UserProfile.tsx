@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAvatarUrl } from "@/hooks/useAvatarUrl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Heart, MessageCircle, Calendar } from "lucide-react";
@@ -33,6 +34,8 @@ export default function UserProfile() {
     { enabled: !!userIdNum }
   );
   
+  const avatarPresignedUrl = useAvatarUrl(profile?.avatar);
+
   // Fetch user's outfits
   const { data: outfits, isLoading: outfitsLoading } = trpc.profiles.getUserOutfits.useQuery(
     { userId: userIdNum, limit: 20 },
@@ -171,7 +174,7 @@ export default function UserProfile() {
         <div className="h-32 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-t-lg" />
         <div className="absolute -bottom-12 left-6">
           <Avatar className="w-24 h-24 border-4 border-background">
-            <AvatarImage src={profile?.profileImage || undefined} />
+            <AvatarImage src={avatarPresignedUrl || undefined} />
             <AvatarFallback className="text-2xl bg-primary/20">
               {userInfo.name?.charAt(0).toUpperCase() || "U"}
             </AvatarFallback>

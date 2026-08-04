@@ -2,10 +2,12 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Mail, MapPin, Heart, History, Settings, LogOut, Edit2, Save, X, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { User, Mail, MapPin, Heart, History, Settings, LogOut, Edit2, Save, X, Loader2, Upload, Camera } from "lucide-react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+
+import { useAvatarUrl } from "@/hooks/useAvatarUrl";
 
 
 export default function Profile() {
@@ -17,6 +19,12 @@ export default function Profile() {
     name: user?.name || "",
     email: user?.email || "",
   });
+
+  // 🔥 Avatar upload states
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | null>(null);
 
   // Fetch user's stats from database
   const { data: userStats, isLoading: statsLoading } = trpc.profiles.getUserStats.useQuery(
@@ -36,6 +44,41 @@ export default function Profile() {
     { enabled: !!user }
   );
 
+  // 🔥 ADD THIS: Fetch current user's profile to get stored avatar
+  const { data: userProfile } = trpc.profiles.getCurrentProfile.useQuery();
+  // Support both possible avatar field names from different profile shapes
+  // Safely handle different profile shapes that may have either `avatar` or `profileImage`
+  const avatarKey = userProfile
+    ? 'avatar' in userProfile
+      ? (userProfile.avatar as string | null)
+      : (userProfile as any)?.profileImage ?? null
+    : null;
+  const storedAvatarPresignedUrl = useAvatarUrl(avatarKey);
+
+  // 🔥 Avatar upload mutation
+  // trpc utils for cache invalidation
+  const utils = trpc.useContext();
+
+  const uploadAvatarMutation = trpc.profiles.uploadAvatar.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message || "Avatar updated successfully!");
+      setAvatarPreview(null);
+      setCurrentAvatarUrl(data.avatarUrl);
+      
+      // 🔥 ADD THIS: Invalidate and refetch current profile
+      utils.profiles.getCurrentProfile.invalidate();
+      
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      setIsUploadingAvatar(false);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to upload avatar");
+      setIsUploadingAvatar(false);
+    },
+  });
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
@@ -50,6 +93,53 @@ export default function Profile() {
       </div>
     );
   }
+
+  // 🔥 Handle avatar file selection
+  const handleAvatarFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Only JPEG, PNG, WebP, and GIF images are allowed");
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setAvatarPreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 🔥 Handle avatar upload
+  const handleAvatarUpload = async () => {
+    if (!avatarPreview) return;
+
+    setIsUploadingAvatar(true);
+    uploadAvatarMutation.mutate({
+      base64Data: avatarPreview,
+      fileName: fileInputRef.current?.files?.[0]?.name || "avatar.jpg",
+      contentType: fileInputRef.current?.files?.[0]?.type || "image/jpeg",
+    });
+  };
+
+  // 🔥 Handle avatar upload cancel
+  const handleAvatarCancel = () => {
+    setAvatarPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleSaveProfile = () => {
     toast.success("Profile updated successfully!");
@@ -74,24 +164,106 @@ export default function Profile() {
         <div className="grid md:grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-12">
           <Card className="premium-card rounded-2xl md:col-span-1">
             <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/20 rounded-full flex items-center justify-center text-primary flex-shrink-0">
-                  <User className="w-6 h-6 sm:w-8 sm:h-8" />
+              <div className="flex flex-col items-center gap-4 mb-4">
+                {/* 🔥 Avatar Section */}
+                <div className="relative">
+                  {avatarPreview ? (
+                        <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20">
+                          <img
+                            src={avatarPreview}
+                            alt="Avatar preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : storedAvatarPresignedUrl ? (  // 🔥 FIXED: Shows persisted avatar
+                        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20">
+                          <img
+                            src={storedAvatarPresignedUrl}
+                            alt="Current avatar"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : currentAvatarUrl ? (  // Keep this as fallback
+                        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20">
+                          <img
+                            src={currentAvatarUrl}
+                            alt="Current avatar"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center border-4 border-primary/20">
+                          <User className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                        </div>
+                      )}
+                  {/* Upload button */}
+                  {!avatarPreview && (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full hover:bg-primary/90 transition-colors shadow-lg"
+                    >
+                      <Camera className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-                {!isEditing && (
+
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleAvatarFileSelect}
+                  className="hidden"
+                />
+
+                {/* Avatar Upload Controls */}
+                {avatarPreview ? (
+                  <div className="flex flex-col gap-2 w-full">
+                    <Button
+                      onClick={handleAvatarUpload}
+                      disabled={isUploadingAvatar}
+                      className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 text-sm"
+                    >
+                      {isUploadingAvatar ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Upload Photo
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      onClick={handleAvatarCancel}
+                      variant="outline"
+                      disabled={isUploadingAvatar}
+                      className="w-full gap-2 h-9 text-sm"
+                    >
+                      <X className="w-4 h-4" />
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
                   <Button
+                    onClick={() => fileInputRef.current?.click()}
                     variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditing(true)}
-                    className="gap-2 w-full sm:w-auto h-9"
+                    className="w-full gap-2 h-9 text-sm"
                   >
-                    <Edit2 className="w-4 h-4" />
-                    <span className="hidden xs:inline">Edit</span>
+                    <Camera className="w-4 h-4" />
+                    Change Photo
                   </Button>
                 )}
+
+                <p className="text-xs text-muted-foreground text-center">
+                  JPG, PNG, WebP or GIF • Max 5MB
+                </p>
               </div>
-              <CardTitle className="text-xl sm:text-2xl">{user.name || "User"}</CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.email}</p>
+
+              <CardTitle className="text-xl sm:text-2xl text-center">{user.name || "User"}</CardTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground text-center truncate">{user.email}</p>
             </CardHeader>
             <CardContent className="space-y-4">
               {isEditing ? (

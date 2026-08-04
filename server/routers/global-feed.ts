@@ -132,11 +132,21 @@ export const globalFeedRouter = router({
       const processedResults = await Promise.all(
         results.map(async (outfit) => {
           const presignedUrl = await getPresignedUrlForImage(outfit.watermarkedImageUrl);
-          console.log("[Global Feed] Original:", outfit.watermarkedImageUrl);
-          console.log("[Global Feed] Presigned:", presignedUrl);
+          
+          let userAvatarUrl = outfit.userAvatar;
+          if (outfit.userAvatar) {
+            try {
+              userAvatarUrl = await getPresignedUrlForImage(outfit.userAvatar);
+            } catch (error) {
+              console.error("[Global Feed] Failed to generate presigned URL for avatar:", error);
+              userAvatarUrl = outfit.userAvatar;
+            }
+          }
+          
           return {
             ...outfit,
             watermarkedImageUrl: presignedUrl,
+            userAvatar: userAvatarUrl,
           };
         })
       );
@@ -225,10 +235,25 @@ export const globalFeedRouter = router({
 
       const results = await query;
       const processedResults = await Promise.all(
-        results.map(async (outfit) => ({
-          ...outfit,
-          watermarkedImageUrl: await getPresignedUrlForImage(outfit.watermarkedImageUrl),
-        }))
+        results.map(async (outfit) => {
+          const outfitImageUrl = await getPresignedUrlForImage(outfit.watermarkedImageUrl);
+          
+          let userAvatarUrl = outfit.userAvatar;
+          if (outfit.userAvatar) {
+            try {
+              userAvatarUrl = await getPresignedUrlForImage(outfit.userAvatar);
+            } catch (error) {
+              console.error("[Global Feed] Failed to generate presigned URL for avatar:", error);
+              userAvatarUrl = outfit.userAvatar;
+            }
+          }
+          
+          return {
+            ...outfit,
+            watermarkedImageUrl: outfitImageUrl,
+            userAvatar: userAvatarUrl,
+          };
+        })
       );
       
       return {
@@ -486,7 +511,25 @@ likeOutfit: protectedProcedure
           .where(eq(outfitComments.outfitId, input.outfitId))
           .orderBy(desc(outfitComments.createdAt));
 
-        return comments;
+        const commentsWithPresignedUrls = await Promise.all(
+          comments.map(async (comment) => {
+            let avatarUrl = comment.userAvatar;
+            if (comment.userAvatar) {
+              try {
+                avatarUrl = await getPresignedUrlForImage(comment.userAvatar);
+              } catch (error) {
+                console.error("[Global Feed] Failed to generate presigned URL for comment avatar:", error);
+                avatarUrl = comment.userAvatar;
+              }
+            }
+            return {
+              ...comment,
+              userAvatar: avatarUrl,
+            };
+          })
+        );
+
+        return commentsWithPresignedUrls;
       }),
     // Add comment to outfit
   addComment: protectedProcedure

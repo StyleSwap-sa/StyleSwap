@@ -12,7 +12,7 @@ import {
   userCredits 
 } from "../../drizzle/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
-import { getPresignedUrlForImage } from "../storage"; 
+import { getPresignedUrlForImage, storagePut } from "../storage"; 
 
 export const profilesRouter = router({
   // Get user profile
@@ -303,4 +303,81 @@ isFollowing: protectedProcedure
 
     return follow.length > 0;
   }),
+  uploadAvatar: protectedProcedure
+    .input(z.object({
+      base64Data: z.string(),
+      fileName: z.string(),
+      contentType: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Convert base64 to Buffer
+        const buffer = Buffer.from(input.base64Data.split(',')[1] || input.base64Data, 'base64');
+
+        // Validate file size (max 5MB)
+        if (buffer.length > 5 * 1024 * 1024) {
+          throw new Error("File size exceeds 5MB limit");
+        }
+
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!allowedTypes.includes(input.contentType)) {
+          throw new Error("Only JPEG, PNG, WebP, and GIF images are allowed");
+        }
+
+        // Generate S3 key: avatars/user-{userId}-{timestamp}.{ext}
+        const ext = input.contentType.split('/')[1];
+        const timestamp = Date.now();
+        const s3Key = `avatars/user-${ctx.user.id}-${timestamp}.${ext}`;
+
+        // Upload to S3
+        const { url: s3Url } = await storagePut(s3Key, buffer, input.contentType);
+        console.log("[Profile] Avatar uploaded to S3:", s3Url);
+
+        // Update or insert user profile with avatar
+        const existingProfile = await db
+          .select()
+          .from(userProfiles)
+          .where(eq(userProfiles.userId, ctx.user.id))
+          .limit(1);
+
+        if (existingProfile.length > 0) {
+          // Update existing profile
+          await db
+            .update(userProfiles)
+            .set({
+              avatar: s3Key, // Store S3 key, not full URL
+              updatedAt: new Date(),
+            })
+            .where(eq(userProfiles.userId, ctx.user.id));
+        } else {
+          // Create new profile
+          await db.insert(userProfiles).values({
+            userId: ctx.user.id,
+            avatar: s3Key,
+            bio: "",
+            followerCount: 0,
+            outfitCount: 0,
+            isInfluencer: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+
+        console.log("[Profile] Avatar updated for user:", ctx.user.id);
+
+        return {
+          success: true,
+          avatarUrl: s3Url,
+          message: "Profile picture updated successfully",
+        };
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error("[Profile] Avatar upload failed:", errorMsg);
+        throw new Error(`Avatar upload failed: ${errorMsg}`);
+      }
+    }),
 });
