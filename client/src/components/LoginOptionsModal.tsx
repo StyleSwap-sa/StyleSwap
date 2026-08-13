@@ -12,15 +12,26 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Store, User } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useLocation } from "wouter";
 
 interface LoginOptionsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+// Mirrors the role-based routing logic in Home.tsx — kept here too since
+// we need it the instant login/signup succeeds, without waiting on a
+// separate auth refetch.
+function getDashboardPathForUser(user: { userType?: string; role?: string } | null | undefined) {
+  if (!user) return "/dashboard";
+  if (user.userType === "admin" || user.role === "admin") return "/admin/dashboard";
+  if (user.userType === "merchant") return "/boutique/dashboard";
+  return "/dashboard";
+}
+
 export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps) {
-  const { refresh } = useAuth();
+  const utils = trpc.useUtils();
+  const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -29,12 +40,15 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
 
   const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: async () => {
-      await refresh();
+    onSuccess: (data) => {
+      // Prime the auth cache immediately so the nav bar, Home, etc. all
+      // see the logged-in state without waiting on a refetch.
+      utils.auth.me.setData(undefined, data.user);
       onOpenChange(false);
       setError("");
       setEmail("");
       setPassword("");
+      setLocation(getDashboardPathForUser(data.user));
     },
     onError: (err) => {
       setError(err.message);
@@ -42,13 +56,14 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
   });
 
   const signupMutation = trpc.auth.signup.useMutation({
-    onSuccess: async () => {
-      await refresh();
+    onSuccess: (data) => {
+      utils.auth.me.setData(undefined, data.user);
       onOpenChange(false);
       setError("");
       setEmail("");
       setPassword("");
       setName("");
+      setLocation(getDashboardPathForUser(data.user));
     },
     onError: (err) => {
       setError(err.message);

@@ -9,17 +9,33 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Menu, X, ChevronDown } from "lucide-react";
 import { getLoginUrl } from "@/const";
+import { LoginOptionsModal } from "@/components/LoginOptionsModal";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { BusinessPricingComponent } from "./BusinessPricingComponent";
+import styleswapLogo from "../images/styleswapimg.png";
 
 export default function Navigation() {
   const { user, isAuthenticated, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showPricingDetails, setShowPricingDetails] = useState(false);
+  const [showLoginOptions, setShowLoginOptions] = useState(false);
 
-
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      // Redirect based on user type
+      if (user?.userType === 'admin' || user?.role === 'admin') {
+        setLocation('/admin/dashboard');
+      } else if (user?.userType === 'merchant') {
+        setLocation('/boutique/dashboard');
+      } else {
+        setLocation('/dashboard');
+      }
+    } else {
+      setShowLoginOptions(true);
+    }
+  };
 
   const navigationItems = [
     { label: 'Overview', path: '/overview' },
@@ -44,7 +60,7 @@ export default function Navigation() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/20">
       <div className="container mx-auto py-4 flex justify-between items-center">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNavClick('/')}>
-          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663284718291/ilMaDKzhgsDAyZui.png" alt="StyleSwap" className="h-12" width="auto" height="48" />
+          <img src={styleswapLogo} alt="StyleSwap" className="h-12" width="auto" height="48" />
         </div>
         
         {/* Desktop Navigation */}
@@ -88,12 +104,16 @@ export default function Navigation() {
             </>
           ) : (
             <Button 
-              onClick={() => window.location.href = getLoginUrl()}
-              className="premium-button bg-primary text-primary-foreground hover:bg-primary/90 hidden sm:flex"
-            >
-              Get Started
-            </Button>
+                  onClick={handleGetStarted}
+                  className="premium-button bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Get Started
+                </Button>
           )}
+          <LoginOptionsModal 
+            open={showLoginOptions} 
+            onOpenChange={setShowLoginOptions}
+            />
           
           {/* Mobile Menu Button */}
           <button
