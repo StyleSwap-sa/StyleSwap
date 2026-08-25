@@ -19,7 +19,7 @@ export default function PrivacyPolicy() {
             Back
           </button>
           <h1 className="text-4xl md:text-5xl font-bold">Privacy Policy</h1>
-          <p className="text-primary-foreground/80 mt-2">Last updated: February 2026</p>
+          <p className="text-primary-foreground/80 mt-2">Last updated: August 2026</p>
         </div>
       </div>
 
@@ -45,7 +45,7 @@ export default function PrivacyPolicy() {
               <div>
                 <h3 className="font-semibold text-foreground mb-2">2.2 Photos and Content</h3>
                 <p className="leading-relaxed">
-                  When you use our virtual try-on service, we collect and process photos and images you upload. These are used to generate try-on results and improve our AI algorithms.
+                  When you use our virtual try-on service, photos are simply sent to your virtual try-on technology provider to produce the result.
                 </p>
               </div>
               <div>
@@ -96,16 +96,9 @@ export default function PrivacyPolicy() {
 
           <section>
             <h2 className="text-2xl font-bold mb-4">7. Your Rights</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Depending on your location, you may have certain rights regarding your personal information, including:
+            <p className="text-muted-foreground leading-relaxed">
+              StyleSwap is a South African service, so the policy should appropriately account for POPIA and then separately acknowledge rights that may apply to users in other jurisdictions.
             </p>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-2">
-              <li>The right to access your personal information</li>
-              <li>The right to correct inaccurate information</li>
-              <li>The right to request deletion of your information</li>
-              <li>The right to opt-out of marketing communications</li>
-              <li>The right to data portability</li>
-            </ul>
           </section>
 
           <section>
@@ -130,7 +123,7 @@ export default function PrivacyPolicy() {
           {/* Footer */}
           <div className="mt-12 pt-8 border-t border-border">
             <p className="text-sm text-muted-foreground">
-              This Privacy Policy was last updated on February 6, 2026. We may update this policy from time to time.
+              This Privacy Policy was last updated on August 2026. We may update this policy from time to time.
             </p>
             <Button
               onClick={() => setLocation("/")}

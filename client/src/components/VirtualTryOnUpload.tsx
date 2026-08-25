@@ -5,7 +5,6 @@ import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles, 
 import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { SizeSelector } from "@/components/SizeSelector";
 import { SaveToGalleryButton } from "@/components/SaveToGalleryButton";
 import { toast } from "./ui/use-toast";
 import {
@@ -36,7 +35,6 @@ export function VirtualTryOnUpload() {
   const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
-  const [selectedSize, setSelectedSize] = useState<"XS" | "S" | "M" | "L" | "XL" | "XXL" | "XXXL" | undefined>("M");
   const [hdMode, setHdMode] = useState(false);
 
   const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -149,11 +147,6 @@ const handleSaveConfirm = async () => {
     return;
   }
 
-  if (!selectedSize) {
-    setError("Please select a size before generating the try-on.");
-    return;
-  }
-
   const creditsNeeded = hdMode ? 2 : 1;
   if (!testMode && (!credits || credits.remainingCredits < creditsNeeded)) {
     setError(`Insufficient credits. You need ${creditsNeeded} credits for ${hdMode ? "HD" : "standard"} try-on, but only have ${credits?.remainingCredits || 0} remaining.`);
@@ -165,8 +158,6 @@ const handleSaveConfirm = async () => {
   setWarning("");
   setProcessingProgress(0);
   
-  console.log(`[VirtualTryOn] Selected size: ${selectedSize}`);
-
   try {
     setProcessingProgress(10);
     
@@ -217,7 +208,6 @@ const handleSaveConfirm = async () => {
       clothImageBase64: clothBase64,
       lowerClothImageBase64: lowerClothBase64 || undefined,
       clothType: finalClothTypeForBackend,
-      selectedSize: selectedSize,
       hdMode: hdMode,
       testMode: testMode,
     });
@@ -362,32 +352,6 @@ useEffect(() => {
               alt="Try-on result"
               className="w-full rounded-lg border border-border shadow-lg"
             />
-            {/* Size Comparison Feature */}
-            <div className="pt-4 border-t border-green-200 dark:border-green-800">
-              <p className="text-sm font-medium text-green-900 dark:text-green-100 mb-3">
-                Want to compare sizes? Try another size to see the difference.
-              </p>
-              <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-                {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => {
-                      setSelectedSize(size);
-                      setResult(null);
-                      handleCreateTryOn();
-                    }}
-                    disabled={isLoading || isPolling}
-                    className={`py-2 px-1 sm:px-2 rounded text-xs sm:text-sm font-semibold border-2 transition-all ${
-                      selectedSize === size
-                        ? "border-green-600 bg-green-600 text-white"
-                        : "border-green-200 dark:border-green-700 bg-white dark:bg-green-900/20 text-green-900 dark:text-green-100 hover:border-green-400"
-                    } ${isLoading || isPolling ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
             
             <div className="flex gap-3 flex-col sm:flex-row">
               <SaveToGalleryButton
@@ -703,14 +667,6 @@ useEffect(() => {
               </CardContent>
             </Card>
           )}
-
-          {/* Size Selector */}
-          <SizeSelector
-            selectedSize={selectedSize}
-            onSizeChange={setSelectedSize}
-            disabled={isLoading || isPolling}
-            showDisclaimer={true}
-          />
 
           {/* HD Mode Toggle */}
           <Card>
