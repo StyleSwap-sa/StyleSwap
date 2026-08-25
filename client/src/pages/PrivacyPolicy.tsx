@@ -45,7 +45,7 @@ export default function PrivacyPolicy() {
               <div>
                 <h3 className="font-semibold text-foreground mb-2">2.2 Photos and Content</h3>
                 <p className="leading-relaxed">
-                  When you use our virtual try-on service, photos are simply sent to your virtual try-on technology provider to produce the result.
+                  When you use our virtual try-on service, photos are simply sent to our virtual try-on technology provider to produce the result.
                 </p>
               </div>
               <div>
@@ -96,9 +96,14 @@ export default function PrivacyPolicy() {
 
           <section>
             <h2 className="text-2xl font-bold mb-4">7. Your Rights</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              StyleSwap is a South African service, so the policy should appropriately account for POPIA and then separately acknowledge rights that may apply to users in other jurisdictions.
-            </p>
+            <div className="space-y-4 text-muted-foreground leading-relaxed">
+              <p>
+                In accordance with the Protection of Personal Information Act (POPIA), you may have the right to access the personal information we hold about you, request correction or deletion of inaccurate or unnecessary personal information, object to certain processing of your personal information, and withdraw consent where processing is based on consent.
+              </p>
+              <p>
+                To exercise any of these rights, please contact us using the details provided below. Users outside South Africa may also have additional privacy rights under the laws applicable in their jurisdiction.
+              </p>
+            </div>
           </section>
 
           <section>
