@@ -247,7 +247,7 @@ export default function Pricing() {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">StyleSwap Retailer Pricing Packages</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">ThatOne Retailer Pricing Packages</h1>
           <p className="text-xl text-muted-foreground">Reduce Returns. Increase Conversions. Let customers try before they buy.</p>
         </div>
 
@@ -373,7 +373,7 @@ export default function Pricing() {
                     <Button 
                       onClick={() => {
                         if ((plan as any).isEnterprise) {
-                          window.location.href = 'mailto:sales@styleswap.co.za?subject=Enterprise%20Retail%20Pro%20Inquiry&body=I%20am%20interested%20in%20the%20Enterprise%20Retail%20Pro%20package%20with%20more%20than%2020,000%20credits.';
+                          window.location.href = 'mailto:sales@thatone.com?subject=Enterprise%20Retail%20Pro%20Inquiry&body=I%20am%20interested%20in%20the%20Enterprise%20Retail%20Pro%20package%20with%20more%20than%2020,000%20credits.';
                         } else {
                           handleSubscribe(plan.name, plan.price);
                         }

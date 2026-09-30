@@ -185,7 +185,7 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
                   <span className="text-sm font-medium">Customer</span>
                   <span className="text-xs text-muted-foreground">Try on clothes</span>
                 </button>
-                 {/* <button
+                 <button
                   type="button"
                   onClick={() => setUserType("merchant")}
                   className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
@@ -197,7 +197,7 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
                   <Store className="w-5 h-5" />
                   <span className="text-sm font-medium">Boutique</span>
                   <span className="text-xs text-muted-foreground">Sell clothes</span>
-               </button> */}
+               </button>
               </div>
             </div>
             

@@ -29,7 +29,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-2xl font-bold mb-4">1. Introduction</h2>
             <p className="text-muted-foreground leading-relaxed">
-              StyleSwap ("we," "us," "our," or "Company") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.
+              ThatOne ("we," "us," "our," or "Company") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.
             </p>
           </section>
 
@@ -119,8 +119,8 @@ export default function PrivacyPolicy() {
               If you have questions about this Privacy Policy or our privacy practices, please contact us at:
             </p>
             <div className="p-4 bg-secondary/10 rounded-lg">
-              <p className="font-semibold text-foreground">StyleSwap Support Team</p>
-              <p className="text-muted-foreground">Email: support@styleswap.co.za</p>
+              <p className="font-semibold text-foreground">ThatOne Support Team</p>
+              <p className="text-muted-foreground">Email: support@thatone.co.za</p>
               <p className="text-muted-foreground">Location: Johannesburg, South Africa</p>
             </div>
           </section>

@@ -11,7 +11,7 @@ export default function Technology() {
           <div>
             <h2 className="text-5xl md:text-6xl font-bold mb-6">CORE TECHNOLOGY</h2>
             <p className="text-muted-foreground max-w-xl text-lg leading-relaxed">
-              StyleSwap leverages cutting-edge Generative Adversarial Networks (GANs) to create hyper-realistic clothing simulations that go far beyond simple 2D overlays.
+              ThatOne leverages cutting-edge Generative Adversarial Networks (GANs) to create hyper-realistic clothing simulations that go far beyond simple 2D overlays.
             </p>
           </div>
           <div className="flex gap-3">

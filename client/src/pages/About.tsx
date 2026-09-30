@@ -8,13 +8,13 @@ export default function About() {
       <section className="py-16 px-4 bg-gradient-to-b from-primary/5 to-background">
         <div className="container mx-auto max-w-4xl">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-center">
-            About StyleSwap
+            About ThatOne
           </h1>
           <p className="text-2xl md:text-3xl font-bold text-center mb-6 text-primary">
             Try On Outfits. Ask Your Friends. Decide With Confidence.
           </p>
           <p className="text-xl text-muted-foreground text-center leading-relaxed max-w-2xl mx-auto">
-            StyleSwap is a social fashion platform that helps people make confident outfit decisions before they buy or wear something.
+            ThatOne is a social fashion platform that helps people make confident outfit decisions before they buy or wear something.
           </p>
         </div>
       </section>
@@ -26,16 +26,16 @@ export default function About() {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold">What We Do</h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Choosing the right outfit can be difficult when shopping online or preparing for an event. StyleSwap solves this problem by combining virtual try-on technology with social interaction, allowing users to see how outfits look on them and get instant feedback from friends and the community.
+              Choosing the right outfit can be difficult when shopping online or preparing for an event. ThatOne solves this problem by combining virtual try-on technology with social interaction, allowing users to see how outfits look on them and get instant feedback from friends and the community.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              With StyleSwap, users can virtually try on clothes, compare different outfits, create polls, and ask friends which look they prefer. This makes fashion decisions more fun, interactive, and confident.
+              With ThatOne, users can virtually try on clothes, compare different outfits, create polls, and ask friends which look they prefer. This makes fashion decisions more fun, interactive, and confident.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
               The platform also helps fashion retailers and boutiques reduce uncertainty for shoppers by allowing customers to visualize outfits before purchasing, which can help improve buying confidence and reduce returns.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              StyleSwap is designed to bring together fashion, technology, and community, creating a space where people can discover styles, share opinions, and make better fashion choices together.
+              ThatOne is designed to bring together fashion, technology, and community, creating a space where people can discover styles, share opinions, and make better fashion choices together.
             </p>
           </div>
 
@@ -52,7 +52,7 @@ export default function About() {
 
           {/* What You Can Do */}
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold">What You Can Do on StyleSwap</h2>
+            <h2 className="text-3xl font-bold">What You Can Do on ThatOne</h2>
             <div className="grid md:grid-cols-2 gap-4">
               {[
                 "Virtually try on outfits",
@@ -80,10 +80,10 @@ export default function About() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground leading-relaxed">
-                StyleSwap also provides tools for fashion retailers and boutiques to showcase their clothing through virtual try-on experiences. This allows customers to visualize outfits before purchasing, improving confidence and reducing return rates.
+                ThatOne also provides tools for fashion retailers and boutiques to showcase their clothing through virtual try-on experiences. This allows customers to visualize outfits before purchasing, improving confidence and reducing return rates.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Businesses can integrate StyleSwap into their websites or create their own product pages on the platform to let customers try on their clothing digitally.
+                Businesses can integrate ThatOne into their websites or create their own product pages on the platform to let customers try on their clothing digitally.
               </p>
             </CardContent>
           </Card>
@@ -95,7 +95,7 @@ export default function About() {
               We believe the future of fashion shopping will be more interactive, social, and personalized.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              StyleSwap aims to become a platform where people don't just shop for clothes, but also share style ideas, get feedback, and make fashion decisions together.
+              ThatOne aims to become a platform where people don't just shop for clothes, but also share style ideas, get feedback, and make fashion decisions together.
             </p>
           </div>
 

@@ -25,7 +25,7 @@ export default function B2BLanding() {
           <Link href="/">
             <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
               <div className="font-heading font-bold text-2xl tracking-tight">
-                Style<span className="text-primary">Swap</span>
+                That<span className="text-primary">One</span>
               </div>
               <span className="text-xs font-bold bg-primary/20 text-primary px-2 py-1 rounded">
                 FOR BUSINESS
@@ -73,7 +73,7 @@ export default function B2BLanding() {
             <p className="text-xl text-muted-foreground max-w-lg font-medium leading-relaxed">
               Let your customers try on clothes virtually before they buy. Reduce
               returns, increase confidence, and grow your online sales with
-              StyleSwap's AI-powered try-on technology.
+              ThatOne's AI-powered try-on technology.
             </p>
             <div className="flex gap-4">
               <Link href="/b2b/signup">
@@ -370,7 +370,7 @@ export default function B2BLanding() {
             <p className="text-muted-foreground mb-4">
               Need more credits? Contact our sales team for custom packages.
             </p>
-            <a href="mailto:sales@styleswap.co.za">
+            <a href="mailto:sales@thatone.co.za">
               <Button variant="outline" className="cursor-pointer">
                 Contact Sales
               </Button>
@@ -383,7 +383,7 @@ export default function B2BLanding() {
       <section id="benefits" className="py-20 container mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <h2 className="text-5xl font-bold">WHY BOUTIQUES CHOOSE STYLESWAP</h2>
+            <h2 className="text-5xl font-bold">WHY BOUTIQUES CHOOSE THATONE</h2>
             <div className="space-y-4">
               {[
                 "Increase online sales by up to 40%",
@@ -441,7 +441,7 @@ export default function B2BLanding() {
             READY TO BOOST YOUR SALES?
           </h2>
           <p className="text-xl max-w-2xl mx-auto opacity-90">
-            Join hundreds of boutiques already using StyleSwap to increase
+            Join hundreds of boutiques already using ThatOne to increase
             conversions and reduce returns.
           </p>
           <div className="flex gap-4 justify-center">
@@ -579,7 +579,7 @@ export default function B2BLanding() {
             </div>
           </div>
           <div className="border-t border-border/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <div>© 2026 StyleSwap. All rights reserved.</div>
+            <div>© 2026 ThatOne. All rights reserved.</div>
             <div className="flex gap-6">
               <a href="#" className="hover:text-primary transition">
                 Twitter

@@ -99,7 +99,7 @@ export default function Overview() {
             <div>
               <h3 className="text-3xl font-bold mb-4 text-primary">READY TO TRANSFORM?</h3>
               <p className="text-lg max-w-xl text-muted-foreground leading-relaxed">
-                Join the future of fashion retail. StyleSwap makes it accessible for businesses of all sizes.
+                Join the future of fashion retail. ThatOne makes it accessible for businesses of all sizes.
               </p>
             </div>
             <div className="flex gap-4">

@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { SaveToGalleryButton } from "@/components/SaveToGalleryButton";
+import ARTryOn from "@/pages/ARTryOn";
 import { toast } from "./ui/use-toast";
 import {
   Dialog,
@@ -25,6 +26,7 @@ interface TryOnResult {
 }
 
 export function VirtualTryOnUpload() {
+  const [showARTryOn, setShowARTryOn] = useState(false);
   // State for uploads
   const [modelPhoto, setModelPhoto] = useState<File | null>(null);
   const [modelPhotoPreview, setModelPhotoPreview] = useState<string>("");
@@ -36,6 +38,8 @@ export function VirtualTryOnUpload() {
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
   const [hdMode, setHdMode] = useState(false);
+  const [showImageGuidelines, setShowImageGuidelines] = useState(false);
+  const [showQualityDetails, setShowQualityDetails] = useState(false);
 
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
@@ -311,30 +315,60 @@ useEffect(() => {
   return (
     <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
       {/* Header */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-primary" />
-          <h2 className="text-3xl font-bold">Personal Virtual Try-On</h2>
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-primary" />
+              <h2 className="text-3xl font-bold">Virtual Try-On</h2>
+            </div>
+            <p className="text-muted-foreground">
+              Try clothes with an uploaded body photo, or switch to AR Try-On for a live camera experience.
+            </p>
+          </div>
+          <Button
+            variant={showARTryOn ? "outline" : "secondary"}
+            onClick={() => setShowARTryOn((value) => !value)}
+            className="shrink-0"
+          >
+            {showARTryOn ? "← Back to AI Try-On" : "Try AR Instead"}
+          </Button>
         </div>
-        <p className="text-muted-foreground">
-          Upload your body photo and clothing image to see how the garment looks on you
-        </p>
       </div>
+
+      {showARTryOn ? (
+        <Card>
+          <CardContent className="pt-6">
+            <ARTryOn />
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
 
       {/* Image Guidelines */}
       <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Info className="w-5 h-5" />
-            Image Guidelines for Best Results:
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <p><strong>Body Photo:</strong> Full-body shot, standing straight, facing forward, simple background (recommended: 2048px)</p>
-          <p><strong>Clothing:</strong> Clear front view on white/solid background, well-lit, entire item visible (recommended: 1024px)</p>
-          <p><strong>Auto-optimization:</strong> Images larger than recommended will automatically be resized for faster processing</p>
-          <p><strong>Quality:</strong> Ensure images are not heavily compressed and have good lighting</p>
-        </CardContent>
+        <button
+          type="button"
+          onClick={() => setShowImageGuidelines((value) => !value)}
+          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
+          aria-expanded={showImageGuidelines}
+        >
+          <span className="flex items-center gap-2 font-medium text-sm">
+            <Info className="w-4 h-4" />
+            Image guidelines
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {showImageGuidelines ? "Hide" : "Show"}
+          </span>
+        </button>
+        {showImageGuidelines && (
+          <CardContent className="space-y-2 text-sm pt-0 pb-4">
+            <p><strong>Body Photo:</strong> Full-body shot, standing straight, facing forward, simple background (recommended: 2048px)</p>
+            <p><strong>Clothing:</strong> Clear front view on white/solid background, well-lit, entire item visible (recommended: 1024px)</p>
+            <p><strong>Auto-optimization:</strong> Images larger than recommended will automatically be resized for faster processing</p>
+            <p><strong>Quality:</strong> Ensure images are not heavily compressed and have good lighting</p>
+          </CardContent>
+        )}
       </Card>
 
       {/* Result Display */}
@@ -376,7 +410,7 @@ useEffect(() => {
           <DialogHeader>
             <DialogTitle>Share to Global Feed</DialogTitle>
             <DialogDescription>
-              Share your try-on result with the StyleSwap community
+              Share your try-on result with the ThatOne community
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -668,33 +702,46 @@ useEffect(() => {
             </Card>
           )}
 
-          {/* HD Mode Toggle */}
+          {/* Quality Options */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quality Options</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                <div>
-                  <p className="font-medium">HD Quality Try-On</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {hdMode ? "2 credits - Higher quality, ~30s processing" : "1 credit - Standard quality, ~9s processing"}
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setHdMode(!hdMode)}
-                  variant={hdMode ? "default" : "outline"}
-                  className="ml-4"
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center justify-between gap-3">
+                <span>Quality</span>
+                <button
+                  type="button"
+                  onClick={() => setShowQualityDetails((value) => !value)}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label="Show quality details"
+                  aria-expanded={showQualityDetails}
                 >
-                  {hdMode ? "HD" : "Standard"}
+                  <Info className="w-4 h-4" />
+                </button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 gap-3"> {/*Use grid-cols-2 instead */}
+                <Button
+                  type="button"
+                  onClick={() => setHdMode(false)}
+                  variant={!hdMode ? "default" : "outline"}
+                  className="h-11"
+                >
+                  Standard · 1 credit
                 </Button>
+                {/*<Button
+                  type="button"
+                  onClick={() => setHdMode(true)}
+                  variant={hdMode ? "default" : "outline"}
+                  className="h-11"
+                >
+                  HD · 2 credits
+                </Button> */}
               </div>
-              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <strong>Standard (1 credit):</strong> Fast processing with good quality<br/>
-                  <strong>HD (2 credits):</strong> Premium quality with better details and accuracy
+              {showQualityDetails && (
+                <p className="text-sm text-muted-foreground">
+                  Standard is fast with good quality.
                 </p>
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -716,6 +763,8 @@ useEffect(() => {
               </>
             )}
           </Button>
+        </div>
+      )}
         </div>
       )}
 

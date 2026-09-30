@@ -94,8 +94,8 @@ export default function ARTryOn() {
 
         if (navigator.share) {
           await navigator.share({
-            title: 'StyleSwap AR Try-On',
-            text: 'Check out my virtual try-on with StyleSwap!',
+            title: 'ThatOne AR Try-On',
+            text: 'Check out my virtual try-on with ThatOne!',
             files: [file],
           });
           setSuccessMessage('Shared successfully');

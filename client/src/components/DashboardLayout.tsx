@@ -21,19 +21,33 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Globe, Shirt, Heart, Sparkles } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Globe, Shirt, Heart, Sparkles, Package, Coins, Camera, ShoppingBag, Wallet, BarChart3, Settings, Store, BookOpen } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 
-const menuItems = [
+const customerMenuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Globe, label: "Global Feed", path: "/global-feed" },
   { icon: Shirt, label: "My Closet", path: "/closet" },
   { icon: Heart, label: "Pick My Outfit", path: "/voting" },
   { icon: Sparkles, label: "Discover Outfits", path: "/discover" },
+];
+
+const boutiqueMenuItems = [
+  { icon: LayoutDashboard, label: "Dashboard", path: "/boutique/dashboard" },
+  { icon: Package, label: "Products", path: "/boutique/products" },
+  { icon: Coins, label: "Credits", path: "/boutique/credits" },
+  { icon: Camera, label: "Try-On", path: "/boutique/tryon" },
+  { icon: ShoppingBag, label: "Orders", path: "/boutique/orders" },
+  { icon: Wallet, label: "Payouts", path: "/boutique/payouts" },
+  { icon: BarChart3, label: "Performance", path: "/boutique/performance" },
+  { icon: Settings, label: "Settings", path: "/boutique/settings" },
+  { icon: Sparkles, label: "Features", path: "/boutique/features" },
+  { icon: BookOpen, label: "Tutorial", path: "/boutique/tutorial" },
+  { icon: Store, label: "Shop", path: "/boutique/shop" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -43,8 +57,12 @@ const MAX_WIDTH = 480;
 
 export default function DashboardLayout({
   children,
+  variant = "customer",
+  boutiqueId,
 }: {
   children: React.ReactNode;
+  variant?: "customer" | "boutique";
+  boutiqueId?: number | null;
 }) {
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
@@ -94,7 +112,11 @@ export default function DashboardLayout({
         } as CSSProperties
       }
     >
-      <DashboardLayoutContent setSidebarWidth={setSidebarWidth}>
+      <DashboardLayoutContent
+        setSidebarWidth={setSidebarWidth}
+        variant={variant}
+        boutiqueId={boutiqueId}
+      >
         {children}
       </DashboardLayoutContent>
     </SidebarProvider>
@@ -104,17 +126,30 @@ export default function DashboardLayout({
 type DashboardLayoutContentProps = {
   children: React.ReactNode;
   setSidebarWidth: (width: number) => void;
+  variant: "customer" | "boutique";
+  boutiqueId?: number | null;
 };
 
 function DashboardLayoutContent({
   children,
   setSidebarWidth,
+  variant,
+  boutiqueId,
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
+  const menuItems = variant === "boutique"
+    ? boutiqueMenuItems
+        .filter((item) => item.label !== "Settings" || !!boutiqueId)
+        .map((item) =>
+          item.label === "Settings" && boutiqueId
+            ? { ...item, path: `/boutique/settings/${boutiqueId}` }
+            : item
+        )
+    : customerMenuItems;
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
@@ -175,7 +210,7 @@ function DashboardLayoutContent({
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-semibold tracking-tight truncate">
-                    Styleswap
+                    ThatOne
                   </span>
                 </div>
               ) : null}

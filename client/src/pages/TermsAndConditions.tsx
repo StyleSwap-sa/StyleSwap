@@ -29,7 +29,7 @@ export default function TermsAndConditions() {
           <section>
             <h2 className="text-2xl font-bold mb-4">1. Acceptance of Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
-              By accessing and using the StyleSwap platform (the "Service"), you agree to be bound by these Terms and Conditions. If you do not agree to any part of these terms, you may not use the Service. StyleSwap reserves the right to modify these terms at any time. Your continued use of the Service following the posting of revised terms means that you accept and agree to the changes.
+              By accessing and using the ThatOne platform (the "Service"), you agree to be bound by these Terms and Conditions. If you do not agree to any part of these terms, you may not use the Service. ThatOne reserves the right to modify these terms at any time. Your continued use of the Service following the posting of revised terms means that you accept and agree to the changes.
             </p>
           </section>
 
@@ -37,7 +37,7 @@ export default function TermsAndConditions() {
           <section>
             <h2 className="text-2xl font-bold mb-4">2. Service Description</h2>
             <p className="text-muted-foreground leading-relaxed">
-              StyleSwap provides AI-powered virtual try-on technology that allows customers to visualize clothing items on their own body using either augmented reality (AR) or by uploading personal photos. The Service is provided on an "as-is" basis for entertainment and shopping assistance purposes.
+              ThatOne provides AI-powered virtual try-on technology that allows customers to visualize clothing items on their own body using either augmented reality (AR) or by uploading personal photos. The Service is provided on an "as-is" basis for entertainment and shopping assistance purposes.
             </p>
           </section>
 
@@ -54,13 +54,13 @@ export default function TermsAndConditions() {
               <div>
                 <h3 className="font-semibold text-foreground mb-2">3.2 Credit Expiration</h3>
                 <p className="leading-relaxed">
-                  Credits do not expire and remain valid for the duration of your account. However, StyleSwap reserves the right to deactivate inactive accounts after 12 months of no activity, which may result in loss of unused credits.
+                  Credits do not expire and remain valid for the duration of your account. However, ThatOne reserves the right to deactivate inactive accounts after 12 months of no activity, which may result in loss of unused credits.
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-2">3.3 Payment Processing</h3>
                 <p className="leading-relaxed">
-                  Payments are processed through our secure payment gateway. By making a purchase, you authorize StyleSwap to charge your payment method for the selected credit package. You are responsible for maintaining accurate payment information.
+                  Payments are processed through our secure payment gateway. By making a purchase, you authorize ThatOne to charge your payment method for the selected credit package. You are responsible for maintaining accurate payment information.
                 </p>
               </div>
             </div>
@@ -88,21 +88,21 @@ export default function TermsAndConditions() {
             <h2 className="text-2xl font-bold mb-4">5. Intellectual Property Rights</h2>
             <div className="space-y-4 text-muted-foreground">
               <div>
-                <h3 className="font-semibold text-foreground mb-2">5.1 StyleSwap Intellectual Property</h3>
+                <h3 className="font-semibold text-foreground mb-2">5.1 ThatOne Intellectual Property</h3>
                 <p className="leading-relaxed">
-                  All content, features, and functionality of the StyleSwap Service, including but not limited to software, algorithms, and designs, are owned by StyleSwap or its licensors and are protected by international copyright, trademark, and other intellectual property laws.
+                  All content, features, and functionality of the ThatOne Service, including but not limited to software, algorithms, and designs, are owned by ThatOne or its licensors and are protected by international copyright, trademark, and other intellectual property laws.
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-2">5.2 User-Generated Content</h3>
                 <p className="leading-relaxed">
-                  You retain ownership of any photos or content you upload to the Service. By uploading content, you grant StyleSwap a non-exclusive, royalty-free license to use, reproduce, and display your content solely for the purpose of providing the Service and improving our algorithms.
+                  You retain ownership of any photos or content you upload to the Service. By uploading content, you grant ThatOne a non-exclusive, royalty-free license to use, reproduce, and display your content solely for the purpose of providing the Service and improving our algorithms.
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-2">5.3 Generated Try-On Results</h3>
                 <p className="leading-relaxed">
-                  Try-on results generated by StyleSwap are provided for personal, non-commercial use only. You may not use generated images for commercial purposes, resale, or distribution without explicit written permission from StyleSwap.
+                  Try-on results generated by ThatOne are provided for personal, non-commercial use only. You may not use generated images for commercial purposes, resale, or distribution without explicit written permission from ThatOne.
                 </p>
               </div>
             </div>
@@ -113,10 +113,10 @@ export default function TermsAndConditions() {
             <h2 className="text-2xl font-bold mb-4">6. Limitation of Liability</h2>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                TO THE MAXIMUM EXTENT PERMITTED BY LAW, STYLESWAP SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, OR GOODWILL, EVEN IF STYLESWAP HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+                TO THE MAXIMUM EXTENT PERMITTED BY LAW, THATONE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, OR GOODWILL, EVEN IF THATONE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
               </p>
               <p>
-                StyleSwap's total liability for any claim arising from or relating to the Service shall not exceed the amount you paid for the credits that are the subject of the claim.
+                ThatOne's total liability for any claim arising from or relating to the Service shall not exceed the amount you paid for the credits that are the subject of the claim.
               </p>
             </div>
           </section>
@@ -125,7 +125,7 @@ export default function TermsAndConditions() {
           <section>
             <h2 className="text-2xl font-bold mb-4">7. Disclaimer of Warranties</h2>
             <p className="text-muted-foreground leading-relaxed">
-              THE SERVICE IS PROVIDED ON AN "AS-IS" AND "AS-AVAILABLE" BASIS. STYLESWAP DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. STYLESWAP DOES NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR SECURE.
+              THE SERVICE IS PROVIDED ON AN "AS-IS" AND "AS-AVAILABLE" BASIS. THATONE DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. THATONE DOES NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR SECURE.
             </p>
           </section>
 
@@ -133,7 +133,7 @@ export default function TermsAndConditions() {
           <section>
             <h2 className="text-2xl font-bold mb-4">8. Indemnification</h2>
             <p className="text-muted-foreground leading-relaxed">
-              You agree to indemnify, defend, and hold harmless StyleSwap and its officers, directors, employees, and agents from any claims, damages, losses, or expenses (including attorney's fees) arising from your use of the Service, violation of these Terms, or infringement of any third-party rights.
+              You agree to indemnify, defend, and hold harmless ThatOne and its officers, directors, employees, and agents from any claims, damages, losses, or expenses (including attorney's fees) arising from your use of the Service, violation of these Terms, or infringement of any third-party rights.
             </p>
           </section>
 
@@ -141,7 +141,7 @@ export default function TermsAndConditions() {
           <section>
             <h2 className="text-2xl font-bold mb-4">9. Account Termination</h2>
             <p className="text-muted-foreground leading-relaxed">
-              StyleSwap reserves the right to suspend or terminate your account at any time for violation of these Terms, illegal activity, or other conduct that StyleSwap deems harmful to the Service or other users. Upon termination, your right to use the Service immediately ceases, and any unused credits are forfeited.
+              ThatOne reserves the right to suspend or terminate your account at any time for violation of these Terms, illegal activity, or other conduct that ThatOne deems harmful to the Service or other users. Upon termination, your right to use the Service immediately ceases, and any unused credits are forfeited.
             </p>
           </section>
 
@@ -157,7 +157,7 @@ export default function TermsAndConditions() {
           <section>
             <h2 className="text-2xl font-bold mb-4">11. Third-Party Links</h2>
             <p className="text-muted-foreground leading-relaxed">
-              The Service may contain links to third-party websites and services. StyleSwap is not responsible for the content, accuracy, or practices of these external sites. Your use of third-party services is governed by their respective terms and conditions.
+              The Service may contain links to third-party websites and services. ThatOne is not responsible for the content, accuracy, or practices of these external sites. Your use of third-party services is governed by their respective terms and conditions.
             </p>
           </section>
 
@@ -184,7 +184,7 @@ export default function TermsAndConditions() {
               <div>
                 <h3 className="font-semibold text-foreground mb-2">14.1 Commission Rate</h3>
                 <p className="leading-relaxed">
-                  StyleSwap retains a 7.5% commission on all clothing purchases made through affiliate tracking links. This commission is deducted from the sale price before payout to the affiliated boutique or retailer.
+                  ThatOne retains a 7.5% commission on all clothing purchases made through affiliate tracking links. This commission is deducted from the sale price before payout to the affiliated boutique or retailer.
                 </p>
               </div>
               <div>
@@ -193,7 +193,7 @@ export default function TermsAndConditions() {
                   Commission is earned only when:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
-                  <li>A customer uses StyleSwap's virtual try-on feature</li>
+                  <li>A customer uses ThatOne's virtual try-on feature</li>
                   <li>The customer completes a purchase through an affiliate tracking link</li>
                   <li>The boutique/retailer is on a premium tier (Retailer Pro, Enterprise Retail, or Enterprise Retail Pro)</li>
                   <li>The purchase is for clothing items only</li>
@@ -202,7 +202,7 @@ export default function TermsAndConditions() {
               <div>
                 <h3 className="font-semibold text-foreground mb-2">14.3 Commission Calculation</h3>
                 <p className="leading-relaxed">
-                  Commission is calculated as 7.5% of the total purchase amount. The calculation occurs after payment processing fees are deducted. Boutiques receive 92.5% of the sale price (after StyleSwap's 7.5% commission and payment processor fees of approximately 2.5%).
+                  Commission is calculated as 7.5% of the total purchase amount. The calculation occurs after payment processing fees are deducted. Boutiques receive 92.5% of the sale price (after ThatOne's 7.5% commission and payment processor fees of approximately 2.5%).
                 </p>
               </div>
               <div>
@@ -227,16 +227,16 @@ export default function TermsAndConditions() {
               If you have any questions about these Terms and Conditions, please contact us at:
             </p>
             <div className="mt-4 p-4 bg-secondary/10 rounded-lg">
-              <p className="font-semibold text-foreground">StyleSwap Support</p>
-              <p className="text-muted-foreground">Email: support@styleswap.co.za</p>
-              <p className="text-muted-foreground">Website: www.styleswap.co.za</p>
+              <p className="font-semibold text-foreground">ThatOne Support</p>
+              <p className="text-muted-foreground">Email: support@thatone.com</p>
+              <p className="text-muted-foreground">Website: www.thatone.com</p>
             </div>
           </section>
 
           {/* Footer */}
           <div className="mt-12 pt-8 border-t border-border">
             <p className="text-sm text-muted-foreground">
-              By using StyleSwap, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
+              By using ThatOne, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
             </p>
             <Button
               onClick={() => setLocation("/")}

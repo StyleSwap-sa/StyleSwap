@@ -15,7 +15,7 @@ export interface PaymentPackage {
 
 export const PAYMENT_PACKAGES: PaymentPackage[] = [
   // Individual Plans
-   {
+ {
     id: "pkg_5_credits",
     name: "5 Credit Test",
     credits: 5,

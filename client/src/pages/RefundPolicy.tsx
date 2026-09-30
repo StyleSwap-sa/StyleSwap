@@ -29,7 +29,7 @@ export default function RefundPolicy() {
           <section>
             <h2 className="text-2xl font-bold mb-4">1. Non-Refundable Credits</h2>
             <p className="text-muted-foreground leading-relaxed">
-              All credits purchased on StyleSwap are final and non-refundable. Once you have completed your purchase and received your credits, they cannot be returned, exchanged for cash, or transferred to another account. This policy applies to all credit packages regardless of the amount purchased.
+              All credits purchased on ThatOne are final and non-refundable. Once you have completed your purchase and received your credits, they cannot be returned, exchanged for cash, or transferred to another account. This policy applies to all credit packages regardless of the amount purchased.
             </p>
           </section>
 
@@ -56,7 +56,7 @@ export default function RefundPolicy() {
           <section>
             <h2 className="text-2xl font-bold mb-4">4. Service Unavailability</h2>
             <p className="text-muted-foreground leading-relaxed">
-              If StyleSwap service is unavailable for an extended period due to technical issues beyond your control, and you are unable to use your purchased credits, please contact our support team. We will work with you to find an appropriate resolution, which may include service credits or a refund.
+              If ThatOne service is unavailable for an extended period due to technical issues beyond your control, and you are unable to use your purchased credits, please contact our support team. We will work with you to find an appropriate resolution, which may include service credits or a refund.
             </p>
           </section>
 
@@ -70,7 +70,7 @@ export default function RefundPolicy() {
           <section>
             <h2 className="text-2xl font-bold mb-4">6. Credit Expiration</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Credits do not expire and remain valid for the lifetime of your account. However, if your account is inactive for 12 months or more, StyleSwap reserves the right to deactivate your account and forfeit any unused credits. No refund will be issued in this case.
+              Credits do not expire and remain valid for the lifetime of your account. However, if your account is inactive for 12 months or more, ThatOne reserves the right to deactivate your account and forfeit any unused credits. No refund will be issued in this case.
             </p>
           </section>
 
@@ -79,7 +79,7 @@ export default function RefundPolicy() {
             <div className="space-y-4 text-muted-foreground">
               <p>To request a refund for a billing error or fraudulent transaction:</p>
               <ol className="list-decimal list-inside space-y-2 ml-2">
-                <li>Contact our support team at support@styleswap.co.za</li>
+                <li>Contact our support team at support@thatone.co.za</li>
                 <li>Provide your account details and transaction information</li>
                 <li>Explain the reason for your refund request</li>
                 <li>Provide any supporting documentation</li>
@@ -109,8 +109,8 @@ export default function RefundPolicy() {
               If you have questions about our refund policy or need to report a billing issue, please contact us:
             </p>
             <div className="p-4 bg-secondary/10 rounded-lg">
-              <p className="font-semibold text-foreground">StyleSwap Support Team</p>
-              <p className="text-muted-foreground">Email: support@styleswap.co.za</p>
+              <p className="font-semibold text-foreground">ThatOne Support Team</p>
+              <p className="text-muted-foreground">Email: support@thatone.co.za</p>
               <p className="text-muted-foreground">Hours: Monday to Friday, 9am - 5pm CAT</p>
             </div>
           </section>
@@ -118,7 +118,7 @@ export default function RefundPolicy() {
           {/* Footer */}
           <div className="mt-12 pt-8 border-t border-border">
             <p className="text-sm text-muted-foreground">
-              This Refund Policy was last updated on February 6, 2026. StyleSwap reserves the right to modify this policy at any time.
+              This Refund Policy was last updated on February 6, 2026. ThatOne reserves the right to modify this policy at any time.
             </p>
             <Button
               onClick={() => setLocation("/")}

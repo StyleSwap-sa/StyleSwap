@@ -84,7 +84,7 @@ export default function Dashboard() {
     <>
       {/* Header */}
       <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border/20 px-6 py-8">
-        <h1 className="text-4xl font-bold mb-2">StyleSwap Dashboard</h1>
+        <h1 className="text-4xl font-bold mb-2">ThatOne Dashboard</h1>
         <p className="text-muted-foreground">Welcome back, {user?.name}!</p>
       </div>
 
@@ -200,11 +200,11 @@ export default function Dashboard() {
           <div className="space-y-6">
             <Card className="premium-card border-primary/30 bg-gradient-to-r from-primary/5 to-secondary/5">
               <CardHeader>
-                <CardTitle>Welcome to StyleSwap</CardTitle>
+                <CardTitle>Welcome to ThatOne</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  Start your virtual try-on journey with StyleSwap's AI-powered fitting room technology.
+                  Start your virtual try-on journey with ThatOne's AI-powered fitting room technology.
                 </p>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="space-y-2">

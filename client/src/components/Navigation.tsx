@@ -13,7 +13,7 @@ import { LoginOptionsModal } from "@/components/LoginOptionsModal";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { BusinessPricingComponent } from "./BusinessPricingComponent";
-import styleswapLogo from "../images/styleswapimg.png";
+import styleswapLogo from "../images/styleswapimg2.jpg";
 
 export default function Navigation() {
   const { user, isAuthenticated, logout } = useAuth();

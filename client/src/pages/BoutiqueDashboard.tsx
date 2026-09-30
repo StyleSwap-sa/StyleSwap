@@ -30,7 +30,7 @@ export default function BoutiqueDashboard() {
 
   if (boutiquesLoading) {
     return (
-      <DashboardLayout>
+      <DashboardLayout variant="boutique" boutiqueId={selectedBoutique}>
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin" />
         </div>
@@ -40,7 +40,7 @@ export default function BoutiqueDashboard() {
 
   if (!boutiques || boutiques.length === 0) {
     return (
-      <DashboardLayout>
+      <DashboardLayout variant="boutique" boutiqueId={selectedBoutique}>
         <div className="space-y-8">
           <div>
             <h1 className="text-4xl font-bold">Boutiques</h1>
@@ -56,7 +56,7 @@ export default function BoutiqueDashboard() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold mb-2">
-                  Get Started with StyleSwap
+                  Get Started with ThatOne
                 </h2>
                 <p className="text-muted-foreground max-w-md mx-auto">
                   Register your boutique to start offering virtual try-ons to
@@ -80,7 +80,7 @@ export default function BoutiqueDashboard() {
 
 
   return (
-    <DashboardLayout>
+    <DashboardLayout variant="boutique" boutiqueId={selectedBoutique}>
       <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
@@ -270,7 +270,7 @@ export default function BoutiqueDashboard() {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          navigator.clipboard.writeText(`https://styleswap.co.za/boutique/${currentBoutique.slug}`);
+                          navigator.clipboard.writeText(`https://getthatone.co.za/boutique/${currentBoutique.slug}`);
                           setCopiedUrl(true);
                           setTimeout(() => setCopiedUrl(false), 2000);
                         }}

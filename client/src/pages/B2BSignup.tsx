@@ -138,7 +138,7 @@ export default function B2BSignup() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-center">Welcome to StyleSwap!</CardTitle>
+            <CardTitle className="text-center">Welcome to ThatOne!</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-center">
             <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
@@ -160,7 +160,7 @@ export default function B2BSignup() {
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4">Register Your Boutique</h1>
           <p className="text-xl text-muted-foreground">
-            Join StyleSwap and start boosting your sales with virtual try-ons
+            Join ThatOne and start boosting your sales with virtual try-ons
           </p>
         </div>
 
@@ -435,7 +435,7 @@ export default function B2BSignup() {
                     <Input
                       id="referralCode"
                       name="referralCode"
-                      placeholder="e.g., STYLESWAP-BOUTIQUE-ABC123"
+                      placeholder="e.g., THATONE-BOUTIQUE-ABC123"
                       value={formData.referralCode}
                       onChange={handleInputChange}
                       className="mt-2"

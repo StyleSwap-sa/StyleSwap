@@ -160,7 +160,7 @@ export default function CustomerTutorial() {
     },
     {
       question: "What if I have a different body type?",
-      answer: "StyleSwap works with all body types. The key is taking a clear, full-body photo in fitted clothes for best results.",
+      answer: "ThatOne works with all body types. The key is taking a clear, full-body photo in fitted clothes for best results.",
     },
     {
       question: "Can I use photos from different angles?",
