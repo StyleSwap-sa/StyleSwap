@@ -50,7 +50,7 @@ export function SaveToGalleryButton({
   const { isSaving, isSuccess, error, saveImage, saveCanvas, saveElement, reset } =
     useSaveToGallery();
   const [isOpen, setIsOpen] = useState(false);
-  const [filename, setFilename] = useState('StyleSwap-TryOn');
+  const [filename, setFilename] = useState('ThatOne-TryOn');
   const [format, setFormat] = useState<'png' | 'jpeg'>('png');
   const [watermarkPosition, setWatermarkPosition] = useState<WatermarkPosition>('bottom-right');
   const [watermarkOpacity, setWatermarkOpacity] = useState(0.7);
@@ -165,7 +165,7 @@ export function SaveToGalleryButton({
         <DialogHeader>
           <DialogTitle>Save Try-On to Gallery</DialogTitle>
           <DialogDescription>
-            Your image will be saved with the StyleSwap watermark for branding
+            Your image will be saved with the ThatOne watermark for branding
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -174,7 +174,7 @@ export function SaveToGalleryButton({
             <Label htmlFor="filename">Filename</Label>
             <Input
               id="filename"
-              placeholder="StyleSwap-TryOn"
+              placeholder="ThatOne-TryOn"
               value={filename}
               onChange={(e) => setFilename(e.target.value)}
               disabled={isSaving}
@@ -206,10 +206,10 @@ export function SaveToGalleryButton({
             <div className="mb-4">
               <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
                 <span className="inline-block w-2 h-2 bg-primary rounded-full"></span>
-                StyleSwap Watermark (Always Applied)
+                ThatOne Watermark (Always Applied)
               </h3>
               <p className="text-xs text-muted-foreground mb-4">
-                Every saved image includes the StyleSwap watermark for brand recognition and social sharing.
+                Every saved image includes the ThatOne watermark for brand recognition and social sharing.
               </p>
             </div>
 

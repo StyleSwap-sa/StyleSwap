@@ -244,7 +244,7 @@ export default function SocialSellerDashboard() {
                   <p>✨ Try on our latest collection with AI! 🤖</p>
                   <p>See how our clothes look on YOU before you buy!</p>
                   <p>Link in bio 👆</p>
-                  <p>#VirtualTryOn #StyleSwap #FashionTech</p>
+                  <p>#VirtualTryOn #ThatOne #FashionTech</p>
                 </div>
                 <Button size="sm" variant="outline" className="w-full">
                   <Copy className="w-4 h-4 mr-2" />

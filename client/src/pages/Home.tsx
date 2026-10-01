@@ -25,7 +25,7 @@ export default function Home() {
       if (user?.userType === 'admin' || user?.role === 'admin') {
         setLocation('/admin/dashboard');
       } else if (user?.userType === 'merchant') {
-        setLocation('/boutique/dashboard');
+        setLocation('/b2b/dashboard');
       } else {
         setLocation('/dashboard');
       }
@@ -38,7 +38,7 @@ export default function Home() {
     if (user?.userType === 'admin' || user?.role === 'admin') {
       return '/admin/dashboard';
     } else if (user?.userType === 'merchant') {
-      return '/boutique/dashboard';
+      return '/b2b/dashboard';
     } else {
       return '/dashboard';
     }

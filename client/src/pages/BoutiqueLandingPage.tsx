@@ -80,7 +80,7 @@ export default function BoutiqueLandingPage() {
       <section className="py-20 container mx-auto">
         <div className="max-w-3xl mx-auto text-center space-y-6">
           <div className="inline-block bg-primary/10 border border-primary/30 px-4 py-2 rounded-lg">
-            <span className="text-sm font-semibold text-primary">✨ Virtual Try-On Powered by StyleSwap</span>
+            <span className="text-sm font-semibold text-primary">✨ Virtual Try-On Powered by ThatOne</span>
           </div>
           <h2 className="text-5xl md:text-6xl font-heading font-bold">
             Experience Fashion Your Way
@@ -89,12 +89,9 @@ export default function BoutiqueLandingPage() {
             Try on clothes virtually before you buy. See how our latest collection looks on you with AI-powered virtual fitting room technology.
           </p>
           <div className="flex gap-4 justify-center pt-4">
-            <Button size="lg" className="gap-2" onClick={() => setLocation(`/boutique/${slug}/try-on`)}>
+            <Button size="lg" className="gap-2" onClick={() => setLocation(`/boutique/${slug}/shop`)}>
               <ShoppingBag className="w-5 h-5" />
-              Start Virtual Try-On
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => setLocation(`/boutique/${slug}`)}>
-              Learn More
+              Browse & Try On
             </Button>
           </div>
         </div>
@@ -209,7 +206,7 @@ export default function BoutiqueLandingPage() {
       {/* Footer */}
       <footer className="border-t border-border/20 py-8 bg-background/50">
         <div className="container mx-auto text-center text-sm text-muted-foreground">
-          <p>Powered by StyleSwap Virtual Try-On</p>
+          <p>Powered by ThatOne Virtual Try-On</p>
         </div>
       </footer>
     </div>

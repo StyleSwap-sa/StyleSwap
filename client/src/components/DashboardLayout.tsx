@@ -37,19 +37,20 @@ const customerMenuItems = [
 ];
 
 const boutiqueMenuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/boutique/dashboard" },
-  { icon: Package, label: "Products", path: "/boutique/products" },
-  { icon: Coins, label: "Credits", path: "/boutique/credits" },
-  { icon: Camera, label: "Try-On", path: "/boutique/tryon" },
-  { icon: ShoppingBag, label: "Orders", path: "/boutique/orders" },
-  { icon: Wallet, label: "Payouts", path: "/boutique/payouts" },
-  { icon: BarChart3, label: "Performance", path: "/boutique/performance" },
-  { icon: Settings, label: "Settings", path: "/boutique/settings" },
-  { icon: Sparkles, label: "Features", path: "/boutique/features" },
-  { icon: BookOpen, label: "Tutorial", path: "/boutique/tutorial" },
-  { icon: Store, label: "Shop", path: "/boutique/shop" },
-];
+  { icon: LayoutDashboard, label: "Dashboard", path: "/b2b/dashboard" },
+  { icon: Package, label: "Products", path: "/b2b/products" },
+  { icon: Wallet, label: "Payouts", path: "/b2b/payouts" },
+  { icon: Camera, label: "Try-On", path: "/b2b/tryon" },
+  { icon: ShoppingBag, label: "Orders", path: "/b2b/orders" },
+  { icon: Coins, label: "Credits", path: "/b2b/credits" },
 
+
+];
+//removed for now :
+//  { icon: BarChart3, label: "Performance", path: "/b2b/performance" }
+//  { icon: Sparkles, label: "Features", path: "/b2b/features" }
+//  { icon: BookOpen, label: "Tutorial", path: "/b2b/tutorial" },
+//   { icon: Settings, label: "Settings", path: "/b2b/settings" },
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 280;
 const MIN_WIDTH = 200;
@@ -57,13 +58,17 @@ const MAX_WIDTH = 480;
 
 export default function DashboardLayout({
   children,
-  variant = "customer",
+  variant,
   boutiqueId,
 }: {
   children: React.ReactNode;
   variant?: "customer" | "boutique";
   boutiqueId?: number | null;
 }) {
+  const [location] = useLocation();
+  
+  const effectiveVariant: "customer" | "boutique" =
+    variant ?? (location.startsWith("/b2b") ? "boutique" : "customer");
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
@@ -114,7 +119,7 @@ export default function DashboardLayout({
     >
       <DashboardLayoutContent
         setSidebarWidth={setSidebarWidth}
-        variant={variant}
+        variant={effectiveVariant}
         boutiqueId={boutiqueId}
       >
         {children}
@@ -146,7 +151,7 @@ function DashboardLayoutContent({
         .filter((item) => item.label !== "Settings" || !!boutiqueId)
         .map((item) =>
           item.label === "Settings" && boutiqueId
-            ? { ...item, path: `/boutique/settings/${boutiqueId}` }
+            ? { ...item, path: `/b2b/settings/${boutiqueId}` }
             : item
         )
     : customerMenuItems;

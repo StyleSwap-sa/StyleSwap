@@ -13,8 +13,8 @@ export default function WidgetBuilder() {
   const [containerWidth, setContainerWidth] = useState('100%');
   const [copied, setCopied] = useState(false);
 
-  const embedCode = `<!-- StyleSwap Widget Embed -->
-<div id="styleswap-widget-container"></div>
+  const embedCode = `<!-- ThatOne Widget Embed -->
+<div id="thatone-widget-container"></div>
 
 <script src="/widget.js"><\/script>
 <script>
@@ -24,7 +24,7 @@ export default function WidgetBuilder() {
     productName: "${productName}",
     primaryColor: "${primaryColor}",
     accentColor: "${accentColor}",
-    containerId: "styleswap-widget-container",
+    containerId: "thatone-widget-container",
     onTryOnComplete: function(result) {
       console.log("Try-on completed:", result);
       // Handle try-on result

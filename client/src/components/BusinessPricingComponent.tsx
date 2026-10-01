@@ -123,7 +123,7 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
   const handleSubscribe = async (packageName: string, monthlyPrice: number | null) => {
     if (packageName === "Enterprise Retail Pro") {
       // For enterprise, open email link
-      window.location.href = 'mailto:sales@styleswap.co.za?subject=Enterprise%20Retail%20Pro%20Inquiry&body=I%20am%20interested%20in%20the%20Enterprise%20Retail%20Pro%20package%20with%20more%20than%2020,000%20credits.';
+      window.location.href = 'mailto:sales@thatone.co.za?subject=Enterprise%20Retail%20Pro%20Inquiry&body=I%20am%20interested%20in%20the%20Enterprise%20Retail%20Pro%20package%20with%20more%20than%2020,000%20credits.';
       return;
     }
 

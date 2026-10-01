@@ -35,7 +35,7 @@ import {
   revokeApiKey,
   getApiKeyStats,
 } from "../db.apikeys";
-import { z } from "zod";
+
 
 /**
  * Boutique Management Router
@@ -579,8 +579,8 @@ export const boutiquesRouter = router({
           body: JSON.stringify({
             amount: input.amount,
             currency: input.currency,
-            successUrl: `${baseUrl}/boutique-credits/${input.boutiqueId}?success=true`,
-            cancelUrl: `${baseUrl}/boutique-credits/${input.boutiqueId}?cancelled=true`,
+            successUrl: `${baseUrl}/b2b/credits?success=true`,
+            cancelUrl: `${baseUrl}/b2b/credits?cancelled=true`,
             metadata: {
               boutiqueId: input.boutiqueId.toString(),
               credits: input.credits.toString(),

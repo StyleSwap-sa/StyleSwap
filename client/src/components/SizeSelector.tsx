@@ -65,7 +65,7 @@ export function SizeSelector({
             <div className="flex gap-3 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
               <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-blue-900 dark:text-blue-100">
-                <strong>StyleSwap uses AI to visually simulate clothing on your photo.</strong> Fit appearance may vary depending on brand, fabric, and cut. Always select the size you usually wear and use the try-on as a visual guide.
+                <strong>ThatOne uses AI to visually simulate clothing on your photo.</strong> Fit appearance may vary depending on brand, fabric, and cut. Always select the size you usually wear and use the try-on as a visual guide.
               </p>
             </div>
 

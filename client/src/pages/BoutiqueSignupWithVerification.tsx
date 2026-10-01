@@ -155,7 +155,7 @@ export default function BoutiqueSignupWithVerification() {
             <CardHeader>
               <CardTitle>Create Your Boutique Account</CardTitle>
               <CardDescription>
-                Join StyleSwap and start offering AI-powered virtual try-ons to your customers
+                Join ThatOne and start offering AI-powered virtual try-ons to your customers
               </CardDescription>
             </CardHeader>
             <CardContent>

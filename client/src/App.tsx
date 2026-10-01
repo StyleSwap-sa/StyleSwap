@@ -217,21 +217,24 @@ export default function App() {
   <Route path="/developer" component={DeveloperPortal} />
   <Route path="/body-models" component={BodyModels} />
   
-  {/* Boutique routes */}
-  <Route path="/boutique/dashboard" component={BoutiqueDashboard} />
-  <Route path="/boutique/products" component={ProductManagement} />
-  <Route path="/boutique/credits" component={BoutiqueCredits} />
-  <Route path="/boutique/settings/:boutiqueId" component={BoutiqueSettings} />
-  <Route path="/boutique/tryon" component={BoutiqueTryOnPage} />
-  <Route path="/boutique/orders" component={BoutiqueOrderDashboard} />
-  <Route path="/boutique/payouts" component={BoutiquePayoutDashboard} />
-  <Route path="/boutique/performance" component={BoutiquePerformanceExport} />
-  <Route path="/boutique/features" component={BoutiqueFeatures} />
-  <Route path="/boutique/tutorial" component={BoutiqueTutorial} />
-  <Route path="/boutique/shop" component={BoutiqueShop} />
-  <Route path="/boutique/:boutiqueId/widget" component={WidgetDashboard} />
-  <Route path="/boutique/signup" component={BoutiqueSignupWithVerification} />
+  {/* Public boutique routes (slug-based, anonymous access) */}
+  <Route path="/boutique/:slug/shop" component={BoutiqueShop} />
   <Route path="/boutique/:slug" component={BoutiqueLandingPage} />
+
+  {/* Owner boutique dashboard (id-based, authenticated) */}
+  <Route path="/b2b/dashboard" component={BoutiqueDashboard} />
+  <Route path="/b2b/products" component={ProductManagement} />
+  <Route path="/b2b/credits" component={BoutiqueCredits} />
+  <Route path="/b2b/settings/:boutiqueId" component={BoutiqueSettings} />
+  <Route path="/b2b/tryon" component={BoutiqueTryOnPage} />
+  <Route path="/b2b/orders" component={BoutiqueOrderDashboard} />
+  <Route path="/b2b/payouts" component={BoutiquePayoutDashboard} />
+  <Route path="/b2b/performance" component={BoutiquePerformanceExport} />
+  <Route path="/b2b/features" component={BoutiqueFeatures} />
+  <Route path="/b2b/tutorial" component={BoutiqueTutorial} />
+  <Route path="/b2b/:boutiqueId/widget" component={WidgetDashboard} />
+  <Route path="/b2b/signup" component={BoutiqueSignupWithVerification} />
+  <Route path="/b2b" component={B2BLanding} />
   
   {/* Admin routes */}
   <Route path="/admin/dashboard" component={AdminDashboard} />

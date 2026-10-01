@@ -94,7 +94,7 @@ export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Welcome to StyleSwap</DialogTitle>
+          <DialogTitle>Welcome to ThatOne</DialogTitle>
           <DialogDescription>
             Sign in or create an account to start trying on clothes virtually.
           </DialogDescription>

@@ -15,17 +15,17 @@ export default function WidgetDashboard() {
   const widgetId = `widget_${boutiqueId}_${Date.now()}`;
 
   // Generate widget code
-  const widgetCode = `<!-- StyleSwap Virtual Try-On Widget -->
-<div id="styleswap-widget"></div>
+  const widgetCode = `<!-- ThatOne Virtual Try-On Widget -->
+<div id="thatone-widget"></div>
 <script>
-  window.StyleSwapWidget = {
+  window.ThatOneWidget = {
     widgetId: '${widgetId}',
-    containerId: 'styleswap-widget',
+    containerId: 'thatone-widget',
     primaryColor: '#FF6B35',
     accentColor: '#004E89'
   };
 </script>
-<script src="https://styleswap.co.za/styleswap-widget.js"></script>`;
+<script src="https://thatone.co.za/thatone-widget.js"></script>`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(widgetCode);
@@ -36,7 +36,7 @@ export default function WidgetDashboard() {
   const downloadCode = () => {
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(widgetCode));
-    element.setAttribute('download', 'styleswap-widget.html');
+    element.setAttribute('download', 'thatone-widget.html');
     element.style.display = 'none';
     document.body.appendChild(element);
     element.click();

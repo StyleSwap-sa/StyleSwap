@@ -93,7 +93,7 @@ export async function saveCanvasToGallery(
   options: SaveOptions = {}
 ): Promise<void> {
   const {
-    filename = `StyleSwap-${new Date().getTime()}.png`,
+    filename = `ThatOne-${new Date().getTime()}.png`,
     format = 'png',
     quality = 0.95,
     watermark,
@@ -126,7 +126,7 @@ export async function saveImageToGallery(
   options: SaveOptions = {}
 ): Promise<void> {
   const {
-    filename = `StyleSwap-${new Date().getTime()}.png`,
+    filename = `ThatOne-${new Date().getTime()}.png`,
     format = 'png',
     quality = 0.95,
     watermark,
@@ -211,7 +211,7 @@ export async function saveElementToGallery(
  * Generate filename with timestamp
  */
 export function generateFilename(
-  prefix: string = 'StyleSwap',
+  prefix: string = 'ThatOne',
   format: 'png' | 'jpeg' = 'png'
 ): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
@@ -299,7 +299,7 @@ export async function copyImageToClipboard(blob: Blob): Promise<void> {
 export async function shareImage(
   blob: Blob,
   filename: string,
-  title: string = 'My StyleSwap Try-On'
+  title: string = 'My ThatOne Try-On'
 ): Promise<void> {
   try {
     if (!navigator.share) {
@@ -311,7 +311,7 @@ export async function shareImage(
     await navigator.share({
       files: [file],
       title,
-      text: 'Check out my virtual try-on with StyleSwap!',
+      text: 'Check out my virtual try-on with ThatOne!',
     });
   } catch (error) {
     if ((error as Error).name === 'AbortError') {

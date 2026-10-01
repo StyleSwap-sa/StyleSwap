@@ -190,7 +190,7 @@ export function BusinessPricingSection({
                 </ul>
                 {plan.isEnterprise ? (
                   <a 
-                    href="mailto:sales@styleswap.co.za?subject=Enterprise%20Retail%20Pro%20Inquiry&body=I%20am%20interested%20in%20the%20Enterprise%20Retail%20Pro%20package%20for%20StyleSwap."
+                    href="mailto:sales@thatone.co.za?subject=Enterprise%20Retail%20Pro%20Inquiry&body=I%20am%20interested%20in%20the%20Enterprise%20Retail%20Pro%20package%20for%20ThatOne."
                     className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded inline-block text-center disabled:opacity-50"
                   >
                     Contact Sales

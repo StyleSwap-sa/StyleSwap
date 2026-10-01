@@ -1,67 +1,93 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { Heart, Share2, ShoppingBag, Sparkles, Search, Filter, Loader2, MapPin, Phone, Mail, Instagram, Facebook, MessageCircle, ShoppingCart } from "lucide-react";
+import {
+  Heart,
+  Share2,
+  ShoppingBag,
+  Sparkles,
+  Search,
+  Loader2,
+  Instagram,
+  Facebook,
+  MessageCircle,
+  ShoppingCart,
+} from "lucide-react";
 import { OrderCheckoutModal } from "@/components/OrderCheckoutModal";
 
-interface Product {
+type Product = {
   id: number;
+  boutiqueId: number;
   name: string;
-  image: string;
-  price: number;
+  sku: string | null;
+  description: string | null;
   category: string;
-  description?: string;
-}
+  imageUrl: string;
+  price: string | null;
+  currency: string | null;
+  isActive: number | null;
+  hasSizeVariants: number | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+};
+
+const formatPrice = (price: string | number | null | undefined) => {
+  if (price === null || price === undefined) return "—";
+  const n = typeof price === "string" ? parseFloat(price) : price;
+  return isNaN(n) ? "—" : `R${n.toFixed(2)}`;
+};
 
 export default function BoutiqueShop() {
   const { slug } = useParams<{ slug: string }>();
   const [, navigate] = useLocation();
-  const { user, isAuthenticated } = useAuth();
-  
+  const { isAuthenticated } = useAuth();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [checkoutProduct, setCheckoutProduct] = useState<Product | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  // Fetch boutique details
-  const { data: boutique, isLoading: boutiqueLoding } = trpc.boutiques.getBySlug.useQuery(
-    { slug: slug || "" },
-    { enabled: !!slug }
-  );
+  const { data: boutique, isLoading: boutiqueLoading } =
+    trpc.boutiques.getBySlug.useQuery(
+      { slug: slug || "" },
+      { enabled: !!slug }
+    );
 
-  // Fetch boutique products
-  const { data: products = [], isLoading: productsLoading } = trpc.boutiques.getBoutiqueProducts.useQuery(
-    { boutiqueId: boutique?.id || 0 },
-    { enabled: !!boutique?.id }
-  );
+  const { data: products = [], isLoading: productsLoading } =
+    trpc.products.getByBoutiquePublic.useQuery(
+      { boutiqueId: boutique?.id || 0, activeOnly: true },
+      { enabled: !!boutique?.id }
+    );
 
-  const filteredProducts = products.filter((p: Product) => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || p.category === selectedCategory;
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch = p.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      !selectedCategory || p.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = Array.from(new Set(products.map((p: Product) => p.category)));
+  const categories = Array.from(new Set(products.map((p) => p.category)));
 
   const handleTryOn = (product: Product) => {
     if (!isAuthenticated) {
       window.location.href = getLoginUrl();
       return;
     }
-    setSelectedProduct(product);
-    // Navigate to try-on with product context
     navigate(`/customer-try-on?boutique=${boutique?.id}&product=${product.id}`);
   };
 
   const toggleFavorite = (productId: number) => {
     setFavorites((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
     );
   };
 
@@ -70,7 +96,7 @@ export default function BoutiqueShop() {
     if (navigator.share) {
       navigator.share({
         title: boutique?.name || "Boutique",
-        text: `Check out ${boutique?.name} on StyleSwap!`,
+        text: `Check out ${boutique?.name} on ThatOne!`,
         url,
       });
     } else {
@@ -79,7 +105,7 @@ export default function BoutiqueShop() {
     }
   };
 
-  if (boutiqueLoding) {
+  if (boutiqueLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -93,7 +119,9 @@ export default function BoutiqueShop() {
         <Card className="max-w-md">
           <CardContent className="pt-6 text-center">
             <h2 className="text-2xl font-bold mb-2">Boutique Not Found</h2>
-            <p className="text-muted-foreground mb-4">The boutique you're looking for doesn't exist.</p>
+            <p className="text-muted-foreground mb-4">
+              The boutique you're looking for doesn't exist.
+            </p>
             <Button onClick={() => navigate("/")} variant="outline">
               Go Home
             </Button>
@@ -109,43 +137,33 @@ export default function BoutiqueShop() {
       <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border-b">
         <div className="container mx-auto px-4 py-12">
           <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
-            {/* Boutique Logo/Image */}
-            {boutique.logo && (
+            {boutique.logoUrl && (
               <img
-                src={boutique.logo}
+                src={boutique.logoUrl}
                 alt={boutique.name}
                 className="w-24 h-24 rounded-lg object-cover"
               />
             )}
 
-            {/* Boutique Info */}
             <div className="flex-1">
               <h1 className="text-4xl font-bold mb-2">{boutique.name}</h1>
-              <p className="text-muted-foreground mb-4">{boutique.description}</p>
+              <p className="text-muted-foreground mb-4">
+                {boutique.description}
+              </p>
 
-              {/* Contact Info */}
               <div className="flex flex-wrap gap-4 mb-4">
-                {boutique.location && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="w-4 h-4" />
-                    <span>{boutique.location}</span>
-                  </div>
-                )}
-                {boutique.phone && (
-                  <a href={`tel:${boutique.phone}`} className="flex items-center gap-2 text-sm hover:text-primary">
-                    <Phone className="w-4 h-4" />
-                    <span>{boutique.phone}</span>
-                  </a>
-                )}
-                {boutique.email && (
-                  <a href={`mailto:${boutique.email}`} className="flex items-center gap-2 text-sm hover:text-primary">
-                    <Mail className="w-4 h-4" />
-                    <span>{boutique.email}</span>
+                {boutique.websiteUrl && (
+                  <a
+                    href={boutique.websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm hover:text-primary"
+                  >
+                    {boutique.websiteUrl}
                   </a>
                 )}
               </div>
 
-              {/* Social Media Links */}
               <div className="flex gap-3">
                 {boutique.instagramHandle && (
                   <a
@@ -189,10 +207,8 @@ export default function BoutiqueShop() {
 
       {/* Products Section */}
       <div className="container mx-auto px-4 py-12">
-        {/* Search and Filter */}
         <div className="mb-8 space-y-4">
           <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
               <input
@@ -204,7 +220,6 @@ export default function BoutiqueShop() {
               />
             </div>
 
-            {/* Category Filter */}
             {categories.length > 0 && (
               <div className="flex gap-2 flex-wrap">
                 <Button
@@ -217,7 +232,9 @@ export default function BoutiqueShop() {
                 {categories.map((category) => (
                   <Button
                     key={category}
-                    variant={selectedCategory === category ? "default" : "outline"}
+                    variant={
+                      selectedCategory === category ? "default" : "outline"
+                    }
                     size="sm"
                     onClick={() => setSelectedCategory(category)}
                   >
@@ -228,13 +245,12 @@ export default function BoutiqueShop() {
             )}
           </div>
 
-          {/* Results Count */}
           <p className="text-sm text-muted-foreground">
-            {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""} found
+            {filteredProducts.length} product
+            {filteredProducts.length !== 1 ? "s" : ""} found
           </p>
         </div>
 
-        {/* Products Grid */}
         {productsLoading ? (
           <div className="flex items-center justify-center h-96">
             <Loader2 className="w-8 h-8 animate-spin" />
@@ -243,16 +259,20 @@ export default function BoutiqueShop() {
           <div className="text-center py-12">
             <ShoppingBag className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No products found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filters</p>
+            <p className="text-muted-foreground">
+              Try adjusting your search or filters
+            </p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product: Product) => (
-              <Card key={product.id} className="premium-card overflow-hidden hover:shadow-lg transition">
-                {/* Product Image */}
+            {filteredProducts.map((product) => (
+              <Card
+                key={product.id}
+                className="premium-card overflow-hidden hover:shadow-lg transition"
+              >
                 <div className="relative aspect-square bg-muted overflow-hidden">
                   <img
-                    src={product.image}
+                    src={product.imageUrl}
                     alt={product.name}
                     className="w-full h-full object-cover hover:scale-105 transition"
                   />
@@ -262,26 +282,32 @@ export default function BoutiqueShop() {
                   >
                     <Heart
                       className={`w-5 h-5 ${
-                        favorites.includes(product.id) ? "fill-red-500 text-red-500" : "text-muted-foreground"
+                        favorites.includes(product.id)
+                          ? "fill-red-500 text-red-500"
+                          : "text-muted-foreground"
                       }`}
                     />
                   </button>
                 </div>
 
-                {/* Product Info */}
                 <CardContent className="p-4">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
                     {product.category}
                   </p>
-                  <h3 className="font-bold mb-2 line-clamp-2">{product.name}</h3>
+                  <h3 className="font-bold mb-2 line-clamp-2">
+                    {product.name}
+                  </h3>
                   {product.description && (
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{product.description}</p>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {product.description}
+                    </p>
                   )}
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-lg font-bold">R{product.price.toFixed(2)}</span>
+                    <span className="text-lg font-bold">
+                      {formatPrice(product.price)}
+                    </span>
                   </div>
 
-                  {/* Try On and Buy Now Buttons */}
                   <div className="flex gap-2">
                     <Button
                       onClick={() => handleTryOn(product)}
@@ -313,7 +339,6 @@ export default function BoutiqueShop() {
         )}
       </div>
 
-      {/* Checkout Modal */}
       {checkoutProduct && boutique && (
         <OrderCheckoutModal
           isOpen={isCheckoutOpen}
@@ -321,62 +346,24 @@ export default function BoutiqueShop() {
             setIsCheckoutOpen(false);
             setCheckoutProduct(null);
           }}
-          product={checkoutProduct}
+          product={
+            {
+              ...checkoutProduct,
+              price: Number(checkoutProduct.price ?? 0),
+            } as any
+          }
           boutiqueId={boutique.id}
           quantity={1}
         />
       )}
 
-      {/* Footer */}
       <div className="bg-muted/50 border-t mt-12">
         <div className="container mx-auto px-4 py-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* About */}
-            <div>
-              <h4 className="font-bold mb-3">About {boutique.name}</h4>
-              <p className="text-sm text-muted-foreground">{boutique.description}</p>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h4 className="font-bold mb-3">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="text-muted-foreground hover:text-primary transition">
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-muted-foreground hover:text-primary transition">
-                    Contact
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-muted-foreground hover:text-primary transition">
-                    Privacy Policy
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Newsletter */}
-            <div>
-              <h4 className="font-bold mb-3">Stay Updated</h4>
-              <p className="text-sm text-muted-foreground mb-3">Subscribe for new collections and offers</p>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  className="flex-1 px-3 py-2 border border-input rounded text-sm bg-background"
-                />
-                <Button size="sm">Subscribe</Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Copyright */}
-          <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>© {new Date().getFullYear()} {boutique.name}. All rights reserved. Powered by StyleSwap</p>
+          <div className="text-center text-sm text-muted-foreground">
+            <p>
+              © {new Date().getFullYear()} {boutique.name}. All rights reserved.
+              Powered by ThatOne
+            </p>
           </div>
         </div>
       </div>

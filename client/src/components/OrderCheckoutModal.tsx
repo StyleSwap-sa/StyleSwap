@@ -75,7 +75,7 @@ export function OrderCheckoutModal({
         customerPhone: formData.customerPhone,
         notes: formData.notes,
         successUrl: `${window.location.origin}/order-confirmation`,
-        cancelUrl: `${window.location.origin}/boutique/${boutiqueId}/shop`,
+        cancelUrl: `${window.location.origin}/`,
       });
 
       if (result.checkoutUrl) {

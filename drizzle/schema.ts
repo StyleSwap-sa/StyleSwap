@@ -67,13 +67,13 @@ export const boutiques = pgTable(
 		slug: varchar({ length: 255 }).unique().notNull(),
 		description: text(),
 		// Map to actual database column names
-		logo: varchar("logoUrl", { length: 500 }),
+		logoUrl: varchar("logoUrl", { length: 500 }),
 		ownerId: integer().notNull().references(() => users.id),
-		website: varchar("websiteUrl", { length: 500 }),
-		instagram: varchar("instagramHandle", { length: 255 }),
-		tiktok: varchar("tiktokHandle", { length: 255 }),
-		facebook: varchar("facebookUrl", { length: 500 }),
-		whatsapp: varchar("whatsappNumber", { length: 255 }),
+		websiteUrl: varchar("websiteUrl", { length: 500 }),
+		instagramHandle: varchar("instagramHandle", { length: 255 }),
+		tiktokHandle: varchar("tiktokHandle", { length: 255 }),
+		facebookUrl: varchar("facebookUrl", { length: 500 }),
+		whatsappNumber: varchar("whatsappNumber", { length: 255 }),
 		// 🔥 ADD THIS - status column
 		status: varchar("status", { length: 20 }).default("active").notNull(),
 		createdAt: timestamp({ mode: "string" })

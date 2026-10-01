@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import {
   createProduct,
   getProductById,
@@ -286,7 +286,14 @@ export const productsRouter = router({
 
       return { success: true };
     }),
-
+getByBoutiquePublic: publicProcedure
+  .input(z.object({
+    boutiqueId: z.number(),
+    activeOnly: z.boolean().optional().default(true),
+  }))
+  .query(async ({ input }) => {
+    return await getProductsByBoutique(input.boutiqueId, input.activeOnly);
+  }),
   /**
    * Upload product image to S3
    */
@@ -342,4 +349,6 @@ export const productsRouter = router({
 
       return { success: true, url: uploadResult.url };
     }),
+
+    
 });

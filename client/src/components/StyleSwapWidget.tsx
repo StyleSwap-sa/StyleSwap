@@ -112,7 +112,7 @@ export const StyleSwapWidget: React.FC<StyleSwapWidgetProps> = ({
     if (tryOnResult) {
       const link = document.createElement('a');
       link.href = tryOnResult.imageUrl;
-      link.download = `styleswap-tryon-${Date.now()}.png`;
+      link.download = `thatone-tryon-${Date.now()}.png`;
       link.click();
     }
   };
@@ -120,7 +120,7 @@ export const StyleSwapWidget: React.FC<StyleSwapWidgetProps> = ({
   const shareResult = () => {
     if (tryOnResult && navigator.share) {
       navigator.share({
-        title: 'StyleSwap Try-On',
+        title: 'ThatOne Try-On',
         text: `Check out my try-on with ${productName}!`,
         url: window.location.href,
       });

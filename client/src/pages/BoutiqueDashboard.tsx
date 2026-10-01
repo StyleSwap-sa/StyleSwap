@@ -91,7 +91,7 @@ export default function BoutiqueDashboard() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Link href="/boutique/products">
+            <Link href="/b2b/products">
               <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Product
@@ -173,7 +173,7 @@ export default function BoutiqueDashboard() {
 
             {/* Quick Actions */}
             <div className="grid md:grid-cols-4 gap-6">
-              <Link href="/boutique/products">
+              <Link href="/b2b/products">
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
                     <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
@@ -187,7 +187,7 @@ export default function BoutiqueDashboard() {
                 </Card>
               </Link>
 
-              <Link href="/boutique/tryon">
+              <Link href="/b2b/tryon">
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
                     <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
@@ -218,7 +218,7 @@ export default function BoutiqueDashboard() {
 
 
 
-              <Link href={`/boutique/${selectedBoutique}/widget`}>
+              <Link href={`/b2b/${selectedBoutique}/widget`}>
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
                     <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
@@ -232,7 +232,7 @@ export default function BoutiqueDashboard() {
                 </Card>
               </Link>
 
-              <Link href={`/boutique/settings/${selectedBoutique}`}>
+              <Link href={`/b2b/settings/${selectedBoutique}`}>
                 <Card className="premium-card cursor-pointer hover:shadow-lg transition">
                   <CardContent className="pt-6">
                     <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 text-primary">
@@ -258,13 +258,13 @@ export default function BoutiqueDashboard() {
                   <div className="border-b pb-6">
                     <h4 className="font-bold mb-3">🎁 Free Landing Page</h4>
                     <p className="text-sm text-muted-foreground mb-4">
-                      {currentBoutique.website 
+                      {currentBoutique.websiteUrl 
                         ? "You have a website. You can also use this free landing page to share on social media:"
                         : "Since you don't have a website, we've created a free landing page for you!"}
                     </p>
                     <div className="flex items-center gap-2 bg-muted/50 p-3 rounded border border-border">
                       <code className="text-xs flex-1 overflow-x-auto">
-                        styleswap.co.za/boutique/{currentBoutique.slug}
+                        thatone.co.za/boutique/{currentBoutique.slug}
                       </code>
                       <Button
                         size="sm"
@@ -288,32 +288,32 @@ export default function BoutiqueDashboard() {
                   </div>
 
                   {/* Social Media Links */}
-                  {(currentBoutique.instagram || currentBoutique.tiktok || currentBoutique.facebook || currentBoutique.whatsapp) && (
+                  {(currentBoutique.instagramHandle || currentBoutique.tiktokHandle || currentBoutique.facebookUrl || currentBoutique.whatsappNumber) && (
                     <div>
                       <h4 className="font-bold mb-3">📱 Connected Social Media</h4>
                       <div className="space-y-2">
-                        {currentBoutique.instagram && (
+                        {currentBoutique.instagramHandle && (
                           <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                             <Instagram className="w-4 h-4 text-pink-600" />
-                            <span className="text-sm">{currentBoutique.instagram}</span>
+                            <span className="text-sm">{currentBoutique.instagramHandle}</span>
                           </div>
                         )}
-                        {currentBoutique.tiktok && (
+                        {currentBoutique.tiktokHandle && (
                           <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                             <Music className="w-4 h-4" />
-                            <span className="text-sm">{currentBoutique.tiktok}</span>
+                            <span className="text-sm">{currentBoutique.tiktokHandle}</span>
                           </div>
                         )}
-                        {currentBoutique.facebook && (
+                        {currentBoutique.facebookUrl && (
                           <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                             <Facebook className="w-4 h-4 text-blue-600" />
                             <span className="text-sm">Facebook</span>
                           </div>
                         )}
-                        {currentBoutique.whatsapp && (
+                        {currentBoutique.whatsappNumber && (
                           <div className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                             <MessageCircle className="w-4 h-4 text-green-600" />
-                            <span className="text-sm">{currentBoutique.whatsapp}</span>
+                            <span className="text-sm">{currentBoutique.whatsappNumber }</span>
                           </div>
                         )}
                       </div>
@@ -337,13 +337,13 @@ export default function BoutiqueDashboard() {
             </Card>
 
             {/* Getting Started */}
-            <Card className="premium-card bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">
+            <Card className="premium-card bg-linear-to-r from-primary/10 to-secondary/10 border-primary/30">
               <CardHeader>
                 <CardTitle>Getting Started</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold shrink-0">
                     1
                   </div>
                   <div>
@@ -354,7 +354,7 @@ export default function BoutiqueDashboard() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold shrink-0">
                     2
                   </div>
                   <div>
@@ -365,7 +365,7 @@ export default function BoutiqueDashboard() {
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold shrink-0">
                     3
                   </div>
                   <div className="flex-1">

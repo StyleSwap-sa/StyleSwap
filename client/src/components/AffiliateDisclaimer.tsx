@@ -13,23 +13,23 @@ export function AffiliateDisclaimer() {
       <CardContent>
         <div className="space-y-4 text-sm text-amber-900 dark:text-amber-100">
           <p className="font-semibold">
-            StyleSwap Commission Policy
+            ThatOne Commission Policy
           </p>
           <p>
-            <strong>StyleSwap will receive 7.5% commission for purchases originating from the StyleSwap platform.</strong>
+            <strong>ThatOne will receive 7.5% commission for purchases originating from the ThatOne platform.</strong>
           </p>
           <div className="space-y-2 border-t border-amber-200 pt-4 dark:border-amber-900">
             <p>
               This commission is earned when:
             </p>
             <ul className="list-inside space-y-1 pl-2">
-              <li>• A customer uses StyleSwap's virtual try-on feature</li>
+              <li>• A customer uses ThatOne's virtual try-on feature</li>
               <li>• The customer purchases clothing through an affiliate tracking link</li>
               <li>• The boutique/retailer is on a premium tier (Retailer Pro, Enterprise Retail, or Enterprise Retail Pro)</li>
             </ul>
           </div>
           <p className="text-xs italic">
-            By using StyleSwap's affiliate tracking links, you acknowledge and agree to this commission structure.
+            By using ThatOne's affiliate tracking links, you acknowledge and agree to this commission structure.
           </p>
         </div>
       </CardContent>
