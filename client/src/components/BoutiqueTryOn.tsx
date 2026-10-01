@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Loader2, Check, AlertCircle, Download, Share2, Info, Sparkles, Globe} from "lucide-react";
+import { Upload, Loader2, Check, AlertCircle, Download, Sparkles, Globe } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getImageDimensions, resizeImage } from "@/lib/imageUtils";
 import { toast } from "./ui/use-toast";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 interface TryOnResult {
   taskId: string;
   resultImageUrl: string;
@@ -29,10 +30,8 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
   // State for uploads
   const [modelPhoto, setModelPhoto] = useState<File | null>(null);
   const [modelPhotoPreview, setModelPhotoPreview] = useState<string>("");
-  const [modelPhotoDimensions, setModelPhotoDimensions] = useState<{ width: number; height: number } | null>(null);
   const [clothImage, setClothImage] = useState<File | null>(null);
   const [clothImagePreview, setClothImagePreview] = useState<string>("");
-  const [clothImageDimensions, setClothImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
@@ -43,7 +42,6 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
   const [isSaving, setIsSaving] = useState(false);
   
   const styleOptions = ["Casual", "Formal", "Sports", "Business", "Party", "Beach", "Streetwear"];
-      
   
   // State for processing
   const [isLoading, setIsLoading] = useState(false);
@@ -56,9 +54,6 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
   const [error, setError] = useState<string>("");
   const [warning, setWarning] = useState<string>("");
   
-  // State for test mode
-  const [testMode, setTestMode] = useState(false);
-  
   // Refs
   const modelPhotoInputRef = useRef<HTMLInputElement>(null);
   const clothImageInputRef = useRef<HTMLInputElement>(null);
@@ -68,26 +63,20 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
   const POLLING_TIMEOUT_MS = 150000; // 2.5 minutes max
 
   // Fetch boutique credits
-  const { data: credits, refetch: refetchCredits } =
-    trpc.tryon.getCredits.useQuery();
+  const { data: credits, refetch: refetchCredits } = trpc.tryon.getCredits.useQuery();
 
-  // Refetch credits on component mount
   useEffect(() => {
     refetchCredits();
   }, [refetchCredits]);
 
-  // Create try-on mutation
   const createTryOnMutation = trpc.tryon.boutiqueCreateTryOn.useMutation();
-  
-  // Refund credits mutation
   const refundCreditsMutation = trpc.tryon.refundTryOnCredits.useMutation();
-  
-  // Get try-on status query
+  const saveToFeedMutation = trpc.tryon.saveTryOnResult.useMutation();
+
   const getTryOnStatusQuery = trpc.tryon.pollTryOnStatus.useQuery(
     { taskId: currentTaskId || "" },
     { enabled: !!currentTaskId && isPolling, refetchInterval: 2000 }
   );
-  const saveToFeedMutation = trpc.tryon.saveTryOnResult.useMutation();
 
   const handleSaveToFeed = () => {
     setSaveTitle("My Summer Look");
@@ -97,9 +86,9 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
 
   const handleSaveConfirm = async () => {
     if (!result) {
-        setError("No try-on result available to save.");
-        return;
-      }
+      setError("No try-on result available to save.");
+      return;
+    }
     if (!saveTitle.trim()) {
       toast({ title: "Please enter a title", variant: "destructive" });
       return;
@@ -122,8 +111,6 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
     }
   };
 
-
-  // Handle model photo upload
   const handleModelPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -132,16 +119,6 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
     setWarning("");
 
     setModelPhoto(file);
-
-    // Get dimensions
-    try {
-      const dimensions = await getImageDimensions(file);
-      setModelPhotoDimensions(dimensions);
-    } catch (err) {
-      console.error("Failed to get image dimensions:", err);
-    }
-
-    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setModelPhotoPreview(e.target?.result as string);
@@ -149,7 +126,6 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
     reader.readAsDataURL(file);
   };
 
-  // Handle clothing image upload
   const handleClothImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -161,162 +137,101 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
     setLowerClothImage(null);
     setLowerClothImagePreview("");
 
-    // Try to get dimensions
-    try {
-      const dimensions = await getImageDimensions(file);
-      setClothImageDimensions(dimensions);
-    } catch (err) {
-      console.error("Failed to get image dimensions:", err);
-    }
-
-    // Create preview
-    try {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setClothImagePreview(e.target?.result as string);
-      };
-      reader.onerror = () => {
-        console.error("Failed to read clothing image");
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      console.error("Error reading file:", err);
-    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setClothImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
-  // Handle lower clothing image upload (combo mode)
   const handleLowerClothImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setLowerClothImage(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setLowerClothImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
-    // Try to get dimensions
-    try {
-      const dimensions = await getImageDimensions(file);
-    } catch (err) {
-      console.error("Failed to get image dimensions:", err);
+  const validateAndResizeImage = async (file: File, maxDimension: number = 2048): Promise<File> => {
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error(`Image too large. Max 5MB. Your image is ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+    }
+    
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      throw new Error(`Invalid format: ${file.type}. Use JPEG, PNG, or WebP`);
+    }
+    
+    const dimensions = await getImageDimensions(file);
+    if (dimensions.width > maxDimension || dimensions.height > maxDimension) {
+      const resizedBlob = await resizeImage(file, maxDimension);
+      return new File([resizedBlob], file.name, { type: 'image/jpeg' });
+    }
+    
+    return file;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!modelPhoto || !clothImage) {
+      setError("Please upload both body photo and clothing image");
+      return;
     }
 
-    // Create preview
+    setIsLoading(true);
+    setError("");
+    setWarning("");
+
     try {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setLowerClothImagePreview(e.target?.result as string);
-      };
-      reader.onerror = () => {
-        console.error("Failed to read lower clothing image");
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      console.error("Error reading file:", err);
+      setProcessingProgress(10);
+      const validatedModelPhoto = await validateAndResizeImage(modelPhoto, 2048);
+      
+      setProcessingProgress(20);
+      const validatedClothImage = await validateAndResizeImage(clothImage, 1024);
+      
+      let validatedLowerClothImage = null;
+      if (clothType === "combo" && lowerClothImage) {
+        setProcessingProgress(30);
+        validatedLowerClothImage = await validateAndResizeImage(lowerClothImage, 1024);
+      }
+      
+      setProcessingProgress(40);
+      const modelBase64 = await fileToBase64(validatedModelPhoto);
+      const clothBase64 = await fileToBase64(validatedClothImage);
+      let lowerClothBase64 = null;
+
+      if (clothType === "combo" && validatedLowerClothImage) {
+        lowerClothBase64 = await fileToBase64(validatedLowerClothImage);
+      }
+
+      setProcessingProgress(50);
+
+      const response = await createTryOnMutation.mutateAsync({
+        modelImageBase64: modelBase64,
+        clothImageBase64: clothBase64,
+        lowerClothImageBase64: lowerClothBase64 || undefined,
+        clothType,
+        boutiqueId,
+      });
+
+      setCurrentTaskId(response.taskId);
+      setIsPolling(true);
+      setProcessingProgress(0);
+      pollingStartTimeRef.current = Date.now();
+
+    } catch (err: any) {
+      console.error("[Try-On] Error:", err);
+      setError(err.message || "Failed to create try-on");
+      setIsLoading(false);
+      setProcessingProgress(0);
     }
   };
-  
 
-  // Add these helper functions inside your component (before handleSubmit)
-
-// Validate and resize image before processing
-const validateAndResizeImage = async (file: File, maxDimension: number = 2048): Promise<File> => {
-  // Check file size (max 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    throw new Error(`Image too large. Max 5MB. Your image is ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
-  }
-  
-  // Check format
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  if (!validTypes.includes(file.type)) {
-    throw new Error(`Invalid format: ${file.type}. Use JPEG, PNG, or WebP`);
-  }
-  
-  // Get dimensions
-  const dimensions = await getImageDimensions(file);
-  console.log(`[Image Validation] Original dimensions: ${dimensions.width}x${dimensions.height}`);
-  
-  // Resize if too large
-  if (dimensions.width > maxDimension || dimensions.height > maxDimension) {
-    console.log(`[Image Validation] Resizing image from ${dimensions.width}x${dimensions.height} to max ${maxDimension}px`);
-    const resizedBlob = await resizeImage(file, maxDimension);
-    const resizedFile = new File([resizedBlob], file.name, { type: 'image/jpeg' });
-    
-    // Get new dimensions
-    const newDimensions = await getImageDimensions(resizedFile);
-    console.log(`[Image Validation] Resized dimensions: ${newDimensions.width}x${newDimensions.height}`);
-    return resizedFile;
-  }
-  
-  return file;
-};
-
-// Updated handleSubmit
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  if (!modelPhoto || !clothImage) {
-    setError("Please upload both body photo and clothing image");
-    return;
-  }
-
-  setIsLoading(true);
-  setError("");
-  setWarning("");
-
-  try {
-    // Validate and resize images before processing
-    setProcessingProgress(10);
-    console.log("[Try-On] Validating and resizing model photo...");
-    const validatedModelPhoto = await validateAndResizeImage(modelPhoto, 2048);
-    
-    setProcessingProgress(20);
-    console.log("[Try-On] Validating and resizing clothing image...");
-    const validatedClothImage = await validateAndResizeImage(clothImage, 1024);
-    
-    let validatedLowerClothImage = null;
-    if (clothType === "combo" && lowerClothImage) {
-      setProcessingProgress(30);
-      console.log("[Try-On] Validating and resizing lower clothing image...");
-      validatedLowerClothImage = await validateAndResizeImage(lowerClothImage, 1024);
-    }
-    
-    setProcessingProgress(40);
-    console.log("[Try-On] Converting images to base64...");
-    
-    // Convert files to base64 (without prefix)
-    const modelBase64 = await fileToBase64(validatedModelPhoto);
-    const clothBase64 = await fileToBase64(validatedClothImage);
-    let lowerClothBase64 = null;
-
-    if (clothType === "combo" && validatedLowerClothImage) {
-      lowerClothBase64 = await fileToBase64(validatedLowerClothImage);
-    }
-
-    setProcessingProgress(50);
-    console.log("[Try-On] Sending to Fitroom API...");
-
-    // Create try-on with correct parameter names
-    const response = await createTryOnMutation.mutateAsync({
-      modelImageBase64: modelBase64,
-      clothImageBase64: clothBase64,
-      lowerClothImageBase64: lowerClothBase64 || undefined,
-      clothType,
-      boutiqueId,
-      testMode,
-    });
-
-    setCurrentTaskId(response.taskId);
-    setIsPolling(true);
-    setProcessingProgress(0);
-    pollingStartTimeRef.current = Date.now();
-
-  } catch (err: any) {
-    console.error("[Try-On] Error:", err);
-    setError(err.message || "Failed to create try-on");
-    setIsLoading(false);
-    setProcessingProgress(0);
-  }
-};
-
-  // Handle polling
   useEffect(() => {
     if (!getTryOnStatusQuery.data || !isPolling) return;
 
@@ -332,7 +247,6 @@ const handleSubmit = async (e: React.FormEvent) => {
       setIsLoading(false);
       setProcessingProgress(100);
 
-      // Clear form
       setModelPhoto(null);
       setModelPhotoPreview("");
       setClothImage(null);
@@ -340,10 +254,8 @@ const handleSubmit = async (e: React.FormEvent) => {
       setLowerClothImage(null);
       setLowerClothImagePreview("");
 
-      // Refetch credits
       refetchCredits();
 
-      // Clear polling
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
       }
@@ -352,18 +264,15 @@ const handleSubmit = async (e: React.FormEvent) => {
       setIsPolling(false);
       setIsLoading(false);
 
-      // Refund credits
       if (currentTaskId) {
         refundCreditsMutation.mutate({ taskId: currentTaskId });
       }
 
-      // Refetch credits
       refetchCredits();
     } else if (status.status === "PROCESSING") {
       setProcessingProgress(Math.min(status.progress || 0, 95));
     }
 
-    // Check timeout
     if (pollingStartTimeRef.current) {
       const elapsedTime = Date.now() - pollingStartTimeRef.current;
       if (elapsedTime > POLLING_TIMEOUT_MS) {
@@ -371,34 +280,28 @@ const handleSubmit = async (e: React.FormEvent) => {
         setIsPolling(false);
         setIsLoading(false);
 
-        // Refund credits
         if (currentTaskId) {
           refundCreditsMutation.mutate({ taskId: currentTaskId });
         }
 
-        // Refetch credits
         refetchCredits();
       }
     }
   }, [getTryOnStatusQuery.data, isPolling]);
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+    });
+  };
 
-  // Helper function to convert file to base64 (without prefix)
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Remove the data:image/...;base64, prefix
-      const base64 = result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = reject;
-  });
-};
-
-  // Handle download
   const handleDownload = async () => {
     if (!result) return;
 
@@ -418,7 +321,6 @@ const fileToBase64 = (file: File): Promise<string> => {
     }
   };
 
-  // Handle reset
   const handleReset = () => {
     setResult(null);
     setModelPhoto(null);
@@ -434,8 +336,8 @@ const fileToBase64 = (file: File): Promise<string> => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Credits Display */}
+    <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
+      {/* Credits Banner */}
       <Card className="bg-primary/5 border-primary/30">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
@@ -450,22 +352,26 @@ const fileToBase64 = (file: File): Promise<string> => {
 
       {/* Result Display */}
       {result && (
-        <Card className="border-primary/30">
+        <Card className="border-green-500/30 bg-green-50 dark:bg-green-950/20">
           <CardHeader>
-            <CardTitle>Try-On Result</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-green-600" />
+              Try-On Complete!
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <img
               src={result.resultImageUrl}
               alt="Try-on result"
-              className="w-full rounded-lg border border-border"
+              className="w-full rounded-lg border border-border shadow-lg"
             />
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-col sm:flex-row">
               <Button onClick={handleDownload} className="flex-1">
                 <Download className="w-4 h-4 mr-2" />
                 Download
               </Button>
               <Button onClick={handleReset} variant="outline" className="flex-1">
+                <Sparkles className="w-4 h-4 mr-2" />
                 Try Another
               </Button>
               <Button onClick={handleSaveToFeed} variant="outline">
@@ -476,55 +382,57 @@ const fileToBase64 = (file: File): Promise<string> => {
           </CardContent>
         </Card>
       )}
+
+      {/* Share Dialog */}
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Share to Global Feed</DialogTitle>
-                  <DialogDescription>
-                    Share your try-on result with the StyleSwap community
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      value={saveTitle}
-                      onChange={(e) => setSaveTitle(e.target.value)}
-                      placeholder="My Summer Look"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="style">Style Category</Label>
-                    <select
-                      id="style"
-                      value={saveStyle}
-                      onChange={(e) => setSaveStyle(e.target.value)}
-                      className="w-full px-3 py-2 border border-input rounded-md bg-background"
-                    >
-                      {styleOptions.map((style) => (
-                        <option key={style} value={style}>
-                          {style}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <DialogFooter className="flex gap-2 sm:justify-end">
-                  <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSaveConfirm} disabled={isSaving}>
-                    {isSaving ? "Saving..." : "Share to Feed"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Share to Global Feed</DialogTitle>
+            <DialogDescription>
+              Share your try-on result with the StyleSwap community
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={saveTitle}
+                onChange={(e) => setSaveTitle(e.target.value)}
+                placeholder="My Summer Look"
+                className="w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="style">Style Category</Label>
+              <select
+                id="style"
+                value={saveStyle}
+                onChange={(e) => setSaveStyle(e.target.value)}
+                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+              >
+                {styleOptions.map((style) => (
+                  <option key={style} value={style}>
+                    {style}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2 sm:justify-end">
+            <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveConfirm} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Share to Feed"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Processing State */}
       {isLoading && (
-        <Card className="border-primary/30">
+        <Card className="border-primary/30 bg-primary/5">
           <CardContent className="pt-6 space-y-4">
             <div className="flex items-center justify-center gap-3">
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -537,7 +445,7 @@ const fileToBase64 = (file: File): Promise<string> => {
               />
             </div>
             <p className="text-sm text-muted-foreground text-center">
-              {processingProgress}% complete
+              {Math.round(processingProgress)}% complete
             </p>
           </CardContent>
         </Card>
@@ -575,9 +483,9 @@ const fileToBase64 = (file: File): Promise<string> => {
           {/* Clothing Type Selector */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Select Clothing Type</CardTitle>
+              <CardTitle className="text-lg">Select Clothes</CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Choose which type of garment you're testing
+                Select the type of clothing you want to try on
               </p>
             </CardHeader>
             <CardContent>
@@ -623,7 +531,7 @@ const fileToBase64 = (file: File): Promise<string> => {
             <CardHeader>
               <CardTitle className="text-lg">1. Upload Model Photo</CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
-                Full-body photo, front view (recommended: 2048px height)
+                Full-body photo, front view
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -652,11 +560,6 @@ const fileToBase64 = (file: File): Promise<string> => {
                     alt="Model preview"
                     className="w-full rounded-lg border border-border"
                   />
-                  {modelPhotoDimensions && (
-                    <p className="text-sm text-muted-foreground">
-                      Dimensions: {modelPhotoDimensions.width} × {modelPhotoDimensions.height}px
-                    </p>
-                  )}
                 </div>
               )}
             </CardContent>
@@ -698,11 +601,6 @@ const fileToBase64 = (file: File): Promise<string> => {
                     alt="Clothing preview"
                     className="w-full rounded-lg border border-border"
                   />
-                  {clothImageDimensions && (
-                    <p className="text-sm text-muted-foreground">
-                      Dimensions: {clothImageDimensions.width} × {clothImageDimensions.height}px
-                    </p>
-                  )}
                 </div>
               )}
             </CardContent>
@@ -745,35 +643,6 @@ const fileToBase64 = (file: File): Promise<string> => {
                     />
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Test Mode Toggle */}
-          <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-            <CardHeader>
-              <CardTitle className="text-base">Test Mode</CardTitle>
-              <p className="text-sm text-muted-foreground mt-2">
-                Generate try-ons without using credits
-              </p>
-            </CardHeader>
-            <CardContent>
-              <Button
-                type="button"
-                onClick={() => setTestMode(!testMode)}
-                variant={testMode ? "default" : "outline"}
-                className="w-full"
-              >
-                <p className="font-semibold text-blue-900">{testMode ? "✓ Enabled" : "Disabled"}</p>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Test Mode Active Notice */}
-          {testMode && (
-            <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
-              <CardContent className="pt-6">
-                <p className="text-green-900 font-semibold">✓ Test Mode Active - Credits will not be deducted</p>
               </CardContent>
             </Card>
           )}

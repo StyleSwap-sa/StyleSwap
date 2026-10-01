@@ -54,8 +54,6 @@ export default function BoutiqueTryOnPage() {
     );
   }
 
-  const currentBoutique = boutiques.find((b) => b.id === selectedBoutiqueId);
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -96,25 +94,6 @@ export default function BoutiqueTryOnPage() {
             </CardContent>
           </Card>
         )}
-
-        {/* Info Card */}
-        <Card className="bg-primary/5 border-primary/30">
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              <h3 className="font-semibold">How to Test Try-Ons</h3>
-              <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                <li>Select the clothing type (Top, Bottom, Full Dress, or Top & Bottom)</li>
-                <li>Upload a model photo (full-body, front view)</li>
-                <li>Upload your clothing item image</li>
-                <li>For Top & Bottom, upload both top and bottom images</li>
-                <li>Click "Generate Try-On" to see the result</li>
-              </ol>
-              <p className="text-xs text-muted-foreground mt-4">
-                Each try-on uses 1 credit. Make sure you have enough credits available.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Try-On Component */}
         {selectedBoutiqueId && (

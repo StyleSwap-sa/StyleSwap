@@ -304,7 +304,7 @@ export default function WidgetDashboard() {
             <div>
               <h3 className="font-semibold mb-2">What if I need help?</h3>
               <p className="text-sm text-muted-foreground">
-                Contact our support team at support@styleswap.co.za or use the chat in your dashboard.
+                Contact our support team at support@thatone.co.za or use the chat in your dashboard.
               </p>
             </div>
           </CardContent>
