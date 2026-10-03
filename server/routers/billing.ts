@@ -94,14 +94,17 @@ export const billingRouter = router({
 
     const baseUrl = ENV.oAuthPortalUrl || "https://thatone.co.za";
 
-    // Create payment intent using existing function
+    // Merchants (with a boutiqueId) return to the B2B dashboard.
+    // Customers return to the customer dashboard.
+    const returnPath = boutiqueId ? "/b2b/dashboard" : "/dashboard";
+
     const paymentIntent = await createPaymentIntent({
       userId,
       packageId: `pkg_${creditAmount}_credits`,
       userEmail: ctx.user.email || "",
       userName: ctx.user.name || "Customer",
-      successUrl: `${baseUrl}/dashboard?payment=success&credits=${creditAmount}`,
-      cancelUrl: `${baseUrl}/dashboard?payment=cancelled`,
+      successUrl: `${baseUrl}${returnPath}?payment=success&credits=${creditAmount}`,
+      cancelUrl: `${baseUrl}${returnPath}?payment=cancelled`,
     });
 
     // If boutiqueId exists, create a pending transaction record
