@@ -3,6 +3,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import { TrendingUp, Zap, Plus, Settings, Download, Loader2, Copy, Check, Instagram, Music, Facebook, MessageCircle, Sparkles, Code2 } from "lucide-react";
 import { Link } from "wouter";
 import { BatchUploadComponent } from "@/components/BatchUploadComponent";
@@ -27,6 +28,25 @@ export default function BoutiqueDashboard() {
       setSelectedBoutique(boutiques[0].id);
     }
   }, [boutiques, selectedBoutique]);
+
+  const { data: credits, isLoading: creditsLoading, refetch: refetchCredits } = 
+      trpc.tryon.getCredits.useQuery();
+
+  useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      const paymentStatus = params.get('payment');
+      const credits = params.get('credits');
+      
+      if (paymentStatus === 'success' && credits) {
+        toast.success(`🎉 Payment successful! ${credits} credits added.`);
+        // Remove query params
+        window.history.replaceState({}, '', window.location.pathname);
+        refetchCredits();
+      } else if (paymentStatus === 'cancelled') {
+        toast.info('Payment was cancelled.');
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }, [refetchCredits]);
 
   if (boutiquesLoading) {
     return (

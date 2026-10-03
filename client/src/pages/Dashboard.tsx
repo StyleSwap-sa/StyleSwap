@@ -36,7 +36,7 @@ export default function Dashboard() {
     if (isAdmin) {
       setLocation('/admin/dashboard');
     } else if (isMerchant) {
-      setLocation('/boutique/dashboard');
+      setLocation('/b2b/dashboard');
     }
   }, [isAuthenticated, user, setLocation]);
 
