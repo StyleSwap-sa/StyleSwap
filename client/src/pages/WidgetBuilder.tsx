@@ -18,7 +18,7 @@ export default function WidgetBuilder() {
 
 <script src="/widget.js"><\/script>
 <script>
-  StyleSwapWidget.init({
+  ThatOneWidget.init({
     apiKey: "${apiKey}",
     productId: "${productId}",
     productName: "${productName}",

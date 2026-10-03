@@ -25,7 +25,7 @@ interface LoginOptionsModalProps {
 function getDashboardPathForUser(user: { userType?: string; role?: string } | null | undefined) {
   if (!user) return "/dashboard";
   if (user.userType === "admin" || user.role === "admin") return "/admin/dashboard";
-  if (user.userType === "merchant") return "/boutique/dashboard";
+  if (user.userType === "merchant") return "/b2b/dashboard";
   return "/dashboard";
 }
 

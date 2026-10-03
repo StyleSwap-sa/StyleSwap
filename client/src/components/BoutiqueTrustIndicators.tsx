@@ -87,7 +87,7 @@ export function BoutiqueTrustIndicators({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>This boutique has been verified by StyleSwap</p>
+            <p>This boutique has been verified by ThatOne</p>
             {boutique.verifiedAt && (
               <p className="text-xs">Verified on {new Date(boutique.verifiedAt).toLocaleDateString()}</p>
             )}

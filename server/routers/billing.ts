@@ -92,7 +92,7 @@ export const billingRouter = router({
       });
     }
 
-    const baseUrl = ENV.oAuthPortalUrl || "https://styleswap.co.za";
+    const baseUrl = ENV.oAuthPortalUrl || "https://thatone.co.za";
 
     // Create payment intent using existing function
     const paymentIntent = await createPaymentIntent({

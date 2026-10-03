@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, Loader2, Check, AlertCircle, Download, Sparkles, Globe } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getImageDimensions, resizeImage } from "@/lib/imageUtils";
+import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
 import { toast } from "./ui/use-toast";
 import {
   Dialog,
@@ -35,6 +36,8 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
   const [clothType, setClothType] = useState<"upper" | "lower" | "combo" | "full">("upper");
   const [lowerClothImage, setLowerClothImage] = useState<File | null>(null);
   const [lowerClothImagePreview, setLowerClothImagePreview] = useState<string>("");
+
+  const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
@@ -389,7 +392,7 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
           <DialogHeader>
             <DialogTitle>Share to Global Feed</DialogTitle>
             <DialogDescription>
-              Share your try-on result with the StyleSwap community
+              Share your try-on result with the ThatOne community
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -667,6 +670,33 @@ export function BoutiqueTryOn({ boutiqueId }: BoutiqueTryOnProps) {
           </Button>
         </form>
       )}
+      {credits && (
+              <Card className="bg-muted/50">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Remaining Credits</p>
+                      <p className="text-2xl font-bold">{credits.remainingCredits}</p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsCreditModalOpen(true)}>
+      
+                      Buy More Credits
+      
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+      <CreditPurchaseModal
+              isOpen={isCreditModalOpen}
+              onClose={() => setIsCreditModalOpen(false)}
+              onPurchaseSuccess={() => {
+                refetchCredits();
+                setIsCreditModalOpen(false);
+              }}
+            />  
     </div>
   );
 }

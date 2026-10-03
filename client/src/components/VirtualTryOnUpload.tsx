@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { resizeImage, validateImageForFitroom, formatFileSize, getImageDimensions, optimizeImageForFitroom, splitDressImage, cropBottomClothing, cropTopClothing } from "@/lib/imageUtils";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { SaveToGalleryButton } from "@/components/SaveToGalleryButton";
+import { CreditPurchaseModal } from "@/components/CreditPurchaseModal";
 import ARTryOn from "@/pages/ARTryOn";
 import { toast } from "./ui/use-toast";
 import {
@@ -40,6 +41,8 @@ export function VirtualTryOnUpload() {
   const [hdMode, setHdMode] = useState(false);
   const [showImageGuidelines, setShowImageGuidelines] = useState(false);
   const [showQualityDetails, setShowQualityDetails] = useState(false);
+
+  const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
@@ -797,7 +800,13 @@ useEffect(() => {
                 <p className="text-sm text-muted-foreground">Remaining Credits</p>
                 <p className="text-2xl font-bold">{credits.remainingCredits}</p>
               </div>
-              <Button variant="outline">Buy More Credits</Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsCreditModalOpen(true)}>
+
+                Buy More Credits
+
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -811,6 +820,15 @@ useEffect(() => {
           </CardContent>
         </Card>
       )}
+      <CreditPurchaseModal
+        isOpen={isCreditModalOpen}
+        onClose={() => setIsCreditModalOpen(false)}
+        onPurchaseSuccess={() => {
+          refetchCredits();
+          setIsCreditModalOpen(false);
+        }}
+      />      
     </div>
+    
   );
 }
