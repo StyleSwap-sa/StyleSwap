@@ -92,10 +92,8 @@ export const billingRouter = router({
       });
     }
 
-    const baseUrl = ENV.oAuthPortalUrl || "https://thatone.co.za";
+    const baseUrl = (ENV.oAuthPortalUrl || "https://thatone.co.za").replace(/\/+$/, "");
 
-    // Merchants (with a boutiqueId) return to the B2B dashboard.
-    // Customers return to the customer dashboard.
     const returnPath = boutiqueId ? "/b2b/dashboard" : "/dashboard";
 
     const paymentIntent = await createPaymentIntent({
