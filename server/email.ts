@@ -51,7 +51,7 @@ export function generatePurchaseConfirmationEmail(
               <p>Valid for: 30 days from today</p>
             </div>
             <p>You can now start using your credits to create virtual try-ons! Visit your dashboard to get started.</p>
-            <p style="margin-top: 20px; color: #666;">If you have any questions, please contact us at info@styleswap.co.za</p>
+            <p style="margin-top: 20px; color: #666;">If you have any questions, please contact us at info@getthatone.co.za</p>
           </div>
           <div class="footer">
             <p>&copy; 2026 StyleSwap. All rights reserved.</p>
@@ -136,8 +136,8 @@ export function generateCreditsExpiringEmail(
               <p><strong>⚠️ Reminder:</strong> You have <strong>${remainingCredits} try-ons</strong> remaining that will expire on <strong>${expiryDate}</strong>.</p>
             </div>
             <p>Don't miss out! Use your remaining credits before they expire to create virtual try-ons.</p>
-            <p>You can renew your subscription anytime to continue enjoying StyleSwap's features.</p>
-            <p style="margin-top: 20px; color: #666;">If you have any questions, please contact us at info@styleswap.co.za</p>
+            <p>You can renew your subscription anytime to continue enjoying ThatOne's features.</p>
+            <p style="margin-top: 20px; color: #666;">If you have any questions, please contact us at info@getthatone.co.za</p>
           </div>
           <div class="footer">
             <p>&copy; 2026 StyleSwap. All rights reserved.</p>

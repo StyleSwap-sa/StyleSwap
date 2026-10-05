@@ -113,8 +113,8 @@ export function Footer() {
               <h4 className="font-bold text-sm uppercase tracking-wider mb-4">Get in Touch</h4>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4 text-primary" />
-                <a href="mailto:info@thatone.co.za" className="hover:text-primary transition">
-                  info@thatone.co.za
+                <a href="mailto:info@getthatone.co.za" className="hover:text-primary transition">
+                  info@getthatone.co.za
                 </a>
               </div>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">

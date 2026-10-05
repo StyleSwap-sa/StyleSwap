@@ -57,9 +57,9 @@ const generateEmailTemplate = (
             <ul>
               <li>Our team will review your message within 24 hours</li>
               <li>We'll respond with personalized information relevant to your needs</li>
-              <li>If you have urgent questions, feel free to reach out to <a href="mailto:info@styleswap.co.za">info@styleswap.co.za</a></li>
+              <li>If you have urgent questions, feel free to reach out to <a href="mailto:info@getthatone.co.za">info@getthatone.co.za</a></li>
             </ul>
-            <p>In the meantime, you can explore our <a href="https://styleswap.co.za/pricing">pricing options</a> and <a href="https://styleswap.co.za/api-docs">API documentation</a>.</p>
+            <p>In the meantime, you can explore our <a href="https://getthatone.co.za/pricing">pricing options</a> and <a href="https://getthatone.co.za/api-docs">API documentation</a>.</p>
             <p>Best regards,<br/>The StyleSwap Team</p>
           </div>
         </div>

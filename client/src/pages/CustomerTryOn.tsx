@@ -6,11 +6,22 @@ import { Loader2 } from "lucide-react";
 
 /**
  * Customer Try-On Dashboard
- * Simple interface for customers to upload body and clothing images
- * No garment catalog - direct upload only
+ * Supports pre-fill from the boutique shop via:
+ *   /customer-try-on?boutique=<id>&product=<id>
  */
 export default function CustomerTryOn() {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  // Read query params for prefill
+  const params =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : new URLSearchParams();
+  const productIdParam = params.get("product");
+  const boutiqueIdParam = params.get("boutique");
+
+  const prefillProductId = productIdParam ? parseInt(productIdParam, 10) : null;
+  const prefillBoutiqueId = boutiqueIdParam ? parseInt(boutiqueIdParam, 10) : null;
 
   if (loading) {
     return (
@@ -50,8 +61,10 @@ export default function CustomerTryOn() {
             </p>
           </div>
 
-          {/* Virtual Try-On Upload Component */}
-          <VirtualTryOnUpload />
+          <VirtualTryOnUpload
+            prefillProductId={prefillProductId}
+            prefillBoutiqueId={prefillBoutiqueId}
+          />
         </div>
       </div>
     </div>

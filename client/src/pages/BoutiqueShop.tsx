@@ -317,7 +317,7 @@ export default function BoutiqueShop() {
                       <Sparkles className="w-4 h-4 mr-2" />
                       Try On
                     </Button>
-                    <Button
+                    {/*<Button
                       onClick={() => {
                         if (!isAuthenticated) {
                           window.location.href = getLoginUrl();
@@ -330,7 +330,7 @@ export default function BoutiqueShop() {
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Buy Now
-                    </Button>
+                    </Button>*/}
                   </div>
                 </CardContent>
               </Card>

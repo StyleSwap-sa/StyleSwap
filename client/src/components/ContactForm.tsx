@@ -89,7 +89,7 @@ export function ContactForm() {
               </div>
               <div>
                 <h3 className="font-bold text-lg mb-1">Email</h3>
-                <p className="text-muted-foreground">info@styleswap.co.za</p>
+                <p className="text-muted-foreground">info@getthatone.co.za</p>
               </div>
             </div>
 

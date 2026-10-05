@@ -25,8 +25,15 @@ interface TryOnResult {
   resultImageUrl: string;
   createdAt: Date;
 }
+interface VirtualTryOnUploadProps {
+  prefillProductId?: number | null;
+  prefillBoutiqueId?: number | null;
+}
 
-export function VirtualTryOnUpload() {
+export function VirtualTryOnUpload({
+  prefillProductId = null,
+  prefillBoutiqueId = null,
+}: VirtualTryOnUploadProps = {}) {
   const [showARTryOn, setShowARTryOn] = useState(false);
   // State for uploads
   const [modelPhoto, setModelPhoto] = useState<File | null>(null);
@@ -43,6 +50,7 @@ export function VirtualTryOnUpload() {
   const [showQualityDetails, setShowQualityDetails] = useState(false);
 
   const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
+  const [userUploadedManually, setUserUploadedManually] = useState(false);
 
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveTitle, setSaveTitle] = useState("");
@@ -82,6 +90,16 @@ export function VirtualTryOnUpload() {
     enabled: isAuthenticated,
   });
 
+  const { data: prefilledProduct } = trpc.products.getById.useQuery(
+    { id: prefillProductId || 0 },
+    { enabled: !!prefillProductId }
+  );
+
+  const { data: prefilledBoutique } = trpc.boutiques.getById.useQuery(
+    { id: prefillBoutiqueId || 0 },
+    { enabled: !!prefillBoutiqueId }
+  );
+
   
   
   const fileToBase64 = (file: File): Promise<string> => {
@@ -115,38 +133,85 @@ export function VirtualTryOnUpload() {
     ? trpc.tryon.boutiqueCreateTryOn.useMutation()
     : trpc.tryon.customerCreateTryOn.useMutation();
 
-  const handleSaveToFeed = () => {
-  setSaveTitle("My Summer Look");
-  setSaveStyle("Casual");
-  setShowSaveDialog(true);
-};
+  useEffect(() => {
+    if (!prefilledProduct) return;
 
-const handleSaveConfirm = async () => {
-   if (!result) {
-      setError("No try-on result available to save.");
+    // Don't clobber a manual upload
+    if (userUploadedManually || clothImage || clothImagePreview) return;
+
+    const loadImageFromUrl = async (url: string) => {
+      try {
+        const res = await fetch(url, { mode: "cors" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        const file = new File([blob], `${prefilledProduct.name}.jpg`, {
+          type: blob.type || "image/jpeg",
+        });
+        setClothImage(file);
+        setClothImagePreview(url);
+      } catch (err) {
+        console.error("[TryOn] Failed to preload product image:", err);
+        // Fallback: still show the preview so the user sees what they picked
+        setClothImagePreview(url);
+        toast({
+          title: "Couldn't auto-load product image",
+          description: "Please upload the clothing image manually.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadImageFromUrl(prefilledProduct.imageUrl);
+
+    // Best-effort guess at cloth type from the category
+    const cat = (prefilledProduct.category || "").toLowerCase();
+    if (cat.includes("dress") || cat.includes("gown") || cat.includes("jumpsuit")) {
+      setClothType("full");
+    } else if (
+      cat.includes("pant") ||
+      cat.includes("jean") ||
+      cat.includes("skirt") ||
+      cat.includes("short") ||
+      cat.includes("trouser")
+    ) {
+      setClothType("lower");
+    } else {
+      setClothType("upper");
+    }
+  }, [prefilledProduct, userUploadedManually, clothImage, clothImagePreview]);
+
+  const handleSaveToFeed = () => {
+    setSaveTitle("My Summer Look");
+    setSaveStyle("Casual");
+    setShowSaveDialog(true);
+  };
+
+  const handleSaveConfirm = async () => {
+    if (!result) {
+        setError("No try-on result available to save.");
+        return;
+      }
+    if (!saveTitle.trim()) {
+      toast({ title: "Please enter a title", variant: "destructive" });
       return;
     }
-  if (!saveTitle.trim()) {
-    toast({ title: "Please enter a title", variant: "destructive" });
-    return;
-  }
-  
-  setIsSaving(true);
-  try {
-    await saveToFeedMutation.mutateAsync({
-      resultImageUrl: result.resultImageUrl,
-      title: saveTitle,
-      style: saveStyle,
-    });
-    toast({ title: "Saved to Global Feed!" });
-    setShowSaveDialog(false);
-  } catch (error) {
-    console.error("Save error:", error);
-    toast({ title: "Failed to save to feed", variant: "destructive" });
-  } finally {
-    setIsSaving(false);
-  }
-};
+    
+    setIsSaving(true);
+    try {
+      await saveToFeedMutation.mutateAsync({
+        resultImageUrl: result.resultImageUrl,
+        title: saveTitle,
+        style: saveStyle,
+      });
+      toast({ title: "Saved to Global Feed!" });
+      setShowSaveDialog(false);
+    } catch (error) {
+      console.error("Save error:", error);
+      toast({ title: "Failed to save to feed", variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
  const handleCreateTryOn = async () => {
   if (!modelPhoto || !clothImage) {
@@ -620,6 +685,7 @@ useEffect(() => {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
+                      setUserUploadedManually(true); 
                       setClothImage(file);
                       const reader = new FileReader();
                       reader.onload = (e) => {
@@ -649,6 +715,29 @@ useEffect(() => {
                       Dimensions: {clothImageDimensions.width} × {clothImageDimensions.height}px
                     </p>
                   )}
+                  {prefilledProduct && !userUploadedManually && (
+                    <div className="flex items-center justify-between gap-2 text-sm bg-primary/5 border border-primary/20 rounded px-3 py-2">
+                      <div className="flex items-center gap-2 text-primary">
+                        <Sparkles className="w-4 h-4" />
+                        <span>
+                          Loaded from {prefilledBoutique?.name || "boutique"}
+                          {prefilledProduct && ` — ${prefilledProduct.name}`}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setUserUploadedManually(true);
+                          setClothImage(null);
+                          setClothImagePreview("");
+                          if (clothImageInputRef.current) clothImageInputRef.current.value = "";
+                        }}
+                      >
+                        Change
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -675,6 +764,7 @@ useEffect(() => {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
+                        setUserUploadedManually(true);
                         setLowerClothImage(file);
                         const reader = new FileReader();
                         reader.onload = (e) => {
