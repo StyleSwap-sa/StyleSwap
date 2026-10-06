@@ -7,6 +7,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { Loader2 } from "lucide-react";
 import CustomerDashboardLayout from "@/components/CustomerDashboardLayout";
+import TryOnFromPinterest from "@/pages/TryOnFromPinterest";
 
 // Eagerly load homepage and auth pages
 import Home from "./pages/Home";
@@ -275,6 +276,7 @@ export default function App() {
   <Route path="/referral/:referralCode" component={ReferralSignup} />
   <Route path="/polls" component={Polls} />
   <Route path="/polls/:pollId" component={Polls} />
+  <Route path="/try-on-from-pinterest" component={TryOnFromPinterest}/>
   
   {/* 404 - must be last */}
   <Route component={NotFound} />

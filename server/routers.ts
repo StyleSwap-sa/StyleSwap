@@ -44,6 +44,7 @@ import { profilesRouter } from "./routers/profiles";
 import { notificationsRouter } from "./routers/notifications";
 import { followsRouter } from "./routers/follows";
 import { promotionalRouter } from "./routers/promotional";
+import { pinterestRouter } from "./routers/pinterest";
 
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -179,6 +180,7 @@ export const appRouter = router({
       }),
   }),
   tryon: tryonRouter,
+  pinterest: pinterestRouter,
   garments: garmentsRouter,
   sharing: sharingRouter,
   payment: paymentRouter,

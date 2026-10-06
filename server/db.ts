@@ -10,6 +10,7 @@ import {
   boutiqueCredits,
   boutiqueTransactions,
   shopOrders,
+  pinterestConnections,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import postgres from "postgres";
@@ -288,6 +289,67 @@ export async function getGarmentById(garmentId: number) {
   if (!db) return undefined;
   const result = await db.select().from(garments).where(eq(garments.id, garmentId)).limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function upsertPinterestConnection(data: {
+  userId: number;
+  accessToken: string;
+  refreshToken?: string | null;
+  expiresAt?: Date | null;
+}) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("[Database] Database connection not available");
+  }
+
+  const values = {
+    userId: data.userId,
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken ?? null,
+    expiresAt: data.expiresAt?.toISOString() ?? null,
+    updatedAt: new Date(),
+  };
+
+  await db
+    .insert(pinterestConnections)
+    .values(values)
+    .onConflictDoUpdate({
+      target: pinterestConnections.userId,
+      set: {
+        accessToken: values.accessToken,
+        refreshToken: values.refreshToken,
+        expiresAt: values.expiresAt,
+        updatedAt: values.updatedAt,
+      },
+    });
+
+  return getPinterestConnection(data.userId);
+}
+
+export async function getPinterestConnection(userId: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("[Database] Database connection not available");
+  }
+
+  const result = await db
+    .select()
+    .from(pinterestConnections)
+    .where(eq(pinterestConnections.userId, userId))
+    .limit(1);
+
+  return result[0] ?? null;
+}
+
+export async function deletePinterestConnection(userId: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("[Database] Database connection not available");
+  }
+
+  await db
+    .delete(pinterestConnections)
+    .where(eq(pinterestConnections.userId, userId));
 }
 
 // ─── TRY-ON RESULTS ──────────────────────────────────────────────────────────

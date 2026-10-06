@@ -6,7 +6,7 @@ import net from "net";
 import multer from "multer";
 import cookieParser from "cookie-parser";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-
+import { verifyPinterestState } from "../routers/pinterest";
 // Clerk middleware removed - using Manus OAuth instead
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -30,6 +30,8 @@ import {
   createUploadRateLimiter,
 } from "./rateLimiter";
 import { initializeWebhookJobs } from "../webhookRetryService";
+import { ENV } from "./env";
+import * as db from "../db";
 
 console.log("DATABASE_URL exists?", !!process.env.DATABASE_URL);
 // Configure multer for file uploads
@@ -44,6 +46,79 @@ export async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   app.use(cookieParser());
+
+  app.get("/api/pinterest/callback", async (req, res) => {
+  try {
+    const { code, state, error } = req.query;
+
+    if (error) {
+      return res.redirect(
+        `/try-on-from-pinterest?error=${encodeURIComponent(String(error))}`
+      );
+    }
+
+    if (!code || !state) {
+      return res.redirect(
+        "/try-on-from-pinterest?error=missing_oauth_parameters"
+      );
+    }
+
+    const { userId } = verifyPinterestState(String(state));
+
+    if (
+      !ENV.pinterestClientId ||
+      !ENV.pinterestClientSecret ||
+      !ENV.pinterestRedirectUri
+    ) {
+      throw new Error("Pinterest OAuth is not configured");
+    }
+
+    const credentials = Buffer.from(
+      `${ENV.pinterestClientId}:${ENV.pinterestClientSecret}`
+    ).toString("base64");
+
+    const tokenResponse = await fetch(
+      "https://api.pinterest.com/v5/oauth/token",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${credentials}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          code: String(code),
+          redirect_uri: ENV.pinterestRedirectUri,
+        }),
+      }
+    );
+
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error("[Pinterest OAuth] Token exchange failed:", errorText);
+      throw new Error("Pinterest token exchange failed");
+    }
+
+    const tokenData = await tokenResponse.json();
+
+    await db.upsertPinterestConnection({
+      userId,
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token ?? null,
+      expiresAt: tokenData.expires_in
+        ? new Date(Date.now() + tokenData.expires_in * 1000)
+        : null,
+    });
+
+    return res.redirect("/try-on-from-pinterest?connected=1");
+  } catch (error) {
+    console.error("[Pinterest OAuth] Callback error:", error);
+
+    return res.redirect(
+      "/try-on-from-pinterest?error=pinterest_connection_failed"
+    );
+  }
+});
 
   // Authentication handled by Manus OAuth in context.ts
 

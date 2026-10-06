@@ -251,6 +251,27 @@ export const products = pgTable(
 		(table) => [index("idx_user_credits_user").on(table.userId)]
 	);
 
+	// Pinterest OAuth Connections
+	export const pinterestConnections = pgTable(
+	"pinterest_connections",
+	{
+		id: serial("id").primaryKey().notNull(),
+		userId: integer("user_id")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+		accessToken: text("access_token").notNull(),
+		refreshToken: text("refresh_token"),
+		expiresAt: timestamp("expires_at", { mode: "string" }),
+		createdAt: timestamp("created_at")
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull(),
+		updatedAt: timestamp("updated_at").defaultNow().notNull(),
+	},
+	(table) => [
+		uniqueIndex("idx_pinterest_connections_user").on(table.userId),
+	]
+	);
+
 // Coupon Redemptions Table
 // Tracks which promo codes each user has redeemed, so a code can only
 // ever be used once per user. The unique index is the real enforcement

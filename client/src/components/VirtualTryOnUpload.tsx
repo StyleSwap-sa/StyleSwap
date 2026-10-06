@@ -28,11 +28,13 @@ interface TryOnResult {
 interface VirtualTryOnUploadProps {
   prefillProductId?: number | null;
   prefillBoutiqueId?: number | null;
+  prefillClothImageUrl?: string | null;
 }
 
 export function VirtualTryOnUpload({
   prefillProductId = null,
   prefillBoutiqueId = null,
+  prefillClothImageUrl = null,
 }: VirtualTryOnUploadProps = {}) {
   const [showARTryOn, setShowARTryOn] = useState(false);
   // State for uploads
@@ -179,6 +181,55 @@ export function VirtualTryOnUpload({
       setClothType("upper");
     }
   }, [prefilledProduct, userUploadedManually, clothImage, clothImagePreview]);
+
+  useEffect(() => {
+  if (!prefillClothImageUrl) return;
+
+  let cancelled = false;
+
+  const loadPinterestImage = async () => {
+    try {
+      const response = await fetch(prefillClothImageUrl);
+
+      if (!response.ok) {
+        throw new Error("Failed to download Pinterest image");
+      }
+
+      const blob = await response.blob();
+
+      const extension =
+        blob.type.split("/")[1]?.split(";")[0] || "jpg";
+
+      const file = new File(
+        [blob],
+        `pinterest-image.${extension}`,
+        {
+          type: blob.type || "image/jpeg",
+        }
+      );
+
+      if (cancelled) return;
+
+      setClothImage(file);
+      setClothImagePreview(URL.createObjectURL(file));
+
+      // Pinterest images are generally best treated as an upper-body
+      // clothing reference for the first MVP.
+      setClothType("upper");
+    } catch (error) {
+      console.error(
+        "[Pinterest] Failed to load selected image:",
+        error
+      );
+    }
+  };
+
+  loadPinterestImage();
+
+  return () => {
+    cancelled = true;
+  };
+}, [prefillClothImageUrl]);
 
   const handleSaveToFeed = () => {
     setSaveTitle("My Summer Look");
