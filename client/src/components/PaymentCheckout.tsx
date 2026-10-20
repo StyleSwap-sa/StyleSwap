@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Loader2, Check, AlertCircle } from "lucide-react";
+import { getAffiliateSlug } from "@/lib/affiliate";
 
 interface PaymentCheckoutProps {
   packageId: string;
@@ -38,8 +39,9 @@ export function PaymentCheckout({
       // Create payment intent
       const checkout = await createCheckoutMutation.mutateAsync({
         packageId,
-        successUrl: `${window.location.origin}/dashboard?tab=overview&payment=success`,
+        successUrl: `${window.location.origin}/dashboard`,
         cancelUrl: `${window.location.origin}/pricing`,
+        affiliateSlug: getAffiliateSlug(),
       });
 
       // In a real implementation, you would redirect to Yoko's payment page

@@ -76,6 +76,9 @@ const RegisterApp = lazy(() => import("./pages/RegisterApp"));
 const BoutiqueSignupWithVerification = lazy(() => import("./pages/BoutiqueSignupWithVerification"));
 const GlobalFeed = lazy(() => import("./pages/GlobalFeed"));
 const Following = lazy(() => import("./pages/Following"));
+const AffiliateDashboard = lazy(() => import("./pages/AffiliateDashboard"));
+const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
+const AffiliateReferralLanding = lazy(() => import("./pages/AffiliateReferralLanding"));
 
 const GlobalFeedWithLayout = () => {
   return (
@@ -90,6 +93,14 @@ const DashboardWithLayout = () => {
   return (
     <CustomerDashboardLayout>
       <Dashboard />
+    </CustomerDashboardLayout>
+  );
+};
+
+const AffiliateDashboardWithLayout = () => {
+  return (
+    <CustomerDashboardLayout>
+      <AffiliateDashboard />
     </CustomerDashboardLayout>
   );
 };
@@ -258,7 +269,9 @@ export default function App() {
   <Route path="/following" component={FollowingWithLayout} />
   
   {/* Other routes */}
-  
+  <Route path="/affiliate" component={AffiliateDashboardWithLayout} />
+  <Route path="/admin/affiliates" component={AdminAffiliates} />
+  <Route path="/a/:slug" component={AffiliateReferralLanding} />
   <Route path="/demo" component={DemoTryOn} />
   <Route path="/checkout" component={Checkout} />
   <Route path="/analytics" component={Analytics} />

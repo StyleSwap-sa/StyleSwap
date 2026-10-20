@@ -29,7 +29,10 @@ export const bankAccountTypeEnum = pgEnum('bank_account_type', ['checking', 'sav
 export const payoutStatusEnum = pgEnum('payout_status', ['pending', 'processing', 'completed', 'failed']);
 export const apiKeyStatusEnum = pgEnum('api_key_status', ['active', 'revoked']);
 export const payoutAuditActorTypeEnum = pgEnum('payout_audit_actor_type', ['system', 'admin', 'boutique']);
-
+export const affiliateStatusEnum = pgEnum('affiliate_status', ['pending','approved','rejected','suspended']);
+export const affiliateCommissionStatusEnum = pgEnum('affiliate_commission_status', ['pending','approved','paid','reversed']);
+export const affiliateTierEnum = pgEnum('affiliate_tier', ['starter','growth','creator']);
+export const affiliatePackageCategoryEnum = pgEnum('affiliate_package_category', ['individual','business']);
 
 export const users = pgTable("users", {
 	id: serial().primaryKey().notNull(),
@@ -439,8 +442,8 @@ export const deletionLogs = pgTable("deletionLogs", {
 export const transactions = pgTable("transactions", {
 	id: serial().primaryKey().notNull(),
 	userId: integer().notNull().references(() => users.id),
-	amount: decimal({ precision: 10, scale: 2 }).notNull(),
-	status: varchar({ length: 50 }).notNull(),
+	amount: integer().notNull(), 
+	status: varchar({ length: 20 }).default("pending"),             
 	reason: varchar({ length: 255 }),
 	createdAt: timestamp({ mode: "string" })
 		.default(sql`CURRENT_TIMESTAMP`)
@@ -812,64 +815,6 @@ export const referralTracking = pgTable("referralTracking", {
 	index("idx_tracking_referrer").on(table.referrerUserId),
 ]);
 
-
-// Affiliate Links Table (for StyleSwap internal tracking)
-export const affiliateLinks = pgTable("affiliateLinks", {
-	id: serial("id").primaryKey(),
-	affiliateName: varchar("affiliateName", { length: 255 }).notNull(), // e.g., "Partner A", "Influencer B"
-	affiliateCode: varchar("affiliateCode", { length: 50 }).notNull().unique(), // Unique tracking code
-	description: text("description"), // Notes about the affiliate
-	commissionRate: decimal("commissionRate", { precision: 5, scale: 2 }).default("7.50").notNull(), // 7.5% default
-	isActive: boolean("isActive").default(true),
-	createdAt: timestamp("createdAt").defaultNow(),
-	updatedAt: timestamp("updatedAt").defaultNow(),
-}, (table) => [
-	index("idx_affiliate_code").on(table.affiliateCode),
-	index("idx_affiliate_active").on(table.isActive),
-]);
-
-// Affiliate Tracking Table (tracks boutique sources)
-export const affiliateTracking = pgTable("affiliateTracking", {
-	id: serial("id").primaryKey(),
-	affiliateLinkId: integer("affiliateLinkId").notNull().references(() => affiliateLinks.id),
-	boutiqueId: integer("boutiqueId").notNull().references(() => boutiques.id),
-	trackingToken: varchar("trackingToken", { length: 255 }).notNull().unique(), // Unique token for this boutique-affiliate pair
-	source: varchar("source", { length: 50 }), // 'direct_link', 'email', 'social_media', etc.
-	ipAddress: varchar("ipAddress", { length: 45 }),
-	userAgent: text("userAgent"),
-	isConverted: boolean("isConverted").default(false), // True when boutique makes first purchase
-	convertedAt: timestamp("convertedAt"),
-	createdAt: timestamp("createdAt").defaultNow(),
-	updatedAt: timestamp("updatedAt").defaultNow(),
-}, (table) => [
-	index("idx_affiliate_tracking_link").on(table.affiliateLinkId),
-	index("idx_affiliate_tracking_boutique").on(table.boutiqueId),
-	index("idx_affiliate_tracking_token").on(table.trackingToken),
-	index("idx_affiliate_tracking_converted").on(table.isConverted),
-]);
-
-	// Affiliate Commission Table (tracks 7.5% commission on clothing purchases)
-export const affiliateCommissions = pgTable("affiliateCommissions", {
-	id: serial("id").primaryKey(),
-	affiliateTrackingId: integer("affiliateTrackingId").notNull().references(() => affiliateTracking.id),
-	affiliateLinkId: integer("affiliateLinkId").notNull().references(() => affiliateLinks.id),
-	boutiqueId: integer("boutiqueId").notNull().references(() => boutiques.id),
-	clothingPurchaseAmount: decimal("clothingPurchaseAmount", { precision: 12, scale: 2 }).notNull(), // Total clothing purchase amount
-	commissionAmount: decimal("commissionAmount", { precision: 12, scale: 2 }).notNull(), // 7.5% of purchase
-	commissionRate: decimal("commissionRate", { precision: 5, scale: 2 }).default("7.50").notNull(), // Always 7.5%
-	externalTransactionId: varchar("externalTransactionId", { length: 255 }), // Reference to external payment system
-	status: varchar("status", { length: 50 }).default("pending").notNull(), // 'pending', 'approved', 'paid'
-	paidAt: timestamp("paidAt"),
-	notes: text("notes"),
-	createdAt: timestamp("createdAt").defaultNow(),
-	updatedAt: timestamp("updatedAt").defaultNow(),
-}, (table) => [
-	index("idx_commission_affiliate").on(table.affiliateLinkId),
-	index("idx_commission_boutique").on(table.boutiqueId),
-	index("idx_commission_status").on(table.status),
-	index("idx_commission_tracking").on(table.affiliateTrackingId),
-]);
-
 // Notifications Table
 export const notifications = pgTable(
   "notifications",
@@ -1123,6 +1068,158 @@ export const feedMetrics = pgTable("feed_metrics", {
   lastUpdated: timestamp("last_updated").defaultNow(),
 });
 
+// ──────────────────────────────────────────────────────────────────────
+// ThatOne Affiliate Programme
+// Column names match live Postgres exactly (snake_case, camelCase for
+// createdAt/updatedAt/appliedAt/approvedAt/clickAt/registeredAt, etc.).
+// Migration source of truth: migrations-manual/affiliate_programme.sql
+// ──────────────────────────────────────────────────────────────────────
+
+export const affiliateLinks = pgTable(
+  "affiliate_links",
+  {
+    id: serial().primaryKey().notNull(),
+    userId: integer("user_id").notNull().references(() => users.id),
+    affiliateCode: varchar("affiliate_code", { length: 64 }).notNull().unique(),
+    referralSlug: varchar("referral_slug", { length: 64 }).unique(),
+    status: affiliateStatusEnum("status").notNull().default("pending"),
+    affiliateName: varchar("affiliate_name", { length: 255 }).notNull(),
+    description: text(),
+    appliedAt: timestamp("applied_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+    approvedAt: timestamp("approved_at", { mode: "string" }),
+    approvedBy: integer("approved_by").references(() => users.id),
+    rejectedReason: text("rejected_reason"),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("idx_affiliate_links_status").on(table.status),
+    index("idx_affiliate_links_user").on(table.userId),
+  ]
+);
+
+export const affiliateTracking = pgTable(
+  "affiliate_tracking",
+  {
+    id: serial().primaryKey().notNull(),
+    affiliateLinkId: integer("affiliate_link_id").notNull().references(() => affiliateLinks.id),
+    trackingToken: varchar("tracking_token", { length: 128 }).notNull().unique(),
+    clickAt: timestamp("click_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+    source: varchar({ length: 50 }),
+    ipAddress: varchar("ip_address", { length: 45 }),
+    userAgent: text("user_agent"),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("idx_affiliate_tracking_link").on(table.affiliateLinkId),
+  ]
+);
+
+export const affiliateAttributions = pgTable(
+  "affiliate_attributions",
+  {
+    id: serial().primaryKey().notNull(),
+    userId: integer("user_id").notNull().unique().references(() => users.id),
+    affiliateLinkId: integer("affiliate_link_id").notNull().references(() => affiliateLinks.id),
+    clickAt: timestamp("click_at", { mode: "string" }).notNull(),
+    registeredAt: timestamp("registered_at", { mode: "string" }).notNull(),
+    commissionWindowEndsAt: timestamp("commission_window_ends_at", { mode: "string" }).notNull(),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("idx_affiliate_attributions_link").on(table.affiliateLinkId),
+  ]
+);
+
+export const affiliateCommissions = pgTable(
+  "affiliate_commissions",
+  {
+    id: serial().primaryKey().notNull(),
+    affiliateLinkId: integer("affiliate_link_id").notNull().references(() => affiliateLinks.id),
+    customerUserId: integer("customer_user_id").notNull().references(() => users.id),
+    attributionId: integer("attribution_id").notNull().references(() => affiliateAttributions.id),
+    packageId: varchar("package_id", { length: 64 }).notNull(),
+    packageCredits: integer("package_credits").notNull(),
+    purchaseCategory: affiliatePackageCategoryEnum("purchase_category").notNull(),
+    qualifyingAmountCents: integer("qualifying_amount_cents").notNull(),
+    currency: varchar({ length: 3 }).notNull().default("ZAR"),
+    appliedRate: numeric("applied_rate", { precision: 5, scale: 2 }).notNull(),
+    commissionAmountCents: integer("commission_amount_cents").notNull(),
+    tier: affiliateTierEnum("tier"),
+    status: affiliateCommissionStatusEnum("status").notNull().default("pending"),
+    sourceType: varchar("source_type", { length: 32 }).notNull(),
+    sourceId: varchar("source_id", { length: 255 }).notNull(),
+    calculationDetails: jsonb("calculation_details").notNull(),
+    approvedAt: timestamp("approved_at", { mode: "string" }),
+    reversedAt: timestamp("reversed_at", { mode: "string" }),
+    reversedReason: text("reversed_reason"),
+    paidAt: timestamp("paid_at", { mode: "string" }),
+    payoutBatchId: integer("payout_batch_id"),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("idx_affiliate_commissions_link").on(table.affiliateLinkId),
+    index("idx_affiliate_commissions_status").on(table.status),
+    unique("uq_affiliate_commissions_source").on(table.sourceType, table.sourceId),
+  ]
+);
+
+export const affiliateSettings = pgTable(
+  "affiliate_settings",
+  {
+    id: serial().primaryKey().notNull(),
+    settingKey: varchar("setting_key", { length: 32 }).notNull().unique().default("default"),
+    starterRate: numeric("starter_rate", { precision: 5, scale: 2 }).notNull().default("10.00"),
+    growthRate: numeric("growth_rate", { precision: 5, scale: 2 }).notNull().default("12.50"),
+    creatorRate: numeric("creator_rate", { precision: 5, scale: 2 }).notNull().default("15.00"),
+    growthMonthlyThreshold: numeric("growth_monthly_threshold", { precision: 12, scale: 2 }).notNull().default("2500.00"),
+    creatorMonthlyThreshold: numeric("creator_monthly_threshold", { precision: 12, scale: 2 }).notNull().default("7500.00"),
+    retailerPackageRate: numeric("retailer_package_rate", { precision: 5, scale: 2 }).notNull().default("5.00"),
+    businessTimezone: varchar("business_timezone", { length: 64 }).notNull().default("Africa/Johannesburg"),
+    updatedAt: timestamp("updated_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedBy: integer("updated_by").references(() => users.id),
+  }
+);
+
+export const affiliateSettingsAudit = pgTable(
+  "affiliate_settings_audit",
+  {
+    id: serial().primaryKey().notNull(),
+    settingKey: varchar("setting_key", { length: 64 }).notNull(),
+    previousValue: text("previous_value"),
+    newValue: text("new_value"),
+    actorId: integer("actor_id").notNull().references(() => users.id),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("idx_affiliate_settings_audit_key").on(table.settingKey, table.createdAt),
+  ]
+);
+
+export const affiliatePayoutBatches = pgTable(
+  "affiliate_payout_batches",
+  {
+    id: serial().primaryKey().notNull(),
+    affiliateLinkId: integer("affiliate_link_id").notNull().references(() => affiliateLinks.id),
+    periodStart: date("period_start").notNull(),
+    periodEnd: date("period_end").notNull(),
+    totalAmountCents: integer("total_amount_cents").notNull(),
+    commissionCount: integer("commission_count").notNull(),
+    status: varchar({ length: 20 }).notNull().default("pending"),
+    markedPaidAt: timestamp("marked_paid_at", { mode: "string" }),
+    markedPaidBy: integer("marked_paid_by").references(() => users.id),
+    notes: text(),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    unique("uq_affiliate_payout_batches_period").on(
+      table.affiliateLinkId,
+      table.periodStart,
+      table.periodEnd
+    ),
+  ]
+);
 
 // Type exports for insert operations
 export type InsertUser = typeof users.$inferInsert;

@@ -65,13 +65,23 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-bold text-foreground mb-2">Platform Admin Dashboard</h1>
             <p className="text-muted-foreground">Monitor your platform's credit usage, boutique subscriptions, and revenue metrics</p>
           </div>
-          <Button
-            onClick={() => setLocation("/admin/credits")}
-            className="flex items-center gap-2 whitespace-nowrap"
-          >
-            <CreditCard className="w-4 h-4" />
-            Manage Credits
-          </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setLocation("/admin/affiliates")}
+                variant="outline"
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                <Users className="w-4 h-4" />
+                Affiliates
+              </Button>
+              <Button
+                onClick={() => setLocation("/admin/credits")}
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                <CreditCard className="w-4 h-4" />
+                Manage Credits
+              </Button>
+            </div>
         </div>
 
         {/* Credit Alert */}

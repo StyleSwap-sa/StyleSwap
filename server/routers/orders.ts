@@ -150,6 +150,7 @@ export const ordersRouter = router({
         // Store order in database with pending status
         const order = await createOrder({
           orderNumber,
+          customerId: ctx.user.id,
           boutiqueId: input.boutiqueId,
           productId: input.productId,
           quantity: input.quantity,

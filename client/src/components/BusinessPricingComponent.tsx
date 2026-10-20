@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
+import { getAffiliateSlug } from "@/lib/affiliate";
 
 interface BusinessPricingComponentProps {
   compact?: boolean; // For hamburger menu display
@@ -142,10 +143,11 @@ export function BusinessPricingComponent({ compact = false }: BusinessPricingCom
       
       const result = await createCheckout.mutateAsync({
         packageId,
-        successUrl: `${window.location.origin}/pricing?success=true`,
-        cancelUrl: `${window.location.origin}/pricing?cancelled=true`,
+        successUrl: `${window.location.origin}/pricing`,
+        cancelUrl: `${window.location.origin}/pricing`,
         amount: finalPrice,
         billingPeriod: billingLabel,
+        affiliateSlug: getAffiliateSlug()
       });
 
       if (result && result.checkoutUrl) {

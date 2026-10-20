@@ -26,9 +26,9 @@ import {
   LogOut, 
   PanelLeft, 
   Shirt, 
-  Heart,  
+  MessageSquareHeartIcon,  
   Globe,
-  History,
+  Gift,
   Bell,
   Users
 } from "lucide-react";
@@ -43,8 +43,10 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Globe, label: "Global Feed", path: "/global-feed" },
   { icon: Shirt, label: "Try On", path: "/try-on" },
+  { icon: MessageSquareHeartIcon, label: "Try On from Pinterest", path: "/try-on-from-pinterest" },
   { icon: Bell, label: "Notifications", path: "/notifications" },
   { icon: Users, label: "Following", path: "/following" },
+   { icon: Gift, label: "Affiliate", path: "/affiliate" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "customer-sidebar-width";

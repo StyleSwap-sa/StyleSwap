@@ -2,7 +2,9 @@ import { ENV } from "./_core/env";
 import { getDb } from "./db";
 import { users, userCredits, transactions } from "../drizzle/schema";
 import { eq, sql } from "drizzle-orm";
-import crypto from 'crypto';
+import { getClassifiedPackage, verifyPackage, CLASSIFIED_PACKAGES } from "./affiliate/package-classification";
+
+export type PackageCategory = "individual" | "business";
 
 export interface PaymentPackage {
   id: string;
@@ -11,9 +13,21 @@ export interface PaymentPackage {
   price: number; // in cents
   currency: string;
   description: string;
+  category: PackageCategory;
 }
 
+
+
 export const PAYMENT_PACKAGES: PaymentPackage[] = [
+   {
+    id: "pkg_5_credits",
+    name: "5 Credit Test",
+    credits: 5,
+    price: 500, // R5.00 in cents
+    currency: "ZAR",
+    description: "Test payment - REMOVE AFTER TESTING",
+    category: "individual"
+  },
   {
     id: "pkg_10_credits",
     name: "10 Try-Ons",
@@ -21,6 +35,7 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     price: 4500, // R45
     currency: "ZAR",
     description: "10 virtual try-on credits valid for 30 days",
+    category: "individual"
   },
   {
     id: "pkg_20_credits",
@@ -29,6 +44,7 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     price: 8000, // R80
     currency: "ZAR",
     description: "20 virtual try-on credits valid for 30 days",
+    category: "individual"  
   },
   {
     id: "pkg_50_credits",
@@ -37,6 +53,7 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     price: 15000, // R150
     currency: "ZAR",
     description: "50 virtual try-on credits valid for 30 days",
+    category: "individual"
   },
   // Business Plans
   {
@@ -46,6 +63,7 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     price: 38500, // R385
     currency: "ZAR",
     description: "100 virtual try-on credits valid for 30 days",
+    category: "business"  
   },
   {
     id: "pkg_200_credits",
@@ -54,6 +72,7 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     price: 75000, // R750
     currency: "ZAR",
     description: "200 virtual try-on credits valid for 30 days",
+    category: "business"
   },
   {
     id: "pkg_500_credits",
@@ -62,6 +81,7 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     price: 135000, // R1350
     currency: "ZAR",
     description: "500 virtual try-on credits valid for 30 days",
+    category: "business"  
   },
   {
     id: "pkg_1000_credits",
@@ -70,6 +90,7 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     price: 220000, // R2200
     currency: "ZAR",
     description: "1000 virtual try-on credits valid for 30 days",
+    category: "business"
   },
   {
     id: "pkg_5000_credits",
@@ -78,6 +99,7 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     price: 625000, // R6250
     currency: "ZAR",
     description: "5000 virtual try-on credits valid for 30 days",
+    category: "business"
   },
   {
     id: "pkg_20000_credits",
@@ -86,6 +108,7 @@ export const PAYMENT_PACKAGES: PaymentPackage[] = [
     price: 1860000, // R18600
     currency: "ZAR",
     description: "20000 virtual try-on credits valid for 30 days",
+    category: "business"
   },
 ];
 
@@ -96,6 +119,7 @@ export interface CreatePaymentIntentRequest {
   userName: string;
   successUrl: string;
   cancelUrl: string;
+  affiliateSlug?: string;   
   amount?: number; // Custom amount for annual billing (10% discount)
   billingPeriod?: 'monthly' | 'annual'; // Track billing period
 }
@@ -124,6 +148,8 @@ export async function createPaymentIntent(
   if (!pkg) {
     throw new Error(`Package not found: ${request.packageId}`);
   }
+  const classified = getClassifiedPackage(pkg.id);
+  if (!classified) throw new Error(`Package ${pkg.id} is not classified`);
 
   if (!ENV.yocoSecretKey || !ENV.yocoApiBaseUrl) {
     throw new Error("Yoco credentials not configured");
@@ -152,6 +178,7 @@ export async function createPaymentIntent(
           userEmail: request.userEmail,
           billingPeriod: billingPeriod,
           discountApplied: billingPeriod === 'annual' ? '10%' : 'none',
+          ...(request.affiliateSlug ? { affiliateSlug: request.affiliateSlug } : {})
         },
         clientReferenceId: `${request.userId}-${request.packageId}-${Date.now()}`,
       }),
@@ -165,6 +192,15 @@ export async function createPaymentIntent(
     const data = await response.json();
     console.log('[Yoko Payment] API Response:', JSON.stringify(data, null, 2));
     
+     // Save the pending checkout so we can recover metadata if Yoco strips it
+    const db = await getDb();
+    if (db) {
+      await db.execute(sql`
+        INSERT INTO pending_checkouts (yoco_checkout_id, user_id, package_id, affiliate_slug)
+        VALUES (${data.id}, ${request.userId}, ${request.packageId}, ${request.affiliateSlug || null})
+      `);
+    }
+
     // Yoco might return the URL in different fields
     const redirectUrl = data.redirectUrl || data.checkout_url || data.url || `https://checkout.yoco.com/${data.id}`;
     
@@ -280,7 +316,7 @@ export async function handlePaymentSuccess(
     // Record transaction
     await db.insert(transactions).values({
       userId,
-      amount: credits.toString(),
+      amount: credits,
       status: "completed",
       reason: `Purchased ${credits} try-on credits via Yoco payment (Order: ${paymentIntentId})`,
     });
@@ -432,5 +468,13 @@ export async function createOrderPaymentIntent(
   } catch (error) {
     console.error("[Yoko Payment] Error creating order payment intent:", error);
     throw error;
+  }
+}
+const _classifiedIds = PAYMENT_PACKAGES.map((p) => p.id);
+const _knownIds = CLASSIFIED_PACKAGES.map((p) => p.id);
+
+for (const id of _classifiedIds) {
+  if (!_knownIds.includes(id)) {
+    throw new Error(`Package "${id}" exists in PAYMENT_PACKAGES but not in CLASSIFIED_PACKAGES`);
   }
 }

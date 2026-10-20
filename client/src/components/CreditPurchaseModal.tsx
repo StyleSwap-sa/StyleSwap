@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, ShoppingCart, Zap, AlertCircle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { getAffiliateSlug } from "@/lib/affiliate";
 
 interface CreditPurchaseModalProps {
   isOpen: boolean;
@@ -45,11 +46,13 @@ export function CreditPurchaseModal({
         result = await initiatePurchase.mutateAsync({
           boutiqueId,
           creditAmount: selectedTier,
+          affiliateSlug: getAffiliateSlug(),
         });
       } else {
         // Customer credit purchase - use userId instead
         result = await initiatePurchase.mutateAsync({
           creditAmount: selectedTier,
+          affiliateSlug: getAffiliateSlug(),
           // No boutiqueId - backend will treat as customer purchase
         });
       }

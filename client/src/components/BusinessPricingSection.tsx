@@ -5,6 +5,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
+import { getAffiliateSlug } from "@/lib/affiliate";
 
 interface BusinessPricingSectionProps {
   title?: string;
@@ -44,8 +45,9 @@ export function BusinessPricingSection({
       
       const result = await createCheckout.mutateAsync({
         packageId,
-        successUrl: `${window.location.origin}/pricing?success=true`,
-        cancelUrl: `${window.location.origin}/pricing?cancelled=true`,
+        successUrl: `${window.location.origin}/pricing`,
+        cancelUrl: `${window.location.origin}/pricing`,
+        affiliateSlug: getAffiliateSlug()
       });
 
       if (result && result.checkoutUrl) {

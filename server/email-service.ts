@@ -351,7 +351,7 @@ export async function sendAdminRegistrationNotification(data: {
   `;
 
   // Send to admin email
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@styleswap.co.za";
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@getthatone.co.za";
   return await sendEmail({
     to: adminEmail,
     subject: `[New Registration] ${data.appName} by ${data.companyName}`,

@@ -1,0 +1,193 @@
+import { useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Copy, Check } from "lucide-react";
+
+export default function AffiliateDashboard() {
+  const { data: me, isLoading: meLoading, refetch: refetchMe } =
+    trpc.affiliate.getMyAffiliate.useQuery();
+  const { data: commissions, isLoading: cLoading } =
+    trpc.affiliate.getMyCommissions.useQuery({ limit: 50 });
+
+  const applyMutation = trpc.affiliate.applyForAffiliate.useMutation({
+    onSuccess: () => refetchMe(),
+  });
+
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  if (meLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin" />
+      </div>
+    );
+  }
+
+  // No affiliate record yet — show application form
+  if (!me) {
+    return (
+      <div className="max-w-xl mx-auto p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Become a ThatOne Affiliate</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Earn 10–15% on every qualifying credit purchase by customers you
+              refer, during their first 90 days. Business packages earn a flat
+              5%. Applications are reviewed by our team.
+            </p>
+            <Input
+              placeholder="Your affiliate display name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <Input
+              placeholder="Short description (optional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <Button
+              disabled={name.trim().length < 2 || applyMutation.isPending}
+              onClick={() =>
+                applyMutation.mutate({
+                  affiliateName: name.trim(),
+                  description: description.trim() || undefined,
+                })
+              }
+              className="w-full"
+            >
+              {applyMutation.isPending ? "Submitting…" : "Apply"}
+            </Button>
+            {applyMutation.error && (
+              <p className="text-sm text-red-500">
+                {applyMutation.error.message}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Pending application
+  if (me.status === "pending") {
+    return (
+      <div className="max-w-xl mx-auto p-6">
+        <Card>
+          <CardHeader><CardTitle>Application pending</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Your application was submitted on{" "}
+              {new Date(me.appliedAt).toLocaleDateString()}. We'll notify you
+              when it's reviewed.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Rejected
+  if (me.status === "rejected") {
+    return (
+      <div className="max-w-xl mx-auto p-6">
+        <Card>
+          <CardHeader><CardTitle>Application not approved</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              {me.rejectedReason || "No reason provided."}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Approved
+  return (
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Affiliate Dashboard</h1>
+        <p className="text-sm text-muted-foreground">
+          Welcome back, {me.affiliateName}
+        </p>
+      </div>
+
+      {me.shareUrl && (
+        <Card>
+          <CardHeader><CardTitle>Your referral link</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex gap-2 items-center bg-muted p-3 rounded border">
+              <code className="text-xs flex-1 truncate">{me.shareUrl}</code>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  navigator.clipboard.writeText(me.shareUrl!);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {(["pending", "approved", "paid", "reversed"] as const).map((s) => (
+          <Card key={s}>
+            <CardContent className="pt-6">
+              <p className="text-xs text-muted-foreground uppercase">{s}</p>
+              <p className="text-2xl font-bold">
+                R{((commissions?.totals[s] ?? 0) / 100).toFixed(2)}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card>
+        <CardHeader><CardTitle>Commission history</CardTitle></CardHeader>
+        <CardContent>
+          {cLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : !commissions?.items.length ? (
+            <p className="text-sm text-muted-foreground">No commissions yet.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left">
+                  <th className="py-2">Date</th>
+                  <th className="py-2">Package</th>
+                  <th className="py-2">Amount</th>
+                  <th className="py-2">Rate</th>
+                  <th className="py-2">Commission</th>
+                  <th className="py-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {commissions.items.map((c) => (
+                  <tr key={c.id} className="border-b">
+                    <td className="py-2">{new Date(c.createdAt).toLocaleDateString()}</td>
+                    <td className="py-2">{c.packageId}</td>
+                    <td className="py-2">R{(c.qualifyingAmountCents / 100).toFixed(2)}</td>
+                    <td className="py-2">{c.appliedRate}%{c.tier ? ` (${c.tier})` : ""}</td>
+                    <td className="py-2">R{(c.commissionAmountCents / 100).toFixed(2)}</td>
+                    <td className="py-2 capitalize">{c.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

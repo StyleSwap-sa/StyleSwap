@@ -77,10 +77,11 @@ export const billingRouter = router({
     z.object({
       boutiqueId: z.number().optional(), // Make optional for customers
       creditAmount: z.number(),
+      affiliateSlug: z.string().max(64).optional(),   
     })
   )
   .mutation(async ({ ctx, input }) => {
-    const { creditAmount, boutiqueId } = input;
+    const { creditAmount, boutiqueId, affiliateSlug } = input;
     const userId = ctx.user.id;
 
     // Validate credit tier
@@ -101,8 +102,9 @@ export const billingRouter = router({
       packageId: `pkg_${creditAmount}_credits`,
       userEmail: ctx.user.email || "",
       userName: ctx.user.name || "Customer",
-      successUrl: `${baseUrl}${returnPath}?payment=success&credits=${creditAmount}`,
-      cancelUrl: `${baseUrl}${returnPath}?payment=cancelled`,
+      successUrl: `${baseUrl}${returnPath}`,
+      cancelUrl: `${baseUrl}${returnPath}`,
+      affiliateSlug,
     });
 
     // If boutiqueId exists, create a pending transaction record

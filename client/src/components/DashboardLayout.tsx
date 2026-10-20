@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Globe, Shirt, Heart, Sparkles, Package, Coins, Camera, ShoppingBag, Wallet, BarChart3, Settings, Store, BookOpen } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Globe, Gift, Heart, Sparkles, Package, Coins, Camera, ShoppingBag, Wallet, MessageSquareHeartIcon } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -31,18 +31,21 @@ import { Button } from "./ui/button";
 const customerMenuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Globe, label: "Global Feed", path: "/global-feed" },
-  { icon: Shirt, label: "My Closet", path: "/closet" },
+  { icon: MessageSquareHeartIcon, label: "Try On from Pinterest", path: "/try-on-from-pinterest" },
   { icon: Heart, label: "Pick My Outfit", path: "/voting" },
   { icon: Sparkles, label: "Discover Outfits", path: "/discover" },
+  { icon: Gift, label: "Affiliate", path: "/affiliate" },
 ];
 
 const boutiqueMenuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/b2b/dashboard" },
   { icon: Package, label: "Products", path: "/b2b/products" },
-  { icon: Wallet, label: "Payouts", path: "/b2b/payouts" },
   { icon: Camera, label: "Try-On", path: "/b2b/tryon" },
+  { icon: MessageSquareHeartIcon, label: "Try On from Pinterest", path: "/try-on-from-pinterest" },
+  { icon: Wallet, label: "Payouts", path: "/b2b/payouts" },
   { icon: ShoppingBag, label: "Orders", path: "/b2b/orders" },
   { icon: Coins, label: "Credits", path: "/b2b/credits" },
+   { icon: Gift, label: "Affiliate", path: "/affiliate" },
 
 
 ];

@@ -1,346 +1,184 @@
 import { z } from "zod";
-
-import { publicProcedure, router, protectedProcedure } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { affiliateLinks, affiliateTracking, affiliateCommissions, boutiques } from "../../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import {
+  affiliateLinks,
+  affiliateAttributions,
+  affiliateTracking,
+  affiliateCommissions,
+} from "../../drizzle/schema";
+import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { handleCommissionStatusUpdate } from "../commission-notifications";
+import { randomBytes } from "crypto";
+import { recordClick } from "../affiliate/attribution";
 
-// Generate unique affiliate code
 function generateAffiliateCode(): string {
-  return `aff_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  return "AFF-" + randomBytes(6).toString("hex").toUpperCase();
 }
 
-// Generate unique tracking token
-function generateTrackingToken(): string {
-  return `track_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+function generateReferralSlug(): string {
+  return "a_" + randomBytes(5).toString("hex");
 }
-
-// Legal disclaimer for affiliate commissions
-const AFFILIATE_LEGAL_NOTICE = "StyleSwap will receive 7.5% commission for purchases originating from the StyleSwap platform.";
 
 export const affiliateRouter = router({
-  // Create new affiliate link (admin only)
-  createAffiliateLink: protectedProcedure
+  /** Customer applies to become an affiliate. Creates a pending row. */
+  applyForAffiliate: protectedProcedure
     .input(
       z.object({
-        affiliateName: z.string().min(1, "Affiliate name is required"),
-        description: z.string().optional(),
-        commissionRate: z.number().min(0).max(100).default(7.5),
+        affiliateName: z.string().min(2).max(255),
+        description: z.string().max(2000).optional(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
-      try {
-        // Check if user is admin (you can add this check based on your auth system)
-        const db = await getDb();
-        if (!db) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Database not available",
-          });
-        }
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
-        const affiliateCode = generateAffiliateCode();
-
-        const result = await db
-          .insert(affiliateLinks)
-          .values({
-            affiliateName: input.affiliateName,
-            affiliateCode,
-            description: input.description,
-            commissionRate: input.commissionRate.toString(),
-            isActive: true,
-          })
-          .returning();
-
-        return {
-          success: true,
-          affiliate: result[0],
-          affiliateCode,
-        };
-      } catch (error) {
-        console.error("[Affiliate] Error creating affiliate link:", error);
+      const existing = await db
+        .select({ id: affiliateLinks.id })
+        .from(affiliateLinks)
+        .where(eq(affiliateLinks.userId, ctx.user.id))
+        .limit(1);
+      if (existing.length > 0) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create affiliate link",
+          code: "BAD_REQUEST",
+          message: "You have already applied or are an affiliate.",
         });
       }
+
+      const affiliateCode = generateAffiliateCode();
+      await db.insert(affiliateLinks).values({
+        userId: ctx.user.id,
+        affiliateCode,
+        affiliateName: input.affiliateName,
+        description: input.description,
+        status: "pending",
+      });
+
+      // Notify admin (best-effort — never throws to the caller)
+      try {
+        const { sendEmail } = await import("../email-service");
+        const adminEmail = process.env.ADMIN_EMAIL || "admin@thatone.co.za";
+        await sendEmail({
+          to: adminEmail,
+          subject: `New affiliate application: ${input.affiliateName}`,
+          html: `<p>A new affiliate application has been submitted.</p>
+                 <p><b>Applicant user id:</b> ${ctx.user.id}</p>
+                 <p><b>Name:</b> ${input.affiliateName}</p>
+                 <p><b>Description:</b> ${input.description ?? "(none)"}</p>
+                 <p>Review in the admin console.</p>`,
+        });
+      } catch (err) {
+        console.error("[affiliate.applyForAffiliate] admin notification failed:", err);
+      }
+
+      return { success: true };
     }),
 
-  // Generate tracking link for a boutique
-  generateTrackingLink: publicProcedure
+  /** Self-view: caller's own affiliate record, or null. */
+  getMyAffiliate: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) return null;
+
+    const rows = await db
+      .select()
+      .from(affiliateLinks)
+      .where(eq(affiliateLinks.userId, ctx.user.id))
+      .limit(1);
+    if (rows.length === 0) return null;
+
+    const a = rows[0];
+    return {
+      id: a.id,
+      status: a.status,
+      affiliateName: a.affiliateName,
+      referralSlug: a.referralSlug,
+      shareUrl: a.referralSlug
+        ? `${process.env.VITE_APP_URL || "https://getthatone.co.za"}/a/${a.referralSlug}`
+        : null,
+      appliedAt: a.appliedAt,
+      approvedAt: a.approvedAt,
+      rejectedReason: a.rejectedReason,
+    };
+  }),
+
+  /** Self-view: caller's commissions. Paginated. */
+  getMyCommissions: protectedProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }))
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return { items: [], totals: { approved: 0, paid: 0, pending: 0, reversed: 0 } };
+
+      const me = await db
+        .select({ id: affiliateLinks.id })
+        .from(affiliateLinks)
+        .where(eq(affiliateLinks.userId, ctx.user.id))
+        .limit(1);
+      if (me.length === 0) {
+        return { items: [], totals: { approved: 0, paid: 0, pending: 0, reversed: 0 } };
+      }
+      const affiliateLinkId = me[0].id;
+
+      const items = await db
+        .select({
+          id: affiliateCommissions.id,
+          packageId: affiliateCommissions.packageId,
+          purchaseCategory: affiliateCommissions.purchaseCategory,
+          qualifyingAmountCents: affiliateCommissions.qualifyingAmountCents,
+          commissionAmountCents: affiliateCommissions.commissionAmountCents,
+          appliedRate: affiliateCommissions.appliedRate,
+          tier: affiliateCommissions.tier,
+          status: affiliateCommissions.status,
+          createdAt: affiliateCommissions.createdAt,
+        })
+        .from(affiliateCommissions)
+        .where(eq(affiliateCommissions.affiliateLinkId, affiliateLinkId))
+        .orderBy(desc(affiliateCommissions.createdAt))
+        .limit(input.limit);
+
+      const totals = { approved: 0, paid: 0, pending: 0, reversed: 0 };
+      for (const it of items) {
+        totals[it.status] += it.commissionAmountCents;
+      }
+
+      return { items, totals };
+    }),
+
+  /**
+   * Public click tracker. Records the click. Returns nothing sensitive.
+   * Rate-limited at the HTTP layer (see server/_core/index.ts) — the
+   * affiliate router does not implement its own limiter.
+   */
+  trackClick: publicProcedure
     .input(
       z.object({
-        affiliateCode: z.string().min(1, "Affiliate code is required"),
-        boutiqueId: z.number().min(1, "Boutique ID is required"),
-        source: z.string().optional().default("direct_link"),
+        slug: z.string().min(1).max(64),
+        source: z.string().max(50).optional(),
+        ipAddress: z.string().max(45).optional(),
+        userAgent: z.string().max(500).optional(),
       })
     )
     .mutation(async ({ input }) => {
-      try {
-        const db = await getDb();
-        if (!db) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Database not available",
-          });
-        }
+      const db = await getDb();
+      if (!db) return { success: false };
 
-        // Find affiliate link by code
-        const affiliate = await db.query.affiliateLinks.findFirst({
-          where: eq(affiliateLinks.affiliateCode, input.affiliateCode),
-        });
+      const link = await db
+        .select({ id: affiliateLinks.id })
+        .from(affiliateLinks)
+        .where(
+          and(
+            eq(affiliateLinks.referralSlug, input.slug),
+            eq(affiliateLinks.status, "approved")
+          )
+        )
+        .limit(1);
+      if (link.length === 0) return { success: false };
 
-        if (!affiliate) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Affiliate code not found",
-          });
-        }
-
-        // Check if boutique exists and has premium tier
-        const boutique = await db.query.boutiques.findFirst({
-          where: eq(boutiques.id, input.boutiqueId),
-        });
-
-        if (!boutique) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Boutique not found",
-          });
-        }
-
-        // Generate tracking token
-        const trackingToken = generateTrackingToken();
-
-        // Create tracking record
-        const result = await db
-          .insert(affiliateTracking)
-          .values({
-            affiliateLinkId: affiliate.id,
-            boutiqueId: input.boutiqueId,
-            trackingToken,
-            source: input.source,
-            isConverted: false,
-          })
-          .returning();
-
-        // Generate tracking URL with token
-        const trackingUrl = `${process.env.VITE_FRONTEND_URL || "https://styleswap.co.za"}?aff=${trackingToken}`;
-
-        return {
-          success: true,
-          trackingToken,
-          trackingUrl,
-          affiliateName: affiliate.affiliateName,
-          legalNotice: AFFILIATE_LEGAL_NOTICE,
-        };
-      } catch (error) {
-        console.error("[Affiliate] Error generating tracking link:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to generate tracking link",
-        });
-      }
-    }),
-
-  // Record clothing purchase and calculate commission
-  recordClothingPurchase: publicProcedure
-    .input(
-      z.object({
-        trackingToken: z.string().min(1, "Tracking token is required"),
-        clothingPurchaseAmount: z.number().min(0.01, "Purchase amount must be greater than 0"),
-        externalTransactionId: z.string().optional(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      try {
-        const db = await getDb();
-        if (!db) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Database not available",
-          });
-        }
-
-        // Find tracking record
-        const tracking = await db.query.affiliateTracking.findFirst({
-          where: eq(affiliateTracking.trackingToken, input.trackingToken),
-        });
-
-        if (!tracking) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Tracking token not found",
-          });
-        }
-
-        // Get affiliate link to check commission rate
-        const affiliate = await db.query.affiliateLinks.findFirst({
-          where: eq(affiliateLinks.id, tracking.affiliateLinkId),
-        });
-
-        if (!affiliate) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Affiliate not found",
-          });
-        }
-
-        // Calculate 7.5% commission
-        const commissionRate = 7.5; // Always 7.5% for clothing purchases
-        const commissionAmount = (input.clothingPurchaseAmount * commissionRate) / 100;
-
-        // Create commission record
-        const result = await db
-          .insert(affiliateCommissions)
-          .values({
-            affiliateTrackingId: tracking.id,
-            affiliateLinkId: tracking.affiliateLinkId,
-            boutiqueId: tracking.boutiqueId,
-            clothingPurchaseAmount: input.clothingPurchaseAmount.toString(),
-            commissionAmount: commissionAmount.toString(),
-            commissionRate: commissionRate.toString(),
-            externalTransactionId: input.externalTransactionId,
-            status: "pending",
-          })
-          .returning();
-
-        // Mark tracking as converted
-        await db
-          .update(affiliateTracking)
-          .set({
-            isConverted: true,
-            convertedAt: new Date(),
-          })
-          .where(eq(affiliateTracking.id, tracking.id));
-
-        return {
-          success: true,
-          commission: result[0],
-          commissionAmount,
-        };
-      } catch (error) {
-        console.error("[Affiliate] Error recording purchase:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to record purchase",
-        });
-      }
-    }),
-
-  // Get affiliate performance (admin dashboard)
-  getAffiliateStats: protectedProcedure
-    .input(
-      z.object({
-        affiliateId: z.number().optional(),
-        status: z.enum(["pending", "approved", "paid"]).optional(),
-      })
-    )
-    .query(async ({ input }) => {
-      try {
-        const db = await getDb();
-        if (!db) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Database not available",
-          });
-        }
-
-        // Build query conditions
-        const conditions = [];
-        if (input.affiliateId) {
-          conditions.push(eq(affiliateCommissions.affiliateLinkId, input.affiliateId));
-        }
-        if (input.status) {
-          conditions.push(eq(affiliateCommissions.status, input.status));
-        }
-
-        // Get commissions
-        const commissions = await db.query.affiliateCommissions.findMany({
-          where: conditions.length > 0 ? and(...conditions) : undefined,
-        });
-
-        // Calculate totals
-        const totalCommissions = commissions.reduce((sum, c) => {
-          return sum + parseFloat(c.commissionAmount);
-        }, 0);
-
-        const pendingCommissions = commissions
-          .filter((c) => c.status === "pending")
-          .reduce((sum, c) => sum + parseFloat(c.commissionAmount), 0);
-
-        const paidCommissions = commissions
-          .filter((c) => c.status === "paid")
-          .reduce((sum, c) => sum + parseFloat(c.commissionAmount), 0);
-
-        return {
-          success: true,
-          totalCommissions,
-          pendingCommissions,
-          paidCommissions,
-          commissionCount: commissions.length,
-          commissions,
-        };
-      } catch (error) {
-        console.error("[Affiliate] Error getting stats:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to get affiliate stats",
-        });
-      }
-    }),
-
-  // Update commission status (admin only)
-  updateCommissionStatus: protectedProcedure
-    .input(
-      z.object({
-        commissionId: z.number().min(1, "Commission ID is required"),
-        status: z.enum(["pending", "approved", "paid"]),
-        notes: z.string().optional(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      try {
-        const db = await getDb();
-        if (!db) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Database not available",
-          });
-        }
-
-        const result = await db
-          .update(affiliateCommissions)
-          .set({
-            status: input.status,
-            notes: input.notes,
-            paidAt: input.status === "paid" ? new Date() : undefined,
-          })
-          .where(eq(affiliateCommissions.id, input.commissionId))
-          .returning();
-
-        // Send notification for status update
-        if (result.length > 0) {
-          const commission = result[0];
-          await handleCommissionStatusUpdate(
-            commission.id.toString(),
-            input.status as any,
-            input.notes
-          );
-        }
-
-        return {
-          success: true,
-          commission: result[0],
-        };
-      } catch (error) {
-        console.error("[Affiliate] Error updating commission:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update commission",
-        });
-      }
+      await recordClick({
+        affiliateLinkId: link[0].id,
+        source: input.source,
+        ipAddress: input.ipAddress,
+        userAgent: input.userAgent,
+      });
+      return { success: true };
     }),
 });

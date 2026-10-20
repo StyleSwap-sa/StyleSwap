@@ -48,6 +48,7 @@ export const paymentRouter = router({
         phoneNumber: z.string().optional(),
         amount: z.number().optional(), // Custom amount for annual billing (10% discount)
         billingPeriod: z.enum(['monthly', 'annual']).optional(), // Track billing period
+        affiliateSlug: z.string().max(64).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -90,6 +91,7 @@ export const paymentRouter = router({
           cancelUrl: input.cancelUrl,
           amount: finalAmount, // Pass custom amount
           billingPeriod: input.billingPeriod || 'monthly', // Track billing period
+          affiliateSlug: input.affiliateSlug || undefined,
         });
 
         // Generate checkout URL from payment intent

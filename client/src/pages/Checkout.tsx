@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
+import { getAffiliateSlug } from "@/lib/affiliate";
 
 export default function Checkout() {
   const { isAuthenticated, user } = useAuth({ redirectOnUnauthenticated: true });
@@ -23,7 +24,7 @@ export default function Checkout() {
         window.location.href = data.checkoutUrl;
       } else {
         toast.error("Failed to get payment URL");
-        setLocation("/dashboard?tab=overview");
+        setLocation("/dashboard");
       }
     },
     onError: (error) => {
@@ -41,7 +42,7 @@ export default function Checkout() {
 
     if (!pkg) {
       toast.error("Invalid checkout session");
-      setLocation("/dashboard?tab=overview");
+      setLocation("/dashboard");
       return;
     }
 
@@ -80,6 +81,7 @@ export default function Checkout() {
         successUrl,
         cancelUrl,
         phoneNumber: phoneNumber.replace(/\s/g, ""),
+        affiliateSlug: getAffiliateSlug()
       });
     } catch (err) {
       console.error('[Checkout] Error:', err);

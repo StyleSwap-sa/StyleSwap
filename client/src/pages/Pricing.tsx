@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Check, Zap, ArrowLeft, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
+import { getAffiliateSlug } from "@/lib/affiliate";
 
 export default function Pricing() {
   const { isAuthenticated, user } = useAuth();
@@ -90,6 +91,7 @@ export default function Pricing() {
         cancelUrl: `${window.location.origin}/pricing?cancelled=true`,
         amount: finalPrice,
         billingPeriod: billingLabel,
+        affiliateSlug: getAffiliateSlug()
       });
 
       console.log('[Pricing] Checkout result:', result);
@@ -374,7 +376,7 @@ export default function Pricing() {
                       onClick={() => {
                         if ((plan as any).isEnterprise) {
                           window.location.href = 'mailto:sales@thatone.com?subject=Enterprise%20Retail%20Pro%20Inquiry&body=I%20am%20interested%20in%20the%20Enterprise%20Retail%20Pro%20package%20with%20more%20than%2020,000%20credits.';
-                        } else {
+                        } else if (plan.price !== null) {
                           handleSubscribe(plan.name, plan.price);
                         }
                       }}

@@ -252,7 +252,7 @@ export async function upsertUserWithClerk(data: {
         .set({
           email: data.email,
           name: data.name || existing.name,
-          lastSignedIn: new Date(),
+          lastSignedIn: new Date().toISOString(),
         })
         .where(eq(users.clerkId, data.clerkId));
 
@@ -264,7 +264,7 @@ export async function upsertUserWithClerk(data: {
       email: data.email,
       name: data.name || data.email,
       role: data.clerkId === ENV.ownerOpenId ? "admin" : "user",
-      lastSignedIn: new Date(),
+      lastSignedIn: new Date().toISOString(),
       freeTrialUsed: 0,
     } as InsertUser;
 
@@ -597,6 +597,26 @@ export async function getBoutiqueDetails(boutiqueId: number) {
     console.error("[Database] Failed to get boutique details:", error);
     return null;
   }
+}
+export async function toContextUser(row: Awaited<ReturnType<typeof getUserByOpenId>>) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    openId: row.openId,
+    name: row.name,
+    email: row.email,
+    loginMethod: row.loginMethod,
+    role: row.user_role as "user" | "admin" | "merchant",
+    userType: row.user_type as "customer" | "merchant" | "admin",
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    lastSignedIn: row.lastSignedIn,
+    phone: row.phone,
+    currentBoutiqueId: row.currentBoutiqueId,
+    freeTrialUsed: row.freeTrialUsed,
+    freeTrialUsedAt: row.freeTrialUsedAt,
+    freeTrialExpiresAt: row.freeTrialExpiresAt,
+  };
 }
 
 export async function getMonthlyCreditsUsage() {

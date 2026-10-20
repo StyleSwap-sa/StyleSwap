@@ -48,3 +48,5 @@ export const getBoutiqueSignupUrl = () => {
 
   return url.toString();
 };
+export const getAffiliateSignupUrl = () =>
+  `${window.location.origin}/affiliate`;

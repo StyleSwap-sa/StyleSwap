@@ -25,8 +25,8 @@ interface LoginOptionsModalProps {
 function getDashboardPathForUser(user: { userType?: string; role?: string } | null | undefined) {
   if (!user) return "/dashboard";
   if (user.userType === "admin" || user.role === "admin") return "/admin/dashboard";
-  if (user.userType === "merchant") return "/b2b/dashboard";
-  return "/dashboard";
+  if (user.userType === "merchant") return "/b2b/tryon"; //now route merchants to the B2B try-on page instead of the dashboard
+  return "/tryon"; // route customers to the try-on page instead of the dashboard per client specification
 }
 
 export function LoginOptionsModal({ open, onOpenChange }: LoginOptionsModalProps) {

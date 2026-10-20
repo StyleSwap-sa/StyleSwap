@@ -45,7 +45,8 @@ import { notificationsRouter } from "./routers/notifications";
 import { followsRouter } from "./routers/follows";
 import { promotionalRouter } from "./routers/promotional";
 import { pinterestRouter } from "./routers/pinterest";
-
+import { affiliateRouter } from "./routers/affiliate";
+import { affiliateAdminRouter } from "./routers/affiliate-admin";
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
@@ -187,6 +188,8 @@ export const appRouter = router({
   boutiques: boutiquesRouter,
   products: productsRouter,
   b2bTryon: b2bTryonRouter,
+  affiliate: affiliateRouter,
+  affiliateAdmin: affiliateAdminRouter,
   billing: billingRouter,
   admin: adminRouter,
   adminCredits: adminCreditsRouter,
