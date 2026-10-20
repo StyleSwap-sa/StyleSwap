@@ -3,6 +3,7 @@ import { getDb } from "./db";
 import { users, userCredits, transactions } from "../drizzle/schema";
 import { eq, sql } from "drizzle-orm";
 import { getClassifiedPackage, verifyPackage, CLASSIFIED_PACKAGES } from "./affiliate/package-classification";
+import crypto from "crypto";
 
 export type PackageCategory = "individual" | "business";
 
