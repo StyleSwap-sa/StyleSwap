@@ -104,7 +104,7 @@ export default function CustomerDashboardLayout({
 
   // Redirect merchants to boutique dashboard
   if (user.userType === 'merchant') {
-    window.location.href = '/boutique/dashboard';
+    window.location.href = '/b2b/dashboard';
     return null;
   }
 

@@ -211,5 +211,48 @@ export async function getPresignedUrlForImage(urlOrKey: string, expiresIn: numbe
   } catch (error) {
     console.error('[Storage] Failed to generate presigned URL:', error);
     return urlOrKey;
+  }  
+}
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_EXTERNAL_HOSTS = [/(^|\.)pinimg\.com$/, /^images\.unsplash\.com$/];
+
+export async function fetchImageAsBase64(
+  rawUrl: string
+): Promise<{ base64: string; mimeType: string }> {
+  let u: URL;
+  try {
+    u = new URL(rawUrl);
+  } catch {
+    throw new Error("Invalid image URL");
   }
+  if (u.protocol !== "https:") throw new Error("Only https URLs are allowed");
+
+  const bucket = getBucketName();
+  const isOurBucket =
+    u.hostname.startsWith(`${bucket}.s3.`) && u.hostname.endsWith(".amazonaws.com");
+
+  let buffer: Buffer;
+  let mimeType = "image/jpeg";
+
+  if (isOurBucket) {
+    // Read with our credentials, so it works even if the bucket is private
+    const key = decodeURIComponent(u.pathname.replace(/^\/+/, ""));
+    const res = await getS3Client().send(
+      new GetObjectCommand({ Bucket: bucket, Key: key })
+    );
+    buffer = Buffer.from(await res.Body!.transformToByteArray());
+    mimeType = res.ContentType || mimeType;
+  } else if (ALLOWED_EXTERNAL_HOSTS.some((re) => re.test(u.hostname))) {
+    const res = await fetch(u.toString());
+    if (!res.ok) throw new Error(`Image download failed: ${res.status}`);
+    mimeType = res.headers.get("content-type") || mimeType;
+    buffer = Buffer.from(await res.arrayBuffer());
+  } else {
+    throw new Error("Image host not allowed");
+  }
+
+  if (buffer.length > MAX_IMAGE_BYTES) throw new Error("Image too large");
+  if (!mimeType.startsWith("image/")) throw new Error("Not an image");
+
+  return { base64: buffer.toString("base64"), mimeType: mimeType.split(";")[0] };
 }

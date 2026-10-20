@@ -118,6 +118,14 @@ export function VirtualTryOnUpload({
     });
   };
 
+  const utils = trpc.useUtils();
+  const loadedProductRef = useRef<number | null>(null);
+
+  const base64ToFile = (base64: string, mimeType: string, name: string) => {
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    return new File([bytes], name, { type: mimeType });
+  };
+
   // Fetch try-on status
   const getTryOnStatusQuery = trpc.tryon.getTryOnStatus.useQuery(
     { taskId: currentTaskId || "" },
@@ -137,98 +145,64 @@ export function VirtualTryOnUpload({
 
   useEffect(() => {
     if (!prefilledProduct) return;
+    if (loadedProductRef.current === prefilledProduct.id) return;
+    loadedProductRef.current = prefilledProduct.id;
 
-    // Don't clobber a manual upload
-    if (userUploadedManually || clothImage || clothImagePreview) return;
-
-    const loadImageFromUrl = async (url: string) => {
+    (async () => {
       try {
-        const res = await fetch(url, { mode: "cors" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const blob = await res.blob();
-        const file = new File([blob], `${prefilledProduct.name}.jpg`, {
-          type: blob.type || "image/jpeg",
-        });
+        const { base64, mimeType } = await utils.tryon.fetchImageAsBase64.fetch(
+          { url: prefilledProduct.imageUrl },
+          { staleTime: Infinity }
+        );
+        const ext = mimeType.split("/")[1] || "jpg";
+        const file = base64ToFile(base64, mimeType, `${prefilledProduct.name}.${ext}`);
         setClothImage(file);
-        setClothImagePreview(url);
+        setClothImagePreview(URL.createObjectURL(file));
       } catch (err) {
         console.error("[TryOn] Failed to preload product image:", err);
-        // Fallback: still show the preview so the user sees what they picked
-        setClothImagePreview(url);
+        // Don't set a preview-only state. It makes the UI look ready when it isn't.
         toast({
           title: "Couldn't auto-load product image",
           description: "Please upload the clothing image manually.",
           variant: "destructive",
         });
       }
-    };
+    })();
 
-    loadImageFromUrl(prefilledProduct.imageUrl);
-
-    // Best-effort guess at cloth type from the category
     const cat = (prefilledProduct.category || "").toLowerCase();
-    if (cat.includes("dress") || cat.includes("gown") || cat.includes("jumpsuit")) {
-      setClothType("full");
-    } else if (
-      cat.includes("pant") ||
-      cat.includes("jean") ||
-      cat.includes("skirt") ||
-      cat.includes("short") ||
-      cat.includes("trouser")
-    ) {
-      setClothType("lower");
-    } else {
-      setClothType("upper");
-    }
-  }, [prefilledProduct, userUploadedManually, clothImage, clothImagePreview]);
+    if (/dress|gown|jumpsuit/.test(cat)) setClothType("full");
+    else if (/pant|jean|skirt|short|trouser/.test(cat)) setClothType("lower");
+    else setClothType("upper");
+  }, [prefilledProduct?.id]);
 
   useEffect(() => {
   if (!prefillClothImageUrl) return;
-
   let cancelled = false;
 
-  const loadPinterestImage = async () => {
+  (async () => {
     try {
-      const response = await fetch(prefillClothImageUrl);
-
-      if (!response.ok) {
-        throw new Error("Failed to download Pinterest image");
-      }
-
-      const blob = await response.blob();
-
-      const extension =
-        blob.type.split("/")[1]?.split(";")[0] || "jpg";
-
-      const file = new File(
-        [blob],
-        `pinterest-image.${extension}`,
-        {
-          type: blob.type || "image/jpeg",
-        }
+      const { base64, mimeType } = await utils.tryon.fetchImageAsBase64.fetch(
+        { url: prefillClothImageUrl },
+        { staleTime: Infinity }
       );
-
       if (cancelled) return;
-
+      const ext = mimeType.split("/")[1] || "jpg";
+      const file = base64ToFile(base64, mimeType, `pinterest-image.${ext}`);
       setClothImage(file);
       setClothImagePreview(URL.createObjectURL(file));
-
-      // Pinterest images are generally best treated as an upper-body
-      // clothing reference for the first MVP.
       setClothType("upper");
-    } catch (error) {
-      console.error(
-        "[Pinterest] Failed to load selected image:",
-        error
-      );
+    } catch (err) {
+      if (cancelled) return;
+      console.error("[Pinterest] Failed to load selected image:", err);
+      toast({
+        title: "Couldn't load Pinterest image",
+        description: "Please upload the clothing image manually.",
+        variant: "destructive",
+      });
     }
-  };
+  })();
 
-  loadPinterestImage();
-
-  return () => {
-    cancelled = true;
-  };
+  return () => { cancelled = true; };
 }, [prefillClothImageUrl]);
 
   const handleSaveToFeed = () => {

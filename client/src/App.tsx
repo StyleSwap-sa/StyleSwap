@@ -8,6 +8,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { Loader2 } from "lucide-react";
 import CustomerDashboardLayout from "@/components/CustomerDashboardLayout";
 import TryOnFromPinterest from "@/pages/TryOnFromPinterest";
+import DashboardLayout from "@/components/DashboardLayout";
 
 // Eagerly load homepage and auth pages
 import Home from "./pages/Home";
@@ -180,6 +181,31 @@ const FollowingWithLayout = () => {
     </CustomerDashboardLayout>
   );
 };
+const BoutiqueAffiliateWithLayout = () => {
+  return (
+    <DashboardLayout variant="boutique">
+      <AffiliateDashboard />
+    </DashboardLayout>
+  );
+};
+
+const BoutiquePinterestWithLayout = () => {
+  return (
+    <DashboardLayout variant="boutique">
+      <TryOnFromPinterest />
+    </DashboardLayout>
+  );
+};
+
+const CustomerPinterestWithLayout = () => {
+  return (
+    <CustomerDashboardLayout>
+      <TryOnFromPinterest />
+    </CustomerDashboardLayout>
+  );
+};
+
+
 
 // Loading fallback component
 function LoadingFallback() {
@@ -247,6 +273,8 @@ export default function App() {
   <Route path="/b2b/:boutiqueId/widget" component={WidgetDashboard} />
   <Route path="/b2b/signup" component={BoutiqueSignupWithVerification} />
   <Route path="/b2b" component={B2BLanding} />
+  <Route path="/b2b/affiliate" component={BoutiqueAffiliateWithLayout} />
+  <Route path="/b2b/try-on-from-pinterest" component={BoutiquePinterestWithLayout} />
   
   {/* Admin routes */}
   <Route path="/admin/dashboard" component={AdminDashboard} />
@@ -267,9 +295,11 @@ export default function App() {
   <Route path="/global-feed" component={GlobalFeedWithLayout} />
   <Route path="/profile" component={ProfileWithLayout} />
   <Route path="/following" component={FollowingWithLayout} />
+  <Route path="/affiliate" component={AffiliateDashboardWithLayout} />
+  <Route path="/try-on-from-pinterest" component={CustomerPinterestWithLayout}/>
   
   {/* Other routes */}
-  <Route path="/affiliate" component={AffiliateDashboardWithLayout} />
+  
   <Route path="/admin/affiliates" component={AdminAffiliates} />
   <Route path="/a/:slug" component={AffiliateReferralLanding} />
   <Route path="/demo" component={DemoTryOn} />
@@ -289,7 +319,7 @@ export default function App() {
   <Route path="/referral/:referralCode" component={ReferralSignup} />
   <Route path="/polls" component={Polls} />
   <Route path="/polls/:pollId" component={Polls} />
-  <Route path="/try-on-from-pinterest" component={TryOnFromPinterest}/>
+
   
   {/* 404 - must be last */}
   <Route component={NotFound} />

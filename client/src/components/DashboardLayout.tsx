@@ -41,14 +41,13 @@ const boutiqueMenuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/b2b/dashboard" },
   { icon: Package, label: "Products", path: "/b2b/products" },
   { icon: Camera, label: "Try-On", path: "/b2b/tryon" },
-  { icon: MessageSquareHeartIcon, label: "Try On from Pinterest", path: "/try-on-from-pinterest" },
+  { icon: MessageSquareHeartIcon, label: "Try On from Pinterest", path: "/b2b/try-on-from-pinterest" },
+  { icon: Gift, label: "Affiliate", path: "/b2b/affiliate" },
   { icon: Wallet, label: "Payouts", path: "/b2b/payouts" },
   { icon: ShoppingBag, label: "Orders", path: "/b2b/orders" },
   { icon: Coins, label: "Credits", path: "/b2b/credits" },
-   { icon: Gift, label: "Affiliate", path: "/affiliate" },
-
-
 ];
+
 //removed for now :
 //  { icon: BarChart3, label: "Performance", path: "/b2b/performance" }
 //  { icon: Sparkles, label: "Features", path: "/b2b/features" }

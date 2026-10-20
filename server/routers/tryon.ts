@@ -4,7 +4,7 @@ import { getFitroomClient } from "../_core/fitroom";
 import { deductCredits, getUserCredits, refundCredits } from "../db.credits";
 import { enforceSubscriptionCheck } from "../middleware/subscriptionValidation";
 import { TRPCError } from "@trpc/server";
-import { storagePut, storageGet, copyImageToS3 } from "../storage";
+import { storagePut, storageGet, copyImageToS3, fetchImageAsBase64 } from "../storage";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
@@ -116,6 +116,16 @@ export const tryonRouter = router({
       }
     }),
 
+
+  fetchImageAsBase64: protectedProcedure
+    .input(z.object({ url: z.string().url() }))
+    .query(async ({ input }) => {
+      try {
+        return await fetchImageAsBase64(input.url);
+      } catch (e: any) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: e.message });
+      }
+    }),
   /**
    * Create a virtual try-on task for BOUTIQUES (with subscription check)
    */
