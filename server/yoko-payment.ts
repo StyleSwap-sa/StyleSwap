@@ -20,15 +20,7 @@ export interface PaymentPackage {
 
 
 export const PAYMENT_PACKAGES: PaymentPackage[] = [
-   {
-    id: "pkg_5_credits",
-    name: "5 Credit Test",
-    credits: 5,
-    price: 500, // R5.00 in cents
-    currency: "ZAR",
-    description: "Test payment - REMOVE AFTER TESTING",
-    category: "individual"
-  },
+   
   {
     id: "pkg_10_credits",
     name: "10 Try-Ons",

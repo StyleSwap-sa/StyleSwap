@@ -24,7 +24,7 @@ export interface ClassifiedPackage {
  */
 export const CLASSIFIED_PACKAGES: ClassifiedPackage[] = [
   // Individual — R45, R80, R150
-  { id: "pkg_5_credits",  name: "5 Try-Ons",  credits: 5,  price: 500,    currency: "ZAR", category: "individual" },
+
   { id: "pkg_10_credits",  name: "10 Try-Ons",  credits: 10,  price: 4500,    currency: "ZAR", category: "individual" },
   { id: "pkg_20_credits",  name: "20 Try-Ons",  credits: 20,  price: 8000,    currency: "ZAR", category: "individual" },
   { id: "pkg_50_credits",  name: "50 Try-Ons",  credits: 50,  price: 15000,   currency: "ZAR", category: "individual" },
