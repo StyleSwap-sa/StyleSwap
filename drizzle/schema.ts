@@ -1164,6 +1164,26 @@ export const affiliateCommissions = pgTable(
     unique("uq_affiliate_commissions_source").on(table.sourceType, table.sourceId),
   ]
 );
+export const promotions = pgTable("promotions", {
+  id: serial("id").primaryKey().notNull(),
+  promotionKey: text("promotionKey").notNull(),
+  enabled: boolean("enabled").default(false).notNull(),
+  recipientLimit: integer("recipientLimit").notNull(),
+  creditsPerUser: integer("creditsPerUser").notNull(),
+  awardedCount: integer("awardedCount").default(0).notNull(),
+  activatedAt: timestamp("activatedAt", { mode: "string" }),
+  createdAt: timestamp("createdAt", { mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: timestamp("updatedAt", { mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const promotionAwards = pgTable("promotion_awards", {
+  id: serial("id").primaryKey().notNull(),
+  promotionId: integer("promotionId").notNull().references(() => promotions.id),
+  userId: integer("userId").notNull().references(() => users.id),
+  slotNumber: integer("slotNumber").notNull(),
+  creditsAwarded: integer("creditsAwarded").notNull(),
+  createdAt: timestamp("createdAt", { mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
 
 export const affiliateSettings = pgTable(
   "affiliate_settings",

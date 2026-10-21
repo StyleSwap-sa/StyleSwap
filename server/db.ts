@@ -14,6 +14,7 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import postgres from "postgres";
+import { claimLaunchPromotionAward } from "./db.promotions";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _initPromise: Promise<ReturnType<typeof drizzle> | null> | null = null;
@@ -140,9 +141,23 @@ export async function upsertUser(
     });
 
     // Perform upsert
-    await db.insert(users).values(values).onConflictDoUpdate({
-      target: users.openId,
-      set: updateSet,
+    // Perform upsert; (xmax = 0) is true only for a genuine insert.
+    await db.transaction(async (tx) => {
+      const [row] = await tx
+        .insert(users)
+        .values(values)
+        .onConflictDoUpdate({ target: users.openId, set: updateSet })
+        .returning({ id: users.id, createdAt: users.createdAt, inserted: sql<boolean>`(xmax = 0)` });
+
+      if (row?.inserted) {
+        try {
+          await tx.transaction(async (sp) => {
+            await claimLaunchPromotionAward(sp, { id: row.id, createdAt: row.createdAt });
+          });
+        } catch (err) {
+          console.error("[Promotion] Launch award failed; signup continues:", err);
+        }
+      }
     });
 
     // Return the user

@@ -14,6 +14,7 @@ import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { COOKIE_NAME } from "../../shared/const";
 import { adminPayoutsRouter } from "./admin-payouts";
+import { promotionAdminRouter } from "./promotion-admin";
 
 /**
  * Admin Management Router
@@ -345,5 +346,5 @@ export const adminRouter = router({
   /**
    * Payout management sub-router
    */
-  payouts: adminPayoutsRouter,
+  payouts: adminPayoutsRouter, promotions: promotionAdminRouter,
 });

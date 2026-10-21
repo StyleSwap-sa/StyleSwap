@@ -9,6 +9,7 @@ import { CreditAlertsCard } from "@/components/CreditAlertsCard";
 import { AdvancedAnalyticsCharts } from "@/components/AdvancedAnalyticsCharts";
 import { SchedulerControls } from "@/components/SchedulerControls";
 import { ARAnalyticsPanel } from "@/components/ARAnalyticsPanel";
+import { LaunchPromotionCard } from "@/components/LaunchPromotionCard";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -347,7 +348,7 @@ export default function AdminDashboard() {
             arTrendData={[]}
           />
         </div>
-
+         <LaunchPromotionCard />         
         {/* Scheduler Controls Section */}
         <div className="mt-8">
           <h2 className="text-2xl font-bold mb-6">Alert Scheduler</h2>
