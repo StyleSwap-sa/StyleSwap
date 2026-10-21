@@ -30,10 +30,10 @@ export default function AffiliateDashboard() {
   // No affiliate record yet — show application form
   if (!me) {
     return (
-      <div className="max-w-xl mx-auto p-6">
+      <div className="max-w-xl mx-auto p-4 sm:p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Become a ThatOne Affiliate</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Become a ThatOne Affiliate</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
@@ -77,9 +77,9 @@ export default function AffiliateDashboard() {
   // Pending application
   if (me.status === "pending") {
     return (
-      <div className="max-w-xl mx-auto p-6">
+      <div className="max-w-xl mx-auto p-4 sm:p-6">
         <Card>
-          <CardHeader><CardTitle>Application pending</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base sm:text-lg">Application pending</CardTitle></CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
               Your application was submitted on{" "}
@@ -95,9 +95,9 @@ export default function AffiliateDashboard() {
   // Rejected
   if (me.status === "rejected") {
     return (
-      <div className="max-w-xl mx-auto p-6">
+      <div className="max-w-xl mx-auto p-4 sm:p-6">
         <Card>
-          <CardHeader><CardTitle>Application not approved</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base sm:text-lg">Application not approved</CardTitle></CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
               {me.rejectedReason || "No reason provided."}
@@ -110,9 +110,9 @@ export default function AffiliateDashboard() {
 
   // Approved
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Affiliate Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">Affiliate Dashboard</h1>
         <p className="text-sm text-muted-foreground">
           Welcome back, {me.affiliateName}
         </p>
@@ -120,10 +120,15 @@ export default function AffiliateDashboard() {
 
       {me.shareUrl && (
         <Card>
-          <CardHeader><CardTitle>Your referral link</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base sm:text-lg">Your referral link</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="flex gap-2 items-center bg-muted p-3 rounded border">
-              <code className="text-xs flex-1 truncate">{me.shareUrl}</code>
+            {/* Stacks the code and copy button on mobile, side-by-side on desktop */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center bg-muted p-3 rounded border">
+              <code className="text-xs flex-1 break-all sm:truncate">
+                {me.shareUrl}
+              </code>
               <Button
                 size="sm"
                 variant="ghost"
@@ -132,20 +137,32 @@ export default function AffiliateDashboard() {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1500);
                 }}
+                className="self-stretch sm:self-auto shrink-0"
               >
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4 mr-1" />
+                    <span className="sm:hidden">Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 mr-1" />
+                    <span className="sm:hidden">Copy</span>
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
+      {/* Summary cards — 2 per row on mobile, 4 on desktop */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {(["pending", "approved", "paid", "reversed"] as const).map((s) => (
           <Card key={s}>
             <CardContent className="pt-6">
               <p className="text-xs text-muted-foreground uppercase">{s}</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl sm:text-2xl font-bold break-words">
                 R{((commissions?.totals[s] ?? 0) / 100).toFixed(2)}
               </p>
             </CardContent>
@@ -154,37 +171,49 @@ export default function AffiliateDashboard() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Commission history</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">Commission history</CardTitle>
+        </CardHeader>
         <CardContent>
           {cLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : !commissions?.items.length ? (
             <p className="text-sm text-muted-foreground">No commissions yet.</p>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left">
-                  <th className="py-2">Date</th>
-                  <th className="py-2">Package</th>
-                  <th className="py-2">Amount</th>
-                  <th className="py-2">Rate</th>
-                  <th className="py-2">Commission</th>
-                  <th className="py-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {commissions.items.map((c) => (
-                  <tr key={c.id} className="border-b">
-                    <td className="py-2">{new Date(c.createdAt).toLocaleDateString()}</td>
-                    <td className="py-2">{c.packageId}</td>
-                    <td className="py-2">R{(c.qualifyingAmountCents / 100).toFixed(2)}</td>
-                    <td className="py-2">{c.appliedRate}%{c.tier ? ` (${c.tier})` : ""}</td>
-                    <td className="py-2">R{(c.commissionAmountCents / 100).toFixed(2)}</td>
-                    <td className="py-2 capitalize">{c.status}</td>
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+              <table className="w-full text-sm min-w-[600px]">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="py-2 pr-3 whitespace-nowrap">Date</th>
+                    <th className="py-2 pr-3">Package</th>
+                    <th className="py-2 pr-3 whitespace-nowrap">Amount</th>
+                    <th className="py-2 pr-3 whitespace-nowrap">Rate</th>
+                    <th className="py-2 pr-3 whitespace-nowrap">Commission</th>
+                    <th className="py-2 pr-3">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {commissions.items.map((c) => (
+                    <tr key={c.id} className="border-b align-top">
+                      <td className="py-2 pr-3 whitespace-nowrap">
+                        {new Date(c.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="py-2 pr-3">{c.packageId}</td>
+                      <td className="py-2 pr-3 whitespace-nowrap">
+                        R{(c.qualifyingAmountCents / 100).toFixed(2)}
+                      </td>
+                      <td className="py-2 pr-3 whitespace-nowrap">
+                        {c.appliedRate}%{c.tier ? ` (${c.tier})` : ""}
+                      </td>
+                      <td className="py-2 pr-3 whitespace-nowrap">
+                        R{(c.commissionAmountCents / 100).toFixed(2)}
+                      </td>
+                      <td className="py-2 pr-3 capitalize">{c.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </CardContent>
       </Card>
